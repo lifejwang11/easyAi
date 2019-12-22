@@ -10,17 +10,11 @@ import java.util.List;
 public class SensoryNerve extends Nerve {
 
     public SensoryNerve(int id, int upNub) {
-        super(id, upNub);
+        super(id, upNub, "SensoryNerve");
     }
 
-    @Override
-    public void setMessage(double message) {
-        super.setMessage(message);
-    }
-
-    public boolean postMessage(double message) {//感知神经元输出
-        setMessage(message);
-        return sendMessage();
+    public void postMessage(long eventId, double parameter) throws Exception {//感知神经元输出
+        sendMessage(eventId, parameter);
     }
 
     @Override

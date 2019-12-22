@@ -1,5 +1,10 @@
 package org.wlld.nerveEntity;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.wlld.function.ActiveFunction;
+import org.wlld.tools.ArithUtil;
+
 import java.util.*;
 
 /**
@@ -8,47 +13,78 @@ import java.util.*;
  * @date 9:36 上午 2019/12/21
  */
 public abstract class Nerve {
-    private double message;//该神经元输出结果
     private List<Nerve> axon = new ArrayList<>();//轴突下一层的连接神经元
-    protected Map<Integer, Double> dendrites = new HashMap<>();//上一层权重
+    private Map<Integer, Double> dendrites = new HashMap<>();//上一层权重
     private int id;//同级神经元编号,注意在同层编号中ID应有唯一性
-    private int upNub;//上一层神经元数量
+    protected int upNub;//上一层神经元数量
+    protected Map<Long, List<Double>> features = new HashMap<>();
+    static final Logger logger = LogManager.getLogger(Nerve.class);
+    private double threshold;//此神经元的阈值
+    protected ActiveFunction activeFunction = new ActiveFunction();
+    protected String name;
 
-    protected Nerve(int id, int upNub) {//该神经元在同层神经元中的编号
+    protected Nerve(int id, int upNub, String name) {//该神经元在同层神经元中的编号
         this.id = id;
         this.upNub = upNub;
+        this.name = name;
         initPower();//生成随机权重
     }
 
-    public boolean sendMessage() {
-        boolean isFinish = false;
+    public void sendMessage(long enevtId, double parameter) throws Exception {
         if (axon.size() > 0) {
-            isFinish = true;
             for (Nerve nerve : axon) {
-                nerve.input(this);
+                nerve.input(enevtId, parameter);
             }
+        } else {
+            throw new Exception("this layer is lastIndex");
         }
-        return isFinish;
     }
 
-    public void input(Nerve nerve) {//输入
+    protected void input(long eventId, double parameter) throws Exception {//输入
     }
 
-    private void initPower() {//初始化权重
+    protected boolean insertParameter(long eventId, double parameter) {//添加参数
+        boolean allReady = false;
+        List<Double> featuresList;
+        if (features.containsKey(eventId)) {
+            featuresList = features.get(eventId);
+        } else {
+            featuresList = new ArrayList<>();
+            features.put(eventId, featuresList);
+        }
+        featuresList.add(parameter);
+        if (featuresList.size() >= upNub) {
+            allReady = true;
+        }
+        return allReady;
+    }
+
+    protected void destoryParameter(long eventId) {//销毁参数
+        features.remove(eventId);
+    }
+
+    protected double calculation(long eventId) {//计算当前输出结果
+        double sigma = 0;
+        List<Double> featuresList = features.get(eventId);
+        for (int i = 0; i < featuresList.size(); i++) {
+            double value = featuresList.get(i);
+            double w = dendrites.get(i + 1);
+            sigma = ArithUtil.add(ArithUtil.mul(w, value), sigma);
+            logger.debug("name:{},eventId:{},id:{},myId:{},w:{},value:{}", name, eventId, i + 1, id, w, value);
+        }
+        logger.debug("当前神经元线性变化已经完成,name:{},id:{}", name, getId());
+        return ArithUtil.sub(sigma, threshold);
+    }
+
+    private void initPower() {//初始化权重及阈值
         if (upNub > 0) {
             Random random = new Random();
             for (int i = 1; i < upNub + 1; i++) {
                 dendrites.put(i, random.nextDouble());
             }
+            //生成随机阈值
+            threshold = ArithUtil.mul(random.nextDouble(), 10);
         }
-    }
-
-    public double getMessage() {
-        return message;
-    }
-
-    public void setMessage(double message) {
-        this.message = message;
     }
 
     public int getId() {
