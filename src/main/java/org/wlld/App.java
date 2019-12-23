@@ -19,7 +19,7 @@ public class App {
         nerveManager.init();
         List<SensoryNerve> sensoryNerves = nerveManager.getSensoryNerves();
         for (int i = 0; i < sensoryNerves.size(); i++) {
-            sensoryNerves.get(i).postMessage(1, 2 + i);
+            sensoryNerves.get(i).postMessage(1, 2 + i, true);
         }
     }
 }

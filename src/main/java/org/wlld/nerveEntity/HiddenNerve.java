@@ -19,15 +19,18 @@ public class HiddenNerve extends Nerve {
     }
 
     @Override
-    public void input(long eventId, double parameter) throws Exception {//接收上一层的输入
+    public void input(long eventId, double parameter, boolean isStudy) throws Exception {//接收上一层的输入
         logger.debug("name:{},myId:{},depth:{},eventId:{},parameter:{}--getInput", name, getId(), depth, eventId, parameter);
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
             logger.debug("depth:{},myID:{}--startCalculation", depth, getId());
             double sigma = calculation(eventId);
-            double out = activeFunction.sigmoid(sigma);
+            double out = activeFunction.sigmoid(sigma);//激活函数输出数值
+            if (isStudy) {
+                outNub = out;
+            }
             logger.debug("depth:{},myID:{},outPut:{}", depth, getId(), out);
-            sendMessage(eventId, out);
+            sendMessage(eventId, out, isStudy);
         }
         // sendMessage();
     }

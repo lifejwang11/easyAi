@@ -13,8 +13,8 @@ public class SensoryNerve extends Nerve {
         super(id, upNub, "SensoryNerve");
     }
 
-    public void postMessage(long eventId, double parameter) throws Exception {//感知神经元输出
-        sendMessage(eventId, parameter);
+    public void postMessage(long eventId, double parameter, boolean isStudy) throws Exception {//感知神经元输出
+        sendMessage(eventId, parameter, isStudy);
     }
 
     @Override

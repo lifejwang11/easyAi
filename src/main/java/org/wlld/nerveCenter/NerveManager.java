@@ -36,18 +36,22 @@ public class NerveManager {
 
     public void init() {//进行神经网络的初始化构建
         initDepthNerve();//初始化深度隐层神经元
-        List<Nerve> nerveList = depthNerves.get(0);
+        List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
+        //最后一层隐层神经元啊
         List<Nerve> lastNeveList = depthNerves.get(depthNerves.size() - 1);
         //初始化输出神经元
         List<Nerve> outNevers = new ArrayList<>();
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerverNub);
+            //输出层神经元连接最后一层隐层神经元
+            outNerve.connectFathor(lastNeveList);
             outNevers.add(outNerve);
         }
         //最后一层隐层神经元 与输出神经元进行连接
         for (Nerve nerve : lastNeveList) {
             nerve.connect(outNevers);
         }
+
         //初始化感知神经元
         for (int i = 1; i < sensoryNerveNub + 1; i++) {
             SensoryNerve sensoryNerve = new SensoryNerve(i, 0);
@@ -55,7 +59,6 @@ public class NerveManager {
             sensoryNerve.connect(nerveList);
             sensoryNerves.add(sensoryNerve);
         }
-
 
     }
 
@@ -79,10 +82,13 @@ public class NerveManager {
 
     private void initHiddenNerve() {//初始化隐层神经元2
         for (int i = 0; i < hiddenDepth - 1; i++) {//遍历深度
-            List<Nerve> hiddenNerveList = depthNerves.get(i);
-            List<Nerve> nextHiddenNerveList = depthNerves.get(i + 1);
+            List<Nerve> hiddenNerveList = depthNerves.get(i);//当前遍历隐层神经元
+            List<Nerve> nextHiddenNerveList = depthNerves.get(i + 1);//当前遍历的下一层神经元
             for (Nerve hiddenNerve : hiddenNerveList) {
                 hiddenNerve.connect(nextHiddenNerveList);
+            }
+            for (Nerve nextHiddenNerve : nextHiddenNerveList) {
+                nextHiddenNerve.connectFathor(hiddenNerveList);
             }
         }
     }
