@@ -19,8 +19,10 @@ public class NerveManager {
     private int sensoryNerveNub;//输入神经元个数
     private int outNerveNub;//输出神经元个数
     private int hiddenDepth;//隐层深度
-    private List<SensoryNerve> sensoryNerves = new ArrayList<>();
-    private List<List<Nerve>> depthNerves = new ArrayList<>();
+    private List<SensoryNerve> sensoryNerves = new ArrayList<>();//感知神经元
+    private List<List<Nerve>> depthNerves = new ArrayList<>();//隐层神经元
+    private List<Nerve> outNevers = new ArrayList<>();//输出神经元
+    private boolean initPower;
 
     public NerveManager(int sensoryNerveNub, int hiddenNerverNub, int outNerveNub
             , int hiddenDepth) {
@@ -30,19 +32,43 @@ public class NerveManager {
         this.hiddenDepth = hiddenDepth;
     }
 
+    public int getHiddenNerverNub() {
+        return hiddenNerverNub;
+    }
+
+    public int getSensoryNerveNub() {
+        return sensoryNerveNub;
+    }
+
+    public int getOutNerveNub() {
+        return outNerveNub;
+    }
+
+    public int getHiddenDepth() {
+        return hiddenDepth;
+    }
+
+    public List<List<Nerve>> getDepthNerves() {
+        return depthNerves;
+    }
+
+    public List<Nerve> getOutNevers() {
+        return outNevers;
+    }
+
     public List<SensoryNerve> getSensoryNerves() {//获取感知神经元集合
         return sensoryNerves;
     }
 
-    public void init() {//进行神经网络的初始化构建
+    public void init(boolean initPower) {//进行神经网络的初始化构建
+        this.initPower = initPower;
         initDepthNerve();//初始化深度隐层神经元
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
         //最后一层隐层神经元啊
         List<Nerve> lastNeveList = depthNerves.get(depthNerves.size() - 1);
         //初始化输出神经元
-        List<Nerve> outNevers = new ArrayList<>();
         for (int i = 1; i < outNerveNub + 1; i++) {
-            OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0);
+            OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0, initPower);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFathor(lastNeveList);
             outNevers.add(outNerve);
@@ -78,7 +104,7 @@ public class NerveManager {
                 } else {
                     downNub = hiddenNerverNub;
                 }
-                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub);
+                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, initPower);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);

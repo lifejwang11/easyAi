@@ -15,14 +15,14 @@ import java.util.*;
 public abstract class Nerve {
     private List<Nerve> son = new ArrayList<>();//轴突下一层的连接神经元
     private List<Nerve> fathor = new ArrayList<>();//树突上一层的连接神经元
-    protected Map<Integer, Double> dendrites = new HashMap<>();//上一层权重
+    protected Map<Integer, Double> dendrites = new HashMap<>();//上一层权重(需要取出)
     protected Map<Integer, Double> wg = new HashMap<>();//上一层权重与梯度的积
     private int id;//同级神经元编号,注意在同层编号中ID应有唯一性
     protected int upNub;//上一层神经元数量
     protected int downNub;//下一层神经元的数量
     protected Map<Long, List<Double>> features = new HashMap<>();
     static final Logger logger = LogManager.getLogger(Nerve.class);
-    protected double threshold;//此神经元的阈值
+    protected double threshold;//此神经元的阈值需要取出
     protected ActiveFunction activeFunction = new ActiveFunction();
     protected String name;//该神经元所属类型
     protected double outNub;//输出数值（ps:只有训练模式的时候才可保存输出过的数值）
@@ -32,12 +32,30 @@ public abstract class Nerve {
     protected double sigmaW;//对上一层权重与上一层梯度的积进行求和
     private int backNub = 0;//当前节点被反向传播的次数
 
-    protected Nerve(int id, int upNub, String name, int downNub) {//该神经元在同层神经元中的编号
+    public Map<Integer, Double> getDendrites() {
+        return dendrites;
+    }
+
+    public void setDendrites(Map<Integer, Double> dendrites) {
+        this.dendrites = dendrites;
+    }
+
+    public double getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(double threshold) {
+        this.threshold = threshold;
+    }
+
+    protected Nerve(int id, int upNub, String name, int downNub, boolean init) {//该神经元在同层神经元中的编号
         this.id = id;
         this.upNub = upNub;
         this.name = name;
         this.downNub = downNub;
-        initPower();//生成随机权重
+        if (init) {
+            initPower();//生成随机权重
+        }
     }
 
     public void sendMessage(long enevtId, double parameter, boolean isStudy, double E) throws Exception {

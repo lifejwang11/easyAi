@@ -15,8 +15,8 @@ import java.util.Map;
 public class OutNerve extends Nerve {
     static final Logger logger = LogManager.getLogger(OutNerve.class);
 
-    public OutNerve(int id, int upNub, int downNub) {
-        super(id, upNub, "OutNerve", downNub);
+    public OutNerve(int id, int upNub, int downNub, boolean init) {
+        super(id, upNub, "OutNerve", downNub, init);
     }
 
     @Override
@@ -33,6 +33,8 @@ public class OutNerve extends Nerve {
                 gradient = outGradient();//当前梯度变化
                 //调整权重 修改阈值 并进行反向传播
                 updatePower(eventId);
+            } else {
+                destoryParameter(eventId);
             }
         }
     }
