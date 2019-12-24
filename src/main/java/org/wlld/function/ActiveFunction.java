@@ -11,4 +11,8 @@ public class ActiveFunction {
     public double sigmoid(double x) {//sigmoid
         return ArithUtil.div(1, ArithUtil.add(1, Math.exp(-x)));
     }
+
+    public double sigmoidG(double out) {
+        return ArithUtil.mul(out, ArithUtil.sub(1, out));
+    }
 }

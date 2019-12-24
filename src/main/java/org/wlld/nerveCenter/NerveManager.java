@@ -42,7 +42,7 @@ public class NerveManager {
         //初始化输出神经元
         List<Nerve> outNevers = new ArrayList<>();
         for (int i = 1; i < outNerveNub + 1; i++) {
-            OutNerve outNerve = new OutNerve(i, hiddenNerverNub);
+            OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFathor(lastNeveList);
             outNevers.add(outNerve);
@@ -67,12 +67,18 @@ public class NerveManager {
             List<Nerve> hiddenNerveList = new ArrayList<>();
             for (int j = 1; j < hiddenNerverNub + 1; j++) {//遍历同级
                 int upNub = 0;
+                int downNub = 0;
                 if (i == 0) {
                     upNub = sensoryNerveNub;
                 } else {
                     upNub = hiddenNerverNub;
                 }
-                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub);
+                if (i == hiddenDepth - 1) {//最后一层隐层神经元z
+                    downNub = outNerveNub;
+                } else {
+                    downNub = hiddenNerverNub;
+                }
+                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);
