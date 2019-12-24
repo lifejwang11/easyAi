@@ -1,0 +1,38 @@
+//MyBrain-JAVA 神经网络api说明文档
+//构建一个神经网络管理器，参数：(感知神经元个数，隐层神经元个数，输出神经元个数，隐层神经元深度)
+//一个神经网络管理管理一个神经网络学习内容，所以当初始化一个神经网络管理器，请将它置于静态对象
+NerveManager nerveManager =
+new NerveManager(int sensoryNerveNub,int hiddenNerverNub,int outNerveNub,int hiddenDepth);
+//开始构建神经网络，参数（各神经元是否进行权重及阈值的初始化），若不进行初始化，则用户需将之前保存的训练数据加载进神经元
+nerveManager.init(boolean initPower);
+//设置学习率(取值范围是0-1开区间)，若不设置默认为0.1
+nerveManager.setStudyPoint(0.2);
+//添加判断回调输出类，参数：创建一个类 这将这类实现OutBack接口和其类方法,检测状态下的输出神经元，会将输出结果回调到这个类
+//若神经网络是学习状态，可不设置。检测状态若不设置会报错
+nerveManager.setOutBack(new Test());
+//获取感知神经元集合
+List<SensoryNerve> sensoryNerves = nerveManager.getSensoryNerves();
+//从集合里拿出一个感知神经元进行输入，参数：事件ID，输入参数，是否是学习状态，期望结果
+sensoryNerves.get(i).postMessage(long eventId, double parameter, boolean isStudy, double E);
+//实现OutBack 接口的类 回调 getBack() 参数：该输出神经元输出值，该神经元ID，该事件ID
+public void getBack(double out, int id, long eventId) {
+        System.out.println("out==" + out + ",id==" + id + ",eventId==" + eventId);
+    }
+神经管理器说明
+private List<SensoryNerve> sensoryNerves = new ArrayList<>();//感知神经元
+private List<List<Nerve>> depthNerves = new ArrayList<>();//隐层神经元
+private List<Nerve> outNevers = new ArrayList<>();//输出神经元
+学习结束通过GET方法 获取三类神经元 集合并通过Nerve类 的
+public Map<Integer, Double> getDendrites() {//各参数权重
+        return dendrites;
+    }
+     public double getThreshold() {//该神经元阈值
+            return threshold;
+        }
+获取这两个参数 并保存数据库，等下次服务启动 将对应数据在通过其SET方法 加载进对应神经元，此为上次学习结果
+参数说明：
+eventId：事件ID,进行一次神经网络判断，为一次事件ID,ID唯一，可通过IdCreator.get().nextId 生成
+其目的就是 回调的时候 通过这个ID 判断 输出的结果是对应哪一个检测及输入事件
+parameter:就是输入参数
+isStudy:是否是学习状态，判断状态传FALSE,模板学习传TRUE,注意：学习状态输出神经元不输出结果
+E:期望结果，检测状态随便写值没有影响，学习状态是，该模板期望的结果，通常为0或者1，即分类值

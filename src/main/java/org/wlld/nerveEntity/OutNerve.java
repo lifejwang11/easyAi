@@ -2,10 +2,8 @@ package org.wlld.nerveEntity;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.wlld.i.OutBack;
 import org.wlld.tools.ArithUtil;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author lidapeng
@@ -14,9 +12,14 @@ import java.util.Map;
  */
 public class OutNerve extends Nerve {
     static final Logger logger = LogManager.getLogger(OutNerve.class);
+    private OutBack outBack;
 
-    public OutNerve(int id, int upNub, int downNub, boolean init) {
-        super(id, upNub, "OutNerve", downNub, init);
+    public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init) {
+        super(id, upNub, "OutNerve", downNub, studyPoint, init);
+    }
+
+    public void setOutBack(OutBack outBack) {
+        this.outBack = outBack;
     }
 
     @Override
@@ -33,8 +36,13 @@ public class OutNerve extends Nerve {
                 gradient = outGradient();//当前梯度变化
                 //调整权重 修改阈值 并进行反向传播
                 updatePower(eventId);
-            } else {
+            } else {//获取最后输出
                 destoryParameter(eventId);
+                if (outBack != null) {
+                    outBack.getBack(out, getId(), eventId);
+                } else {
+                    throw new Exception("not find outBack");
+                }
             }
         }
     }

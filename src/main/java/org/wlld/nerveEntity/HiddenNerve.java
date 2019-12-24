@@ -3,8 +3,6 @@ package org.wlld.nerveEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Map;
-
 /**
  * @author lidapeng
  * 隐层神经元
@@ -14,8 +12,8 @@ public class HiddenNerve extends Nerve {
     private int depth;//所处深度
     static final Logger logger = LogManager.getLogger(HiddenNerve.class);
 
-    public HiddenNerve(int id, int depth, int upNub, int downNub, boolean init) {//隐层神经元
-        super(id, upNub, "HiddenNerve", downNub, init);
+    public HiddenNerve(int id, int depth, int upNub, int downNub, double studyPoint, boolean init) {//隐层神经元
+        super(id, upNub, "HiddenNerve", downNub, studyPoint, init);
         this.depth = depth;
     }
 

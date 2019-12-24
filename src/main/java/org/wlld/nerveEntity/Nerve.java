@@ -28,7 +28,7 @@ public abstract class Nerve {
     protected double outNub;//输出数值（ps:只有训练模式的时候才可保存输出过的数值）
     protected double E;//模板期望值
     protected double gradient;//当前梯度
-    protected final double studyPoint = 0.1;
+    protected double studyPoint;
     protected double sigmaW;//对上一层权重与上一层梯度的积进行求和
     private int backNub = 0;//当前节点被反向传播的次数
 
@@ -48,11 +48,13 @@ public abstract class Nerve {
         this.threshold = threshold;
     }
 
-    protected Nerve(int id, int upNub, String name, int downNub, boolean init) {//该神经元在同层神经元中的编号
+    protected Nerve(int id, int upNub, String name, int downNub,
+                    double studyPoint, boolean init) {//该神经元在同层神经元中的编号
         this.id = id;
         this.upNub = upNub;
         this.name = name;
         this.downNub = downNub;
+        this.studyPoint = studyPoint;
         if (init) {
             initPower();//生成随机权重
         }

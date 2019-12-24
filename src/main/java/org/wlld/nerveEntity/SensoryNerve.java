@@ -10,7 +10,7 @@ import java.util.List;
 public class SensoryNerve extends Nerve {
 
     public SensoryNerve(int id, int upNub) {
-        super(id, upNub, "SensoryNerve", 0, false);
+        super(id, upNub, "SensoryNerve", 0, 0.1, false);
     }
 
     public void postMessage(long eventId, double parameter, boolean isStudy, double E) throws Exception {//感知神经元输出

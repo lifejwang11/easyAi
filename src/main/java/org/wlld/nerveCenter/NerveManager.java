@@ -1,5 +1,6 @@
 package org.wlld.nerveCenter;
 
+import org.wlld.i.OutBack;
 import org.wlld.nerveEntity.HiddenNerve;
 import org.wlld.nerveEntity.Nerve;
 import org.wlld.nerveEntity.OutNerve;
@@ -23,6 +24,20 @@ public class NerveManager {
     private List<List<Nerve>> depthNerves = new ArrayList<>();//隐层神经元
     private List<Nerve> outNevers = new ArrayList<>();//输出神经元
     private boolean initPower;
+    private OutBack outBack;
+    private double studyPoint = 0.1;//学习率
+
+    public double getStudyPoint() {
+        return studyPoint;
+    }
+
+    public void setStudyPoint(double studyPoint) throws Exception {
+        if (studyPoint < 1 && studyPoint > 0) {
+            this.studyPoint = studyPoint;
+        } else {
+            throw new Exception("studyPoint Values range from 0 to 1");
+        }
+    }
 
     public NerveManager(int sensoryNerveNub, int hiddenNerverNub, int outNerveNub
             , int hiddenDepth) {
@@ -30,6 +45,18 @@ public class NerveManager {
         this.sensoryNerveNub = sensoryNerveNub;
         this.outNerveNub = outNerveNub;
         this.hiddenDepth = hiddenDepth;
+    }
+
+    public void setOutBack(OutBack outBack) {//设置回调类
+        this.outBack = outBack;
+        for (Nerve nerve : outNevers) {
+            OutNerve outNerve = (OutNerve) nerve;
+            outNerve.setOutBack(outBack);
+        }
+    }
+
+    public OutBack getOutBack() {//获取回调类的引用
+        return outBack;
     }
 
     public int getHiddenNerverNub() {
@@ -68,7 +95,7 @@ public class NerveManager {
         List<Nerve> lastNeveList = depthNerves.get(depthNerves.size() - 1);
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
-            OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0, initPower);
+            OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0, studyPoint, initPower);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFathor(lastNeveList);
             outNevers.add(outNerve);
@@ -104,7 +131,7 @@ public class NerveManager {
                 } else {
                     downNub = hiddenNerverNub;
                 }
-                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, initPower);
+                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);
