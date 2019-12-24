@@ -16,7 +16,7 @@ public class App {
     public static void createNerveTest() throws Exception {
         NerveManager nerveManager =
                 new NerveManager(2, 3, 1, 2);
-        nerveManager.init();
+        nerveManager.init(true);
         List<SensoryNerve> sensoryNerves = nerveManager.getSensoryNerves();
         for (int i = 0; i < sensoryNerves.size(); i++) {
             sensoryNerves.get(i).postMessage(1, 2 + i, true, 1);
