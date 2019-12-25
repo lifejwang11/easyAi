@@ -12,8 +12,8 @@ nerveManager.setStudyPoint(0.2);
 nerveManager.setOutBack(new Test());
 //获取感知神经元集合
 List<SensoryNerve> sensoryNerves = nerveManager.getSensoryNerves();
-//从集合里拿出一个感知神经元进行输入，参数：事件ID，输入参数，是否是学习状态，期望结果
-sensoryNerves.get(i).postMessage(long eventId, double parameter, boolean isStudy, double E);
+//从集合里拿出一个感知神经元进行输入，参数：事件ID，输入参数，是否是学习状态，对应输出神经元ID与期望结果的映射
+sensoryNerves.get(i).postMessage(long eventId, double parameter, boolean isStudy, Map<Integer,Double> E);
 //实现OutBack 接口的类 回调 getBack() 参数：该输出神经元输出值，该神经元ID，该事件ID
 public void getBack(double out, int id, long eventId) {
         System.out.println("out==" + out + ",id==" + id + ",eventId==" + eventId);

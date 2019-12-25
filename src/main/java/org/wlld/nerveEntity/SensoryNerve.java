@@ -1,6 +1,7 @@
 package org.wlld.nerveEntity;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lidapeng
@@ -13,7 +14,7 @@ public class SensoryNerve extends Nerve {
         super(id, upNub, "SensoryNerve", 0, 0.1, false);
     }
 
-    public void postMessage(long eventId, double parameter, boolean isStudy, double E) throws Exception {//感知神经元输出
+    public void postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E) throws Exception {//感知神经元输出
         sendMessage(eventId, parameter, isStudy, E);
     }
 

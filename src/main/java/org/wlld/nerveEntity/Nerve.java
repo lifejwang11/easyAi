@@ -58,7 +58,7 @@ public abstract class Nerve {
         }
     }
 
-    public void sendMessage(long enevtId, double parameter, boolean isStudy, double E) throws Exception {
+    public void sendMessage(long enevtId, double parameter, boolean isStudy, Map<Integer, Double> E) throws Exception {
         if (son.size() > 0) {
             for (Nerve nerve : son) {
                 nerve.input(enevtId, parameter, isStudy, E);
@@ -76,7 +76,8 @@ public abstract class Nerve {
         }
     }
 
-    protected void input(long eventId, double parameter, boolean isStudy, double E) throws Exception {//输入
+    protected void input(long eventId, double parameter, boolean isStudy
+            , Map<Integer, Double> E) throws Exception {//输入
 
     }
 

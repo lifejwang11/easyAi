@@ -3,7 +3,9 @@ package org.wlld;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.SensoryNerve;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 测试入口类!
@@ -23,11 +25,15 @@ public class App {
         nerveManager.setStudyPoint(0.2);//设置学习率(取值范围是0-1开区间)，若不设置默认为0.1
         nerveManager.setOutBack(new Test());//添加判断回调输出类
         List<SensoryNerve> sensoryNerves = nerveManager.getSensoryNerves();
-        for (int i = 0; i < sensoryNerves.size(); i++) {
-            sensoryNerves.get(i).postMessage(1, 2 + i, true, 1);
+        Map<Integer, Double> E = new HashMap<>();
+        for (int i = 0; i < nerveManager.getOutNerveNub(); i++) {
+            E.put(i + 1, 1.0);
         }
         for (int i = 0; i < sensoryNerves.size(); i++) {
-            sensoryNerves.get(i).postMessage(1, 2 + i, false, 1);
+            sensoryNerves.get(i).postMessage(1, 2 + i, true, E);
+        }
+        for (int i = 0; i < sensoryNerves.size(); i++) {
+            sensoryNerves.get(i).postMessage(1, 2 + i, false, E);
         }
     }
 }
