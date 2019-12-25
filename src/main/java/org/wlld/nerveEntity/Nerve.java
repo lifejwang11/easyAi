@@ -1,7 +1,5 @@
 package org.wlld.nerveEntity;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.wlld.function.ActiveFunction;
 import org.wlld.tools.ArithUtil;
 
@@ -21,7 +19,7 @@ public abstract class Nerve {
     protected int upNub;//上一层神经元数量
     protected int downNub;//下一层神经元的数量
     protected Map<Long, List<Double>> features = new HashMap<>();
-    static final Logger logger = LogManager.getLogger(Nerve.class);
+    //static final Logger logger = LogManager.getLogger(Nerve.class);
     protected double threshold;//此神经元的阈值需要取出
     protected ActiveFunction activeFunction = new ActiveFunction();
     protected String name;//该神经元所属类型
@@ -142,9 +140,9 @@ public abstract class Nerve {
             double value = featuresList.get(i);
             double w = dendrites.get(i + 1);
             sigma = ArithUtil.add(ArithUtil.mul(w, value), sigma);
-            logger.debug("name:{},eventId:{},id:{},myId:{},w:{},value:{}", name, eventId, i + 1, id, w, value);
+            //logger.debug("name:{},eventId:{},id:{},myId:{},w:{},value:{}", name, eventId, i + 1, id, w, value);
         }
-        logger.debug("当前神经元线性变化已经完成,name:{},id:{}", name, getId());
+        //logger.debug("当前神经元线性变化已经完成,name:{},id:{}", name, getId());
         return ArithUtil.sub(sigma, threshold);
     }
 

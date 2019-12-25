@@ -1,7 +1,5 @@
 package org.wlld.nerveEntity;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.wlld.i.OutBack;
 import org.wlld.tools.ArithUtil;
 
@@ -11,7 +9,7 @@ import org.wlld.tools.ArithUtil;
  * @date 11:25 上午 2019/12/21
  */
 public class OutNerve extends Nerve {
-    static final Logger logger = LogManager.getLogger(OutNerve.class);
+    // static final Logger logger = LogManager.getLogger(OutNerve.class);
     private OutBack outBack;
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init) {
@@ -24,12 +22,12 @@ public class OutNerve extends Nerve {
 
     @Override
     public void input(long eventId, double parameter, boolean isStudy, double E) throws Exception {
-        logger.debug("Nerve:{},eventId:{},parameter:{}--getInput", name, eventId, parameter);
+        // logger.debug("Nerve:{},eventId:{},parameter:{}--getInput", name, eventId, parameter);
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
             double sigma = calculation(eventId);
             double out = activeFunction.sigmoid(sigma);
-            logger.debug("myId:{},outPut:{}------END", getId(), out);
+            // logger.debug("myId:{},outPut:{}------END", getId(), out);
             if (isStudy) {//输出结果并进行BP调整权重及阈值
                 outNub = out;
                 this.E = E;
