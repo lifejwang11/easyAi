@@ -55,8 +55,8 @@ public class OutNerve extends Nerve {
         //上层神经元输入值 * 当前神经元梯度*学习率 =该上层输入的神经元权重变化
         //当前梯度神经元梯度变化 *学习旅 * -1 = 当前神经元阈值变化
         //ArithUtil.sub(E, outNub) 求这个的累计平均值
-        allE = ArithUtil.add(Math.abs(ArithUtil.sub(E, outNub)), allE);
-        double avg = ArithUtil.div(allE, trainNub);
-        return ArithUtil.mul(activeFunction.sigmoidG(outNub), avg);
+        //allE = ArithUtil.add(Math.abs(ArithUtil.sub(E, outNub)), allE);
+        // double avg = ArithUtil.div(allE, trainNub);
+        return ArithUtil.mul(activeFunction.sigmoidG(outNub), ArithUtil.sub(E, outNub));
     }
 }
