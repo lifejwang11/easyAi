@@ -27,6 +27,7 @@ public class HiddenNerve extends Nerve {
             if (isStudy) {
                 outNub = out;
             } else {
+                //System.out.println("sigma:" + sigma);
                 destoryParameter(eventId);
             }
             //  logger.debug("depth:{},myID:{},outPut:{}", depth, getId(), out);

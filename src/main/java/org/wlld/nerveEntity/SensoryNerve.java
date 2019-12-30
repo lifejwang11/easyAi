@@ -15,6 +15,7 @@ public class SensoryNerve extends Nerve {
     }
 
     public void postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E) throws Exception {//感知神经元输出
+
         sendMessage(eventId, parameter, isStudy, E);
     }
 

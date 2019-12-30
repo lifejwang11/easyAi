@@ -93,7 +93,7 @@ public abstract class Nerve {
 
     protected void updatePower(long eventId) throws Exception {//修改阈值
         double h = ArithUtil.mul(gradient, studyPoint);//梯度下降
-        threshold = ArithUtil.sub(threshold, h);//更新阈值
+        threshold = ArithUtil.add(threshold, -h);//更新阈值
         updateW(h, eventId);
         sigmaW = 0;//求和结果归零
         backSendMessage(eventId);
@@ -106,8 +106,8 @@ public abstract class Nerve {
             double w = entry.getValue();//接收到编号为KEY的上层隐层神经元的权重
             double bn = list.get(key - 1);//接收到编号为KEY的上层隐层神经元的输入
             double wp = ArithUtil.mul(bn, h);//编号为KEY的上层隐层神经元权重的变化值
-            w = ArithUtil.add(w, wp);//修正后的编号为KEY的上层隐层神经元权重
             double dm = ArithUtil.mul(w, gradient);//返回给相对应的神经元
+            w = ArithUtil.add(w, wp);//修正后的编号为KEY的上层隐层神经元权重
             wg.put(key, dm);//保存上一层权重与梯度的积
             dendrites.put(key, w);//保存修正结果
         }
@@ -140,11 +140,13 @@ public abstract class Nerve {
         for (int i = 0; i < featuresList.size(); i++) {
             double value = featuresList.get(i);
             double w = dendrites.get(i + 1);
+            //System.out.println("w==" + w + ",value==" + value);
             sigma = ArithUtil.add(ArithUtil.mul(w, value), sigma);
             //logger.debug("name:{},eventId:{},id:{},myId:{},w:{},value:{}", name, eventId, i + 1, id, w, value);
         }
+        //System.out.println("结束===========" + sigma);
         //logger.debug("当前神经元线性变化已经完成,name:{},id:{}", name, getId());
-        return ArithUtil.sub(sigma, threshold);
+        return ArithUtil.add(sigma, threshold);
     }
 
     private void initPower() {//初始化权重及阈值
