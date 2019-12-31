@@ -106,8 +106,8 @@ public abstract class Nerve {
             double w = entry.getValue();//接收到编号为KEY的上层隐层神经元的权重
             double bn = list.get(key - 1);//接收到编号为KEY的上层隐层神经元的输入
             double wp = ArithUtil.mul(bn, h);//编号为KEY的上层隐层神经元权重的变化值
-            double dm = ArithUtil.mul(w, gradient);//返回给相对应的神经元
             w = ArithUtil.add(w, wp);//修正后的编号为KEY的上层隐层神经元权重
+            double dm = ArithUtil.mul(w, gradient);//返回给相对应的神经元
             wg.put(key, dm);//保存上一层权重与梯度的积
             dendrites.put(key, w);//保存修正结果
         }
