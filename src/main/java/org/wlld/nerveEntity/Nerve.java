@@ -146,14 +146,14 @@ public abstract class Nerve {
         }
         //System.out.println("结束===========" + sigma);
         //logger.debug("当前神经元线性变化已经完成,name:{},id:{}", name, getId());
-        return ArithUtil.add(sigma, threshold);
+        return ArithUtil.sub(sigma, threshold);
     }
 
     private void initPower() {//初始化权重及阈值
         if (upNub > 0) {
             Random random = new Random();
             for (int i = 1; i < upNub + 1; i++) {
-                dendrites.put(i, random.nextDouble());
+                dendrites.put(i, random.nextDouble());//random.nextDouble()
             }
             //生成随机阈值
             threshold = random.nextDouble();

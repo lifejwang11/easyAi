@@ -6,7 +6,7 @@
 
     <groupId>org.wlld</groupId>
     <artifactId>myBrain</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.2</version>
 
     <name>myBrain</name>
     <!-- FIXME change it to the project's website -->

@@ -21,15 +21,14 @@ public class App {
         NerveManager nerveManager =
                 new NerveManager(2, 2, 1, 2);
         //开始构建神经网络，参数为是否初始化权重及阈值,若
-        nerveManager.setStudyPoint(0.1);//设置学习率(取值范围是0-1开区间)，若不设置默认为0.1
+        nerveManager.setStudyPoint(0.2);//设置学习率(取值范围是0-1开区间)，若不设置默认为0.1
         nerveManager.init(true);
         nerveManager.setOutBack(new Test());//添加判断回调输出类
         List<SensoryNerve> sensoryNerves = nerveManager.getSensoryNerves();
         Map<Integer, Double> E1 = new HashMap<>();
-        E1.put(1, 0.0);
+        E1.put(1, 1.0);
         Map<Integer, Double> E2 = new HashMap<>();
-        E2.put(1, 1.0);
-        Random random = new Random();
+        E2.put(1, 0.0);
         List<List<Double>> testList = new ArrayList<>();
         for (int i = 0; i < 1000; i++) {
             double nub = ArithUtil.mul(ArithUtil.div(1, 1000), i);
@@ -51,8 +50,8 @@ public class App {
         Nerve outNerver = nerveManager.getOutNevers().get(0);
         double outTh = outNerver.getThreshold();//输出阈值
         System.out.println("outTh==" + outTh);
-        for (int i = 2; i < 22; i++) {
-            double nub = ArithUtil.mul(ArithUtil.div(1, 1000), i);
+        for (int i = 1; i < 21; i++) {
+            double nub = ArithUtil.mul(ArithUtil.div(1, 100), i);
             sensoryNerves.get(0).postMessage(1, ArithUtil.add(0.5, nub), false, E1);
             sensoryNerves.get(1).postMessage(1, ArithUtil.add(0.5, nub), false, E1);
             sensoryNerves.get(0).postMessage(1, ArithUtil.add(-0.5, -nub), false, E2);
