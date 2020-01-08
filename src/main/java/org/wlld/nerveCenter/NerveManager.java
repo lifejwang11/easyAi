@@ -1,13 +1,11 @@
 package org.wlld.nerveCenter;
 
 import org.wlld.i.OutBack;
-import org.wlld.nerveEntity.HiddenNerve;
-import org.wlld.nerveEntity.Nerve;
-import org.wlld.nerveEntity.OutNerve;
-import org.wlld.nerveEntity.SensoryNerve;
+import org.wlld.nerveEntity.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lidapeng
@@ -36,6 +34,41 @@ public class NerveManager {
             this.studyPoint = studyPoint;
         } else {
             throw new Exception("studyPoint Values range from 0 to 1");
+        }
+    }
+
+    public void inToStudy(StudyInto studyInto) {//输入学习结果
+        List<List<NerveStudy>> depthStudyNerves = studyInto.getDepthNerves();//隐层神经元
+        List<NerveStudy> outStudyNevers = studyInto.getOutNevers();//输出神经元
+        //隐层神经元参数注入
+        for (int i = 0; i < depthNerves.size(); i++) {
+            List<NerveStudy> depth = depthStudyNerves.get(i);//对应的学习结果
+            List<Nerve> depthNerve = depthNerves.get(i);//深度隐层神经元
+            for (int j = 0; j < depthNerve.size(); j++) {//遍历当前深度神经元
+                Nerve nerve = depthNerve.get(j);
+                NerveStudy nerveStudy = depth.get(j);
+                //学习结果
+                Map<Integer, Double> studyDendrites = nerveStudy.getDendrites();
+                //神经元参数注入
+                Map<Integer, Double> dendrites = nerve.getDendrites();
+                nerve.setThreshold(nerveStudy.getThreshold());//注入隐层阈值
+                for (Map.Entry<Integer, Double> entry : dendrites.entrySet()) {
+                    int key = entry.getKey();
+                    dendrites.put(key, studyDendrites.get(key));//注入隐层权重
+                }
+            }
+        }
+        //输出神经元参数注入
+        for (int i = 0; i < outNevers.size(); i++) {
+            Nerve outNerve = outNevers.get(i);
+            NerveStudy nerveStudy = outStudyNevers.get(i);
+            outNerve.setThreshold(nerveStudy.getThreshold());
+            Map<Integer, Double> dendrites = outNerve.getDendrites();
+            Map<Integer, Double> studyDendrites = nerveStudy.getDendrites();
+            for (Map.Entry<Integer, Double> outEntry : dendrites.entrySet()) {
+                int key = outEntry.getKey();
+                dendrites.put(key, studyDendrites.get(key));
+            }
         }
     }
 
