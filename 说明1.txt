@@ -41,10 +41,12 @@
  给训练图像进行标注，健是分类的ID,对应的就是输出结果的ID值，值要么写0要么写1
  1就是 是这种分类，0就是不是这种分类
  例如上面的标注了 该标注是 第一种分类 true,第二种分类FALSE
- 将图像转化成矩阵
+ 将本地图像转化成矩阵
  注意：目前版本该框架，只识别当前图像的灰度图像，对RGB图像进行了降维
  对颜色失去一定的敏感度，所以主要针对物体形状，边缘，若对颜色敏感，请等待后续版本
   Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
+ 还有一个API 是 根据输入流获取图像矩阵
+picture.getImageMatrixByIo（inputStream）根据输入流 获取图像矩阵
 拿到这个矩阵之后，进行下一步计算
 6, templeConfig.initNerveManager(true);//对模板初始化
 若第一次学习参数就是true,学习是很慢的,非常考验性能，目前该包没有引入JCUDA(java 显卡GPU运算包)
