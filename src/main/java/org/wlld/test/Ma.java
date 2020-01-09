@@ -1,20 +1,21 @@
 package org.wlld.test;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.wlld.i.OutBack;
 
 /**
  * @author lidapeng
  * @description
  * @date 2:12 下午 2020/1/7
  */
-public class Ma {
-    private int x;
-    private int y;
-    private List<Ma> mas = new ArrayList<>();
+public class Ma implements OutBack {
+    private int nub;
 
-    Ma(int x, int y) {
-        this.x = x;
-        this.y = y;
+    public void setNub(int nub) {
+        this.nub = nub;
+    }
+
+    @Override
+    public void getBack(double out, int id, long eventId) {
+        System.out.println("id==" + id + ",out==" + out + ",nub==" + nub);
     }
 }

@@ -7,11 +7,6 @@ package org.wlld.test;
  */
 public class Test {
     public static void main(String[] args) {
-        long a = System.currentTimeMillis();
-        for (int i = 0; i < 12100000; i++) {
-            Ma ma = new Ma(1, 1);
-        }
-        long b = System.currentTimeMillis();
-        System.out.println(b - a);
+
     }
 }
