@@ -1,54 +1,35 @@
-package org.wlld;
-
-import org.wlld.MatrixTools.Matrix;
-import org.wlld.imageRecognition.Operation;
-import org.wlld.imageRecognition.Picture;
-import org.wlld.imageRecognition.TempleConfig;
-import org.wlld.test.Ma;
-
-import java.util.HashMap;
-import java.util.Map;
-
-/**
- * 测试入口类!
- */
-public class App {
-    public static void main(String[] args) throws Exception {
-        //createNerveTest();
-        testPic();
-    }
-
-    public static void testPic() throws Exception {
-        //初始化图像转矩阵类
+本包对图像进行训练及识别的轻量级面向小白的框架,功能在逐渐扩展中
+我们从HELLO WORLD 开始
+//初始化图像转矩阵类
         Picture picture = new Picture();
         //初始化配置模板类
         TempleConfig templeConfig = new TempleConfig();
-        //创建一个回调类
+        //创建一个回调类 详细说明 看 文档说明1
         Ma ma = new Ma();//创建一个回调类
         //注册输出结果回调类 必写
+        //说明，当进行图像判断的时候
         templeConfig.setOutBack(ma);
-        //全连接层深度,默认为2 选填
+        //全连接层深度,默认为2 选填 详细说明看文档 说明1
         templeConfig.setDeep(2);
-        //要学习几种分类 默认为1 选填
+        //要学习几种分类 默认为1 选填 详细说明看文档 说明1
         templeConfig.setClassificationNub(1);
-        //设置图像行列比例的行，默认为5 选填
+        //设置图像行列比例的行，默认为5 选填 详细说明看文档 说明1
         templeConfig.setRow(5);
         //设置图像行列比例的列，默认为3 选填
         templeConfig.setColumn(3);
         //对模版进行初始化 Ps:初始化一定要在所有参数设置完成后设置，否则设置无效。
-        // 使用默认值（模型参数注入除外）若无需注入参数 选择TRU，若注入模型参数选择FALSE
-        //相似说明见 文档1
+        // 使用默认值（模型参数注入除外）
         templeConfig.initNerveManager(true);//对模板初始化
         //初始化计算类
         Operation operation = new Operation(templeConfig);
-        //标注主键为 第几种分类，值为标注 1 是TRUE 0是FALSE
+        //标注主键为 第几种分类，值为标注 1 是TRUE 0是FALSE 详细说明看文档 说明1
         Map<Integer, Double> rightTagging = new HashMap<>();//分类标注
         Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
         rightTagging.put(1, 1.0);
         wrongTagging.put(1, 0.0);
         for (int i = 1; i < 999; i++) {
             System.out.println("开始学习1==" + i);
-            //读取本地URL地址图片,并转化成矩阵
+            //读取本地URL地址图片,并转化成矩阵 详细说明见文档1
             Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
             Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");
             //将图像矩阵和标注加入进行学习，
@@ -58,11 +39,9 @@ public class App {
 
         Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c1000.png");
         Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b1000.png");
+        //给输出结果加一个说明注释，就是再回调类里面注入
         ma.setNub(1);
         //进行图像检测
         operation.look(right, 2);
         ma.setNub(2);
         operation.look(wrong, 3);
-    }
-
-}
