@@ -8,7 +8,7 @@ import java.util.List;
  * @description 学习结果
  * @date 3:33 下午 2020/1/8
  */
-public class StudyInto {
+public class ModelParameter {
     private List<List<NerveStudy>> depthNerves = new ArrayList<>();//隐层神经元
     private List<NerveStudy> outNevers = new ArrayList<>();//输出神经元
 

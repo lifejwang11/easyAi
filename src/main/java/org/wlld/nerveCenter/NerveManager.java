@@ -37,9 +37,40 @@ public class NerveManager {
         }
     }
 
-    public void inToStudy(StudyInto studyInto) {//输入学习结果
-        List<List<NerveStudy>> depthStudyNerves = studyInto.getDepthNerves();//隐层神经元
-        List<NerveStudy> outStudyNevers = studyInto.getOutNevers();//输出神经元
+    public ModelParameter getModelParameter() {//获取当前模型参数
+        ModelParameter modelParameter = new ModelParameter();
+        List<List<NerveStudy>> studyDepthNerves = new ArrayList<>();//隐层神经元模型
+        List<NerveStudy> outStudyNevers = new ArrayList<>();//输出神经元
+        for (int i = 0; i < depthNerves.size(); i++) {
+            //创建一层深度的隐层神经元模型
+            List<Nerve> depthNerve = depthNerves.get(i);//隐层神经元
+            List<NerveStudy> deepNerve = new ArrayList<>();
+            for (int j = 0; j < depthNerve.size(); j++) {
+                //遍历某一层深度的所有隐层神经元
+                NerveStudy nerveStudy = new NerveStudy();
+                Nerve hiddenNerve = depthNerve.get(j);
+                nerveStudy.setThreshold(hiddenNerve.getThreshold());
+                nerveStudy.setDendrites(hiddenNerve.getDendrites());
+                deepNerve.add(nerveStudy);
+            }
+            studyDepthNerves.add(deepNerve);
+        }
+        for (int i = 0; i < outNevers.size(); i++) {
+            NerveStudy nerveStudy = new NerveStudy();
+            Nerve outNerve = outNevers.get(i);
+            nerveStudy.setThreshold(outNerve.getThreshold());
+            nerveStudy.setDendrites(outNerve.getDendrites());
+            outStudyNevers.add(nerveStudy);
+        }
+        modelParameter.setDepthNerves(studyDepthNerves);
+        modelParameter.setOutNevers(outStudyNevers);
+        return modelParameter;
+    }
+
+    //注入模型参数
+    public void insertModelParameter(ModelParameter modelParameter) {
+        List<List<NerveStudy>> depthStudyNerves = modelParameter.getDepthNerves();//隐层神经元
+        List<NerveStudy> outStudyNevers = modelParameter.getOutNevers();//输出神经元
         //隐层神经元参数注入
         for (int i = 0; i < depthNerves.size(); i++) {
             List<NerveStudy> depth = depthStudyNerves.get(i);//对应的学习结果

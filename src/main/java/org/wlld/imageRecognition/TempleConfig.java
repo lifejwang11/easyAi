@@ -2,13 +2,14 @@ package org.wlld.imageRecognition;
 
 import org.wlld.i.OutBack;
 import org.wlld.nerveCenter.NerveManager;
+import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
 
 import java.util.List;
 
 
 public class TempleConfig {
-    private NerveManager nerveManager;
+    private NerveManager nerveManager;//神经网络管理器
     public double cutThreshold = 10;//切割阈值默认值
     public int row = 5;//行的最小比例
     public int column = 3;//列的最小比例
@@ -26,6 +27,10 @@ public class TempleConfig {
         }
     }
 
+    public ModelParameter getModel() {//获取模型参数
+        return nerveManager.getModelParameter();
+    }
+
     public List<SensoryNerve> getSensoryNerves() {//获取感知神经元
         return nerveManager.getSensoryNerves();
     }
@@ -36,6 +41,11 @@ public class TempleConfig {
 
     public double getCutThreshold() {
         return cutThreshold;
+    }
+
+    //注入模型参数
+    public void insertModel(ModelParameter modelParameter) {
+        nerveManager.insertModelParameter(modelParameter);
     }
 
     public void setCutThreshold(double cutThreshold) {
