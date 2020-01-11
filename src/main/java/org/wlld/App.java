@@ -1,6 +1,7 @@
 package org.wlld;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.imageRecognition.Operation;
 import org.wlld.imageRecognition.Picture;
@@ -17,7 +18,8 @@ import java.util.Map;
 public class App {
     public static void main(String[] args) throws Exception {
         //createNerveTest();
-        testPic();
+        //testPic();
+        test();
     }
 
     public static void testPic() throws Exception {
@@ -41,13 +43,19 @@ public class App {
             operation.study(right, rightTagging);
             operation.study(wrong, wrongTagging);
         }
+        Matrix right1 = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/test/a101.png");
+        Matrix wrong1 = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b1000.png");
+        operation.look(right1, 3);
+        operation.look(wrong1, 4);
         //开始处理模型参数
         ModelParameter modelParameter = templeConfig.getModel();
         String model = JSON.toJSONString(modelParameter);
         System.out.println("一次提取：" + model);
+
         TempleConfig templeConfig1 = getTemple(false);
-        templeConfig1.insertModel(modelParameter);
-        ModelParameter modelParameter2 = templeConfig.getModel();
+        ModelParameter modelParameter1 = JSONObject.parseObject(model, ModelParameter.class);
+        templeConfig1.insertModel(modelParameter1);
+        ModelParameter modelParameter2 = templeConfig1.getModel();
         String model2 = JSON.toJSONString(modelParameter2);
         System.out.println("二次提取:" + model2);
         Operation operation1 = new Operation(templeConfig1);
@@ -57,6 +65,11 @@ public class App {
         //进行图像检测
         operation1.look(right, 2);
         operation1.look(wrong, 3);
+    }
+
+    public static void test() throws Exception {
+        TempleConfig templeConfig = new TempleConfig();
+        templeConfig.initConvolutionalVision(true, 3024, 4032);
     }
 
     public static TempleConfig getTemple(boolean isFirst) throws Exception {
@@ -76,7 +89,7 @@ public class App {
         //对模版进行初始化 Ps:初始化一定要在所有参数设置完成后设置，否则设置无效。
         // 使用默认值（模型参数注入除外）若无需注入参数 选择TRU，若注入模型参数选择FALSE
         //相似说明见 文档1
-        templeConfig.initNerveManager(isFirst);//对模板初始化
+        templeConfig.initModelVision(isFirst);//对模板初始化 使用模板视觉
         return templeConfig;
     }
 }

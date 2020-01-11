@@ -1,5 +1,6 @@
 package org.wlld.nerveCenter;
 
+import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
 import org.wlld.nerveEntity.*;
 
@@ -24,12 +25,14 @@ public class NerveManager {
     private boolean initPower;
     private OutBack outBack;
     private double studyPoint = 0.1;//学习率
+    private ActiveFunction activeFunction;
 
     public double getStudyPoint() {
         return studyPoint;
     }
 
     public void setStudyPoint(double studyPoint) throws Exception {
+        //设置学习率
         if (studyPoint < 1 && studyPoint > 0) {
             this.studyPoint = studyPoint;
         } else {
@@ -103,12 +106,18 @@ public class NerveManager {
         }
     }
 
+    //初始化神经元参数
     public NerveManager(int sensoryNerveNub, int hiddenNerverNub, int outNerveNub
-            , int hiddenDepth) {
-        this.hiddenNerverNub = hiddenNerverNub;
-        this.sensoryNerveNub = sensoryNerveNub;
-        this.outNerveNub = outNerveNub;
-        this.hiddenDepth = hiddenDepth;
+            , int hiddenDepth, ActiveFunction activeFunction) throws Exception {
+        if (sensoryNerveNub > 0 && hiddenNerverNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
+            this.hiddenNerverNub = hiddenNerverNub;
+            this.sensoryNerveNub = sensoryNerveNub;
+            this.outNerveNub = outNerveNub;
+            this.hiddenDepth = hiddenDepth;
+            this.activeFunction = activeFunction;
+        } else {
+            throw new Exception("param is null");
+        }
     }
 
     public void setOutBack(OutBack outBack) {//设置回调类
@@ -151,15 +160,15 @@ public class NerveManager {
         return sensoryNerves;
     }
 
-    public void init(boolean initPower) {//进行神经网络的初始化构建
+    public void init(boolean initPower, boolean isMatrix) {//进行神经网络的初始化构建
         this.initPower = initPower;
-        initDepthNerve();//初始化深度隐层神经元
+        initDepthNerve(isMatrix);//初始化深度隐层神经元
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
         //最后一层隐层神经元啊
         List<Nerve> lastNeveList = depthNerves.get(depthNerves.size() - 1);
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
-            OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0, studyPoint, initPower);
+            OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0, studyPoint, initPower, activeFunction, isMatrix);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFathor(lastNeveList);
             outNevers.add(outNerve);
@@ -179,7 +188,7 @@ public class NerveManager {
 
     }
 
-    private void initDepthNerve() {//初始化隐层神经元1
+    private void initDepthNerve(boolean isMatrix) {//初始化隐层神经元1
         for (int i = 0; i < hiddenDepth; i++) {//遍历深度
             List<Nerve> hiddenNerveList = new ArrayList<>();
             for (int j = 1; j < hiddenNerverNub + 1; j++) {//遍历同级
@@ -195,7 +204,8 @@ public class NerveManager {
                 } else {
                     downNub = hiddenNerverNub;
                 }
-                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower);
+                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction
+                        , isMatrix);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);
