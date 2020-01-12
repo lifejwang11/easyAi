@@ -2,6 +2,7 @@ package org.wlld.imageRecognition;
 
 
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.config.Kernel;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
 
@@ -35,14 +36,6 @@ public class Operation {//进行计算
         intoNerve(1, list, templeConfig.getSensoryNerves(), true, tagging);
     }
 
-    //卷积网络学习
-    public void learning(Matrix matrix, double tag) throws Exception {//前者是图片，后者是标注
-        //intoNerve(1, list, templeConfig.getSensoryNerves(), true, tagging);
-        intoNerveMatrix(1, matrix,
-                templeConfig.getConvolutionalNerveManager().getSensoryNerves()
-                , true, tag);
-    }
-
     //图像视觉
     public void look(Matrix matrix, long eventId) throws Exception {
         List<Double> list = convolution(matrix);
@@ -71,14 +64,6 @@ public class Operation {//进行计算
             , boolean isStudy, Map<Integer, Double> map) throws Exception {
         for (int i = 0; i < sensoryNerveList.size(); i++) {
             sensoryNerveList.get(i).postMessage(eventId, featurList.get(i), isStudy, map);
-        }
-    }
-
-    private void intoNerveMatrix(long eventId, Matrix matrix,
-                                 List<SensoryNerve> sensoryNerveList
-            , boolean isStudy, double E) throws Exception {
-        for (int i = 0; i < sensoryNerveList.size(); i++) {
-            sensoryNerveList.get(i).postMatrixMessage(eventId, matrix, isStudy, E);
         }
     }
 }

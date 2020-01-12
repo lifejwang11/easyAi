@@ -1,6 +1,5 @@
 package org.wlld.imageRecognition;
 
-import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
 import org.wlld.i.OutBack;
 import org.wlld.nerveCenter.NerveManager;
@@ -12,7 +11,6 @@ import java.util.List;
 
 public class TempleConfig {
     private NerveManager nerveManager;//神经网络管理器
-    private NerveManager convolutionalNerveManager;//卷积网络管理器
     public double cutThreshold = 10;//切割阈值默认值
     public int row = 5;//行的最小比例
     public int column = 3;//列的最小比例
@@ -29,28 +27,6 @@ public class TempleConfig {
         } else {
             throw new Exception("row or column is too min");
         }
-    }
-
-    public NerveManager getConvolutionalNerveManager() {
-        return convolutionalNerveManager;
-    }
-
-    public void initConvolutionalVision(boolean initPower, int weight, int height) throws Exception {//初始化卷积视觉
-        //weight 是宽度 是 j 是 cloumn , height 是 高度， row 是 i
-        //我先要确定卷积层有几层
-        int deeps = 0;
-        boolean isNext;
-        do {
-            height = height / 3;
-            weight = weight / 3;
-            isNext = height > 3 && weight > 3;
-            if (isNext) {
-                deeps++;
-            }
-        } while (isNext);
-        convolutionalNerveManager = new NerveManager(1, 1
-                , 1, deeps - 1, new ReLu());
-        convolutionalNerveManager.init(initPower, true);
     }
 
     public ModelParameter getModel() {//获取模型参数

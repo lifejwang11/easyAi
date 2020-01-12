@@ -7,7 +7,10 @@ package org.wlld.test;
  */
 public class Test {
     public static void main(String[] args) {
-        int a = 1 % 3;
-        System.out.println(a);
+
+    }
+
+    public static void test1() {
+
     }
 }

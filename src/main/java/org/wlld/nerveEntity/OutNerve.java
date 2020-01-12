@@ -19,8 +19,8 @@ public class OutNerve extends Nerve {
     private double allE;//训练累计EK
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
-                    ActiveFunction activeFunction, boolean isMatrix) {
-        super(id, upNub, "OutNerve", downNub, studyPoint, init, activeFunction, isMatrix);
+                    ActiveFunction activeFunction) {
+        super(id, upNub, "OutNerve", downNub, studyPoint, init, activeFunction);
     }
 
     public void setOutBack(OutBack outBack) {
@@ -54,27 +54,9 @@ public class OutNerve extends Nerve {
         }
     }
 
-    @Override
-    protected void inputMatrix(long eventId, Matrix parameter, boolean isStudy, double E) throws Exception {
-        if (isStudy) {//初始化求和参数
-            initFeatures(eventId);
-        }
-        Matrix matrix = convolution(parameter, eventId, isStudy);//这个神经元卷积结束
-        if (isStudy) {//求和
-            outNub = calculation(eventId);
-            //进行反向传播
-
-        } else {//进入BP网络输出
-
-        }
-    }
-
     private double outGradient() {//生成输出层神经元梯度变化
         //上层神经元输入值 * 当前神经元梯度*学习率 =该上层输入的神经元权重变化
         //当前梯度神经元梯度变化 *学习旅 * -1 = 当前神经元阈值变化
-        //ArithUtil.sub(E, outNub) 求这个的累计平均值
-        //allE = ArithUtil.add(ArithUtil.sub(E, outNub), allE);
-        //double avg = ArithUtil.div(allE, trainNub);
         return ArithUtil.mul(activeFunction.functionG(outNub), ArithUtil.sub(E, outNub));
     }
 }

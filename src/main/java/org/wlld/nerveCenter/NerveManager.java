@@ -168,7 +168,7 @@ public class NerveManager {
         List<Nerve> lastNeveList = depthNerves.get(depthNerves.size() - 1);
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
-            OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0, studyPoint, initPower, activeFunction, isMatrix);
+            OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0, studyPoint, initPower, activeFunction);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFathor(lastNeveList);
             outNevers.add(outNerve);
@@ -204,8 +204,7 @@ public class NerveManager {
                 } else {
                     downNub = hiddenNerverNub;
                 }
-                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction
-                        , isMatrix);
+                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);

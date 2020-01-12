@@ -16,8 +16,8 @@ public class HiddenNerve extends Nerve {
     //static final Logger logger = LogManager.getLogger(HiddenNerve.class);
 
     public HiddenNerve(int id, int depth, int upNub, int downNub, double studyPoint,
-                       boolean init, ActiveFunction activeFunction, boolean isMatrix) {//隐层神经元
-        super(id, upNub, "HiddenNerve", downNub, studyPoint, init, activeFunction, isMatrix);
+                       boolean init, ActiveFunction activeFunction) {//隐层神经元
+        super(id, upNub, "HiddenNerve", downNub, studyPoint, init, activeFunction);
         this.depth = depth;
     }
 
@@ -39,19 +39,5 @@ public class HiddenNerve extends Nerve {
             sendMessage(eventId, out, isStudy, E);
         }
         // sendMessage();
-    }
-
-    @Override
-    protected void inputMatrix(long eventId, Matrix parameter, boolean isStudy
-            , double E) throws Exception {
-        //先将输入矩阵进行卷积运算
-        if (isStudy) {//初始化求和参数
-            initFeatures(eventId);
-        }
-        Matrix matrix = convolution(parameter, eventId, isStudy);//这个神经元卷积结束
-        if (isStudy) {//求和
-            outNub = calculation(eventId);
-        }
-        sendMatrixMessage(eventId, matrix, isStudy, E);//将矩阵发到下一层神经元
     }
 }

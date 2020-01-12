@@ -3,6 +3,7 @@ package org.wlld.imageRecognition;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Kernel;
+import org.wlld.tools.ArithUtil;
 
 /**
  * @author lidapeng
@@ -33,7 +34,6 @@ public class Convolution {
         }
         return late(myMatrix);
     }
-
     public Matrix late(Matrix matrix) throws Exception {//迟化处理
         int xn = matrix.getX();
         int yn = matrix.getY();

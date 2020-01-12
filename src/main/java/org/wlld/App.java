@@ -18,8 +18,8 @@ import java.util.Map;
 public class App {
     public static void main(String[] args) throws Exception {
         //createNerveTest();
-        //testPic();
-        test();
+        testPic();
+        //test();
     }
 
     public static void testPic() throws Exception {
@@ -34,7 +34,7 @@ public class App {
         Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
         rightTagging.put(1, 1.0);
         wrongTagging.put(1, 0.0);
-        for (int i = 1; i < 1000; i++) {
+        for (int i = 1; i < 999; i++) {
             System.out.println("开始学习1==" + i);
             //读取本地URL地址图片,并转化成矩阵
             Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
@@ -51,9 +51,9 @@ public class App {
         ModelParameter modelParameter = templeConfig.getModel();
         String model = JSON.toJSONString(modelParameter);
         System.out.println("一次提取：" + model);
+        ModelParameter modelParameter1 = JSONObject.parseObject(model, ModelParameter.class);
 
         TempleConfig templeConfig1 = getTemple(false);
-        ModelParameter modelParameter1 = JSONObject.parseObject(model, ModelParameter.class);
         templeConfig1.insertModel(modelParameter1);
         ModelParameter modelParameter2 = templeConfig1.getModel();
         String model2 = JSON.toJSONString(modelParameter2);
@@ -63,13 +63,8 @@ public class App {
         Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/test/a101.png");
         Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b1000.png");
         //进行图像检测
-        operation1.look(right, 2);
         operation1.look(wrong, 3);
-    }
-
-    public static void test() throws Exception {
-        TempleConfig templeConfig = new TempleConfig();
-        templeConfig.initConvolutionalVision(true, 3024, 4032);
+        operation1.look(right, 2);
     }
 
     public static TempleConfig getTemple(boolean isFirst) throws Exception {
