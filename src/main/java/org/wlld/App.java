@@ -17,9 +17,7 @@ import java.util.Map;
  */
 public class App {
     public static void main(String[] args) throws Exception {
-        //createNerveTest();
         testPic();
-        //test();
     }
 
     public static void testPic() throws Exception {
@@ -43,23 +41,21 @@ public class App {
             operation.study(right, rightTagging);
             operation.study(wrong, wrongTagging);
         }
-        Matrix right1 = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/test/a101.png");
-        Matrix wrong1 = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b1000.png");
-        operation.look(right1, 3);
-        operation.look(wrong1, 4);
-        //开始处理模型参数
+        //获取训练结束的模型参数，提取出来转化成JSON保存数据库，下次服务启动时不用学习
+        //直接将模型参数注入
+        //获取模型MODLE
         ModelParameter modelParameter = templeConfig.getModel();
+        //将模型MODEL转化成JSON 字符串
         String model = JSON.toJSONString(modelParameter);
-        System.out.println("一次提取：" + model);
+        //将JSON字符串转化为模型MODEL
         ModelParameter modelParameter1 = JSONObject.parseObject(model, ModelParameter.class);
-
+        //初始化模型配置
         TempleConfig templeConfig1 = getTemple(false);
+        //注入之前学习结果的模型MODEL到配置模版里面
         templeConfig1.insertModel(modelParameter1);
-        ModelParameter modelParameter2 = templeConfig1.getModel();
-        String model2 = JSON.toJSONString(modelParameter2);
-        System.out.println("二次提取:" + model2);
+        //将配置模板配置到运算类
         Operation operation1 = new Operation(templeConfig1);
-
+        //获取本地图片字节码转化成降纬后的灰度矩阵
         Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/test/a101.png");
         Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b1000.png");
         //进行图像检测
