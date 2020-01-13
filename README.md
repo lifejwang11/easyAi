@@ -23,8 +23,8 @@ public static void testPic() throws Exception {</br>
         //标注主键为 第几种分类，值为标注 1 是TRUE 0是FALSE</br>
         `Map<Integer, Double> rightTagging = new HashMap<>();`//分类标注</br>
        `Map<Integer, Double wrongTagging = new HashMap<>();`//分类标注</br>
-        `rightTagging.put(1, 1.0);`</br>
-        `wrongTagging.put(1, 0.0);`</br>
+        `rightTagging.put(1, 1.0);`//标注为编号为1分类为正确，例如是否苹果，是</br>
+        `wrongTagging.put(1, 0.0);`//编号为1的分类为错误，例如是否是苹果，否</br>
         `for (int i = 1; i < 999; i++) {`</br>
             System.out.println("开始学习1==" + i);</br>
             //读取本地URL地址图片,并转化成矩阵</br>
@@ -32,7 +32,7 @@ public static void testPic() throws Exception {</br>
             //训练的时候光有正模板不行，你除了要告诉他true,必须还要告诉他false,正负模板数量相同</br>
             `Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");`</br>
             `Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");`</br>
-            //将图像矩阵和标注加入进行学习，</br>
+            //将图像矩阵和正负标注加入进行学习，</br>
            `operation.study(right, rightTagging);`</br>
             `operation.study(wrong, wrongTagging);`</br>
        ` }`
