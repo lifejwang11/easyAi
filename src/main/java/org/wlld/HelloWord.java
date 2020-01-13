@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * 测试入口类!
  */
-public class App {
+public class HelloWord {
     public static void main(String[] args) throws Exception {
         testPic();
     }
