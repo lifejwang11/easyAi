@@ -29,6 +29,8 @@ public static void testPic() throws Exception {
         for (int i = 1; i < 999; i++) {
             System.out.println("开始学习1==" + i);
             //读取本地URL地址图片,并转化成矩阵
+            //训练一个物体我建议是准备一万张这个物体的图片，只留物体周围要扣空，目前只支持PNG格式图片
+            //训练的时候光有正模板不行，你除了要告诉他true,必须还要告诉他false,正负模板数量相同
             Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
             Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");
             //将图像矩阵和标注加入进行学习，
