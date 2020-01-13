@@ -38,7 +38,7 @@ public static void testPic() throws Exception {</br>
        ` }`
         //获取训练结束的模型参数，提取出来转化成JSON保存数据库，下次服务启动时不用学习</br>
         //直接将模型参数注入</br>
-        //获取模型MODLE</br>
+        //获取模型MODLE，我们学习最终目的就是学习结束拿出这个模型参数，并序列化为json字符串准备下次启动服务时注入模型参数</br>
        ` ModelParameter modelParameter = templeConfig.getModel();`</br>
         //将模型MODEL转化成JSON 字符串</br>
         //String model = JSON.toJSONString(modelParameter);</br>
