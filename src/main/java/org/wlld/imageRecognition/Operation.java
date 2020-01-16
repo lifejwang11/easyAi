@@ -36,6 +36,12 @@ public class Operation {//进行计算
         intoNerve(1, list, templeConfig.getSensoryNerves(), true, tagging);
     }
 
+    //卷积核学习
+    public void learning(Matrix matrix, Matrix tagging) throws Exception {
+        intoNerve2(1, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
+                true, tagging);
+    }
+
     //图像视觉
     public void look(Matrix matrix, long eventId) throws Exception {
         List<Double> list = convolution(matrix);
@@ -64,6 +70,13 @@ public class Operation {//进行计算
             , boolean isStudy, Map<Integer, Double> map) throws Exception {
         for (int i = 0; i < sensoryNerveList.size(); i++) {
             sensoryNerveList.get(i).postMessage(eventId, featurList.get(i), isStudy, map);
+        }
+    }
+
+    private void intoNerve2(long eventId, Matrix featur, List<SensoryNerve> sensoryNerveList
+            , boolean isStudy, Matrix E) throws Exception {
+        for (int i = 0; i < sensoryNerveList.size(); i++) {
+            sensoryNerveList.get(i).postMatrixMessage(eventId, featur, isStudy, E);
         }
     }
 }

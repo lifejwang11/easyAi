@@ -24,6 +24,10 @@ public class Matrix {
         this.y = y;
     }
 
+    public void clear() {//清除数据
+        matrix = new double[x][y];
+    }
+
     public Matrix(int x, int y, String matr) throws Exception {//初始化矩阵
         matrix = new double[x][y];
         this.x = x;

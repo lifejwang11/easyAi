@@ -1,6 +1,8 @@
 package org.wlld.nerveEntity;
 
 
+import org.wlld.MatrixTools.Matrix;
+import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.i.ActiveFunction;
 import org.wlld.tools.ArithUtil;
 
@@ -21,6 +23,8 @@ public abstract class Nerve {
     protected int downNub;//下一层神经元的数量
     protected Map<Long, List<Double>> features = new HashMap<>();
     //static final Logger logger = LogManager.getLogger(Nerve.class);
+    protected Matrix nerveMatrix = new Matrix(3, 3);//权重矩阵
+    protected Map<Long, Matrix> matrixMap = new HashMap<>();//参数矩阵
     protected double threshold;//此神经元的阈值需要取出
     protected String name;//该神经元所属类型
     protected double outNub;//输出数值（ps:只有训练模式的时候才可保存输出过的数值）
@@ -48,20 +52,65 @@ public abstract class Nerve {
     }
 
     protected Nerve(int id, int upNub, String name, int downNub,
-                    double studyPoint, boolean init, ActiveFunction activeFunction) {//该神经元在同层神经元中的编号
+                    double studyPoint, boolean init, ActiveFunction activeFunction
+            , boolean isDynamic) throws Exception {//该神经元在同层神经元中的编号
         this.id = id;
         this.upNub = upNub;
         this.name = name;
         this.downNub = downNub;
         this.studyPoint = studyPoint;
         this.activeFunction = activeFunction;
-        initPower(init);//生成随机权重
+        initPower(init, isDynamic);//生成随机权重
+
     }
 
     public void sendMessage(long enevtId, double parameter, boolean isStudy, Map<Integer, Double> E) throws Exception {
         if (son.size() > 0) {
             for (Nerve nerve : son) {
                 nerve.input(enevtId, parameter, isStudy, E);
+            }
+        } else {
+            throw new Exception("this layer is lastIndex");
+        }
+    }
+
+    protected Matrix dynamicNerve(Matrix matrix, long eventId, boolean isStudy) throws Exception {//动态矩阵处理
+        Matrix powerMatrix = null;
+        if (isStudy) {
+            if (!matrixMap.containsKey(eventId)) {
+                matrixMap.put(eventId, new Matrix(3, 3));
+            }
+            powerMatrix = matrixMap.get(eventId);
+        }
+        int xn = matrix.getX();
+        int yn = matrix.getY();
+        int x = xn / 3;//线性变换后矩阵的行数
+        int y = yn / 3;//线性变换后矩阵的列数
+        int nub = x * y;//个数
+        Matrix myMatrix = new Matrix(x, y);//线性变化后的矩阵
+        for (int i = 0; i < xn - 3; i += 3) {
+            for (int j = 0; j < yn - 3; j += 3) {
+                //取出矩阵分块 并相加
+                if (isStudy) {
+                    powerMatrix = MatrixOperation.add(powerMatrix, matrix.getSonOfMatrix(i, j, 3, 3));
+                }
+                double dm = MatrixOperation.convolution(matrix, nerveMatrix, i, j);
+                dm = ArithUtil.sub(ArithUtil.div(dm, 9), threshold);//减偏置项
+                //设置输出矩阵 经过激活函数
+                myMatrix.setNub(i / 3, j / 3, activeFunction.function(dm));
+            }
+        }
+        //取平均值
+        if (isStudy) {
+            MatrixOperation.mathMul(powerMatrix, ArithUtil.div(1, nub));
+        }
+        return myMatrix;
+    }
+
+    public void sendMatrix(long enevtId, Matrix parameter, boolean isStudy, Matrix E) throws Exception {
+        if (son.size() > 0) {
+            for (Nerve nerve : son) {
+                nerve.inputMartix(enevtId, parameter, isStudy, E);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -76,9 +125,21 @@ public abstract class Nerve {
         }
     }
 
-    protected void input(long eventId, double parameter, boolean isStudy
-            , Map<Integer, Double> E) throws Exception {//输入
+    private void backMatrixMessage(double g, long eventId) throws Exception {//反向传播矩阵
+        if (fathor.size() > 0) {
+            for (int i = 0; i < fathor.size(); i++) {
+                fathor.get(i).backMatrix(g, eventId);
+            }
+        }
+    }
 
+    protected void input(long eventId, double parameter, boolean isStudy
+            , Map<Integer, Double> E) throws Exception {//输入参数
+
+    }
+
+    protected void inputMartix(long eventId, Matrix matrix, boolean isStudy
+            , Matrix E) throws Exception {//输入动态矩阵
     }
 
     private void backGetMessage(double parameter, long eventId) throws Exception {//反向传播
@@ -89,6 +150,29 @@ public abstract class Nerve {
             gradient = ArithUtil.mul(activeFunction.functionG(outNub), sigmaW);
             updatePower(eventId);//修改阈值
         }
+    }
+
+    protected void backMatrix(double g, long eventId) throws Exception {//回传梯度
+        gradient = g;
+        double h = ArithUtil.mul(gradient, studyPoint);//梯度下降
+        threshold = ArithUtil.add(threshold, -h);//更新阈值
+        double dm = updateMatrixW(h, eventId);
+        backMatrixMessage(dm, eventId);//将梯度继续回传
+    }
+
+    protected double updateMatrixW(double h, long eventId) throws Exception {//TODO 更新权重
+        Matrix matrix = matrixMap.get(eventId);//参数矩阵 nerveMatrix
+        MatrixOperation.mathMul(matrix, h);//参数与梯度做数乘，权重变化量矩阵
+        nerveMatrix = MatrixOperation.add(nerveMatrix, matrix);//权重更新
+        double allNub = 0;
+        for (int i = 0; i < nerveMatrix.getX(); i++) {
+            for (int j = 0; j < nerveMatrix.getY(); j++) {
+                allNub = ArithUtil.add(allNub, ArithUtil.mul(nerveMatrix.getNumber(i, j), gradient));
+            }
+        }
+        matrixMap.remove(eventId);//移除当前参数矩阵
+        allNub = ArithUtil.div(allNub, 9);
+        return allNub;
     }
 
     protected void updatePower(long eventId) throws Exception {//修改阈值
@@ -149,23 +233,36 @@ public abstract class Nerve {
         return ArithUtil.sub(sigma, threshold);
     }
 
-    private void initPower(boolean init) {//初始化权重及阈值
-        if (upNub > 0) {
-            Random random = new Random();
-            for (int i = 1; i < upNub + 1; i++) {
-                double nub = 0;
-                if (init) {
-                    nub = random.nextDouble();
+    private void initPower(boolean init, boolean isDynamic) throws Exception {//初始化权重及阈值
+        Random random = new Random();
+        if (!isDynamic) {//静态神经元
+            if (upNub > 0) {
+                for (int i = 1; i < upNub + 1; i++) {
+                    double nub = 0;
+                    if (init) {
+                        nub = random.nextDouble();
+                    }
+                    dendrites.put(i, nub);//random.nextDouble()
                 }
-                dendrites.put(i, nub);//random.nextDouble()
             }
-            //生成随机阈值
-            double nub = 0;
-            if (init) {
-                nub = random.nextDouble();
+        } else {//动态神经元
+            double nub;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    nub = 0;
+                    if (init) {
+                        nub = random.nextDouble();
+                    }
+                    nerveMatrix.setNub(i, j, nub);
+                }
             }
-            threshold = nub;
         }
+        //生成随机阈值
+        double nub = 0;
+        if (init) {
+            nub = random.nextDouble();
+        }
+        threshold = nub;
     }
 
     public int getId() {

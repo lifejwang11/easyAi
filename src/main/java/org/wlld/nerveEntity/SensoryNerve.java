@@ -12,13 +12,17 @@ import java.util.Map;
  */
 public class SensoryNerve extends Nerve {
 
-    public SensoryNerve(int id, int upNub) {
-        super(id, upNub, "SensoryNerve", 0, 0.1, false, null);
+    public SensoryNerve(int id, int upNub) throws Exception {
+        super(id, upNub, "SensoryNerve", 0, 0.1, false, null, false);
     }
 
     public void postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E) throws Exception {//感知神经元输出
 
         sendMessage(eventId, parameter, isStudy, E);
+    }
+
+    public void postMatrixMessage(long eventId, Matrix parameter, boolean isStudy, Matrix E) throws Exception {
+        sendMatrix(eventId, parameter, isStudy, E);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package org.wlld;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.imageRecognition.Operation;
 import org.wlld.imageRecognition.Picture;
@@ -15,7 +14,7 @@ import java.util.Map;
 /**
  * 测试入口类!
  */
-public class HelloWord {
+public class HelloWorld {
     public static void main(String[] args) throws Exception {
         testPic();
     }
@@ -46,13 +45,13 @@ public class HelloWord {
         //获取模型MODLE
         ModelParameter modelParameter = templeConfig.getModel();
         //将模型MODEL转化成JSON 字符串
-        String model = JSON.toJSONString(modelParameter);
+        //String model = JSON.toJSONString(modelParameter);
         //将JSON字符串转化为模型MODEL
-        ModelParameter modelParameter1 = JSONObject.parseObject(model, ModelParameter.class);
+        //ModelParameter modelParameter1 = JSONObject.parseObject(model, ModelParameter.class);
         //初始化模型配置
         TempleConfig templeConfig1 = getTemple(false);
         //注入之前学习结果的模型MODEL到配置模版里面
-        templeConfig1.insertModel(modelParameter1);
+        templeConfig1.insertModel(modelParameter);
         //将配置模板配置到运算类
         Operation operation1 = new Operation(templeConfig1);
         //获取本地图片字节码转化成降纬后的灰度矩阵

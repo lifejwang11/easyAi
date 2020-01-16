@@ -160,7 +160,7 @@ public class NerveManager {
         return sensoryNerves;
     }
 
-    public void init(boolean initPower, boolean isMatrix) {//进行神经网络的初始化构建
+    public void init(boolean initPower, boolean isMatrix) throws Exception {//进行神经网络的初始化构建
         this.initPower = initPower;
         initDepthNerve(isMatrix);//初始化深度隐层神经元
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
@@ -168,7 +168,7 @@ public class NerveManager {
         List<Nerve> lastNeveList = depthNerves.get(depthNerves.size() - 1);
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
-            OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0, studyPoint, initPower, activeFunction);
+            OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0, studyPoint, initPower, activeFunction, isMatrix);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFathor(lastNeveList);
             outNevers.add(outNerve);
@@ -188,7 +188,7 @@ public class NerveManager {
 
     }
 
-    private void initDepthNerve(boolean isMatrix) {//初始化隐层神经元1
+    private void initDepthNerve(boolean isMatrix) throws Exception {//初始化隐层神经元1
         for (int i = 0; i < hiddenDepth; i++) {//遍历深度
             List<Nerve> hiddenNerveList = new ArrayList<>();
             for (int j = 1; j < hiddenNerverNub + 1; j++) {//遍历同级
@@ -204,7 +204,7 @@ public class NerveManager {
                 } else {
                     downNub = hiddenNerverNub;
                 }
-                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction);
+                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction, isMatrix);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);

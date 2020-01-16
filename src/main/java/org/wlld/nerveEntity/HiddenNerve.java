@@ -13,11 +13,10 @@ import java.util.Map;
  */
 public class HiddenNerve extends Nerve {
     private int depth;//所处深度
-    //static final Logger logger = LogManager.getLogger(HiddenNerve.class);
 
     public HiddenNerve(int id, int depth, int upNub, int downNub, double studyPoint,
-                       boolean init, ActiveFunction activeFunction) {//隐层神经元
-        super(id, upNub, "HiddenNerve", downNub, studyPoint, init, activeFunction);
+                       boolean init, ActiveFunction activeFunction, boolean isDynamic) throws Exception {//隐层神经元
+        super(id, upNub, "HiddenNerve", downNub, studyPoint, init, activeFunction, isDynamic);
         this.depth = depth;
     }
 
@@ -26,18 +25,20 @@ public class HiddenNerve extends Nerve {
         // logger.debug("name:{},myId:{},depth:{},eventId:{},parameter:{}--getInput", name, getId(), depth, eventId, parameter);
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
-            //  logger.debug("depth:{},myID:{}--startCalculation", depth, getId());
             double sigma = calculation(eventId);
             double out = activeFunction.function(sigma);//激活函数输出数值
             if (isStudy) {
                 outNub = out;
             } else {
-                //System.out.println("sigma:" + sigma);
                 destoryParameter(eventId);
             }
-            //  logger.debug("depth:{},myID:{},outPut:{}", depth, getId(), out);
             sendMessage(eventId, out, isStudy, E);
         }
-        // sendMessage();
+    }
+
+    @Override
+    protected void inputMartix(long eventId, Matrix matrix, boolean isStudy, Matrix E) throws Exception {
+        Matrix myMatrix = dynamicNerve(matrix, eventId, isStudy);//处理过的矩阵
+        sendMatrix(eventId, myMatrix, isStudy, E);
     }
 }

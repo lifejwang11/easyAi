@@ -13,14 +13,11 @@ import java.util.Map;
  * @date 11:25 上午 2019/12/21
  */
 public class OutNerve extends Nerve {
-    // static final Logger logger = LogManager.getLogger(OutNerve.class);
     private OutBack outBack;
-    private long trainNub = 0;//训练次数
-    private double allE;//训练累计EK
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
-                    ActiveFunction activeFunction) {
-        super(id, upNub, "OutNerve", downNub, studyPoint, init, activeFunction);
+                    ActiveFunction activeFunction, boolean isDynamic) throws Exception {
+        super(id, upNub, "OutNerve", downNub, studyPoint, init, activeFunction, isDynamic);
     }
 
     public void setOutBack(OutBack outBack) {
@@ -36,7 +33,6 @@ public class OutNerve extends Nerve {
             double out = activeFunction.function(sigma);
             // logger.debug("myId:{},outPut:{}------END", getId(), out);
             if (isStudy) {//输出结果并进行BP调整权重及阈值
-                trainNub++;//训练次数增加
                 outNub = out;
                 this.E = E.get(getId());
                 gradient = outGradient();//当前梯度变化
@@ -52,6 +48,32 @@ public class OutNerve extends Nerve {
                 }
             }
         }
+    }
+
+    @Override
+    protected void inputMartix(long eventId, Matrix matrix, boolean isStudy, Matrix E) throws Exception {
+        Matrix myMatrix = dynamicNerve(matrix, eventId, isStudy);
+        System.out.println(myMatrix.getString());
+
+        if (isStudy) {//回传
+            double g = getGradient(myMatrix, E);
+            backMatrix(g, eventId);
+        } else {//输出
+            //System.out.println(myMatrix.getString());
+        }
+    }
+
+    private double getGradient(Matrix matrix, Matrix E) throws Exception {
+        double all = 0;
+        int allNub = 0;
+        for (int i = 0; i < E.getX(); i++) {
+            for (int j = 0; j < E.getY(); j++) {
+                allNub++;
+                double nub = ArithUtil.sub(E.getNumber(i, j), matrix.getNumber(i, j));
+                all = ArithUtil.add(all, nub);
+            }
+        }
+        return ArithUtil.div(all, allNub);
     }
 
     private double outGradient() {//生成输出层神经元梯度变化

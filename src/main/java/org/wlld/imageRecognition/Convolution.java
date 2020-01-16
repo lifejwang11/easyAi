@@ -3,7 +3,6 @@ package org.wlld.imageRecognition;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Kernel;
-import org.wlld.tools.ArithUtil;
 
 /**
  * @author lidapeng
