@@ -23,7 +23,7 @@ public abstract class Nerve {
     protected int downNub;//下一层神经元的数量
     protected Map<Long, List<Double>> features = new HashMap<>();
     //static final Logger logger = LogManager.getLogger(Nerve.class);
-    protected Matrix nerveMatrix = new Matrix(3, 3);//权重矩阵
+    protected Matrix nerveMatrix = new Matrix(3, 3);//权重矩阵可获取及注入
     protected Map<Long, Matrix> matrixMap = new HashMap<>();//参数矩阵
     protected double threshold;//此神经元的阈值需要取出
     protected String name;//该神经元所属类型
@@ -62,6 +62,10 @@ public abstract class Nerve {
         this.activeFunction = activeFunction;
         initPower(init, isDynamic);//生成随机权重
 
+    }
+
+    protected void setStudyPoint(double studyPoint) {
+        this.studyPoint = studyPoint;
     }
 
     public void sendMessage(long enevtId, double parameter, boolean isStudy, Map<Integer, Double> E) throws Exception {
@@ -107,10 +111,10 @@ public abstract class Nerve {
         return myMatrix;
     }
 
-    public void sendMatrix(long enevtId, Matrix parameter, boolean isStudy, Matrix E) throws Exception {
+    public void sendMatrix(long enevtId, Matrix parameter, boolean isStudy, boolean isNerveStudy, Map<Integer, Double> E) throws Exception {
         if (son.size() > 0) {
             for (Nerve nerve : son) {
-                nerve.inputMartix(enevtId, parameter, isStudy, E);
+                nerve.inputMartix(enevtId, parameter, isStudy, isNerveStudy, E);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -138,8 +142,8 @@ public abstract class Nerve {
 
     }
 
-    protected void inputMartix(long eventId, Matrix matrix, boolean isStudy
-            , Matrix E) throws Exception {//输入动态矩阵
+    protected void inputMartix(long eventId, Matrix matrix, boolean isKernelStudy
+            , boolean isNerveStudy, Map<Integer, Double> E) throws Exception {//输入动态矩阵
     }
 
     private void backGetMessage(double parameter, long eventId) throws Exception {//反向传播

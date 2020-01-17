@@ -3,8 +3,12 @@ package org.wlld.nerveEntity;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
+import org.wlld.nerveCenter.NerveManager;
 import org.wlld.tools.ArithUtil;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,10 +18,21 @@ import java.util.Map;
  */
 public class OutNerve extends Nerve {
     private OutBack outBack;
+    private NerveManager nerveManager;
+    private Map<Integer, Matrix> matrixMapE;//主键与期望矩阵的映射
+    private Matrix matrixF;
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic) throws Exception {
         super(id, upNub, "OutNerve", downNub, studyPoint, init, activeFunction, isDynamic);
+    }
+
+    public void setNerveManager(NerveManager nerveManager) {
+        this.nerveManager = nerveManager;
+    }
+
+    public void setMatrixMap(Map<Integer, Matrix> matrixMap) {
+        matrixMapE = matrixMap;
     }
 
     public void setOutBack(OutBack outBack) {
@@ -26,12 +41,10 @@ public class OutNerve extends Nerve {
 
     @Override
     public void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E) throws Exception {
-        // logger.debug("Nerve:{},eventId:{},parameter:{}--getInput", name, eventId, parameter);
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
             double sigma = calculation(eventId);
             double out = activeFunction.function(sigma);
-            // logger.debug("myId:{},outPut:{}------END", getId(), out);
             if (isStudy) {//输出结果并进行BP调整权重及阈值
                 outNub = out;
                 this.E = E.get(getId());
@@ -39,7 +52,6 @@ public class OutNerve extends Nerve {
                 //调整权重 修改阈值 并进行反向传播
                 updatePower(eventId);
             } else {//获取最后输出
-                //System.out.println("当前阈值" + threshold);
                 destoryParameter(eventId);
                 if (outBack != null) {
                     outBack.getBack(out, getId(), eventId);
@@ -51,15 +63,44 @@ public class OutNerve extends Nerve {
     }
 
     @Override
-    protected void inputMartix(long eventId, Matrix matrix, boolean isStudy, Matrix E) throws Exception {
-        Matrix myMatrix = dynamicNerve(matrix, eventId, isStudy);
-        System.out.println(myMatrix.getString());
+    protected void inputMartix(long eventId, Matrix matrix, boolean isKernelStudy, boolean isNerveStudy, Map<Integer, Double> E) throws Exception {
+        Matrix myMatrix = dynamicNerve(matrix, eventId, isKernelStudy);
+        if (matrixF == null) {
+            matrixF = new Matrix(myMatrix.getX(), myMatrix.getY());
+        }
+        if (isKernelStudy) {//回传
+           // System.out.println(myMatrix.getString());
+            for (Map.Entry<Integer, Double> entry : E.entrySet()) {
+                double g;
+                if (entry.getValue() > 0.5) {//正模板
+                    Matrix matrix1 = matrixMapE.get(entry.getKey());
+                    g = getGradient(myMatrix, matrix1);
+                } else {
+                    g = getGradient(myMatrix, matrixF);
+                }
+                backMatrix(g, eventId);
+            }//所有训练集的卷积核训练结束,才需要再次训练全连接层
+        } else {//输出到全连接层
+            List<Double> featurList = getFeaturList(myMatrix);
+            intoNerve(eventId, featurList, isNerveStudy, E);
+        }
+    }
 
-        if (isStudy) {//回传
-            double g = getGradient(myMatrix, E);
-            backMatrix(g, eventId);
-        } else {//输出
-            //System.out.println(myMatrix.getString());
+    private List<Double> getFeaturList(Matrix matrix) throws Exception {//
+        List<Double> list = new ArrayList<>();
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                double nub = ArithUtil.div(matrix.getNumber(i, j), 10);
+                list.add(nub);
+            }
+        }
+        return list;
+    }
+
+    private void intoNerve(long eventId, List<Double> featurList, boolean isStudy, Map<Integer, Double> map) throws Exception {
+        List<SensoryNerve> sensoryNerveList = nerveManager.getSensoryNerves();
+        for (int i = 0; i < sensoryNerveList.size(); i++) {
+            sensoryNerveList.get(i).postMessage(eventId, featurList.get(i), isStudy, map);
         }
     }
 

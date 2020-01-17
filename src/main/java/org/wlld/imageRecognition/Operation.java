@@ -3,6 +3,7 @@ package org.wlld.imageRecognition;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Kernel;
+import org.wlld.config.StudyPattern;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
 
@@ -32,20 +33,46 @@ public class Operation {//进行计算
 
     //模板学习
     public void study(Matrix matrix, Map<Integer, Double> tagging) throws Exception {
-        List<Double> list = convolution(matrix);
-        intoNerve(1, list, templeConfig.getSensoryNerves(), true, tagging);
+        if (templeConfig.getStudyPattern() == StudyPattern.Speed_Pattern) {
+            List<Double> list = convolution(matrix);
+            intoNerve(1, list, templeConfig.getSensoryNerves(), true, tagging);
+        } else {
+            throw new Exception("pattern is wrong");
+        }
     }
 
     //卷积核学习
-    public void learning(Matrix matrix, Matrix tagging) throws Exception {
-        intoNerve2(1, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
-                true, tagging);
+    public void learning(Matrix matrix, Map<Integer, Double> tagging, boolean isNerveStudy) throws Exception {
+        if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
+            boolean isKernelStudy = true;
+            if (isNerveStudy) {
+                isKernelStudy = false;
+            }
+            intoNerve2(1, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
+                    isKernelStudy, isNerveStudy, tagging);
+        } else {
+            throw new Exception("pattern is wrong");
+        }
     }
 
-    //图像视觉
+    //图像视觉 speed 模式
     public void look(Matrix matrix, long eventId) throws Exception {
-        List<Double> list = convolution(matrix);
-        intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null);
+        if (templeConfig.getStudyPattern() == StudyPattern.Speed_Pattern) {
+            List<Double> list = convolution(matrix);
+            intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null);
+        } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
+            see(matrix, eventId);
+        }
+    }
+
+    //图像视觉 Accuracy 模式
+    private void see(Matrix matrix, long eventId) throws Exception {
+        if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
+            intoNerve2(eventId, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
+                    false, false, null);
+        } else {
+            throw new Exception("pattern is wrong");
+        }
     }
 
     private List<Double> sub(Matrix matrix) throws Exception {//
@@ -74,9 +101,9 @@ public class Operation {//进行计算
     }
 
     private void intoNerve2(long eventId, Matrix featur, List<SensoryNerve> sensoryNerveList
-            , boolean isStudy, Matrix E) throws Exception {
+            , boolean isKernelStudy, boolean isNerveStudy, Map<Integer, Double> E) throws Exception {
         for (int i = 0; i < sensoryNerveList.size(); i++) {
-            sensoryNerveList.get(i).postMatrixMessage(eventId, featur, isStudy, E);
+            sensoryNerveList.get(i).postMatrixMessage(eventId, featur, isKernelStudy, isNerveStudy, E);
         }
     }
 }

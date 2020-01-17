@@ -4,6 +4,7 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.imageRecognition.Operation;
 import org.wlld.imageRecognition.Picture;
 import org.wlld.imageRecognition.TempleConfig;
+import org.wlld.tools.ArithUtil;
 
 /**
  * @author lidapeng
@@ -12,41 +13,44 @@ import org.wlld.imageRecognition.TempleConfig;
  */
 public class Test {
     public static Matrix E;
+    public static Matrix F;
 
     static {
         try {
-            E = getE();
+            E = getE(true);
+            F = getE(false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) throws Exception {
-        test();
+        double d = ArithUtil.div(3204, 4032);
+        int a = (int) (d * 5);
+        System.out.println(a);
     }
 
     public static void test() throws Exception {
-        Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig();
-        templeConfig.initConvolutionVision(true, 3024, 4032);
-        Operation operation = new Operation(templeConfig);
-        for (int i = 1; i < 500; i++) {
-            System.out.println("开始学习1==" + i);
-            //读取本地URL地址图片,并转化成矩阵
-            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
-            // Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");
-            //将图像矩阵和标注加入进行学习，
-            operation.learning(right, E);
-        }
+
     }
 
-    public static Matrix getE() throws Exception {
+    public static Matrix getE(boolean isRight) throws Exception {
         Matrix matrix = new Matrix(5, 4);
-        String name = "[10,10,10,0]#" +
-                "[10,10,10,0]#" +
-                "[10,10,10,0]#" +
-                "[10,10,10,0]#" +
-                "[10,10,10,0]#";
+        String name;
+        if (isRight) {
+            name = "[10,10,10,0]#" +
+                    "[10,10,10,0]#" +
+                    "[10,10,10,0]#" +
+                    "[10,10,10,0]#" +
+                    "[10,10,10,0]#";
+        } else {
+            name = "[1,1,1,0]#" +
+                    "[1,1,1,0]#" +
+                    "[1,1,1,0]#" +
+                    "[1,1,1,0]#" +
+                    "[1,1,1,0]#";
+        }
+
         matrix.setAll(name);
         return matrix;
     }

@@ -21,8 +21,8 @@ public class SensoryNerve extends Nerve {
         sendMessage(eventId, parameter, isStudy, E);
     }
 
-    public void postMatrixMessage(long eventId, Matrix parameter, boolean isStudy, Matrix E) throws Exception {
-        sendMatrix(eventId, parameter, isStudy, E);
+    public void postMatrixMessage(long eventId, Matrix parameter, boolean isKernelStudy, boolean isNerveStudy, Map<Integer, Double> E) throws Exception {
+        sendMatrix(eventId, parameter, isKernelStudy, isNerveStudy, E);
     }
 
     @Override

@@ -1,10 +1,12 @@
 package org.wlld.nerveCenter;
 
+import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
 import org.wlld.nerveEntity.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +28,12 @@ public class NerveManager {
     private OutBack outBack;
     private double studyPoint = 0.1;//学习率
     private ActiveFunction activeFunction;
+    private Map<Integer, Matrix> matrixMap = new HashMap<>();//主键与期望矩阵的映射
+    private boolean isDynamic;//是否是动态神经网络
+
+    public void setMatrixMap(Map<Integer, Matrix> matrixMap) {
+        this.matrixMap = matrixMap;
+    }
 
     public double getStudyPoint() {
         return studyPoint;
@@ -108,13 +116,14 @@ public class NerveManager {
 
     //初始化神经元参数
     public NerveManager(int sensoryNerveNub, int hiddenNerverNub, int outNerveNub
-            , int hiddenDepth, ActiveFunction activeFunction) throws Exception {
+            , int hiddenDepth, ActiveFunction activeFunction, boolean isDynamic) throws Exception {
         if (sensoryNerveNub > 0 && hiddenNerverNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
             this.hiddenNerverNub = hiddenNerverNub;
             this.sensoryNerveNub = sensoryNerveNub;
             this.outNerveNub = outNerveNub;
             this.hiddenDepth = hiddenDepth;
             this.activeFunction = activeFunction;
+            this.isDynamic = isDynamic;
         } else {
             throw new Exception("param is null");
         }
@@ -160,7 +169,7 @@ public class NerveManager {
         return sensoryNerves;
     }
 
-    public void init(boolean initPower, boolean isMatrix) throws Exception {//进行神经网络的初始化构建
+    public void init(boolean initPower, boolean isMatrix, NerveManager nerveManager) throws Exception {//进行神经网络的初始化构建
         this.initPower = initPower;
         initDepthNerve(isMatrix);//初始化深度隐层神经元
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
@@ -169,6 +178,10 @@ public class NerveManager {
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0, studyPoint, initPower, activeFunction, isMatrix);
+            if (isMatrix) {
+                outNerve.setNerveManager(nerveManager);
+                outNerve.setMatrixMap(matrixMap);
+            }
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFathor(lastNeveList);
             outNevers.add(outNerve);
