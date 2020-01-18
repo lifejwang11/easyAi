@@ -69,7 +69,7 @@ public class OutNerve extends Nerve {
             matrixF = new Matrix(myMatrix.getX(), myMatrix.getY());
         }
         if (isKernelStudy) {//回传
-           // System.out.println(myMatrix.getString());
+            // System.out.println(myMatrix.getString());
             for (Map.Entry<Integer, Double> entry : E.entrySet()) {
                 double g;
                 if (entry.getValue() > 0.5) {//正模板

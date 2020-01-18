@@ -29,7 +29,7 @@ public class HelloWorld {
         Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
         rightTagging.put(1, 1.0);
         wrongTagging.put(1, 0.0);
-        for (int i = 1; i < 500; i++) {
+        for (int i = 1; i < 5; i++) {
             System.out.println("开始学习1==" + i);
             //读取本地URL地址图片,并转化成矩阵
             Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
@@ -38,7 +38,7 @@ public class HelloWorld {
             operation.learning(right, rightTagging, false);
             operation.learning(wrong, wrongTagging, false);
         }
-        for (int i = 1; i < 500; i++) {//神经网络学习
+        for (int i = 1; i < 5; i++) {//神经网络学习
             System.out.println("开始学习2==" + i);
             //读取本地URL地址图片,并转化成矩阵
             Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");

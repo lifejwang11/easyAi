@@ -39,6 +39,14 @@ public abstract class Nerve {
         return dendrites;
     }
 
+    public Matrix getNerveMatrix() {
+        return nerveMatrix;
+    }
+
+    public void setNerveMatrix(Matrix nerveMatrix) {
+        this.nerveMatrix = nerveMatrix;
+    }
+
     public void setDendrites(Map<Integer, Double> dendrites) {
         this.dendrites = dendrites;
     }

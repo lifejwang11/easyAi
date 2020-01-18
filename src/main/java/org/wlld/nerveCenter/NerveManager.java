@@ -4,6 +4,7 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
 import org.wlld.nerveEntity.*;
+import org.wlld.tools.ArithUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +49,46 @@ public class NerveManager {
         }
     }
 
-    public ModelParameter getModelParameter() {//获取当前模型参数
+    private ModelParameter getDymModelParameter() throws Exception {//获取动态神经元参数
+        ModelParameter modelParameter = new ModelParameter();
+        List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
+        DymNerveStudy dymOutNerveStudy = new DymNerveStudy();//动态神经元输出层
+        modelParameter.setDymNerveStudies(dymNerveStudies);
+        modelParameter.setDymOutNerveStudy(dymOutNerveStudy);
+        for (int i = 0; i < depthNerves.size(); i++) {
+            Nerve depthNerve = depthNerves.get(i).get(0);//隐层神经元
+            DymNerveStudy deepNerveStudy = new DymNerveStudy();//动态神经元输出层
+            List<Double> list = deepNerveStudy.getList();
+            deepNerveStudy.setThreshold(depthNerve.getThreshold());//获取偏移值
+            Matrix matrix = depthNerve.getNerveMatrix();
+            insertWList(matrix, list);
+            dymNerveStudies.add(deepNerveStudy);
+        }
+        Nerve outNerve = outNevers.get(0);
+        Matrix matrix = outNerve.getNerveMatrix();
+        dymOutNerveStudy.setThreshold(outNerve.getThreshold());
+        List<Double> list = dymOutNerveStudy.getList();
+        insertWList(matrix, list);
+        return modelParameter;
+    }
+
+    private void insertWList(Matrix matrix, List<Double> list) throws Exception {//
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                list.add(matrix.getNumber(i, j));
+            }
+        }
+    }
+
+    public ModelParameter getModelParameter() throws Exception {
+        if (isDynamic) {
+            return getDymModelParameter();
+        } else {
+            return getStaticModelParameter();
+        }
+    }
+
+    private ModelParameter getStaticModelParameter() {//获取当前模型参数
         ModelParameter modelParameter = new ModelParameter();
         List<List<NerveStudy>> studyDepthNerves = new ArrayList<>();//隐层神经元模型
         List<NerveStudy> outStudyNevers = new ArrayList<>();//输出神经元
@@ -78,8 +118,42 @@ public class NerveManager {
         return modelParameter;
     }
 
-    //注入模型参数
-    public void insertModelParameter(ModelParameter modelParameter) {
+    public void insertModelParameter(ModelParameter modelParameter) throws Exception {
+        insertBpModelParameter(modelParameter);//全连接层注入参数
+        if (isDynamic) {
+            insertConvolutionModelParameter(modelParameter);
+        }
+    }
+
+    //注入卷积层模型参数
+    private void insertConvolutionModelParameter(ModelParameter modelParameter) throws Exception {
+        List<DymNerveStudy> dymNerveStudyList = modelParameter.getDymNerveStudies();
+        DymNerveStudy dymOutNerveStudy = modelParameter.getDymOutNerveStudy();
+        for (int i = 0; i < depthNerves.size(); i++) {
+            Nerve depthNerve = depthNerves.get(i).get(0);
+            DymNerveStudy dymNerveStudy = dymNerveStudyList.get(i);
+            List<Double> list = dymNerveStudy.getList();
+            Matrix nerveMatrix = depthNerve.getNerveMatrix();
+            depthNerve.setThreshold(dymNerveStudy.getThreshold());//注入偏置项
+            insertMatrix(nerveMatrix, list);
+        }
+        Nerve outNerve = outNevers.get(0);
+        outNerve.setThreshold(dymOutNerveStudy.getThreshold());//输出神经元注入偏置项
+        Matrix outNervMatrix = outNerve.getNerveMatrix();
+        List<Double> list = dymOutNerveStudy.getList();
+        insertMatrix(outNervMatrix, list);
+    }
+
+    private void insertMatrix(Matrix matrix, List<Double> list) throws Exception {
+        for (int i = 0; i < list.size(); i++) {
+            int x = i / 3;
+            int y = i % 3;
+            matrix.setNub(x, y, list.get(i));
+        }
+    }
+
+    //注入全连接模型参数
+    private void insertBpModelParameter(ModelParameter modelParameter) {
         List<List<NerveStudy>> depthStudyNerves = modelParameter.getDepthNerves();//隐层神经元
         List<NerveStudy> outStudyNevers = modelParameter.getOutNevers();//输出神经元
         //隐层神经元参数注入

@@ -1,7 +1,6 @@
 package org.wlld.imageRecognition;
 
 import org.wlld.MatrixTools.Matrix;
-import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
@@ -99,8 +98,14 @@ public class TempleConfig {
         convolutionNerveManager.init(initPower, true, nerveManager);
     }
 
-    public ModelParameter getModel() {//获取模型参数
-        return nerveManager.getModelParameter();
+    public ModelParameter getModel() throws Exception {//获取模型参数
+        ModelParameter modelParameter = nerveManager.getModelParameter();
+        if (studyPattern == StudyPattern.Accuracy_Pattern) {
+            ModelParameter modelParameter1 = convolutionNerveManager.getModelParameter();
+            modelParameter.setDymNerveStudies(modelParameter1.getDymNerveStudies());
+            modelParameter.setDymOutNerveStudy(modelParameter1.getDymOutNerveStudy());
+        }
+        return modelParameter;
     }
 
     public List<SensoryNerve> getSensoryNerves() {//获取感知神经元
