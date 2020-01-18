@@ -1,6 +1,7 @@
 package org.wlld;
 
-
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.StudyPattern;
 import org.wlld.imageRecognition.Operation;
@@ -13,14 +14,32 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 测试入口类!
+ * @author lidapeng
+ * @description 测试入口类
+ * @date 11:35 上午 2020/1/18
  */
 public class HelloWorld {
     public static void main(String[] args) throws Exception {
-        testPic2();
+        //testPic2();
+        testModel();
     }
 
-    public static void testPic2() throws Exception {
+    public static void testModel() throws Exception {
+        // 模型参数获取及注入
+        TempleConfig templeConfig = getTemple(true, StudyPattern.Accuracy_Pattern);
+        ModelParameter modelParameter1 = templeConfig.getModel();
+        String model = JSON.toJSONString(modelParameter1);
+        System.out.println(model);
+        TempleConfig templeConfig2 = getTemple(false, StudyPattern.Accuracy_Pattern);
+        ModelParameter modelParameter3 = JSONObject.parseObject(model, ModelParameter.class);
+        templeConfig2.insertModel(modelParameter3);
+        ModelParameter modelParameter2 = templeConfig2.getModel();
+        String model2 = JSON.toJSONString(modelParameter2);
+        System.out.println(model2);
+
+    }
+
+    public static void testPic2() throws Exception {//测试Accuracy_Pattern 模式学习
         Picture picture = new Picture();
         TempleConfig templeConfig = getTemple(true, StudyPattern.Accuracy_Pattern);
         Operation operation = new Operation(templeConfig);
@@ -53,7 +72,7 @@ public class HelloWorld {
         operation.look(wrong, 3);
     }
 
-    public static void testPic() throws Exception {
+    public static void testPic() throws Exception {//测试SPEED模式学习
         //初始化图像转矩阵类
         Picture picture = new Picture();
         //初始化配置模板类
@@ -79,13 +98,13 @@ public class HelloWorld {
         //获取模型MODLE
         ModelParameter modelParameter = templeConfig.getModel();
         //将模型MODEL转化成JSON 字符串
-        //String model = JSON.toJSONString(modelParameter);
+        String model = JSON.toJSONString(modelParameter);
         //将JSON字符串转化为模型MODEL
-        //ModelParameter modelParameter1 = JSONObject.parseObject(model, ModelParameter.class);
+        ModelParameter modelParameter1 = JSONObject.parseObject(model, ModelParameter.class);
         //初始化模型配置
         TempleConfig templeConfig1 = getTemple(false, StudyPattern.Speed_Pattern);
         //注入之前学习结果的模型MODEL到配置模版里面
-        templeConfig1.insertModel(modelParameter);
+        templeConfig1.insertModel(modelParameter1);
         //将配置模板配置到运算类
         Operation operation1 = new Operation(templeConfig1);
         //获取本地图片字节码转化成降纬后的灰度矩阵

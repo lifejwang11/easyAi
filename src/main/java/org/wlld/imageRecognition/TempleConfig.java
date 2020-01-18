@@ -116,6 +116,16 @@ public class TempleConfig {
         nerveManager.setStudyPoint(studyPoint);
     }
 
+    public void setStudyList(List<Double> list) {//设置每一层不同的学习率
+        if (studyPattern == StudyPattern.Accuracy_Pattern) {
+            //给卷积层设置层学习率
+            convolutionNerveManager.setStudyList(list);
+        } else if (studyPattern == StudyPattern.Speed_Pattern) {
+            //给全连接层设置学习率
+            nerveManager.setStudyList(list);
+        }
+    }
+
     public int getRow() {
         return row;
     }
@@ -131,6 +141,9 @@ public class TempleConfig {
     //注入模型参数
     public void insertModel(ModelParameter modelParameter) throws Exception {
         nerveManager.insertModelParameter(modelParameter);
+        if (studyPattern == StudyPattern.Accuracy_Pattern) {
+            convolutionNerveManager.insertModelParameter(modelParameter);
+        }
     }
 
     public void setCutThreshold(double cutThreshold) {

@@ -31,6 +31,15 @@ public class NerveManager {
     private ActiveFunction activeFunction;
     private Map<Integer, Matrix> matrixMap = new HashMap<>();//主键与期望矩阵的映射
     private boolean isDynamic;//是否是动态神经网络
+    private List<Double> studyList = new ArrayList<>();
+
+    public List<Double> getStudyList() {//查看每一次的学习率
+        return studyList;
+    }
+
+    public void setStudyList(List<Double> studyList) {//设置每一层的学习率
+        this.studyList = studyList;
+    }
 
     public void setMatrixMap(Map<Integer, Matrix> matrixMap) {
         this.matrixMap = matrixMap;
@@ -42,7 +51,7 @@ public class NerveManager {
 
     public void setStudyPoint(double studyPoint) throws Exception {
         //设置学习率
-        if (studyPoint < 1 && studyPoint > 0) {
+        if (studyPoint <= 1 && studyPoint > 0) {
             this.studyPoint = studyPoint;
         } else {
             throw new Exception("studyPoint Values range from 0 to 1");
@@ -119,9 +128,10 @@ public class NerveManager {
     }
 
     public void insertModelParameter(ModelParameter modelParameter) throws Exception {
-        insertBpModelParameter(modelParameter);//全连接层注入参数
         if (isDynamic) {
-            insertConvolutionModelParameter(modelParameter);
+            insertConvolutionModelParameter(modelParameter);//动态神经元注入
+        } else {
+            insertBpModelParameter(modelParameter);//全连接层注入参数
         }
     }
 
@@ -278,6 +288,13 @@ public class NerveManager {
     private void initDepthNerve(boolean isMatrix) throws Exception {//初始化隐层神经元1
         for (int i = 0; i < hiddenDepth; i++) {//遍历深度
             List<Nerve> hiddenNerveList = new ArrayList<>();
+            double studyPoint = this.studyPoint;
+            if (studyList.contains(i)) {//加载每一层的学习率
+                studyPoint = studyList.get(i);
+            }
+            if (studyPoint <= 0 || studyPoint > 1) {
+                throw new Exception("studyPoint Values range from 0 to 1");
+            }
             for (int j = 1; j < hiddenNerverNub + 1; j++) {//遍历同级
                 int upNub = 0;
                 int downNub = 0;
