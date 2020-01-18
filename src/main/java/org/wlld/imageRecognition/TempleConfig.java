@@ -129,7 +129,7 @@ public class TempleConfig {
     }
 
     //注入模型参数
-    public void insertModel(ModelParameter modelParameter) {
+    public void insertModel(ModelParameter modelParameter) throws Exception {
         nerveManager.insertModelParameter(modelParameter);
     }
 
