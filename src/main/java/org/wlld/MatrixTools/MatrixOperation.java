@@ -39,8 +39,8 @@ public class MatrixOperation {
     }
 
     public static double getNormCos(Matrix matrix1, Matrix matrix2) throws Exception {//求两个向量之间的余弦
-        double inner = MatrixOperation.innerProduct(matrix1, matrix2);
-        double mulNorm = ArithUtil.mul(MatrixOperation.getNorm(matrix1), MatrixOperation.getNorm(matrix2));
+        double inner = innerProduct(matrix1, matrix2);
+        double mulNorm = ArithUtil.mul(getNorm(matrix1), getNorm(matrix2));
         return ArithUtil.div(inner, mulNorm);
     }
 
