@@ -1,5 +1,6 @@
 package org.wlld.MatrixTools;
 
+import com.sun.org.apache.bcel.internal.generic.FADD;
 import org.wlld.tools.ArithUtil;
 
 public class MatrixOperation {
@@ -21,6 +22,91 @@ public class MatrixOperation {
         } else {
             throw new Exception("matrix is not equals");
         }
+    }
+
+    public static Matrix pushVector(Matrix myMatrix, Matrix matrix, boolean addRow) throws Exception {
+        if (matrix.getX() == 1 || matrix.getY() == 1) {
+            Matrix addMatrix;
+            if (addRow) {//增加一行
+                if (matrix.getY() != myMatrix.getY()) {
+                    throw new Exception("this matrix column is not equals");
+                }
+                addMatrix = new Matrix(myMatrix.getX() + 1, myMatrix.getY());
+            } else {//增加一列
+                if (matrix.getX() != myMatrix.getX()) {
+                    throw new Exception("this matrix row is not equals");
+                }
+                addMatrix = new Matrix(myMatrix.getX(), myMatrix.getY() + 1);
+            }
+            for (int i = 0; i < addMatrix.getX(); i++) {
+                for (int j = 0; j < addMatrix.getY(); j++) {
+                    if (addRow) {
+                        if (i == addMatrix.getX() - 1) {//最后一行
+                            addMatrix.setNub(i, j, matrix.getNumber(0, j));
+                        } else {
+                            addMatrix.setNub(i, j, myMatrix.getNumber(i, j));
+                        }
+                    } else {
+                        if (j == addMatrix.getY() - 1) {//最后一列
+                            addMatrix.setNub(i, j, matrix.getNumber(i, 0));
+                        } else {
+                            addMatrix.setNub(i, j, myMatrix.getNumber(i, j));
+                        }
+                    }
+                }
+            }
+            return addMatrix;
+        } else {
+            throw new Exception("this matrix is not a vector");
+        }
+    }
+
+    public static Matrix push(Matrix matrix, double nub) throws Exception {//向一个向量里PUSH一个值
+        if (matrix.getX() == 1 || matrix.getY() == 1) {
+            Matrix myMatrix;
+            int nubs;
+            boolean isRow = true;
+            if (matrix.getX() == 1) {//行向量
+                nubs = matrix.getY() + 1;
+                myMatrix = new Matrix(1, nubs);
+            } else {//列向量
+                isRow = false;
+                nubs = matrix.getX() + 1;
+                myMatrix = new Matrix(nubs, 1);
+            }
+            for (int i = 0; i < nubs; i++) {
+                if (i == nubs - 1) {
+                    if (isRow) {
+                        myMatrix.setNub(0, i, nub);
+                    } else {
+                        myMatrix.setNub(i, 0, nub);
+                    }
+                } else {
+                    if (isRow) {//行向量
+                        myMatrix.setNub(0, i, matrix.getNumber(0, i));
+                    } else {//列向量
+                        myMatrix.setNub(i, 0, matrix.getNumber(i, 0));
+                    }
+                }
+            }
+            return myMatrix;
+        } else {
+            throw new Exception("this matrix is not a vector");
+        }
+    }
+
+    public static Matrix matrixToRow(Matrix matrix) throws Exception {//将一个矩阵转成行向量
+        int x = matrix.getX();
+        int y = matrix.getY();
+        Matrix myMatrix = new Matrix(1, x * y);
+        int t = 0;
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                myMatrix.setNub(0, t, matrix.getNumber(i, j));
+                t++;
+            }
+        }
+        return myMatrix;
     }
 
     public static double innerProduct(Matrix matrix1, Matrix matrix2) throws Exception {//两个向量内积

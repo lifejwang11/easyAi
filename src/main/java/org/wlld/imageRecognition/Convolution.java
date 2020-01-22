@@ -10,16 +10,16 @@ import org.wlld.config.Kernel;
  * @date 9:23 上午 2020/1/2
  */
 public class Convolution {
-    public Matrix getFeatures(Matrix matrix, int maxNub) throws Exception {
+    public Matrix getFeatures(Matrix matrix, int maxNub, boolean isBorder) throws Exception {
         do {
-            matrix = convolution(matrix, Kernel.ALL_Two);
+            matrix = convolution(matrix, Kernel.ALL_Two, isBorder);
         }
-        while (matrix.getX() > maxNub && matrix.getY() > maxNub);
+        while (matrix.getX() > maxNub && matrix.getY() > maxNub && !isBorder);
         //已经不可以再缩小了，最后做一层卷积，然后提取最大值
         return matrix;
     }
 
-    private Matrix convolution(Matrix matrix, Matrix kernel) throws Exception {
+    private Matrix convolution(Matrix matrix, Matrix kernel, boolean isBorder) throws Exception {
         int x = matrix.getX() - 2;//求导后矩阵的行数
         int y = matrix.getY() - 2;//求导后矩阵的列数
         Matrix myMatrix = new Matrix(x, y);//最终合成矩阵
@@ -31,8 +31,13 @@ public class Convolution {
                 }
             }
         }
-        return late(myMatrix);
+        if (isBorder) {
+            return myMatrix;
+        } else {
+            return late(myMatrix);
+        }
     }
+
     public Matrix late(Matrix matrix) throws Exception {//迟化处理
         int xn = matrix.getX();
         int yn = matrix.getY();

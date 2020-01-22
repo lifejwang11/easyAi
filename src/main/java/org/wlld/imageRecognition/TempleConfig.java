@@ -25,6 +25,50 @@ public class TempleConfig {
     private int classificationNub = 1;//分类的数量
     private int studyPattern;//学习模式
     private OutBack outBack;
+    private boolean isHavePosition = false;//是否需要锁定物体位置
+    private int region = 10;//将一个图片均匀分成几个区域 默认是10
+    private int regionRow = 8;//目标检测物体大概会在图像中占的行份
+    private int regionColumn = 8;//目标检测物体大概会在图像中占的列份
+
+    public int getRegionRow() {
+        return regionRow;
+    }
+
+    public void setRegionRow(int regionRow) {
+        this.regionRow = regionRow;
+    }
+
+    public int getRegionColumn() {
+        return regionColumn;
+    }
+
+    public void setRegionColumn(int regionColumn) {
+        this.regionColumn = regionColumn;
+    }
+
+    public NerveManager getNerveManager() {
+        return nerveManager;
+    }
+
+    public void setNerveManager(NerveManager nerveManager) {
+        this.nerveManager = nerveManager;
+    }
+
+    public int getRegion() {
+        return region;
+    }
+
+    public void setRegion(int region) {
+        this.region = region;
+    }
+
+    public boolean isHavePosition() {
+        return isHavePosition;
+    }
+
+    public void setHavePosition(boolean havePosition) {
+        isHavePosition = havePosition;
+    }
 
     public NerveManager getConvolutionNerveManager() {
         return convolutionNerveManager;

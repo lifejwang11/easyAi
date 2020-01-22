@@ -19,7 +19,7 @@ public class Operation {//进行计算
         this.templeConfig = templeConfig;
     }
 
-    public List<Double> convolution(Matrix matrix) throws Exception {
+    public List<Double> convolution(Matrix matrix, boolean isBorder) throws Exception {
         //进行卷积
         int maxNub = 0;
         if (templeConfig.getRow() >= templeConfig.getColumn()) {
@@ -27,14 +27,14 @@ public class Operation {//进行计算
         } else {
             maxNub = templeConfig.getColumn();
         }
-        Matrix matrix1 = convolution.getFeatures(matrix, maxNub);
+        Matrix matrix1 = convolution.getFeatures(matrix, maxNub, isBorder);
         return sub(matrix1);
     }
 
     //模板学习
     public void study(Matrix matrix, Map<Integer, Double> tagging) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Speed_Pattern) {
-            List<Double> list = convolution(matrix);
+            List<Double> list = convolution(matrix, templeConfig.isHavePosition());
             intoNerve(1, list, templeConfig.getSensoryNerves(), true, tagging);
         } else {
             throw new Exception("pattern is wrong");
@@ -58,7 +58,7 @@ public class Operation {//进行计算
     //图像视觉 speed 模式
     public void look(Matrix matrix, long eventId) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Speed_Pattern) {
-            List<Double> list = convolution(matrix);
+            List<Double> list = convolution(matrix, templeConfig.isHavePosition());
             intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null);
         } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
             see(matrix, eventId);
