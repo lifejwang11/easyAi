@@ -1,6 +1,5 @@
 package org.wlld.MatrixTools;
 
-import com.sun.org.apache.bcel.internal.generic.FADD;
 import org.wlld.tools.ArithUtil;
 
 public class MatrixOperation {
