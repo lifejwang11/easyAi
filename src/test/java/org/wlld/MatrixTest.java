@@ -10,7 +10,30 @@ import org.wlld.MatrixTools.MatrixOperation;
  */
 public class MatrixTest {
     public static void main(String[] args) throws Exception {
-        test2();
+        test3();
+    }
+
+    public static void test3() throws Exception {
+        Matrix matrix = new Matrix(3, 2);
+        Matrix matrixY = new Matrix(3, 1);
+        String b = "[7]#" +
+                "[8]#" +
+                "[9]#";
+        matrixY.setAll(b);
+        String a = "[1,2]#" +
+                "[3,4]#" +
+                "[5,6]#";
+        matrix.setAll(a);
+        //将参数矩阵转置
+        Matrix matrix1 = MatrixOperation.transPosition(matrix);
+        //转置的参数矩阵乘以参数矩阵
+        Matrix matrix2 = MatrixOperation.mulMatrix(matrix1, matrix);
+        //求上一步的逆矩阵
+        Matrix matrix3 = MatrixOperation.getInverseMatrixs(matrix2);
+        //逆矩阵乘以转置矩阵
+        Matrix matrix4 = MatrixOperation.mulMatrix(matrix3, matrix1);
+        //最后乘以输出矩阵,生成权重矩阵
+        Matrix matrix5 = MatrixOperation.mulMatrix(matrix4, matrixY);
     }
 
     public static void test1() throws Exception {

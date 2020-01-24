@@ -23,6 +23,19 @@ public class MatrixOperation {
         }
     }
 
+    public static Matrix getLinearRegression(Matrix parameter, Matrix Out) throws Exception {
+        //将参数矩阵转置
+        Matrix matrix1 = transPosition(parameter);
+        //转置的参数矩阵乘以参数矩阵
+        Matrix matrix2 = mulMatrix(matrix1, parameter);
+        //求上一步的逆矩阵
+        Matrix matrix3 = getInverseMatrixs(matrix2);
+        //逆矩阵乘以转置矩阵
+        Matrix matrix4 = mulMatrix(matrix3, matrix1);
+        //最后乘以输出矩阵,生成权重矩阵
+        return mulMatrix(matrix4, Out);
+    }
+
     public static Matrix pushVector(Matrix myMatrix, Matrix matrix, boolean addRow) throws Exception {
         //向一个矩阵里合并一个行向量或者列向量到矩阵行或者列的末尾
         if (matrix.getX() == 1 || matrix.getY() == 1) {
