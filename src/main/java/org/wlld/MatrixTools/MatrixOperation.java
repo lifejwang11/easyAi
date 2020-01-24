@@ -23,6 +23,7 @@ public class MatrixOperation {
         }
     }
 
+    //多元线性回归
     public static Matrix getLinearRegression(Matrix parameter, Matrix Out) throws Exception {
         //将参数矩阵转置
         Matrix matrix1 = transPosition(parameter);
@@ -32,7 +33,7 @@ public class MatrixOperation {
         Matrix matrix3 = getInverseMatrixs(matrix2);
         //逆矩阵乘以转置矩阵
         Matrix matrix4 = mulMatrix(matrix3, matrix1);
-        //最后乘以输出矩阵,生成权重矩阵
+        //最后乘以输出矩阵,生成权重矩阵并返回
         return mulMatrix(matrix4, Out);
     }
 
@@ -74,16 +75,14 @@ public class MatrixOperation {
         }
     }
 
-    public static Matrix push(Matrix matrix, double nub) throws Exception {//向一个向量里PUSH一个值
+    public static Matrix push(Matrix matrix, double nub, boolean isRow) throws Exception {//向一个向量里PUSH一个值
         if (matrix.getX() == 1 || matrix.getY() == 1) {
             Matrix myMatrix;
             int nubs;
-            boolean isRow = true;
-            if (matrix.getX() == 1) {//行向量
+            if (isRow) {//行向量
                 nubs = matrix.getY() + 1;
                 myMatrix = new Matrix(1, nubs);
             } else {//列向量
-                isRow = false;
                 nubs = matrix.getX() + 1;
                 myMatrix = new Matrix(nubs, 1);
             }

@@ -45,7 +45,7 @@ public class MatrixTest {
         matrix.setAll(a);
         matrix2.setAll(b);
         Matrix matrix1 = MatrixOperation.matrixToVector(matrix, true);
-        matrix1 = MatrixOperation.push(matrix1, 5);
+        matrix1 = MatrixOperation.push(matrix1, 5, true);
         matrix1 = MatrixOperation.pushVector(matrix1, matrix2, true);
         System.out.println(matrix1.getString());
     }
@@ -60,7 +60,7 @@ public class MatrixTest {
         matrix1.setAll(b);
         matrix1 = MatrixOperation.matrixToVector(matrix1, false);
         matrix = MatrixOperation.matrixToVector(matrix, false);
-        matrix = MatrixOperation.push(matrix, 5);
+        matrix = MatrixOperation.push(matrix, 5, true);
         matrix = MatrixOperation.pushVector(matrix, matrix1, false);
         System.out.println(matrix.getString());
     }
