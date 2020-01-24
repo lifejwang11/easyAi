@@ -5,6 +5,7 @@ import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
 import org.wlld.i.OutBack;
+import org.wlld.imageRecognition.border.BorderBody;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
@@ -26,24 +27,14 @@ public class TempleConfig {
     private int studyPattern;//学习模式
     private OutBack outBack;
     private boolean isHavePosition = false;//是否需要锁定物体位置
-    private int region = 10;//将一个图片均匀分成几个区域 默认是10
-    private int regionRow = 8;//目标检测物体大概会在图像中占的行份
-    private int regionColumn = 8;//目标检测物体大概会在图像中占的列份
+    private Map<Integer, BorderBody> borderBodyMap = new HashMap<>();
 
-    public int getRegionRow() {
-        return regionRow;
+    public Map<Integer, BorderBody> getBorderBodyMap() {
+        return borderBodyMap;
     }
 
-    public void setRegionRow(int regionRow) {
-        this.regionRow = regionRow;
-    }
-
-    public int getRegionColumn() {
-        return regionColumn;
-    }
-
-    public void setRegionColumn(int regionColumn) {
-        this.regionColumn = regionColumn;
+    public void setBorderBodyMap(Map<Integer, BorderBody> borderBodyMap) {
+        this.borderBodyMap = borderBodyMap;
     }
 
     public NerveManager getNerveManager() {
@@ -52,14 +43,6 @@ public class TempleConfig {
 
     public void setNerveManager(NerveManager nerveManager) {
         this.nerveManager = nerveManager;
-    }
-
-    public int getRegion() {
-        return region;
-    }
-
-    public void setRegion(int region) {
-        this.region = region;
     }
 
     public boolean isHavePosition() {

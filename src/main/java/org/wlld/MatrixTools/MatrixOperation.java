@@ -24,6 +24,7 @@ public class MatrixOperation {
     }
 
     public static Matrix pushVector(Matrix myMatrix, Matrix matrix, boolean addRow) throws Exception {
+        //向一个矩阵里合并一个行向量或者列向量到矩阵行或者列的末尾
         if (matrix.getX() == 1 || matrix.getY() == 1) {
             Matrix addMatrix;
             if (addRow) {//增加一行
@@ -94,14 +95,23 @@ public class MatrixOperation {
         }
     }
 
-    public static Matrix matrixToRow(Matrix matrix) throws Exception {//将一个矩阵转成行向量
+    public static Matrix matrixToVector(Matrix matrix, boolean isRow) throws Exception {//将一个矩阵转成行向量
         int x = matrix.getX();
         int y = matrix.getY();
-        Matrix myMatrix = new Matrix(1, x * y);
+        Matrix myMatrix;
+        if (isRow) {
+            myMatrix = new Matrix(1, x * y);
+        } else {
+            myMatrix = new Matrix(x * y, 1);
+        }
         int t = 0;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                myMatrix.setNub(0, t, matrix.getNumber(i, j));
+                if (isRow) {
+                    myMatrix.setNub(0, t, matrix.getNumber(i, j));
+                } else {
+                    myMatrix.setNub(t, 0, matrix.getNumber(i, j));
+                }
                 t++;
             }
         }

@@ -58,8 +58,11 @@ public class Operation {//进行计算
     //图像视觉 speed 模式
     public void look(Matrix matrix, long eventId) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Speed_Pattern) {
+            long a = System.currentTimeMillis();
             List<Double> list = convolution(matrix, templeConfig.isHavePosition());
             intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null);
+            long b = System.currentTimeMillis();
+            System.out.println("耗时：" + (b - a));
         } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
             see(matrix, eventId);
         }
