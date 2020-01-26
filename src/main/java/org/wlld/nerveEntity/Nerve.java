@@ -4,6 +4,7 @@ package org.wlld.nerveEntity;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.i.ActiveFunction;
+import org.wlld.imageRecognition.border.Border;
 import org.wlld.tools.ArithUtil;
 
 import java.util.*;
@@ -119,10 +120,11 @@ public abstract class Nerve {
         return myMatrix;
     }
 
-    public void sendMatrix(long enevtId, Matrix parameter, boolean isStudy, boolean isNerveStudy, Map<Integer, Double> E) throws Exception {
+    public void sendMatrix(long enevtId, Matrix parameter, boolean isStudy, boolean isNerveStudy,
+                           Map<Integer, Double> E, Border border) throws Exception {
         if (son.size() > 0) {
             for (Nerve nerve : son) {
-                nerve.inputMartix(enevtId, parameter, isStudy, isNerveStudy, E);
+                nerve.inputMartix(enevtId, parameter, isStudy, isNerveStudy, E, border);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -151,7 +153,7 @@ public abstract class Nerve {
     }
 
     protected void inputMartix(long eventId, Matrix matrix, boolean isKernelStudy
-            , boolean isNerveStudy, Map<Integer, Double> E) throws Exception {//输入动态矩阵
+            , boolean isNerveStudy, Map<Integer, Double> E, Border border) throws Exception {//输入动态矩阵
     }
 
     private void backGetMessage(double parameter, long eventId) throws Exception {//反向传播

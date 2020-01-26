@@ -2,6 +2,7 @@ package org.wlld.nerveEntity;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
+import org.wlld.imageRecognition.border.Border;
 
 import java.util.List;
 import java.util.Map;
@@ -38,8 +39,8 @@ public class HiddenNerve extends Nerve {
 
     @Override
     protected void inputMartix(long eventId, Matrix matrix, boolean isStudy
-            , boolean isNerveStudy, Map<Integer, Double> E) throws Exception {
+            , boolean isNerveStudy, Map<Integer, Double> E, Border border) throws Exception {
         Matrix myMatrix = dynamicNerve(matrix, eventId, isStudy);//处理过的矩阵
-        sendMatrix(eventId, myMatrix, isStudy, isNerveStudy, E);
+        sendMatrix(eventId, myMatrix, isStudy, isNerveStudy, E, border);
     }
 }

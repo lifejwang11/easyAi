@@ -3,6 +3,13 @@ package org.wlld.imageRecognition;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Kernel;
+import org.wlld.imageRecognition.border.Border;
+import org.wlld.imageRecognition.border.Frame;
+import org.wlld.imageRecognition.border.FrameBody;
+import org.wlld.tools.ArithUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author lidapeng
@@ -10,35 +17,90 @@ import org.wlld.config.Kernel;
  * @date 9:23 上午 2020/1/2
  */
 public class Convolution {
-    public Matrix getFeatures(Matrix matrix, int maxNub, boolean isBorder) throws Exception {
-        do {
-            matrix = convolution(matrix, Kernel.ALL_Two, isBorder);
+    protected Matrix getFeatures(Matrix matrix, int maxNub, TempleConfig templeConfig
+            , int id) throws Exception {
+        boolean isFirst = true;
+        Border border = null;
+        if (id > -1 && templeConfig.isHavePosition()) {
+            border = new Border(templeConfig, matrix.getY() - 2, matrix.getX() - 2);
         }
-        while (matrix.getX() > maxNub && matrix.getY() > maxNub && !isBorder);
+        do {
+            matrix = convolution(matrix, Kernel.ALL_Two, isFirst, border, false);
+            isFirst = false;
+        }
+        while (matrix.getX() > maxNub && matrix.getY() > maxNub);
+        normalization(matrix);//矩阵做归一化处理
+        if (id > -1 && templeConfig.isHavePosition()) {
+            border.end(matrix, id);
+        }
         //已经不可以再缩小了，最后做一层卷积，然后提取最大值
         return matrix;
     }
 
-    private Matrix convolution(Matrix matrix, Matrix kernel, boolean isBorder) throws Exception {
+    private void normalization(Matrix matrix) throws Exception {
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                matrix.setNub(i, j, ArithUtil.div(matrix.getNumber(i, j), 10000000));
+            }
+        }
+    }
+
+    protected Border borderOnce(Matrix matrix, TempleConfig templeConfig) throws Exception {
+        Border border = new Border(templeConfig, matrix.getY() - 2, matrix.getX() - 2);
+        convolution(matrix, Kernel.ALL_Two, true, border, true);
+        return border;
+    }
+
+    protected List<FrameBody> getRegion(Matrix matrix, Frame frame) {
+        int xFrame = frame.getHeight();
+        int yFrame = frame.getWidth();
+        int x = matrix.getX();
+        int y = matrix.getY();
+        List<FrameBody> frameBodies = new ArrayList<>();
+        double xNub = frame.getLengthHeight();
+        double yNub = frame.getLengthWidth();
+        for (int i = 0; i < x - xFrame; i += xNub) {
+            for (int j = 0; j < y - yFrame; j += yNub) {
+                FrameBody frameBody = new FrameBody();
+                Matrix myMatrix = matrix.getSonOfMatrix(i, j, xFrame, yFrame);
+                frameBody.setMatrix(myMatrix);
+                frameBody.setX(i);
+                frameBody.setY(j);
+                frameBodies.add(frameBody);
+            }
+        }
+        return frameBodies;
+    }
+
+    private Matrix convolution(Matrix matrix, Matrix kernel, boolean isFirst
+            , Border border, boolean isOnce) throws Exception {
         int x = matrix.getX() - 2;//求导后矩阵的行数
         int y = matrix.getY() - 2;//求导后矩阵的列数
-        Matrix myMatrix = new Matrix(x, y);//最终合成矩阵
+        Matrix myMatrix = null;
+        if (!isOnce) {
+            myMatrix = new Matrix(x, y);//最终合成矩阵
+        }
         for (int i = 0; i < x; i++) {//遍历行
             for (int j = 0; j < y; j++) {//遍历每行的列
                 double dm = MatrixOperation.convolution(matrix, kernel, i, j);
                 if (dm > 0) {//存在边缘
-                    myMatrix.setNub(i, j, dm);
+                    if (isFirst && border != null) {
+                        border.setPosition(i, j);
+                    }
+                    if (!isOnce) {
+                        myMatrix.setNub(i, j, dm);
+                    }
                 }
             }
         }
-        if (isBorder) {
-            return myMatrix;
+        if (isOnce) {
+            return null;
         } else {
             return late(myMatrix);
         }
     }
 
-    public Matrix late(Matrix matrix) throws Exception {//迟化处理
+    private Matrix late(Matrix matrix) throws Exception {//迟化处理
         int xn = matrix.getX();
         int yn = matrix.getY();
         int x = xn / 2;//求导后矩阵的行数

@@ -5,6 +5,8 @@ import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.imageRecognition.TempleConfig;
 import org.wlld.tools.ArithUtil;
 
+import java.util.Map;
+
 /**
  * @author lidapeng
  * @description 图像边框
@@ -21,7 +23,7 @@ public class Border {
     private double modelWidth;//标准宽度
     private TempleConfig templeConfig;
 
-    Border(TempleConfig templeConfig, int imageWidth, int imageHeight) {
+    public Border(TempleConfig templeConfig, int imageWidth, int imageHeight) {
         modelWidth = imageWidth;
         modelHeight = imageHeight;
         this.templeConfig = templeConfig;
@@ -46,9 +48,11 @@ public class Border {
     public void end(Matrix matrix, int id) throws Exception {//长宽
         height = maxX - minX;
         width = maxY - minY;
-        BorderBody borderBody = templeConfig.getBorderBodyMap().get(id);
+        Map<Integer, BorderBody> borderBodyMap = templeConfig.getBorderBodyMap();
+        BorderBody borderBody = borderBodyMap.get(id);
         if (borderBody == null) {
             borderBody = new BorderBody();
+            borderBodyMap.put(id, borderBody);
         }
         //拿到参数矩阵
         Matrix matrixX = borderBody.getX();
@@ -82,7 +86,11 @@ public class Border {
             matrixTw = MatrixOperation.push(matrixTw, tw, false);
             matrixTh = MatrixOperation.push(matrixTh, th, false);
         }
-
+        borderBody.setX(matrixX);
+        borderBody.setTh(matrixTh);
+        borderBody.setTw(matrixTw);
+        borderBody.setTx(matrixTx);
+        borderBody.setTy(matrixTy);
     }
 
 }

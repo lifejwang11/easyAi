@@ -3,6 +3,7 @@ package org.wlld.nerveEntity;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
+import org.wlld.imageRecognition.border.Border;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.tools.ArithUtil;
 
@@ -21,6 +22,11 @@ public class OutNerve extends Nerve {
     private NerveManager nerveManager;
     private Map<Integer, Matrix> matrixMapE;//主键与期望矩阵的映射
     private Matrix matrixF;
+    private boolean isBorder = false;
+
+    public void setBorder(boolean border) {
+        isBorder = border;
+    }
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic) throws Exception {
@@ -63,7 +69,8 @@ public class OutNerve extends Nerve {
     }
 
     @Override
-    protected void inputMartix(long eventId, Matrix matrix, boolean isKernelStudy, boolean isNerveStudy, Map<Integer, Double> E) throws Exception {
+    protected void inputMartix(long eventId, Matrix matrix, boolean isKernelStudy, boolean isNerveStudy
+            , Map<Integer, Double> E, Border border) throws Exception {
         Matrix myMatrix = dynamicNerve(matrix, eventId, isKernelStudy);
         if (matrixF == null) {
             matrixF = new Matrix(myMatrix.getX(), myMatrix.getY());
@@ -81,6 +88,16 @@ public class OutNerve extends Nerve {
                 backMatrix(g, eventId);
             }//所有训练集的卷积核训练结束,才需要再次训练全连接层
         } else {//输出到全连接层
+            if (isBorder) {
+                int id = 0;
+                for (Map.Entry<Integer, Double> entry : E.entrySet()) {
+                    if (entry.getValue() == 1) {
+                        id = entry.getKey();
+                        break;
+                    }
+                }
+                border.end(myMatrix, id);
+            }
             List<Double> featurList = getFeaturList(myMatrix);
             intoNerve(eventId, featurList, isNerveStudy, E);
         }

@@ -2,6 +2,8 @@ package org.wlld;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.imageRecognition.border.Border;
+import org.wlld.imageRecognition.border.BorderBody;
 
 /**
  * @author lidapeng
@@ -13,16 +15,32 @@ public class MatrixTest {
         test3();
     }
 
+    public static void test4() throws Exception {
+        BorderBody borderBody = new BorderBody();
+        Matrix xw = borderBody.getxW();
+        String a = "[1]#" +
+                "[3]#" +
+                "[5]#";
+        xw = new Matrix(3, 1, a);
+        borderBody.setxW(xw);
+        Matrix xt = borderBody.getxW();
+        xt = MatrixOperation.push(xt, 9, false);
+        Matrix xm = borderBody.getxW();
+        System.out.println(xm.getString());
+    }
+
     public static void test3() throws Exception {
-        Matrix matrix = new Matrix(3, 2);
-        Matrix matrixY = new Matrix(3, 1);
+        Matrix matrix = new Matrix(4, 3);
+        Matrix matrixY = new Matrix(4, 1);
         String b = "[7]#" +
                 "[8]#" +
-                "[9]#";
+                "[9]#" +
+                "[19]#";
         matrixY.setAll(b);
-        String a = "[1,2]#" +
-                "[3,4]#" +
-                "[5,6]#";
+        String a = "[1,2,17]#" +
+                "[3,4,18]#" +
+                "[5,6,10]#" +
+                "[15,16,13]#";
         matrix.setAll(a);
         //将参数矩阵转置
         Matrix matrix1 = MatrixOperation.transPosition(matrix);
@@ -34,6 +52,7 @@ public class MatrixTest {
         Matrix matrix4 = MatrixOperation.mulMatrix(matrix3, matrix1);
         //最后乘以输出矩阵,生成权重矩阵
         Matrix matrix5 = MatrixOperation.mulMatrix(matrix4, matrixY);
+        System.out.println(matrix5.getString());
     }
 
     public static void test1() throws Exception {

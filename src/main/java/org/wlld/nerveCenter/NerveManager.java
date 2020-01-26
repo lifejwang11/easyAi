@@ -4,7 +4,6 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
 import org.wlld.nerveEntity.*;
-import org.wlld.tools.ArithUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -253,7 +252,8 @@ public class NerveManager {
         return sensoryNerves;
     }
 
-    public void init(boolean initPower, boolean isMatrix, NerveManager nerveManager) throws Exception {//进行神经网络的初始化构建
+    public void init(boolean initPower, boolean isMatrix,
+                     boolean isBorder, NerveManager nerveManager) throws Exception {//进行神经网络的初始化构建
         this.initPower = initPower;
         initDepthNerve(isMatrix);//初始化深度隐层神经元
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
@@ -262,9 +262,10 @@ public class NerveManager {
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerverNub, 0, studyPoint, initPower, activeFunction, isMatrix);
-            if (isMatrix) {
+            if (isMatrix) {//是卷积层神经网络
                 outNerve.setNerveManager(nerveManager);
                 outNerve.setMatrixMap(matrixMap);
+                outNerve.setBorder(isBorder);
             }
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFathor(lastNeveList);

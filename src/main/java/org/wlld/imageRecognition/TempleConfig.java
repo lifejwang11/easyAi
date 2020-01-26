@@ -1,11 +1,13 @@
 package org.wlld.imageRecognition;
 
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.BorderBody;
+import org.wlld.imageRecognition.border.Frame;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
@@ -27,10 +29,62 @@ public class TempleConfig {
     private int studyPattern;//学习模式
     private OutBack outBack;
     private boolean isHavePosition = false;//是否需要锁定物体位置
-    private Map<Integer, BorderBody> borderBodyMap = new HashMap<>();
+    private Map<Integer, BorderBody> borderBodyMap = new HashMap<>();//border特征集合
+    private Frame frame;//先验边框
+    private ImageBack imageBack = new ImageBack();//边框图像回调
+    private double th = 0.6;//标准阈值
+    private boolean boxReady = false;//边框已经学习完毕
+
+    public boolean isBoxReady() {
+        return boxReady;
+    }
+
+    public double getTh() {
+        return th;
+    }
+
+    public void setTh(double th) {
+        this.th = th;
+    }
+
+    public ImageBack getImageBack() {
+        return imageBack;
+    }
+
+    public Frame getFrame() {
+        return frame;
+    }
+
+    public void setFrame(Frame frame) {
+        this.frame = frame;
+    }
 
     public Map<Integer, BorderBody> getBorderBodyMap() {
         return borderBodyMap;
+    }
+
+    private void border(BorderBody borderBody) throws Exception {
+        Matrix parameter = borderBody.getX();//参数矩阵
+        Matrix tx = borderBody.getTx();
+        Matrix ty = borderBody.getTy();
+        Matrix th = borderBody.getTh();
+        Matrix tw = borderBody.getTw();
+        borderBody.setxW(MatrixOperation.getLinearRegression(parameter, tx));
+        borderBody.setyW(MatrixOperation.getLinearRegression(parameter, ty));
+        borderBody.setwW(MatrixOperation.getLinearRegression(parameter, tw));
+        borderBody.sethW(MatrixOperation.getLinearRegression(parameter, th));
+        boxReady = true;
+    }
+
+    public void borderStudy() throws Exception {//边框回归
+        if (borderBodyMap.size() > 0) {
+            for (Map.Entry<Integer, BorderBody> entry : borderBodyMap.entrySet()) {
+                border(entry.getValue());
+            }
+        } else {
+            throw new Exception("boder not study");
+        }
+
     }
 
     public void setBorderBodyMap(Map<Integer, BorderBody> borderBodyMap) {
@@ -50,6 +104,7 @@ public class TempleConfig {
     }
 
     public void setHavePosition(boolean havePosition) {
+        nerveManager.setOutBack(imageBack);
         isHavePosition = havePosition;
     }
 
@@ -93,7 +148,7 @@ public class TempleConfig {
             , int deep) throws Exception {
         nerveManager = new NerveManager(sensoryNerveNub, 6,
                 classificationNub, deep, new Sigmod(), false);
-        nerveManager.init(initPower, false, null);
+        nerveManager.init(initPower, false, false, null);
         nerveManager.setOutBack(outBack);
     }
 
@@ -122,7 +177,7 @@ public class TempleConfig {
                 1, deep - 1, new ReLu(), true);
         initNerveManager(initPower, width * height, 2);
         convolutionNerveManager.setMatrixMap(matrixMap);//给卷积网络管理器注入期望矩阵
-        convolutionNerveManager.init(initPower, true, nerveManager);
+        convolutionNerveManager.init(initPower, true, isHavePosition, nerveManager);
     }
 
     public ModelParameter getModel() throws Exception {//获取模型参数
