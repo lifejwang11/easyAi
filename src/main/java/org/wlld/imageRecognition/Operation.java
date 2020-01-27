@@ -145,9 +145,65 @@ public class Operation {//进行计算
             double tw = MatrixOperation.mulMatrix(matrix, ww).getNumber(0, 0);
             //修正相对位置
             double realX = ArithUtil.add(ArithUtil.mul(tx, height), x);
+            double realY = ArithUtil.add(ArithUtil.mul(ty, width), y);
+            double realWidth = ArithUtil.mul(Math.exp(tw), width);
+            double realHeight = ArithUtil.mul(Math.exp(th), height);
+            frameBody.setRealX(realX);
+            frameBody.setRealY(realY);
+            frameBody.setRealWidth(realWidth);
+            frameBody.setRealHeight(realHeight);
         } else {
             throw new Exception("box is not study");
         }
+    }
+
+    //计算两个边框的IOU
+    private double getIou(FrameBody frameBody1, FrameBody frameBody2) {
+        double iou = 1;
+        double s1 = ArithUtil.mul(frameBody1.getRealHeight(), frameBody1.getRealWidth());
+        double s2 = ArithUtil.mul(frameBody2.getRealHeight(), frameBody2.getRealWidth());
+        double s = ArithUtil.add(s1, s2);
+        double minX1 = frameBody1.getRealX();
+        double minY1 = frameBody1.getRealY();
+        double maxX1 = ArithUtil.add(minX1, frameBody1.getRealHeight());
+        double maxY1 = ArithUtil.add(minY1, frameBody1.getRealWidth());
+        double minX2 = frameBody2.getRealX();
+        double minY2 = frameBody2.getRealY();
+        double maxX2 = ArithUtil.add(minX2, frameBody2.getRealHeight());
+        double maxY2 = ArithUtil.add(minY2, frameBody2.getRealWidth());
+        double maxMinX, minMaxX, maxMinY, minMaxY;
+        if (maxX2 > maxX1) {
+            maxMinX = maxX1;
+        } else {
+            maxMinX = maxX2;
+        }
+        if (minX2 > minX1) {
+            minMaxX = minX2;
+        } else {
+            minMaxX = minX1;
+        }
+        if (maxY2 > maxY1) {
+            maxMinY = maxY1;
+        } else {
+            maxMinY = maxY2;
+        }
+        if (minY2 > minY1) {
+            minMaxY = minY2;
+        } else {
+            minMaxY = minY1;
+        }
+        double intersectX = ArithUtil.sub(maxMinX, minMaxX);//相交X
+        double intersectY = ArithUtil.sub(maxMinY, minMaxY);//相交Y
+        if (intersectX < 0) {
+            intersectX = 0;
+        }
+        if (intersectY < 0) {
+            intersectY = 0;
+        }
+        double intersectS = ArithUtil.mul(intersectX, intersectY);//相交面积
+        double mergeS = ArithUtil.sub(s, intersectS);//相并面积
+        iou = ArithUtil.div(intersectS, mergeS);
+        return iou;
     }
 
     //图像视觉 Accuracy 模式

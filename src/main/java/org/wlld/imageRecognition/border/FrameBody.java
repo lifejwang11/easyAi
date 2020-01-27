@@ -14,6 +14,42 @@ public class FrameBody {
     private double point;//当前分类的概率
     private int x;//锚点X坐标
     private int y;//锚点Y坐标
+    private double realX;//修正后的X坐标
+    private double realY;//修正后的Y坐标
+    private double realWidth;//修正后的宽度
+    private double realHeight;//修正后的高度
+
+    public double getRealX() {
+        return realX;
+    }
+
+    public void setRealX(double realX) {
+        this.realX = realX;
+    }
+
+    public double getRealY() {
+        return realY;
+    }
+
+    public void setRealY(double realY) {
+        this.realY = realY;
+    }
+
+    public double getRealWidth() {
+        return realWidth;
+    }
+
+    public void setRealWidth(double realWidth) {
+        this.realWidth = realWidth;
+    }
+
+    public double getRealHeight() {
+        return realHeight;
+    }
+
+    public void setRealHeight(double realHeight) {
+        this.realHeight = realHeight;
+    }
 
     public Matrix getEndMatrix() {
         return endMatrix;
