@@ -34,6 +34,15 @@ public class TempleConfig {
     private ImageBack imageBack = new ImageBack();//边框图像回调
     private double th = 0.6;//标准阈值
     private boolean boxReady = false;//边框已经学习完毕
+    private double iouTh = 0.5;//IOU阈值
+
+    public double getIouTh() {
+        return iouTh;
+    }
+
+    public void setIouTh(double iouTh) {
+        this.iouTh = iouTh;
+    }
 
     public boolean isBoxReady() {
         return boxReady;
