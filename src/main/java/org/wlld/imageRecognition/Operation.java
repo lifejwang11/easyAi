@@ -120,21 +120,27 @@ public class Operation {//进行计算
                 for (FrameBody frameBody : frameBodies) {
                     //Speed 模式下的最后卷积结果
                     Matrix matrix1 = convolution.getFeatures(frameBody.getMatrix(), maxNub, templeConfig, -1);
+                    //卷积层输出即边框回归的输入的特征向量
                     frameBody.setEndMatrix(matrix1);
                     List<Double> list = sub(matrix1);
                     imageBack.setFrameBody(frameBody);
                     //进入神经网络判断
                     intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null, imageBack);
                 }
-                return toPositon(frameBodies, frame.getWidth(), frame.getHeight());
+                return toPosition(frameBodies, frame.getWidth(), frame.getHeight());
             } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
                 for (FrameBody frameBody : frameBodies) {
                     intoNerve2(eventId, frameBody.getMatrix(), templeConfig.getConvolutionNerveManager().getSensoryNerves(),
                             false, null, matrixBack);
                     Matrix myMatrix = matrixBack.getMatrix();
-
+                    //卷积层输出即边框回归的输入的特征向量
+                    frameBody.setEndMatrix(myMatrix);
+                    List<Double> list = sub(myMatrix);
+                    imageBack.setFrameBody(frameBody);
+                    //进入神经网络判断
+                    intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null, imageBack);
                 }
-                return null;
+                return toPosition(frameBodies, frame.getWidth(), frame.getHeight());
             } else {
                 throw new Exception("wrong model");
             }
@@ -143,7 +149,7 @@ public class Operation {//进行计算
         }
     }
 
-    private Map<Integer, List<FrameBody>> toPositon(List<FrameBody> frameBodies, int width, int height) throws Exception {//把分类都拿出来
+    private Map<Integer, List<FrameBody>> toPosition(List<FrameBody> frameBodies, int width, int height) throws Exception {//把分类都拿出来
         for (FrameBody frameBody : frameBodies) {
             if (frameBody.getPoint() > templeConfig.getTh()) {//存在一个识别分类
                 getBox(frameBody, width, height);
