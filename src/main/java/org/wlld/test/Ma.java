@@ -1,5 +1,6 @@
 package org.wlld.test;
 
+import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.OutBack;
 
 /**
@@ -17,5 +18,10 @@ public class Ma implements OutBack {
     @Override
     public void getBack(double out, int id, long eventId) {
         System.out.println("id==" + id + ",out==" + out + ",nub==" + nub);
+    }
+
+    @Override
+    public void getBackMatrix(Matrix matrix, long eventId) {
+
     }
 }

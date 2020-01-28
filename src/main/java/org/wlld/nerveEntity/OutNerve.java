@@ -18,35 +18,23 @@ import java.util.Map;
  * @date 11:25 上午 2019/12/21
  */
 public class OutNerve extends Nerve {
-    private OutBack outBack;
-    private NerveManager nerveManager;
     private Map<Integer, Matrix> matrixMapE;//主键与期望矩阵的映射
     private Matrix matrixF;
-    private boolean isBorder = false;
-
-    public void setBorder(boolean border) {
-        isBorder = border;
-    }
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic) throws Exception {
         super(id, upNub, "OutNerve", downNub, studyPoint, init, activeFunction, isDynamic);
     }
 
-    public void setNerveManager(NerveManager nerveManager) {
-        this.nerveManager = nerveManager;
-    }
 
     public void setMatrixMap(Map<Integer, Matrix> matrixMap) {
         matrixMapE = matrixMap;
     }
 
-    public void setOutBack(OutBack outBack) {
-        this.outBack = outBack;
-    }
 
     @Override
-    public void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E) throws Exception {
+    public void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
+            , OutBack outBack) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
             double sigma = calculation(eventId);
@@ -69,8 +57,8 @@ public class OutNerve extends Nerve {
     }
 
     @Override
-    protected void inputMartix(long eventId, Matrix matrix, boolean isKernelStudy, boolean isNerveStudy
-            , Map<Integer, Double> E, Border border) throws Exception {
+    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy
+            , Map<Integer, Double> E, OutBack outBack) throws Exception {
         Matrix myMatrix = dynamicNerve(matrix, eventId, isKernelStudy);
         if (matrixF == null) {
             matrixF = new Matrix(myMatrix.getX(), myMatrix.getY());
@@ -87,37 +75,12 @@ public class OutNerve extends Nerve {
                 }
                 backMatrix(g, eventId);
             }//所有训练集的卷积核训练结束,才需要再次训练全连接层
-        } else {//输出到全连接层
-            if (isBorder) {
-                int id = 0;
-                for (Map.Entry<Integer, Double> entry : E.entrySet()) {
-                    if (entry.getValue() == 1) {
-                        id = entry.getKey();
-                        break;
-                    }
-                }
-                border.end(myMatrix, id);
+        } else {//卷积层输出
+            if (outBack != null) {
+                outBack.getBackMatrix(myMatrix, eventId);
+            } else {
+                throw new Exception("not find outBack");
             }
-            List<Double> featurList = getFeaturList(myMatrix);
-            intoNerve(eventId, featurList, isNerveStudy, E);
-        }
-    }
-
-    private List<Double> getFeaturList(Matrix matrix) throws Exception {//
-        List<Double> list = new ArrayList<>();
-        for (int i = 0; i < matrix.getX(); i++) {
-            for (int j = 0; j < matrix.getY(); j++) {
-                double nub = ArithUtil.div(matrix.getNumber(i, j), 10);
-                list.add(nub);
-            }
-        }
-        return list;
-    }
-
-    private void intoNerve(long eventId, List<Double> featurList, boolean isStudy, Map<Integer, Double> map) throws Exception {
-        List<SensoryNerve> sensoryNerveList = nerveManager.getSensoryNerves();
-        for (int i = 0; i < sensoryNerveList.size(); i++) {
-            sensoryNerveList.get(i).postMessage(eventId, featurList.get(i), isStudy, map);
         }
     }
 

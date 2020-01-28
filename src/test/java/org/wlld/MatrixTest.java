@@ -2,7 +2,6 @@ package org.wlld;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
-import org.wlld.imageRecognition.border.Border;
 import org.wlld.imageRecognition.border.BorderBody;
 
 /**
@@ -12,7 +11,10 @@ import org.wlld.imageRecognition.border.BorderBody;
  */
 public class MatrixTest {
     public static void main(String[] args) throws Exception {
-        test3();
+        double a = 3.33333;
+        double b = 3;
+        System.out.println(a / b);
+        //test3();
     }
 
     public static void test4() throws Exception {

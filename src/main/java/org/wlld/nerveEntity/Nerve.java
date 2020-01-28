@@ -4,7 +4,7 @@ package org.wlld.nerveEntity;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.i.ActiveFunction;
-import org.wlld.imageRecognition.border.Border;
+import org.wlld.i.OutBack;
 import org.wlld.tools.ArithUtil;
 
 import java.util.*;
@@ -77,10 +77,11 @@ public abstract class Nerve {
         this.studyPoint = studyPoint;
     }
 
-    public void sendMessage(long enevtId, double parameter, boolean isStudy, Map<Integer, Double> E) throws Exception {
+    public void sendMessage(long enevtId, double parameter, boolean isStudy, Map<Integer, Double> E
+            , OutBack outBack) throws Exception {
         if (son.size() > 0) {
             for (Nerve nerve : son) {
-                nerve.input(enevtId, parameter, isStudy, E);
+                nerve.input(enevtId, parameter, isStudy, E, outBack);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -108,7 +109,8 @@ public abstract class Nerve {
                     powerMatrix = MatrixOperation.add(powerMatrix, matrix.getSonOfMatrix(i, j, 3, 3));
                 }
                 double dm = MatrixOperation.convolution(matrix, nerveMatrix, i, j);
-                dm = ArithUtil.sub(ArithUtil.div(dm, 9), threshold);//减偏置项
+                //dm = ArithUtil.sub(ArithUtil.div(dm, 9), threshold);//减偏置项
+                dm = dm / 9 - threshold;
                 //设置输出矩阵 经过激活函数
                 myMatrix.setNub(i / 3, j / 3, activeFunction.function(dm));
             }
@@ -120,11 +122,11 @@ public abstract class Nerve {
         return myMatrix;
     }
 
-    public void sendMatrix(long enevtId, Matrix parameter, boolean isStudy, boolean isNerveStudy,
-                           Map<Integer, Double> E, Border border) throws Exception {
+    public void sendMatrix(long eventId, Matrix parameter, boolean isStudy,
+                           Map<Integer, Double> E, OutBack outBack) throws Exception {
         if (son.size() > 0) {
             for (Nerve nerve : son) {
-                nerve.inputMartix(enevtId, parameter, isStudy, isNerveStudy, E, border);
+                nerve.inputMatrix(eventId, parameter, isStudy, E, outBack);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -148,12 +150,11 @@ public abstract class Nerve {
     }
 
     protected void input(long eventId, double parameter, boolean isStudy
-            , Map<Integer, Double> E) throws Exception {//输入参数
+            , Map<Integer, Double> E, OutBack imageBack) throws Exception {//输入参数
 
     }
 
-    protected void inputMartix(long eventId, Matrix matrix, boolean isKernelStudy
-            , boolean isNerveStudy, Map<Integer, Double> E, Border border) throws Exception {//输入动态矩阵
+    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy, Map<Integer, Double> E, OutBack outBack) throws Exception {//输入动态矩阵
     }
 
     private void backGetMessage(double parameter, long eventId) throws Exception {//反向传播

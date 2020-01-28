@@ -1,5 +1,7 @@
 package org.wlld.i;
 
+import org.wlld.MatrixTools.Matrix;
+
 /**
  * @author lidapeng
  * @将神经元的输出回调
@@ -8,4 +10,5 @@ package org.wlld.i;
 public interface OutBack {
     //输出回调
     void getBack(double out, int id, long eventId);
+    void getBackMatrix(Matrix matrix,long eventId);
 }

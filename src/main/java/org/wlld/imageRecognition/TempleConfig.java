@@ -27,11 +27,9 @@ public class TempleConfig {
     private int deep = 2;//默认深度
     private int classificationNub = 1;//分类的数量
     private int studyPattern;//学习模式
-    private OutBack outBack;
     private boolean isHavePosition = false;//是否需要锁定物体位置
     private Map<Integer, BorderBody> borderBodyMap = new HashMap<>();//border特征集合
     private Frame frame;//先验边框
-    private ImageBack imageBack = new ImageBack();//边框图像回调
     private double th = 0.6;//标准阈值
     private boolean boxReady = false;//边框已经学习完毕
     private double iouTh = 0.5;//IOU阈值
@@ -54,10 +52,6 @@ public class TempleConfig {
 
     public void setTh(double th) {
         this.th = th;
-    }
-
-    public ImageBack getImageBack() {
-        return imageBack;
     }
 
     public Frame getFrame() {
@@ -85,7 +79,7 @@ public class TempleConfig {
         boxReady = true;
     }
 
-    public void borderStudy() throws Exception {//边框回归
+    public void boxStudy() throws Exception {//边框回归 学习结束之后最后进行调用
         if (borderBodyMap.size() > 0) {
             for (Map.Entry<Integer, BorderBody> entry : borderBodyMap.entrySet()) {
                 border(entry.getValue());
@@ -113,7 +107,6 @@ public class TempleConfig {
     }
 
     public void setHavePosition(boolean havePosition) {
-        nerveManager.setOutBack(imageBack);
         isHavePosition = havePosition;
     }
 
@@ -157,8 +150,7 @@ public class TempleConfig {
             , int deep) throws Exception {
         nerveManager = new NerveManager(sensoryNerveNub, 6,
                 classificationNub, deep, new Sigmod(), false);
-        nerveManager.init(initPower, false, false, null);
-        nerveManager.setOutBack(outBack);
+        nerveManager.init(initPower, false);
     }
 
     private void initConvolutionVision(boolean initPower, int width, int height) throws Exception {
@@ -186,7 +178,7 @@ public class TempleConfig {
                 1, deep - 1, new ReLu(), true);
         initNerveManager(initPower, width * height, 2);
         convolutionNerveManager.setMatrixMap(matrixMap);//给卷积网络管理器注入期望矩阵
-        convolutionNerveManager.init(initPower, true, isHavePosition, nerveManager);
+        convolutionNerveManager.init(initPower, true);
     }
 
     public ModelParameter getModel() throws Exception {//获取模型参数
@@ -257,11 +249,4 @@ public class TempleConfig {
         this.classificationNub = classificationNub;
     }
 
-    public OutBack getOutBack() {
-        return outBack;
-    }
-
-    public void setOutBack(OutBack outBack) {
-        this.outBack = outBack;
-    }
 }

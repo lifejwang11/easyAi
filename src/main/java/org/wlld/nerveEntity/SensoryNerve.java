@@ -1,6 +1,7 @@
 package org.wlld.nerveEntity;
 
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.Border;
 
 import java.util.List;
@@ -17,14 +18,15 @@ public class SensoryNerve extends Nerve {
         super(id, upNub, "SensoryNerve", 0, 0.1, false, null, false);
     }
 
-    public void postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E) throws Exception {//感知神经元输出
+    public void postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
+            , OutBack outBack) throws Exception {//感知神经元输出
 
-        sendMessage(eventId, parameter, isStudy, E);
+        sendMessage(eventId, parameter, isStudy, E, outBack);
     }
 
-    public void postMatrixMessage(long eventId, Matrix parameter, boolean isKernelStudy, boolean isNerveStudy
-            , Map<Integer, Double> E, Border border) throws Exception {
-        sendMatrix(eventId, parameter, isKernelStudy, isNerveStudy, E, border);
+    public void postMatrixMessage(long eventId, Matrix parameter, boolean isKernelStudy
+            , Map<Integer, Double> E, OutBack outBack) throws Exception {
+        sendMatrix(eventId, parameter, isKernelStudy, E, outBack);
     }
 
     @Override

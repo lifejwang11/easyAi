@@ -20,8 +20,22 @@ import java.util.Map;
  */
 public class HelloWorld {
     public static void main(String[] args) throws Exception {
-        testPic();
+        //testPic();
         //testModel();
+        test();
+    }
+
+    public static void test() throws Exception {
+        Picture picture = new Picture();
+        Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/test/a101.png");
+        TempleConfig templeConfig = getTemple(true, StudyPattern.Accuracy_Pattern);
+        Ma ma = new Ma();
+        Operation operation = new Operation(templeConfig, ma);
+        long a = System.currentTimeMillis();
+        operation.look(right, 2);
+        long b = System.currentTimeMillis();
+        System.out.println("耗时：" + (b - a));
+
     }
 
     public static void testPic() throws Exception {
@@ -82,10 +96,6 @@ public class HelloWorld {
     public static TempleConfig getTemple(boolean isFirst, int pattern) throws Exception {
         //创建一个配置模板类，作用：主要是保存及载入一些配置参数用
         TempleConfig templeConfig = new TempleConfig();
-        //创建一个回调类，图像识别最后输出结果，在这个类输出，这个类要实现 OutBack接口
-        Ma ma = new Ma();//创建一个回调类
-        //将这个回调类注册到配置模版里 必写
-        templeConfig.setOutBack(ma);
         //全连接层深度,选填可不填 不填默认值为2
         //这就像人类大脑的意识深度原理一样，深度学习越深，训练结果越准，但是训练量成几何倍数增加
         //比如默认深度是2 需要 正负模板各一千+张照片进行训练。识别率70%（数值只是举个例子，不是具体数值）
@@ -151,8 +161,8 @@ public class HelloWorld {
             //将图像矩阵和标注加入进行学习 注意的是 Accuracy_Pattern 模式 要学习两次
             //这里使用learning方法，前两个参数与SPEED模式相同，多了一个第三个参数
             //第一次学习的时候 这个参数必须是 false
-            operation.learning(right, rightTagging, false);
-            operation.learning(wrong, wrongTagging, false);
+            operation.learning(right, rightTagging, false, 1);
+            operation.learning(wrong, wrongTagging, false, 0);
         }
         for (int i = 1; i < 2; i++) {//神经网络学习
             System.out.println("开始学习2==" + i);
@@ -161,8 +171,8 @@ public class HelloWorld {
             Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");
             //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
             //第二次学习的时候，第三个参数必须是 true
-            operation.learning(right, rightTagging, true);
-            operation.learning(wrong, wrongTagging, true);
+            operation.learning(right, rightTagging, true, 1);
+            operation.learning(wrong, wrongTagging, true, 0);
         }
         Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/test/a101.png");
         Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b1000.png");

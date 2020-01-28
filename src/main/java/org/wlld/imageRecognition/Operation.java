@@ -4,6 +4,7 @@ package org.wlld.imageRecognition;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.StudyPattern;
+import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.Border;
 import org.wlld.imageRecognition.border.BorderBody;
 import org.wlld.imageRecognition.border.Frame;
@@ -19,9 +20,17 @@ import java.util.Map;
 public class Operation {//进行计算
     private TempleConfig templeConfig;//配置初始化参数模板
     private Convolution convolution = new Convolution();
+    private MatrixBack matrixBack = new MatrixBack();
+    private ImageBack imageBack = new ImageBack();
+    private OutBack outBack;
 
     public Operation(TempleConfig templeConfig) {
         this.templeConfig = templeConfig;
+    }
+
+    public Operation(TempleConfig templeConfig, OutBack outBack) {
+        this.templeConfig = templeConfig;
+        this.outBack = outBack;
     }
 
     public List<Double> convolution(Matrix matrix, Map<Integer, Double> tagging) throws Exception {
@@ -49,25 +58,36 @@ public class Operation {//进行计算
     public void study(Matrix matrix, Map<Integer, Double> tagging) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Speed_Pattern) {
             List<Double> list = convolution(matrix, tagging);
-            intoNerve(1, list, templeConfig.getSensoryNerves(), true, tagging);
+            intoNerve(1, list, templeConfig.getSensoryNerves(), true, tagging, null);
         } else {
             throw new Exception("pattern is wrong");
         }
     }
 
     //卷积核学习
-    public void learning(Matrix matrix, Map<Integer, Double> tagging, boolean isNerveStudy) throws Exception {
+    public void learning(Matrix matrix, Map<Integer, Double> tagging, boolean isNerveStudy, int id) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
             Border border = null;
-            if (templeConfig.isHavePosition() && isNerveStudy) {
+            if (templeConfig.isHavePosition() && isNerveStudy && id > 0) {
+                outBack = imageBack;
                 border = convolution.borderOnce(matrix, templeConfig);
             }
             boolean isKernelStudy = true;
             if (isNerveStudy) {
                 isKernelStudy = false;
             }
+            //进卷积网络
             intoNerve2(1, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
-                    isKernelStudy, isNerveStudy, tagging, border);
+                    isKernelStudy, tagging, matrixBack);
+            if (isNerveStudy) {
+                Matrix myMatrix = matrixBack.getMatrix();
+                if (templeConfig.isHavePosition() && id > 0) {
+                    border.end(myMatrix, id);
+                }
+                long eventId = matrixBack.getEventId();
+                List<Double> featureList = getFeatureList(myMatrix);
+                intoNerve(eventId, featureList, templeConfig.getSensoryNerves(), true, tagging, outBack);
+            }
         } else {
             throw new Exception("pattern is wrong");
         }
@@ -77,7 +97,7 @@ public class Operation {//进行计算
     public void look(Matrix matrix, long eventId) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Speed_Pattern) {
             List<Double> list = convolution(matrix, null);
-            intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null);
+            intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null, outBack);
         } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
             see(matrix, eventId);
         }
@@ -87,6 +107,7 @@ public class Operation {//进行计算
     public Map<Integer, List<FrameBody>> lookWithPosition(Matrix matrix, long eventId) throws Exception {
         Frame frame = templeConfig.getFrame();
         if (templeConfig.isHavePosition() && frame != null && frame.isReady()) {
+            //区域分割
             List<FrameBody> frameBodies = convolution.getRegion(matrix, frame);
             if (templeConfig.getStudyPattern() == StudyPattern.Speed_Pattern) {
                 int maxNub = 0;
@@ -95,7 +116,7 @@ public class Operation {//进行计算
                 } else {
                     maxNub = templeConfig.getColumn();
                 }
-                ImageBack imageBack = templeConfig.getImageBack();
+                //坐标回调类
                 for (FrameBody frameBody : frameBodies) {
                     //Speed 模式下的最后卷积结果
                     Matrix matrix1 = convolution.getFeatures(frameBody.getMatrix(), maxNub, templeConfig, -1);
@@ -103,11 +124,16 @@ public class Operation {//进行计算
                     List<Double> list = sub(matrix1);
                     imageBack.setFrameBody(frameBody);
                     //进入神经网络判断
-                    intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null);
+                    intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null, imageBack);
                 }
                 return toPositon(frameBodies, frame.getWidth(), frame.getHeight());
             } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
+                for (FrameBody frameBody : frameBodies) {
+                    intoNerve2(eventId, frameBody.getMatrix(), templeConfig.getConvolutionNerveManager().getSensoryNerves(),
+                            false, null, matrixBack);
+                    Matrix myMatrix = matrixBack.getMatrix();
 
+                }
                 return null;
             } else {
                 throw new Exception("wrong model");
@@ -243,7 +269,10 @@ public class Operation {//进行计算
     private void see(Matrix matrix, long eventId) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
             intoNerve2(eventId, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
-                    false, false, null, null);
+                    false, null, matrixBack);
+            Matrix myMatrix = matrixBack.getMatrix();
+            List<Double> featureList = getFeatureList(myMatrix);
+            intoNerve(eventId, featureList, templeConfig.getSensoryNerves(), false, null, outBack);
         } else {
             throw new Exception("pattern is wrong");
         }
@@ -265,18 +294,29 @@ public class Operation {//进行计算
         return list;
     }
 
+    private List<Double> getFeatureList(Matrix matrix) throws Exception {//
+        List<Double> list = new ArrayList<>();
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                double nub = ArithUtil.div(matrix.getNumber(i, j), 10);
+                list.add(nub);
+            }
+        }
+        return list;
+    }
+
     private void intoNerve(long eventId, List<Double> featurList, List<SensoryNerve> sensoryNerveList
-            , boolean isStudy, Map<Integer, Double> map) throws Exception {
+            , boolean isStudy, Map<Integer, Double> map, OutBack imageBack) throws Exception {
         for (int i = 0; i < sensoryNerveList.size(); i++) {
-            sensoryNerveList.get(i).postMessage(eventId, featurList.get(i), isStudy, map);
+            sensoryNerveList.get(i).postMessage(eventId, featurList.get(i), isStudy, map
+                    , imageBack);
         }
     }
 
     private void intoNerve2(long eventId, Matrix featur, List<SensoryNerve> sensoryNerveList
-            , boolean isKernelStudy, boolean isNerveStudy
-            , Map<Integer, Double> E, Border border) throws Exception {
+            , boolean isKernelStudy, Map<Integer, Double> E, OutBack outBack) throws Exception {
         for (int i = 0; i < sensoryNerveList.size(); i++) {
-            sensoryNerveList.get(i).postMatrixMessage(eventId, featur, isKernelStudy, isNerveStudy, E, border);
+            sensoryNerveList.get(i).postMatrixMessage(eventId, featur, isKernelStudy, E, outBack);
         }
     }
 }
