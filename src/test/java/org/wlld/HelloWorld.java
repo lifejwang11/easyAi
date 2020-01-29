@@ -8,7 +8,6 @@ import org.wlld.imageRecognition.Operation;
 import org.wlld.imageRecognition.Picture;
 import org.wlld.imageRecognition.TempleConfig;
 import org.wlld.nerveEntity.ModelParameter;
-import org.wlld.test.Ma;
 
 import java.util.HashMap;
 import java.util.Map;

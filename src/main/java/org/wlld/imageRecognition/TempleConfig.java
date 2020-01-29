@@ -5,7 +5,6 @@ import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
-import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.BorderBody;
 import org.wlld.imageRecognition.border.Frame;
 import org.wlld.nerveCenter.NerveManager;
@@ -188,6 +187,10 @@ public class TempleConfig {
             modelParameter.setDymNerveStudies(modelParameter1.getDymNerveStudies());
             modelParameter.setDymOutNerveStudy(modelParameter1.getDymOutNerveStudy());
         }
+        if (isHavePosition) {//存在边框学习模型参数
+            modelParameter.setBorderBodyMap(borderBodyMap);
+            modelParameter.setFrame(frame);
+        }
         return modelParameter;
     }
 
@@ -226,6 +229,13 @@ public class TempleConfig {
         nerveManager.insertModelParameter(modelParameter);
         if (studyPattern == StudyPattern.Accuracy_Pattern) {
             convolutionNerveManager.insertModelParameter(modelParameter);
+        }
+        Frame frame = modelParameter.getFrame();
+        Map<Integer, BorderBody> borderBodyMap = modelParameter.getBorderBodyMap();
+        if (frame != null && borderBodyMap != null && borderBodyMap.size() > 0) {
+            isHavePosition = true;
+            this.frame = frame;
+            this.borderBodyMap = borderBodyMap;
         }
     }
 
