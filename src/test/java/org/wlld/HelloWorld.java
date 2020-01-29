@@ -7,9 +7,12 @@ import org.wlld.config.StudyPattern;
 import org.wlld.imageRecognition.Operation;
 import org.wlld.imageRecognition.Picture;
 import org.wlld.imageRecognition.TempleConfig;
+import org.wlld.imageRecognition.border.Frame;
+import org.wlld.imageRecognition.border.FrameBody;
 import org.wlld.nerveEntity.ModelParameter;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,22 +22,8 @@ import java.util.Map;
  */
 public class HelloWorld {
     public static void main(String[] args) throws Exception {
-        //testPic();
+        testPic();
         //testModel();
-        test();
-    }
-
-    public static void test() throws Exception {
-        Picture picture = new Picture();
-        Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/test/a101.png");
-        TempleConfig templeConfig = getTemple(true, StudyPattern.Accuracy_Pattern);
-        Ma ma = new Ma();
-        Operation operation = new Operation(templeConfig, ma);
-        long a = System.currentTimeMillis();
-        operation.look(right, 2);
-        long b = System.currentTimeMillis();
-        System.out.println("耗时：" + (b - a));
-
     }
 
     public static void testPic() throws Exception {
@@ -43,8 +32,12 @@ public class HelloWorld {
         Picture picture = new Picture();
         //初始化配置模板类,设置模式为SPEED_PATTERN模式 即速度模式
         TempleConfig templeConfig = getTemple(true, StudyPattern.Speed_Pattern);
-        //初始化计算类，并将配置模版载入计算类
-        Operation operation = new Operation(templeConfig);
+        //初始化计算类，并将配置模版和输出回调类载入计算类
+        //运算类有两个构造一个是配置回调类，一个是不配置回调类
+        //若使用定位功能，则无需配置回调类，若不启用，则要配置回调类
+        //回调类要实现OutBack接口中的方法
+        Ma ma = new Ma();
+        Operation operation = new Operation(templeConfig, ma);
         //标注主键为 第几种分类，值为标注 1 是TRUE 0是FALSE
         //给训练图像进行标注，健是分类的ID,对应的就是输出结果的ID值，值要么写0要么写1
         // 1就是 是这种分类，0就是不是这种分类
@@ -66,6 +59,9 @@ public class HelloWorld {
             //wrong这个矩阵是错误的图片，所以要配置上面错误的标注0.0 学习 告诉计算机这个图片是错误的
             operation.study(wrong, wrongTagging);
         }
+        //如果启用物体坐标定位，则在学习结束的时候，一定要执行boxStudy方法
+        //若不启用，则请不要使用，否则会报错
+        //templeConfig.boxStudy();
         //获取训练结束的模型参数，提取出来转化成JSON保存数据库，下次服务启动时不用学习
         //直接将模型参数注入
         //获取模型MODLE 这个模型就是我们程序学习的目的，学习结束后我们要拿到这个模型
@@ -90,6 +86,9 @@ public class HelloWorld {
         //说明你回调是响应的哪一次调用的ID,所以每一次识别调用，请用不同的id
         operation1.look(wrong, 3);
         operation1.look(right, 2);
+        //若启用定位功能检测请使用lookWithPosition,若没有启用，使用检测会报错
+        //返回map,主键是分类id,值是该图片中此分类有多少个物体，每个物体的具体位置坐标的大小
+        //Map<Integer, List<FrameBody>> map = operation1.lookWithPosition(right, 4);
     }
 
     public static TempleConfig getTemple(boolean isFirst, int pattern) throws Exception {
@@ -103,6 +102,12 @@ public class HelloWorld {
         //但是有极限，即超过某个深度，即使再增加深度，识别率反而会下降。需要具体不断尝试找到 合适的深度
         //注意：若深度提升，训练量没有成倍增长，则准确度反而更低！
         templeConfig.setDeep(2);
+        //启用定位学习 注意启用在图片中对某个物体进行定位，要注意
+        //学习的图片必须除了学习的物体以外，其他位置都是白色或者空白(即用PS扣空)。
+        //即该图片除了这个物体，没有其他任何干扰杂色（一个像素的杂色都不可以有）
+        //templeConfig.setHavePosition(true);
+        //窗口类，就是用来扫描图片的窗口大小和移动距离的设定
+        //Frame frame = new Frame();
         //初始化配置模版，参数说明(int studyPattern, boolean initPower, int width, int height
         //, int classificationNub)
         //studyPattern 学习模式：常量值 StudyPattern.Accuracy_Pattern;StudyPattern.Speed_Pattern
@@ -160,8 +165,9 @@ public class HelloWorld {
             //将图像矩阵和标注加入进行学习 注意的是 Accuracy_Pattern 模式 要学习两次
             //这里使用learning方法，前两个参数与SPEED模式相同，多了一个第三个参数
             //第一次学习的时候 这个参数必须是 false
-            operation.learning(right, rightTagging, false, 1);
-            operation.learning(wrong, wrongTagging, false, 0);
+            //最后一个参数id
+            operation.learning(right, rightTagging, false);
+            operation.learning(wrong, wrongTagging, false);
         }
         for (int i = 1; i < 2; i++) {//神经网络学习
             System.out.println("开始学习2==" + i);
@@ -170,8 +176,8 @@ public class HelloWorld {
             Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");
             //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
             //第二次学习的时候，第三个参数必须是 true
-            operation.learning(right, rightTagging, true, 1);
-            operation.learning(wrong, wrongTagging, true, 0);
+            operation.learning(right, rightTagging, true);
+            operation.learning(wrong, wrongTagging, true);
         }
         Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/test/a101.png");
         Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b1000.png");

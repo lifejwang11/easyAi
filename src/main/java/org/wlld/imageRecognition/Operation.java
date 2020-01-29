@@ -65,9 +65,16 @@ public class Operation {//进行计算
     }
 
     //卷积核学习
-    public void learning(Matrix matrix, Map<Integer, Double> tagging, boolean isNerveStudy, int id) throws Exception {
+    public void learning(Matrix matrix, Map<Integer, Double> tagging, boolean isNerveStudy) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
             Border border = null;
+            int id = 0;
+            for (Map.Entry<Integer, Double> entry : tagging.entrySet()) {
+                if (entry.getValue() > 0.5) {
+                    id = entry.getKey();
+                    break;
+                }
+            }
             if (templeConfig.isHavePosition() && isNerveStudy && id > 0) {
                 outBack = imageBack;
                 border = convolution.borderOnce(matrix, templeConfig);
