@@ -59,6 +59,13 @@ public class FrameBody {
         return id;
     }
 
+    public void setId(int id) {
+        if (id > 0) {
+            this.id = id;
+            point = 1;
+        }
+    }
+
     public double getPoint() {
         return point;
     }

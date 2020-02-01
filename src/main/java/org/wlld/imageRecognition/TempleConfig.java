@@ -12,6 +12,7 @@ import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -188,10 +189,30 @@ public class TempleConfig {
         }
         convolutionNerveManager = new NerveManager(1, 1,
                 1, deep - 1, new ReLu(), true);
-        //initNerveManager(initPower, width * height, 2);
-
         convolutionNerveManager.setMatrixMap(matrixMap);//给卷积网络管理器注入期望矩阵
         convolutionNerveManager.init(initPower, true);
+    }
+
+    private List<Double> getFeatureList(Matrix matrix) throws Exception {//
+        List<Double> list = new ArrayList<>();
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                double nub = matrix.getNumber(i, j);
+                list.add(nub);
+            }
+        }
+        return list;
+    }
+
+    private void insertKMatrix(Matrix matrix, List<Double> list) throws Exception {
+        int x = matrix.getX();
+        int y = matrix.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                int nub = i * y + j;
+                matrix.setNub(i, j, list.get(nub));
+            }
+        }
     }
 
     public ModelParameter getModel() throws Exception {//获取模型参数
@@ -200,7 +221,12 @@ public class TempleConfig {
             ModelParameter modelParameter1 = convolutionNerveManager.getModelParameter();
             modelParameter.setDymNerveStudies(modelParameter1.getDymNerveStudies());
             modelParameter.setDymOutNerveStudy(modelParameter1.getDymOutNerveStudy());
-            //modelParameter.setkMatrixMap(kMatrixMap);
+            Map<Integer, List<Double>> matrixMap = new HashMap<>();
+            for (Map.Entry<Integer, KMatrix> entry : kMatrixMap.entrySet()) {
+                List<Double> list = getFeatureList(entry.getValue().getSigmaMatrix());
+                matrixMap.put(entry.getKey(), list);
+            }
+            modelParameter.setkMatrixList(matrixMap);
         } else if (studyPattern == StudyPattern.Speed_Pattern) {
             ModelParameter modelParameter1 = nerveManager.getModelParameter();
             modelParameter.setDepthNerves(modelParameter1.getDepthNerves());
@@ -247,9 +273,13 @@ public class TempleConfig {
     public void insertModel(ModelParameter modelParameter) throws Exception {
         if (studyPattern == StudyPattern.Accuracy_Pattern) {
             convolutionNerveManager.insertModelParameter(modelParameter);
-            Map<Integer, KMatrix> kMatrixs = modelParameter.getkMatrixMap();
+            Map<Integer, List<Double>> kMatrixs = modelParameter.getkMatrixList();
             if (kMatrixs != null && kMatrixs.size() == kMatrixMap.size()) {
-                kMatrixMap = modelParameter.getkMatrixMap();
+                for (Map.Entry<Integer, KMatrix> entry : kMatrixMap.entrySet()) {
+                    KMatrix kMatrix = entry.getValue();
+                    insertKMatrix(kMatrix.getSigmaMatrix(), kMatrixs.get(entry.getKey()));
+                    kMatrix.setFinish(true);
+                }
             }
         } else if (studyPattern == StudyPattern.Speed_Pattern) {
             nerveManager.insertModelParameter(modelParameter);

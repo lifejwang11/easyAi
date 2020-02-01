@@ -18,6 +18,18 @@ public class KMatrix {
         sigmaMatrix = new Matrix(x, y);
     }
 
+    public boolean isFinish() {
+        return isFinish;
+    }
+
+    public void setFinish(boolean finish) {
+        isFinish = finish;
+    }
+
+    public Matrix getSigmaMatrix() {
+        return sigmaMatrix;
+    }
+
     public double getEDist(Matrix matrix) throws Exception {//返回欧式距离
         if (isFinish && matrix.getX() == sigmaMatrix.getX()
                 && matrix.getY() == sigmaMatrix.getY()) {

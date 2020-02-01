@@ -84,7 +84,6 @@ public class Operation {//进行计算
                 if (templeConfig.isHavePosition() && tagging > 0) {
                     border.end(myMatrix, tagging);
                 }
-                //System.out.println(myMatrix.getString());
                 //进行聚类
                 Map<Integer, KMatrix> kMatrixMap = templeConfig.getkMatrixMap();
                 if (kMatrixMap.containsKey(tagging)) {
@@ -93,7 +92,6 @@ public class Operation {//进行计算
                 } else {
                     throw new Exception("not find tag");
                 }
-                //intoNerve(1, featureList, templeConfig.getSensoryNerves(), true, tagging, outBack);
             }
         } else {
             throw new Exception("pattern is wrong");
@@ -142,10 +140,8 @@ public class Operation {//进行计算
                     Matrix myMatrix = matrixBack.getMatrix();
                     //卷积层输出即边框回归的输入的特征向量
                     frameBody.setEndMatrix(myMatrix);
-                    List<Double> list = sub(myMatrix);
-                    imageBack.setFrameBody(frameBody);
-                    //进入神经网络判断
-                    intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null, imageBack);
+                    int id = getClassificationId(myMatrix);
+                    frameBody.setId(id);
                 }
                 return toPosition(frameBodies, frame.getWidth(), frame.getHeight());
             } else {
@@ -284,22 +280,26 @@ public class Operation {//进行计算
             intoNerve2(2, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
                     false, -1, matrixBack);
             Matrix myMatrix = matrixBack.getMatrix();
-            int id = 0;
-            double distEnd = 0;
-            Map<Integer, KMatrix> kMatrixMap = templeConfig.getkMatrixMap();
-            for (Map.Entry<Integer, KMatrix> entry : kMatrixMap.entrySet()) {
-                int key = entry.getKey();
-                KMatrix kMatrix = entry.getValue();
-                double dist = kMatrix.getEDist(myMatrix);
-                if (distEnd == 0 || dist < distEnd) {
-                    id = key;
-                    distEnd = dist;
-                }
-            }
-            return id;
+            return getClassificationId(myMatrix);
         } else {
             throw new Exception("pattern is wrong");
         }
+    }
+
+    private int getClassificationId(Matrix myMatrix) throws Exception {
+        int id = 0;
+        double distEnd = 0;
+        Map<Integer, KMatrix> kMatrixMap = templeConfig.getkMatrixMap();
+        for (Map.Entry<Integer, KMatrix> entry : kMatrixMap.entrySet()) {
+            int key = entry.getKey();
+            KMatrix kMatrix = entry.getValue();
+            double dist = kMatrix.getEDist(myMatrix);
+            if (distEnd == 0 || dist < distEnd) {
+                id = key;
+                distEnd = dist;
+            }
+        }
+        return id;
     }
 
     private List<Double> sub(Matrix matrix) throws Exception {//
@@ -313,17 +313,6 @@ public class Operation {//进行计算
                 } else {
                     list.add(matrix.getNumber(i, j));
                 }
-            }
-        }
-        return list;
-    }
-
-    private List<Double> getFeatureList(Matrix matrix) throws Exception {//
-        List<Double> list = new ArrayList<>();
-        for (int i = 0; i < matrix.getX(); i++) {
-            for (int j = 0; j < matrix.getY(); j++) {
-                double nub = matrix.getNumber(i, j);
-                list.add(nub);
             }
         }
         return list;
