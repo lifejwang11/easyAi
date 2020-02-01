@@ -19,7 +19,6 @@ import java.util.Map;
  */
 public class OutNerve extends Nerve {
     private Map<Integer, Matrix> matrixMapE;//主键与期望矩阵的映射
-    private Matrix matrixF;
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic) throws Exception {
@@ -58,22 +57,12 @@ public class OutNerve extends Nerve {
 
     @Override
     protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy
-            , Map<Integer, Double> E, OutBack outBack) throws Exception {
+            , int E, OutBack outBack) throws Exception {
         Matrix myMatrix = dynamicNerve(matrix, eventId, isKernelStudy);
-        if (matrixF == null) {
-            matrixF = new Matrix(myMatrix.getX(), myMatrix.getY());
-        }
         if (isKernelStudy) {//回传
-            for (Map.Entry<Integer, Double> entry : E.entrySet()) {
-                double g;
-                if (entry.getValue() > 0.5) {//正模板
-                    Matrix matrix1 = matrixMapE.get(entry.getKey());
-                    g = getGradient(myMatrix, matrix1);
-                } else {
-                    g = getGradient(myMatrix, matrixF);
-                }
-                backMatrix(g, eventId);
-            }//所有训练集的卷积核训练结束,才需要再次训练全连接层
+            Matrix matrix1 = matrixMapE.get(E);
+            double g = getGradient(myMatrix, matrix1);
+            backMatrix(g, eventId);
         } else {//卷积层输出
             if (outBack != null) {
                 outBack.getBackMatrix(myMatrix, eventId);

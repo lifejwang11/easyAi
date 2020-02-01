@@ -41,7 +41,7 @@ public class HiddenNerve extends Nerve {
 
     @Override
     protected void inputMatrix(long eventId, Matrix matrix, boolean isStudy
-            , Map<Integer, Double> E, OutBack outBack) throws Exception {
+            , int E, OutBack outBack) throws Exception {
         Matrix myMatrix = dynamicNerve(matrix, eventId, isStudy);//处理过的矩阵
         sendMatrix(eventId, myMatrix, isStudy, E, outBack);
     }

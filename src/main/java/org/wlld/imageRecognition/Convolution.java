@@ -59,8 +59,8 @@ public class Convolution {
         List<FrameBody> frameBodies = new ArrayList<>();
         double xNub = frame.getLengthHeight();
         double yNub = frame.getLengthWidth();
-        for (int i = 0; i < x - xFrame; i += xNub) {
-            for (int j = 0; j < y - yFrame; j += yNub) {
+        for (int i = 0; i <= x - xFrame; i += xNub) {
+            for (int j = 0; j <= y - yFrame; j += yNub) {
                 FrameBody frameBody = new FrameBody();
                 Matrix myMatrix = matrix.getSonOfMatrix(i, j, xFrame, yFrame);
                 frameBody.setMatrix(myMatrix);

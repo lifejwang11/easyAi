@@ -77,11 +77,11 @@ public abstract class Nerve {
         this.studyPoint = studyPoint;
     }
 
-    public void sendMessage(long enevtId, double parameter, boolean isStudy, Map<Integer, Double> E
+    public void sendMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
             , OutBack outBack) throws Exception {
         if (son.size() > 0) {
             for (Nerve nerve : son) {
-                nerve.input(enevtId, parameter, isStudy, E, outBack);
+                nerve.input(eventId, parameter, isStudy, E, outBack);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -123,7 +123,7 @@ public abstract class Nerve {
     }
 
     public void sendMatrix(long eventId, Matrix parameter, boolean isStudy,
-                           Map<Integer, Double> E, OutBack outBack) throws Exception {
+                           int E, OutBack outBack) throws Exception {
         if (son.size() > 0) {
             for (Nerve nerve : son) {
                 nerve.inputMatrix(eventId, parameter, isStudy, E, outBack);
@@ -154,7 +154,7 @@ public abstract class Nerve {
 
     }
 
-    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy, Map<Integer, Double> E, OutBack outBack) throws Exception {//输入动态矩阵
+    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy, int E, OutBack outBack) throws Exception {//输入动态矩阵
     }
 
     private void backGetMessage(double parameter, long eventId) throws Exception {//反向传播

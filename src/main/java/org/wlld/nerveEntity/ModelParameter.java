@@ -1,6 +1,7 @@
 package org.wlld.nerveEntity;
 
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.imageRecognition.KMatrix;
 import org.wlld.imageRecognition.border.BorderBody;
 import org.wlld.imageRecognition.border.Frame;
 
@@ -21,10 +22,19 @@ public class ModelParameter {
     private List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
     private DymNerveStudy dymOutNerveStudy = new DymNerveStudy();//动态神经元输出层
     private Map<Integer, BorderBody> borderBodyMap = new HashMap<>();//border特征集合
+    private Map<Integer, KMatrix> kMatrixMap = new HashMap<>();//K均值矩阵集合
     private Frame frame;//先验边框
 
     public Map<Integer, BorderBody> getBorderBodyMap() {
         return borderBodyMap;
+    }
+
+    public Map<Integer, KMatrix> getkMatrixMap() {
+        return kMatrixMap;
+    }
+
+    public void setkMatrixMap(Map<Integer, KMatrix> kMatrixMap) {
+        this.kMatrixMap = kMatrixMap;
     }
 
     public void setBorderBodyMap(Map<Integer, BorderBody> borderBodyMap) {

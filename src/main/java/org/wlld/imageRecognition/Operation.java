@@ -65,17 +65,10 @@ public class Operation {//进行计算
     }
 
     //卷积核学习
-    public void learning(Matrix matrix, Map<Integer, Double> tagging, boolean isNerveStudy) throws Exception {
+    public void learning(Matrix matrix, int tagging, boolean isNerveStudy) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
             Border border = null;
-            int id = 0;
-            for (Map.Entry<Integer, Double> entry : tagging.entrySet()) {
-                if (entry.getValue() > 0.5) {
-                    id = entry.getKey();
-                    break;
-                }
-            }
-            if (templeConfig.isHavePosition() && isNerveStudy && id > 0) {
+            if (templeConfig.isHavePosition() && isNerveStudy && tagging > 0) {
                 outBack = imageBack;
                 border = convolution.borderOnce(matrix, templeConfig);
             }
@@ -88,12 +81,19 @@ public class Operation {//进行计算
                     isKernelStudy, tagging, matrixBack);
             if (isNerveStudy) {
                 Matrix myMatrix = matrixBack.getMatrix();
-                if (templeConfig.isHavePosition() && id > 0) {
-                    border.end(myMatrix, id);
+                if (templeConfig.isHavePosition() && tagging > 0) {
+                    border.end(myMatrix, tagging);
                 }
-                long eventId = matrixBack.getEventId();
-                List<Double> featureList = getFeatureList(myMatrix);
-                intoNerve(eventId, featureList, templeConfig.getSensoryNerves(), true, tagging, outBack);
+                //System.out.println(myMatrix.getString());
+                //进行聚类
+                Map<Integer, KMatrix> kMatrixMap = templeConfig.getkMatrixMap();
+                if (kMatrixMap.containsKey(tagging)) {
+                    KMatrix kMatrix = kMatrixMap.get(tagging);
+                    kMatrix.addMatrix(myMatrix);
+                } else {
+                    throw new Exception("not find tag");
+                }
+                //intoNerve(1, featureList, templeConfig.getSensoryNerves(), true, tagging, outBack);
             }
         } else {
             throw new Exception("pattern is wrong");
@@ -106,7 +106,7 @@ public class Operation {//进行计算
             List<Double> list = convolution(matrix, null);
             intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null, outBack);
         } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
-            see(matrix, eventId);
+            throw new Exception("studyPattern not right");
         }
     }
 
@@ -138,7 +138,7 @@ public class Operation {//进行计算
             } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
                 for (FrameBody frameBody : frameBodies) {
                     intoNerve2(eventId, frameBody.getMatrix(), templeConfig.getConvolutionNerveManager().getSensoryNerves(),
-                            false, null, matrixBack);
+                            false, -1, matrixBack);
                     Matrix myMatrix = matrixBack.getMatrix();
                     //卷积层输出即边框回归的输入的特征向量
                     frameBody.setEndMatrix(myMatrix);
@@ -279,13 +279,24 @@ public class Operation {//进行计算
     }
 
     //图像视觉 Accuracy 模式
-    private void see(Matrix matrix, long eventId) throws Exception {
+    public int toSee(Matrix matrix) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
-            intoNerve2(eventId, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
-                    false, null, matrixBack);
+            intoNerve2(2, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
+                    false, -1, matrixBack);
             Matrix myMatrix = matrixBack.getMatrix();
-            List<Double> featureList = getFeatureList(myMatrix);
-            intoNerve(eventId, featureList, templeConfig.getSensoryNerves(), false, null, outBack);
+            int id = 0;
+            double distEnd = 0;
+            Map<Integer, KMatrix> kMatrixMap = templeConfig.getkMatrixMap();
+            for (Map.Entry<Integer, KMatrix> entry : kMatrixMap.entrySet()) {
+                int key = entry.getKey();
+                KMatrix kMatrix = entry.getValue();
+                double dist = kMatrix.getEDist(myMatrix);
+                if (distEnd == 0 || dist < distEnd) {
+                    id = key;
+                    distEnd = dist;
+                }
+            }
+            return id;
         } else {
             throw new Exception("pattern is wrong");
         }
@@ -311,23 +322,23 @@ public class Operation {//进行计算
         List<Double> list = new ArrayList<>();
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
-                double nub = ArithUtil.div(matrix.getNumber(i, j), 10);
+                double nub = matrix.getNumber(i, j);
                 list.add(nub);
             }
         }
         return list;
     }
 
-    private void intoNerve(long eventId, List<Double> featurList, List<SensoryNerve> sensoryNerveList
+    private void intoNerve(long eventId, List<Double> featureList, List<SensoryNerve> sensoryNerveList
             , boolean isStudy, Map<Integer, Double> map, OutBack imageBack) throws Exception {
         for (int i = 0; i < sensoryNerveList.size(); i++) {
-            sensoryNerveList.get(i).postMessage(eventId, featurList.get(i), isStudy, map
+            sensoryNerveList.get(i).postMessage(eventId, featureList.get(i), isStudy, map
                     , imageBack);
         }
     }
 
     private void intoNerve2(long eventId, Matrix featur, List<SensoryNerve> sensoryNerveList
-            , boolean isKernelStudy, Map<Integer, Double> E, OutBack outBack) throws Exception {
+            , boolean isKernelStudy, int E, OutBack outBack) throws Exception {
         for (int i = 0; i < sensoryNerveList.size(); i++) {
             sensoryNerveList.get(i).postMatrixMessage(eventId, featur, isKernelStudy, E, outBack);
         }
