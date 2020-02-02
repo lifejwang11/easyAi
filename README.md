@@ -140,22 +140,18 @@
            Picture picture = new Picture();
            TempleConfig templeConfig = getTemple(true, StudyPattern.Accuracy_Pattern);
            Operation operation = new Operation(templeConfig);
-           //标注主键为 第几种分类，值为标注 1 是TRUE 0是FALSE
-           Map<Integer, Double> rightTagging = new HashMap<>();//分类标注
-           Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
-           rightTagging.put(1, 1.0);
-           wrongTagging.put(1, 0.0);
            for (int i = 1; i < 2; i++) {
                System.out.println("开始学习1==" + i);
                //读取本地URL地址图片,并转化成矩阵
                Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
                Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");
                //将图像矩阵和标注加入进行学习 注意的是 Accuracy_Pattern 模式 要学习两次
-               //这里使用learning方法，前两个参数与SPEED模式相同，多了一个第三个参数
-               //第一次学习的时候 这个参数必须是 false
-               //最后一个参数id
-               operation.learning(right, rightTagging, false);
-               operation.learning(wrong, wrongTagging, false);
+               //这里使用learning方法，第一个参数没变，第二个参数是标注参数，learning的标注
+               //不再使用MAP而是直接给一个整型的数字，0，1,2,3...作为它的分类id，注意我们约定
+               //id 为0的分类为全FALSE分类，即背景
+               //第三个参数，第一次学习的时候 这个参数必须是 false
+               operation.learning(right, 1, false);
+               operation.learning(wrong, 0, false);
            }
            for (int i = 1; i < 2; i++) {//神经网络学习
                System.out.println("开始学习2==" + i);
@@ -169,10 +165,12 @@
            }
            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/test/a101.png");
            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b1000.png");
-           //进行图像识别，Accuracy_Pattern 模式学习结果获取和注入，跟SPEED模式一致
-           //若有疑问可以参考一下 testModel()方法
-           operation.look(right, 2);
-           operation.look(wrong, 3);
+           //精准模式检测单张图片将直接返回分类id,而不是通过回调来获取分类概率
+           //不是使用look,而是使用toSee
+           int rightId = operation.toSee(right);
+           int wrongId = operation.toSee(wrong);
+           System.out.println("该图是菜单：" + rightId);
+           System.out.println("该图是桌子:" + wrongId);
        }
     回调输出类： 
     public class Ma implements OutBack {
@@ -197,3 +195,16 @@
 一直就使用一个配置类就可以了。
 * Operation():运算类，除了学习可以使用一个以外，用户每检测一次都要NEW一次。
 因为学习是单线程无所谓，而检测是多线程，如果使用一个运算类，可能会造成线程安全问题
+#### 精准模式和速度模式的优劣
+* 速度模式学习很快，但是检测速度慢，双核i3检测单张图片（1200万像素）单物体检测速度约800ms.
+学习1200万像素的照片物体，1000张需耗时1-2小时。
+* 精准模式学习很慢，但是检测速度快，双核i3检测单张图片（1200万像素）单物体检测速度约100ms.
+学习1200万像素的照片物体，1000张需耗时5-7个小时。
+#### 本包为性能优化而对AI算法的修改
+* 本包对图像AI算法进行了修改，为应对CPU部署。
+* 卷积神经网络后的全连接层直接替换成了K均值算法进行聚类，通过卷积结果与K均值矩阵欧式距离来进行判定。
+* 物体的边框检测通过卷积后的特征向量进行多元线性回归获得，检测边框的候选区并没有使用图像分割（cpu对图像分割算法真是超慢），
+而是通过Frame类让用户自定义先验图框大小和先验图框每次移动的检测步长，然后再通过多次检测的IOU来确定是否为同一物体。
+* 所以添加定位模式，用户要确定Frame的大小和步长，来替代基于图像分割的候选区推荐算法。
+* 速度模式是使用固定的边缘算子进行多次卷积核，然后使用BP的多层神经网络进行强行拟合给出的结果（它之所以学习快，就是因为速度模式学习的是
+全连接层的权重及阈值，而没有对卷积核进行学习）

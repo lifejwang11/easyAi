@@ -206,11 +206,6 @@ public class HelloWorld {
         TempleConfig templeConfig = getTemple(true, StudyPattern.Accuracy_Pattern, false);
         Ma ma = new Ma();
         Operation operation = new Operation(templeConfig, ma);
-        //标注主键为 第几种分类，值为标注 1 是TRUE 0是FALSE
-        Map<Integer, Double> rightTagging = new HashMap<>();//分类标注
-        Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
-        rightTagging.put(1, 1.0);
-        wrongTagging.put(1, 0.0);
         for (int i = 1; i < 100; i++) {
             System.out.println("开始学习1==" + i);
             //读取本地URL地址图片,并转化成矩阵
