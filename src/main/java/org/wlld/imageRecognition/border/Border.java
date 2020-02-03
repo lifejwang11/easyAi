@@ -67,6 +67,8 @@ public class Border {
         double th = Math.log(ArithUtil.div(height, modelHeight));
         //进行参数汇集 矩阵转化为行向量
         matrix = MatrixOperation.matrixToVector(matrix, true);
+        //最后给一层池化层
+        matrix = MatrixOperation.getPoolVector(matrix);
         //将参数矩阵的末尾填1
         matrix = MatrixOperation.push(matrix, 1, true);
         if (matrixX == null) {//如果是第一次直接赋值

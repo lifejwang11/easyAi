@@ -203,7 +203,10 @@ public class Operation {//进行计算
             Matrix yw = borderBody.getyW();
             Matrix hw = borderBody.gethW();
             Matrix ww = borderBody.getwW();
+            //将矩阵化为横向量
             matrix = MatrixOperation.matrixToVector(matrix, true);
+            //最后加一层池化
+            matrix = MatrixOperation.getPoolVector(matrix);
             //将参数矩阵的末尾填1
             matrix = MatrixOperation.push(matrix, 1, true);
             //锚点坐标及长宽预测值

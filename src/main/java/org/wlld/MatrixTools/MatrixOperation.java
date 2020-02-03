@@ -107,6 +107,52 @@ public class MatrixOperation {
         }
     }
 
+    public static Matrix getPoolVector(Matrix matrix) throws Exception {
+        if (matrix.getX() == 1 || matrix.getY() == 1) {
+            Matrix vector;
+            int nub;
+            boolean isRow = false;
+            if (matrix.getX() == 1) {//行向量
+                isRow = true;
+                nub = matrix.getY() / 4;
+                vector = new Matrix(1, nub);
+            } else {//列向量
+                nub = matrix.getX() / 4;
+                vector = new Matrix(nub, 1);
+            }
+            int k = 0;
+            for (int i = 0; i < nub * 4 - 3; i += 4) {
+                double max = 0;
+                if (isRow) {
+                    max = matrix.getNumber(0, i);
+                    max = getMax(max, matrix.getNumber(0, i + 1));
+                    max = getMax(max, matrix.getNumber(0, i + 2));
+                    max = getMax(max, matrix.getNumber(0, i + 3));
+                    vector.setNub(0, k, max);
+                } else {
+                    max = matrix.getNumber(i, 0);
+                    max = getMax(max, matrix.getNumber(i + 1, 0));
+                    max = getMax(max, matrix.getNumber(i + 2, 0));
+                    max = getMax(max, matrix.getNumber(i + 3, 0));
+                    vector.setNub(k, 0, max);
+                }
+                k++;
+            }
+            return vector;
+        } else {
+            throw new Exception("this matrix is not a vector");
+        }
+
+    }
+
+    private static double getMax(double o1, double o2) {
+        if (o1 > o2) {
+            return o1;
+        } else {
+            return o2;
+        }
+    }
+
     public static Matrix matrixToVector(Matrix matrix, boolean isRow) throws Exception {//将一个矩阵转成行向量
         int x = matrix.getX();
         int y = matrix.getY();

@@ -4,6 +4,8 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.imageRecognition.border.BorderBody;
 
+import java.util.Random;
+
 /**
  * @author lidapeng
  * @description
@@ -11,24 +13,15 @@ import org.wlld.imageRecognition.border.BorderBody;
  */
 public class MatrixTest {
     public static void main(String[] args) throws Exception {
-        double a = 3.33333;
-        double b = 3;
-        System.out.println(a / b);
-        //test3();
+        test4();
     }
 
     public static void test4() throws Exception {
-        BorderBody borderBody = new BorderBody();
-        Matrix xw = borderBody.getxW();
-        String a = "[1]#" +
-                "[3]#" +
-                "[5]#";
-        xw = new Matrix(3, 1, a);
-        borderBody.setxW(xw);
-        Matrix xt = borderBody.getxW();
-        xt = MatrixOperation.push(xt, 9, false);
-        Matrix xm = borderBody.getxW();
-        System.out.println(xm.getString());
+        Matrix matrix = new Matrix(1, 12);
+        String a = "[1,2,3,4,5,6,7,8,9,10,11,12]#";
+        matrix.setAll(a);
+        Matrix matrix1 = MatrixOperation.getPoolVector(matrix);
+        System.out.println(matrix1.getString());
     }
 
     public static void test3() throws Exception {

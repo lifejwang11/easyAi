@@ -8,9 +8,11 @@ import org.wlld.imageRecognition.Operation;
 import org.wlld.imageRecognition.Picture;
 import org.wlld.imageRecognition.TempleConfig;
 import org.wlld.imageRecognition.border.Frame;
+import org.wlld.imageRecognition.border.FrameBody;
 import org.wlld.nerveEntity.ModelParameter;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,34 +30,46 @@ public class HelloWorld {
     public static void test() throws Exception {
         Picture picture = new Picture();
         TempleConfig templeConfig = new TempleConfig();
-        ModelParameter modelParameter = JSONObject.parseObject(ModelData.DATA2, ModelParameter.class);
+        templeConfig.setHavePosition(true);
+        Frame frame = new Frame();
+        frame.setWidth(3024);
+        frame.setHeight(4032);
+        frame.setLengthHeight(100);
+        frame.setLengthWidth(100);
+        templeConfig.setFrame(frame);
+        ModelParameter modelParameter = JSONObject.parseObject(ModelData.DATA, ModelParameter.class);
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 3204, 4032, 1);
         templeConfig.insertModel(modelParameter);
         Operation operation = new Operation(templeConfig);
-//        for (int i = 1; i < 10; i++) {//faster rcnn神经网络学习
-//            System.out.println("study==" + i);
-//            //读取本地URL地址图片,并转化成矩阵
-//            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
-//            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");
-//            //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
-//            //第二次学习的时候，第三个参数必须是 true
-//            operation.learning(right, 1, true);
-//            operation.learning(wrong, 0, true);
-//        }
-        //templeConfig.clustering();//进行聚类
-//        ModelParameter modelParameter1 = templeConfig.getModel();
-//        String a = JSON.toJSONString(modelParameter1);
-//        System.out.println(a);
-
-        //测试集图片,进行识别测试
+        for (int i = 1; i < 300; i++) {//faster rcnn神经网络学习
+            System.out.println("study==" + i);
+            //读取本地URL地址图片,并转化成矩阵
+            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
+            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");
+            //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
+            //第二次学习的时候，第三个参数必须是 true
+            operation.learning(right, 1, true);
+            operation.learning(wrong, 0, true);
+        }
+        templeConfig.boxStudy();//边框回归
+        templeConfig.clustering();//进行聚类
+        ModelParameter modelParameter1 = templeConfig.getModel();
+        String a = JSON.toJSONString(modelParameter1);
+        System.out.println(a);
         for (int j = 121; j < 140; j++) {
             Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
-            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + j + ".png");
-            int rightId = operation.toSee(right);
-            int wrongId = operation.toSee(wrong);
-            System.out.println("该图是菜单：" + rightId);
-            System.out.println("该图是桌子:" + wrongId);
+            Map<Integer, List<FrameBody>> map = operation.lookWithPosition(right, j);
+            System.out.println("j===" + j);
         }
+        //测试集图片,进行识别测试
+//        for (int j = 121; j < 140; j++) {
+//            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
+//            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + j + ".png");
+//            int rightId = operation.toSee(right);
+//            int wrongId = operation.toSee(wrong);
+//            System.out.println("该图是菜单：" + rightId);
+//            System.out.println("该图是桌子:" + wrongId);
+//        }
 
     }
 
