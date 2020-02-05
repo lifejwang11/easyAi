@@ -5,10 +5,7 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.StudyPattern;
 import org.wlld.i.OutBack;
-import org.wlld.imageRecognition.border.Border;
-import org.wlld.imageRecognition.border.BorderBody;
-import org.wlld.imageRecognition.border.Frame;
-import org.wlld.imageRecognition.border.FrameBody;
+import org.wlld.imageRecognition.border.*;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
 
@@ -80,10 +77,17 @@ public class Operation {//进行计算
             intoNerve2(1, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
                     isKernelStudy, tagging, matrixBack);
             if (isNerveStudy) {
+                //卷积后的结果
                 Matrix myMatrix = matrixBack.getMatrix();
                 if (templeConfig.isHavePosition() && tagging > 0) {
                     border.end(myMatrix, tagging);
                 }
+                LVQ lvq = templeConfig.getLvq();
+                Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
+                MatrixBody matrixBody = new MatrixBody();
+                matrixBody.setMatrix(vector);
+                matrixBody.setId(tagging);
+                lvq.insertMatrixBody(matrixBody);
                 //进行聚类
                 Map<Integer, KMatrix> kMatrixMap = templeConfig.getkMatrixMap();
                 if (kMatrixMap.containsKey(tagging)) {
@@ -283,10 +287,29 @@ public class Operation {//进行计算
             intoNerve2(2, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
                     false, -1, matrixBack);
             Matrix myMatrix = matrixBack.getMatrix();
-            return getClassificationId(myMatrix);
+            Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
+
+            return getClassificationId2(vector);
         } else {
             throw new Exception("pattern is wrong");
         }
+    }
+
+    private int getClassificationId2(Matrix myVector) throws Exception {
+        int id = 0;
+        double distEnd = 0;
+        LVQ lvq = templeConfig.getLvq();
+        MatrixBody[] matrixBodies = lvq.getModel();
+        for (int i = 0; i < matrixBodies.length; i++) {
+            MatrixBody matrixBody = matrixBodies[i];
+            Matrix vector = matrixBody.getMatrix();
+            double dist = lvq.vectorEqual(myVector, vector);
+            if (distEnd == 0 || dist < distEnd) {
+                id = matrixBody.getId();
+                distEnd = dist;
+            }
+        }
+        return id;
     }
 
     private int getClassificationId(Matrix myMatrix) throws Exception {

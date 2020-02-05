@@ -212,8 +212,13 @@ public class MatrixOperation {
 
     public static double getNorm(Matrix matrix) throws Exception {//求向量范数
         if (matrix.getY() == 1 || matrix.getX() == 1) {
-            Matrix matrix1 = transPosition(matrix);
-            return Math.sqrt(mulMatrix(matrix1, matrix).getNumber(0, 0));
+            double nub = 0;
+            for (int i = 0; i < matrix.getX(); i++) {
+                for (int j = 0; j < matrix.getY(); j++) {
+                    nub = ArithUtil.add(Math.pow(matrix.getNumber(i, j), 2), nub);
+                }
+            }
+            return Math.sqrt(nub);
         } else {
             throw new Exception("this matrix is not vector");
         }

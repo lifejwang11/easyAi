@@ -7,6 +7,7 @@ import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
 import org.wlld.imageRecognition.border.BorderBody;
 import org.wlld.imageRecognition.border.Frame;
+import org.wlld.imageRecognition.border.LVQ;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
@@ -30,10 +31,20 @@ public class TempleConfig {
     private boolean isHavePosition = false;//是否需要锁定物体位置
     private Map<Integer, BorderBody> borderBodyMap = new HashMap<>();//border特征集合
     private Map<Integer, KMatrix> kMatrixMap = new HashMap<>();//K均值矩阵集合
+    private LVQ lvq;
     private Frame frame;//先验边框
     private double th = 0.6;//标准阈值
     private boolean boxReady = false;//边框已经学习完毕
     private double iouTh = 0.5;//IOU阈值
+    private int lvqNub = 50;//lvq循环次数，默认50
+
+    public int getLvqNub() {
+        return lvqNub;
+    }
+
+    public void setLvqNub(int lvqNub) {
+        this.lvqNub = lvqNub;
+    }
 
     public double getIouTh() {
         return iouTh;
@@ -75,6 +86,14 @@ public class TempleConfig {
         for (Map.Entry<Integer, KMatrix> kMatrixEntry : kMatrixMap.entrySet()) {
             kMatrixEntry.getValue().getK();
         }
+    }
+
+    public void startLvq() throws Exception {//进行量化
+        lvq.start();
+    }
+
+    public LVQ getLvq() {
+        return lvq;
     }
 
     private void border(BorderBody borderBody) throws Exception {
@@ -166,6 +185,7 @@ public class TempleConfig {
 
     private void initConvolutionVision(boolean initPower, int width, int height) throws Exception {
         int deep = 0;
+        lvq = new LVQ(classificationNub + 1, lvqNub);
         Map<Integer, Matrix> matrixMap = new HashMap<>();//主键与期望矩阵的映射
         while (width > 5 && height > 5) {
             width = width / 3;

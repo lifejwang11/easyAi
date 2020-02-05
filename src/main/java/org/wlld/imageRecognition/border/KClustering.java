@@ -15,7 +15,7 @@ public class KClustering {
     private List<MatrixBody> matrixList = new ArrayList<>();//聚类集合
     private int length;//向量长度
     private int speciesQuantity;//种类数量
-    private Matrix[] matrices = new Matrix[speciesQuantity];//均值K
+    private Matrix[] matrices;//均值K
     private Map<Integer, List<MatrixBody>> clusterMap = new HashMap<>();//簇
 
     public Matrix[] getMatrices() {
@@ -28,6 +28,7 @@ public class KClustering {
 
     public KClustering(int speciesQuantity) {
         this.speciesQuantity = speciesQuantity;
+        matrices = new Matrix[speciesQuantity];
         for (int i = 0; i < speciesQuantity; i++) {
             clusterMap.put(i, new ArrayList<>());
         }
