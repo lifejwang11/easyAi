@@ -23,6 +23,23 @@ public class MatrixOperation {
         }
     }
 
+    //矩阵相减
+    public static Matrix sub(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相加
+        if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
+            Matrix matrix = new Matrix(matrix1.getX(), matrix1.getY());
+            int x = matrix1.getX();
+            int y = matrix1.getY();
+            for (int i = 0; i < x; i++) {//遍历行
+                for (int j = 0; j < y; j++) {//遍历列
+                    matrix.setNub(i, j, ArithUtil.sub(matrix1.getNumber(i, j), matrix2.getNumber(i, j)));
+                }
+            }
+            return matrix;
+        } else {
+            throw new Exception("matrix is not equals");
+        }
+    }
+
     //多元线性回归
     public static Matrix getLinearRegression(Matrix parameter, Matrix Out) throws Exception {
         //将参数矩阵转置
@@ -35,6 +52,17 @@ public class MatrixOperation {
         Matrix matrix4 = mulMatrix(matrix3, matrix1);
         //最后乘以输出矩阵,生成权重矩阵并返回
         return mulMatrix(matrix4, Out);
+    }
+
+    //返回两个向量之间的欧氏距离的平方
+    public static double getEDist(Matrix matrix1, Matrix matrix2) throws Exception {
+        if (matrix1.isRowVector() && matrix2.isRowVector() && matrix1.getY() == matrix2.getY()) {
+            mathMul(matrix2, -1);
+            Matrix matrix = add(matrix1, matrix2);
+            return getNorm(matrix);
+        } else {
+            throw new Exception("this matrix is not  rowVector or length different");
+        }
     }
 
     public static Matrix pushVector(Matrix myMatrix, Matrix matrix, boolean addRow) throws Exception {

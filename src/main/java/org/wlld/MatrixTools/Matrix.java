@@ -9,6 +9,9 @@ public class Matrix {
     private double[][] matrix;//矩阵本体
     private int x;//矩阵的行数
     private int y;//矩阵的列数
+    private boolean isRowVector = false;
+    private boolean isVector = false;//是否是向量
+    private boolean isZero = false;//是否是零矩阵
 
     public int getX() {//获取行数
         return x;
@@ -22,6 +25,28 @@ public class Matrix {
         matrix = new double[x][y];
         this.x = x;
         this.y = y;
+        if (x == 1 && y == 1) {
+            isZero = true;
+        } else if (x == 1 || y == 1) {
+            isVector = true;
+            if (x == 1) {
+                isRowVector = true;
+            } else {
+                isRowVector = false;
+            }
+        }
+    }
+
+    public boolean isRowVector() {
+        return isRowVector;
+    }
+
+    public boolean isVector() {
+        return isVector;
+    }
+
+    public boolean isZero() {
+        return isZero;
     }
 
     public void clear() {//清除数据

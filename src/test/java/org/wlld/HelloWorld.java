@@ -41,7 +41,7 @@ public class HelloWorld {
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 3204, 4032, 1);
         templeConfig.insertModel(modelParameter);
         Operation operation = new Operation(templeConfig);
-        for (int i = 1; i < 300; i++) {//faster rcnn神经网络学习
+        for (int i = 1; i < 20; i++) {//faster rcnn神经网络学习
             System.out.println("study==" + i);
             //读取本地URL地址图片,并转化成矩阵
             Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
@@ -53,10 +53,10 @@ public class HelloWorld {
         }
         templeConfig.boxStudy();//边框回归
         templeConfig.clustering();//进行聚类
-        ModelParameter modelParameter1 = templeConfig.getModel();
-        String a = JSON.toJSONString(modelParameter1);
-        System.out.println(a);
-        for (int j = 121; j < 140; j++) {
+//        ModelParameter modelParameter1 = templeConfig.getModel();
+//        String a = JSON.toJSONString(modelParameter1);
+//        System.out.println(a);
+        for (int j = 1; j < 2; j++) {
             Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
             Map<Integer, List<FrameBody>> map = operation.lookWithPosition(right, j);
             System.out.println("j===" + j);

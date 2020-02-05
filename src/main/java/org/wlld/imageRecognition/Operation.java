@@ -203,7 +203,7 @@ public class Operation {//进行计算
             Matrix yw = borderBody.getyW();
             Matrix hw = borderBody.gethW();
             Matrix ww = borderBody.getwW();
-            //将矩阵化为横向量
+            //将矩阵化为向量
             matrix = MatrixOperation.matrixToVector(matrix, true);
             //最后加一层池化
             matrix = MatrixOperation.getPoolVector(matrix);
