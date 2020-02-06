@@ -135,9 +135,9 @@ public class Operation {//进行计算
                     intoNerve2(eventId, frameBody.getMatrix(), templeConfig.getConvolutionNerveManager().getSensoryNerves(),
                             false, -1, matrixBack);
                     Matrix myMatrix = matrixBack.getMatrix();
-                    //卷积层输出即边框回归的输入的特征向量
+                    //卷积层输出即边框回归的输入的特征向量 TODO 这地有BUG 要改
                     frameBody.setEndMatrix(myMatrix);
-                    int id = getClassificationId(myMatrix);
+                    int id = getClassificationId2(myMatrix);
                     frameBody.setId(id);
                 }
                 return toPosition(frameBodies, frame.getWidth(), frame.getHeight());
@@ -186,6 +186,21 @@ public class Operation {//进行计算
         return map;
     }
 
+    private Matrix getBoxMatrix(Matrix matrix, Map<Integer, Box> boxMap) throws Exception {
+        Matrix positionMatrix = null;
+        double endDist = 0;
+        for (Map.Entry<Integer, Box> entry : boxMap.entrySet()) {
+            Box box = entry.getValue();
+            Matrix boxMatrix = box.getMatrix();
+            double dist = MatrixOperation.getEDist(matrix, boxMatrix);
+            if (endDist == 0 || dist < endDist) {
+                endDist = dist;
+                positionMatrix = box.getMatrixPosition();
+            }
+        }
+        return positionMatrix;
+    }
+
     //获得预测边框
     private void getBox(FrameBody frameBody, int width, int height) throws Exception {
         if (templeConfig.isBoxReady()) {
@@ -193,24 +208,16 @@ public class Operation {//进行计算
             int id = frameBody.getId();
             int x = frameBody.getX();
             int y = frameBody.getY();
-            Map<Integer, BorderBody> borderBodyMap = templeConfig.getBorderBodyMap();
-            BorderBody borderBody = borderBodyMap.get(id);
-            //都是列向量，将参数转化为行向量最后再加1
-            Matrix xw = borderBody.getxW();
-            Matrix yw = borderBody.getyW();
-            Matrix hw = borderBody.gethW();
-            Matrix ww = borderBody.getwW();
+            KClustering kClustering = templeConfig.getkClusteringMap().get(id);
+            Map<Integer, Box> boxMap = kClustering.getPositionMap();
             //将矩阵化为向量
             matrix = MatrixOperation.matrixToVector(matrix, true);
-            //最后加一层池化
-            matrix = MatrixOperation.getPoolVector(matrix);
-            //将参数矩阵的末尾填1
-            matrix = MatrixOperation.push(matrix, 1, true);
+            Matrix positionMatrix = getBoxMatrix(matrix, boxMap);
             //锚点坐标及长宽预测值
-            double tx = MatrixOperation.mulMatrix(matrix, xw).getNumber(0, 0);
-            double ty = MatrixOperation.mulMatrix(matrix, yw).getNumber(0, 0);
-            double th = MatrixOperation.mulMatrix(matrix, hw).getNumber(0, 0);
-            double tw = MatrixOperation.mulMatrix(matrix, ww).getNumber(0, 0);
+            double tx = positionMatrix.getNumber(0, 0);
+            double ty = positionMatrix.getNumber(0, 1);
+            double th = positionMatrix.getNumber(0, 3);
+            double tw = positionMatrix.getNumber(0, 2);
             //修正相对位置
             double realX = ArithUtil.add(ArithUtil.mul(tx, height), x);
             double realY = ArithUtil.add(ArithUtil.mul(ty, width), y);
@@ -298,22 +305,6 @@ public class Operation {//进行计算
             double dist = lvq.vectorEqual(myVector, vector);
             if (distEnd == 0 || dist < distEnd) {
                 id = matrixBody.getId();
-                distEnd = dist;
-            }
-        }
-        return id;
-    }
-
-    private int getClassificationId(Matrix myMatrix) throws Exception {
-        int id = 0;
-        double distEnd = 0;
-        Map<Integer, KMatrix> kMatrixMap = templeConfig.getkMatrixMap();
-        for (Map.Entry<Integer, KMatrix> entry : kMatrixMap.entrySet()) {
-            int key = entry.getKey();
-            KMatrix kMatrix = entry.getValue();
-            double dist = kMatrix.getEDist(myMatrix);
-            if (distEnd == 0 || dist < distEnd) {
-                id = key;
                 distEnd = dist;
             }
         }

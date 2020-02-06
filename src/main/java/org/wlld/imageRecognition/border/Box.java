@@ -9,7 +9,7 @@ import org.wlld.MatrixTools.Matrix;
  */
 public class Box {
     private Matrix matrix;//特征向量
-    private Matrix matrixFather;//坐标向量
+    private Matrix matrixPosition;//坐标向量
 
     public Matrix getMatrix() {
         return matrix;
@@ -19,11 +19,11 @@ public class Box {
         this.matrix = matrix;
     }
 
-    public Matrix getMatrixFather() {
-        return matrixFather;
+    public Matrix getMatrixPosition() {
+        return matrixPosition;
     }
 
-    public void setMatrixFather(Matrix matrixFather) {
-        this.matrixFather = matrixFather;
+    public void setMatrixPosition(Matrix matrixPosition) {
+        this.matrixPosition = matrixPosition;
     }
 }

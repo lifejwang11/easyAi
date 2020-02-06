@@ -5,9 +5,7 @@ import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
-import org.wlld.imageRecognition.border.BorderBody;
-import org.wlld.imageRecognition.border.Frame;
-import org.wlld.imageRecognition.border.LVQ;
+import org.wlld.imageRecognition.border.*;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
@@ -29,14 +27,18 @@ public class TempleConfig {
     private int classificationNub = 1;//分类的数量
     private int studyPattern;//学习模式
     private boolean isHavePosition = false;//是否需要锁定物体位置
-    private Map<Integer, BorderBody> borderBodyMap = new HashMap<>();//border特征集合
-    private Map<Integer, KMatrix> kMatrixMap = new HashMap<>();//K均值矩阵集合
     private LVQ lvq;
     private Frame frame;//先验边框
     private double th = 0.6;//标准阈值
     private boolean boxReady = false;//边框已经学习完毕
     private double iouTh = 0.5;//IOU阈值
     private int lvqNub = 50;//lvq循环次数，默认50
+    //边框聚类集合
+    private Map<Integer, KClustering> kClusteringMap = new HashMap<>();
+
+    public Map<Integer, KClustering> getkClusteringMap() {
+        return kClusteringMap;
+    }
 
     public int getLvqNub() {
         return lvqNub;
@@ -74,20 +76,6 @@ public class TempleConfig {
         this.frame = frame;
     }
 
-    public Map<Integer, BorderBody> getBorderBodyMap() {
-        return borderBodyMap;
-    }
-
-    public Map<Integer, KMatrix> getkMatrixMap() {
-        return kMatrixMap;
-    }
-
-    public void clustering() throws Exception {//进行聚类结算
-        for (Map.Entry<Integer, KMatrix> kMatrixEntry : kMatrixMap.entrySet()) {
-            kMatrixEntry.getValue().getK();
-        }
-    }
-
     public void startLvq() throws Exception {//进行量化
         lvq.start();
     }
@@ -96,32 +84,13 @@ public class TempleConfig {
         return lvq;
     }
 
-    private void border(BorderBody borderBody) throws Exception {
-        Matrix parameter = borderBody.getX();//参数矩阵
-        Matrix tx = borderBody.getTx();
-        Matrix ty = borderBody.getTy();
-        Matrix th = borderBody.getTh();
-        Matrix tw = borderBody.getTw();
-        borderBody.setxW(MatrixOperation.getLinearRegression(parameter, tx));
-        borderBody.setyW(MatrixOperation.getLinearRegression(parameter, ty));
-        borderBody.setwW(MatrixOperation.getLinearRegression(parameter, tw));
-        borderBody.sethW(MatrixOperation.getLinearRegression(parameter, th));
-        boxReady = true;
-    }
-
     public void boxStudy() throws Exception {//边框回归 学习结束之后最后进行调用
-        if (borderBodyMap.size() > 0) {
-            for (Map.Entry<Integer, BorderBody> entry : borderBodyMap.entrySet()) {
-                border(entry.getValue());
+        if (isHavePosition) {
+            for (Map.Entry<Integer, KClustering> entry : kClusteringMap.entrySet()) {
+                entry.getValue().start();
             }
-        } else {
-            throw new Exception("boder not study");
         }
 
-    }
-
-    public void setBorderBodyMap(Map<Integer, BorderBody> borderBodyMap) {
-        this.borderBodyMap = borderBodyMap;
     }
 
     public NerveManager getNerveManager() {
@@ -152,6 +121,11 @@ public class TempleConfig {
             , int classificationNub) throws Exception {//初始化配置模板
         this.classificationNub = classificationNub;
         this.studyPattern = studyPattern;
+        if (isHavePosition) {
+            for (int i = 1; i < classificationNub + 1; i++) {
+                kClusteringMap.put(i, new KClustering(20));
+            }
+        }
         switch (studyPattern) {
             case StudyPattern.Speed_Pattern://速度学习模式
                 initModelVision(initPower, width, height);
@@ -195,10 +169,8 @@ public class TempleConfig {
         //加载各识别分类的期望矩阵
         matrixMap.put(0, new Matrix(height, width));
         double nub = 10;//每个分类期望参数的跨度
-        kMatrixMap.put(0, new KMatrix(height, width));
         for (int k = 0; k < classificationNub; k++) {
             Matrix matrix = new Matrix(height, width);//初始化期望矩阵
-            kMatrixMap.put(k + 1, new KMatrix(height, width));
             double t = (k + 1) * nub;//期望矩阵的分类参数数值
             for (int i = 0; i < height; i++) {//给期望矩阵注入期望参数
                 for (int j = 0; j < width - 1; j++) {
@@ -241,19 +213,13 @@ public class TempleConfig {
             ModelParameter modelParameter1 = convolutionNerveManager.getModelParameter();
             modelParameter.setDymNerveStudies(modelParameter1.getDymNerveStudies());
             modelParameter.setDymOutNerveStudy(modelParameter1.getDymOutNerveStudy());
-            Map<Integer, List<Double>> matrixMap = new HashMap<>();
-            for (Map.Entry<Integer, KMatrix> entry : kMatrixMap.entrySet()) {
-                List<Double> list = getFeatureList(entry.getValue().getSigmaMatrix());
-                matrixMap.put(entry.getKey(), list);
-            }
-            modelParameter.setkMatrixList(matrixMap);
+
         } else if (studyPattern == StudyPattern.Speed_Pattern) {
             ModelParameter modelParameter1 = nerveManager.getModelParameter();
             modelParameter.setDepthNerves(modelParameter1.getDepthNerves());
             modelParameter.setOutNevers(modelParameter1.getOutNevers());
         }
         if (isHavePosition) {//存在边框学习模型参数
-            modelParameter.setBorderBodyMap(borderBodyMap);
             modelParameter.setFrame(frame);
         }
         return modelParameter;
@@ -293,24 +259,10 @@ public class TempleConfig {
     public void insertModel(ModelParameter modelParameter) throws Exception {
         if (studyPattern == StudyPattern.Accuracy_Pattern) {
             convolutionNerveManager.insertModelParameter(modelParameter);
-            Map<Integer, List<Double>> kMatrixs = modelParameter.getkMatrixList();
-            if (kMatrixs != null && kMatrixs.size() == kMatrixMap.size()) {
-                for (Map.Entry<Integer, KMatrix> entry : kMatrixMap.entrySet()) {
-                    KMatrix kMatrix = entry.getValue();
-                    insertKMatrix(kMatrix.getSigmaMatrix(), kMatrixs.get(entry.getKey()));
-                    kMatrix.setFinish(true);
-                }
-            }
         } else if (studyPattern == StudyPattern.Speed_Pattern) {
             nerveManager.insertModelParameter(modelParameter);
         }
         Frame frame = modelParameter.getFrame();
-        Map<Integer, BorderBody> borderBodyMap = modelParameter.getBorderBodyMap();
-        if (frame != null && borderBodyMap != null && borderBodyMap.size() > 0) {
-            isHavePosition = true;
-            this.frame = frame;
-            this.borderBodyMap = borderBodyMap;
-        }
     }
 
     public void setCutThreshold(double cutThreshold) {

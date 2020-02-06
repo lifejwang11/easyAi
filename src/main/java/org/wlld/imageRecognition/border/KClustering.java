@@ -17,13 +17,14 @@ public class KClustering {
     private int speciesQuantity;//种类数量
     private Matrix[] matrices;//均值K
     private Map<Integer, List<Box>> clusterMap = new HashMap<>();//簇
+    private Map<Integer, Box> positionMap = new HashMap<>();
+    private boolean isReady = false;
 
-    public Matrix[] getMatrices() {
-        return matrices;
-    }
-
-    public Map<Integer, List<Box>> getClusterMap() {
-        return clusterMap;
+    public Map<Integer, Box> getPositionMap() throws Exception {
+        if (!isReady) {
+            throw new Exception("not ready");
+        }
+        return positionMap;
     }
 
     public KClustering(int speciesQuantity) {
@@ -76,6 +77,29 @@ public class KClustering {
         return matrices2;
     }
 
+    private Matrix averagePosition(List<Box> boxes) throws Exception {
+        double nub = ArithUtil.div(1, boxes.size());
+        Matrix matrix = new Matrix(1, 4);
+        for (Box box : boxes) {
+            matrix = MatrixOperation.add(matrix, box.getMatrixPosition());
+        }
+        MatrixOperation.mathMul(matrix, nub);
+        return matrix;
+    }
+
+    private void position() throws Exception {
+        for (Map.Entry<Integer, List<Box>> entry : clusterMap.entrySet()) {
+            List<Box> boxList = entry.getValue();
+            int key = entry.getKey();
+            Box box = new Box();
+            Matrix position = averagePosition(boxList);
+            Matrix kMatrix = matrices[key];
+            box.setMatrix(kMatrix);
+            box.setMatrixPosition(position);
+            positionMap.put(key, box);
+        }
+    }
+
     private void clear() {
         for (Map.Entry<Integer, List<Box>> entry : clusterMap.entrySet()) {
             entry.getValue().clear();
@@ -116,7 +140,8 @@ public class KClustering {
             while (!isEqual);
             //聚类结束，进行坐标均值矩阵计算
             System.out.println("聚类循环次数：" + nub);
-            
+            position();
+            isReady = true;
         } else {
             throw new Exception("matrixList number less than 2");
         }

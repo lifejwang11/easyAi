@@ -48,51 +48,23 @@ public class Border {
     public void end(Matrix matrix, int id) throws Exception {//长宽
         height = maxX - minX;
         width = maxY - minY;
-        Map<Integer, BorderBody> borderBodyMap = templeConfig.getBorderBodyMap();
-        BorderBody borderBody = borderBodyMap.get(id);
-        if (borderBody == null) {
-            borderBody = new BorderBody();
-            borderBodyMap.put(id, borderBody);
-        }
-        //拿到参数矩阵
-        Matrix matrixX = borderBody.getX();
-        Matrix matrixTx = borderBody.getTx();
-        Matrix matrixTy = borderBody.getTy();
-        Matrix matrixTw = borderBody.getTw();
-        Matrix matrixTh = borderBody.getTh();
+        KClustering kClustering = templeConfig.getkClusteringMap().get(id);
+        Matrix positionMatrix = new Matrix(1, 4);
         //多元线性回归的四个输出值
         double tx = ArithUtil.div(minX, modelHeight);
         double ty = ArithUtil.div(minY, modelWidth);
         double tw = Math.log(ArithUtil.div(width, modelWidth));
         double th = Math.log(ArithUtil.div(height, modelHeight));
+        Box box = new Box();
         //进行参数汇集 矩阵转化为行向量
         matrix = MatrixOperation.matrixToVector(matrix, true);
-        //最后给一层池化层
-        matrix = MatrixOperation.getPoolVector(matrix);
-        //将参数矩阵的末尾填1
-        matrix = MatrixOperation.push(matrix, 1, true);
-        if (matrixX == null) {//如果是第一次直接赋值
-            matrixX = matrix;
-            matrixTx = new Matrix(1, 1);
-            matrixTy = new Matrix(1, 1);
-            matrixTw = new Matrix(1, 1);
-            matrixTh = new Matrix(1, 1);
-            matrixTx.setNub(0, 0, tx);
-            matrixTy.setNub(0, 0, ty);
-            matrixTw.setNub(0, 0, tw);
-            matrixTh.setNub(0, 0, th);
-        } else {//将新的参数矩阵添加到原来的末尾
-            matrixX = MatrixOperation.pushVector(matrixX, matrix, true);
-            matrixTx = MatrixOperation.push(matrixTx, tx, false);
-            matrixTy = MatrixOperation.push(matrixTy, ty, false);
-            matrixTw = MatrixOperation.push(matrixTw, tw, false);
-            matrixTh = MatrixOperation.push(matrixTh, th, false);
-        }
-        borderBody.setX(matrixX);
-        borderBody.setTh(matrixTh);
-        borderBody.setTw(matrixTw);
-        borderBody.setTx(matrixTx);
-        borderBody.setTy(matrixTy);
+        positionMatrix.setNub(0, 0, tx);
+        positionMatrix.setNub(0, 1, ty);
+        positionMatrix.setNub(0, 2, tw);
+        positionMatrix.setNub(0, 3, th);
+        box.setMatrix(matrix);
+        box.setMatrixPosition(positionMatrix);
+        kClustering.setMatrixList(box);
     }
 
 }

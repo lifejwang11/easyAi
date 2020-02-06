@@ -2,9 +2,6 @@ package org.wlld;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
-import org.wlld.imageRecognition.border.BorderBody;
-
-import java.util.Random;
 
 /**
  * @author lidapeng
