@@ -57,8 +57,7 @@ public class MatrixOperation {
     //返回两个向量之间的欧氏距离的平方
     public static double getEDist(Matrix matrix1, Matrix matrix2) throws Exception {
         if (matrix1.isRowVector() && matrix2.isRowVector() && matrix1.getY() == matrix2.getY()) {
-            mathMul(matrix2, -1);
-            Matrix matrix = add(matrix1, matrix2);
+            Matrix matrix = sub(matrix1, matrix2);
             return getNorm(matrix);
         } else {
             throw new Exception("this matrix is not  rowVector or length different");

@@ -82,20 +82,13 @@ public class Operation {//进行计算
                 if (templeConfig.isHavePosition() && tagging > 0) {
                     border.end(myMatrix, tagging);
                 }
+                //进行聚类
                 LVQ lvq = templeConfig.getLvq();
                 Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
                 MatrixBody matrixBody = new MatrixBody();
                 matrixBody.setMatrix(vector);
                 matrixBody.setId(tagging);
                 lvq.insertMatrixBody(matrixBody);
-                //进行聚类
-                Map<Integer, KMatrix> kMatrixMap = templeConfig.getkMatrixMap();
-                if (kMatrixMap.containsKey(tagging)) {
-                    KMatrix kMatrix = kMatrixMap.get(tagging);
-                    kMatrix.addMatrix(myMatrix);
-                } else {
-                    throw new Exception("not find tag");
-                }
             }
         } else {
             throw new Exception("pattern is wrong");
@@ -288,7 +281,6 @@ public class Operation {//进行计算
                     false, -1, matrixBack);
             Matrix myMatrix = matrixBack.getMatrix();
             Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
-
             return getClassificationId2(vector);
         } else {
             throw new Exception("pattern is wrong");

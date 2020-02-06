@@ -12,17 +12,17 @@ import java.util.*;
  * @date 10:14 上午 2020/2/4
  */
 public class KClustering {
-    private List<MatrixBody> matrixList = new ArrayList<>();//聚类集合
+    private List<Box> matrixList = new ArrayList<>();//聚类集合
     private int length;//向量长度
     private int speciesQuantity;//种类数量
     private Matrix[] matrices;//均值K
-    private Map<Integer, List<MatrixBody>> clusterMap = new HashMap<>();//簇
+    private Map<Integer, List<Box>> clusterMap = new HashMap<>();//簇
 
     public Matrix[] getMatrices() {
         return matrices;
     }
 
-    public Map<Integer, List<MatrixBody>> getClusterMap() {
+    public Map<Integer, List<Box>> getClusterMap() {
         return clusterMap;
     }
 
@@ -34,7 +34,7 @@ public class KClustering {
         }
     }
 
-    public void setMatrixList(MatrixBody matrixBody) throws Exception {
+    public void setMatrixList(Box matrixBody) throws Exception {
         if (matrixBody.getMatrix().isVector() && matrixBody.getMatrix().isRowVector()) {
             Matrix matrix = matrixBody.getMatrix();
             if (matrixList.size() == 0) {
@@ -54,7 +54,7 @@ public class KClustering {
 
     private Matrix[] averageMatrix() throws Exception {
         Matrix[] matrices2 = new Matrix[speciesQuantity];//待比较均值K
-        for (MatrixBody matrixBody : matrixList) {//遍历当前集合
+        for (Box matrixBody : matrixList) {//遍历当前集合
             Matrix matrix = matrixBody.getMatrix();
             double min = 0;
             int id = 0;
@@ -65,11 +65,11 @@ public class KClustering {
                     id = i;
                 }
             }
-            List<MatrixBody> matrixList1 = clusterMap.get(id);
+            List<Box> matrixList1 = clusterMap.get(id);
             matrixList1.add(matrixBody);
         }
         //重新计算均值
-        for (Map.Entry<Integer, List<MatrixBody>> entry : clusterMap.entrySet()) {
+        for (Map.Entry<Integer, List<Box>> entry : clusterMap.entrySet()) {
             Matrix matrix = average(entry.getValue());
             matrices2[entry.getKey()] = matrix;
         }
@@ -77,30 +77,33 @@ public class KClustering {
     }
 
     private void clear() {
-        for (Map.Entry<Integer, List<MatrixBody>> entry : clusterMap.entrySet()) {
+        for (Map.Entry<Integer, List<Box>> entry : clusterMap.entrySet()) {
             entry.getValue().clear();
         }
     }
 
-    private Matrix average(List<MatrixBody> matrixList) throws Exception {//进行矩阵均值计算
+    private Matrix average(List<Box> matrixList) throws Exception {//进行矩阵均值计算
         double nub = ArithUtil.div(1, matrixList.size());
-        Matrix matrix = new Matrix(0, length);
-        for (MatrixBody matrixBody1 : matrixList) {
+        Matrix matrix = new Matrix(1, length);
+        for (Box matrixBody1 : matrixList) {
             matrix = MatrixOperation.add(matrix, matrixBody1.getMatrix());
         }
         MatrixOperation.mathMul(matrix, nub);
         return matrix;
     }
 
+
     public void start() throws Exception {//开始聚类
         if (matrixList.size() > 1) {
             Random random = new Random();
             for (int i = 0; i < matrices.length; i++) {//初始化均值向量
                 int index = random.nextInt(matrixList.size());
+                //要进行深度克隆
                 matrices[i] = matrixList.get(index).getMatrix();
             }
             //进行两者的比较
             boolean isEqual = false;
+            int nub = 0;
             do {
                 Matrix[] matrices2 = averageMatrix();
                 isEqual = equals(matrices, matrices2);
@@ -108,8 +111,12 @@ public class KClustering {
                     matrices = matrices2;
                     clear();
                 }
+                nub++;
             }
-            while (isEqual);
+            while (!isEqual);
+            //聚类结束，进行坐标均值矩阵计算
+            System.out.println("聚类循环次数：" + nub);
+            
         } else {
             throw new Exception("matrixList number less than 2");
         }
@@ -125,6 +132,9 @@ public class KClustering {
                     isEquals = false;
                     break;
                 }
+            }
+            if (!isEquals) {
+                break;
             }
         }
         return isEquals;

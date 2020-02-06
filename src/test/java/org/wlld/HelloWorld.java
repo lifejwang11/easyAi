@@ -41,7 +41,7 @@ public class HelloWorld {
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 3204, 4032, 1);
         templeConfig.insertModel(modelParameter);
         Operation operation = new Operation(templeConfig);
-        for (int i = 1; i < 30; i++) {//faster rcnn神经网络学习
+        for (int i = 1; i < 100; i++) {//faster rcnn神经网络学习
             System.out.println("study==" + i);
             //读取本地URL地址图片,并转化成矩阵
             Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
@@ -63,14 +63,14 @@ public class HelloWorld {
 //            System.out.println("j===" + j);
 //        }
         //测试集图片,进行识别测试
-//        for (int j = 121; j < 140; j++) {
-//            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
-//            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + j + ".png");
-//            int rightId = operation.toSee(right);
-//            int wrongId = operation.toSee(wrong);
-//            System.out.println("该图是菜单：" + rightId);
-//            System.out.println("该图是桌子:" + wrongId);
-//        }
+        for (int j = 121; j < 140; j++) {
+            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
+            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + j + ".png");
+            int rightId = operation.toSee(right);
+            int wrongId = operation.toSee(wrong);
+            System.out.println("该图是菜单：" + rightId);
+            System.out.println("该图是桌子:" + wrongId);
+        }
 
     }
 
