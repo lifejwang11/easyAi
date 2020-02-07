@@ -120,7 +120,7 @@ public class NerveManager {
             outStudyNevers.add(nerveStudy);
         }
         modelParameter.setDepthNerves(studyDepthNerves);
-        modelParameter.setOutNevers(outStudyNevers);
+        modelParameter.setOutNerves(outStudyNevers);
         return modelParameter;
     }
 
@@ -162,7 +162,7 @@ public class NerveManager {
     //注入全连接模型参数
     private void insertBpModelParameter(ModelParameter modelParameter) {
         List<List<NerveStudy>> depthStudyNerves = modelParameter.getDepthNerves();//隐层神经元
-        List<NerveStudy> outStudyNevers = modelParameter.getOutNevers();//输出神经元
+        List<NerveStudy> outStudyNerves = modelParameter.getOutNerves();//输出神经元
         //隐层神经元参数注入
         for (int i = 0; i < depthNerves.size(); i++) {
             List<NerveStudy> depth = depthStudyNerves.get(i);//对应的学习结果
@@ -184,7 +184,7 @@ public class NerveManager {
         //输出神经元参数注入
         for (int i = 0; i < outNerves.size(); i++) {
             Nerve outNerve = outNerves.get(i);
-            NerveStudy nerveStudy = outStudyNevers.get(i);
+            NerveStudy nerveStudy = outStudyNerves.get(i);
             outNerve.setThreshold(nerveStudy.getThreshold());
             Map<Integer, Double> dendrites = outNerve.getDendrites();
             Map<Integer, Double> studyDendrites = nerveStudy.getDendrites();

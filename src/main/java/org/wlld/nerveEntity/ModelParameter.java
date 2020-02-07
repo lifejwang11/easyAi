@@ -1,6 +1,8 @@
 package org.wlld.nerveEntity;
 
 import org.wlld.imageRecognition.border.Frame;
+import org.wlld.imageRecognition.modelEntity.KBorder;
+import org.wlld.imageRecognition.modelEntity.LvqModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,13 +17,23 @@ import java.util.Map;
 public class ModelParameter {
     //神经远模型参数
     private List<List<NerveStudy>> depthNerves = new ArrayList<>();//隐层神经元
-    private List<NerveStudy> outNevers = new ArrayList<>();//输出神经元
+    private List<NerveStudy> outNerves = new ArrayList<>();//输出神经元
     private List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
     private DymNerveStudy dymOutNerveStudy = new DymNerveStudy();//动态神经元输出层
+    private Map<Integer, KBorder> borderMap = new HashMap<>();//边框距离模型
+    private LvqModel lvqModel;//LVQ模型
     private Frame frame;//先验边框
 
     public Frame getFrame() {
         return frame;
+    }
+
+    public Map<Integer, KBorder> getBorderMap() {
+        return borderMap;
+    }
+
+    public void setBorderMap(Map<Integer, KBorder> borderMap) {
+        this.borderMap = borderMap;
     }
 
     public void setFrame(Frame frame) {
@@ -52,11 +64,19 @@ public class ModelParameter {
         this.depthNerves = depthNerves;
     }
 
-    public List<NerveStudy> getOutNevers() {
-        return outNevers;
+    public List<NerveStudy> getOutNerves() {
+        return outNerves;
     }
 
-    public void setOutNevers(List<NerveStudy> outNevers) {
-        this.outNevers = outNevers;
+    public void setOutNerves(List<NerveStudy> outNerves) {
+        this.outNerves = outNerves;
+    }
+
+    public LvqModel getLvqModel() {
+        return lvqModel;
+    }
+
+    public void setLvqModel(LvqModel lvqModel) {
+        this.lvqModel = lvqModel;
     }
 }

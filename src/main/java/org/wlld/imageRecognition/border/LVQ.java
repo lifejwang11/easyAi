@@ -13,16 +13,40 @@ import java.util.Random;
  * @date 5:36 下午 2020/2/4
  */
 public class LVQ {
-    private int typeNub;//原型聚类个数,即分类个数
-    private MatrixBody[] model;//原型向量
+    private int typeNub;//原型聚类个数,即分类个数(需要模型返回)
+    private MatrixBody[] model;//原型向量(需要模型返回)
     private List<MatrixBody> matrixList = new ArrayList<>();
     private double studyPoint = 0.1;//量化学习率
-    private int length;//向量长度
+    private int length;//向量长度(需要返回)
     private boolean isReady = false;
     private int lvqNub = 50;
 
+    public void setTypeNub(int typeNub) {
+        this.typeNub = typeNub;
+    }
+
+    public void setModel(MatrixBody[] model) {
+        this.model = model;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public void setReady(boolean ready) {
+        isReady = ready;
+    }
+
     public boolean isReady() {
         return isReady;
+    }
+
+    public int getTypeNub() {
+        return typeNub;
+    }
+
+    public int getLength() {
+        return length;
     }
 
     public LVQ(int typeNub, int lvqNub) {

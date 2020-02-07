@@ -5,6 +5,10 @@ import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
 import org.wlld.imageRecognition.border.*;
+import org.wlld.imageRecognition.modelEntity.BoxList;
+import org.wlld.imageRecognition.modelEntity.KBorder;
+import org.wlld.imageRecognition.modelEntity.LvqModel;
+import org.wlld.imageRecognition.modelEntity.MatrixModel;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
@@ -26,13 +30,13 @@ public class TempleConfig {
     private int classificationNub = 1;//分类的数量
     private int studyPattern;//学习模式
     private boolean isHavePosition = false;//是否需要锁定物体位置
-    private LVQ lvq;
+    private LVQ lvq;//模型需要返回,精准模式下的原型聚类
     private Frame frame;//先验边框
     private double th = 0.6;//标准阈值
     private boolean boxReady = false;//边框已经学习完毕
     private double iouTh = 0.5;//IOU阈值
     private int lvqNub = 50;//lvq循环次数，默认50
-    //边框聚类集合
+    //边框聚类集合 模型需要返回
     private Map<Integer, KClustering> kClusteringMap = new HashMap<>();
 
     public Map<Integer, KClustering> getkClusteringMap() {
@@ -187,26 +191,63 @@ public class TempleConfig {
         convolutionNerveManager.init(initPower, true);
     }
 
-    private List<Double> getFeatureList(Matrix matrix) throws Exception {//
+    private List<MatrixModel> getLvqModel(MatrixBody[] matrixBodies) throws Exception {
+        List<MatrixModel> matrixModelList = new ArrayList<>();
+        for (int i = 0; i < matrixBodies.length; i++) {
+            MatrixBody matrixBody = matrixBodies[i];
+            Matrix matrix = matrixBody.getMatrix();
+            MatrixModel matrixModel = new MatrixModel();
+            List<Double> rowVector = rowVectorToList(matrix);
+            matrixModel.setId(matrixBody.getId());
+            matrixModel.setRowVector(rowVector);
+            matrixModelList.add(matrixModel);
+        }
+        return matrixModelList;
+    }
+
+    //行向量转LIST
+    private List<Double> rowVectorToList(Matrix matrix) throws Exception {
         List<Double> list = new ArrayList<>();
-        for (int i = 0; i < matrix.getX(); i++) {
-            for (int j = 0; j < matrix.getY(); j++) {
-                double nub = matrix.getNumber(i, j);
-                list.add(nub);
-            }
+        for (int j = 0; j < matrix.getY(); j++) {
+            list.add(matrix.getNumber(0, j));
         }
         return list;
     }
 
-    private void insertKMatrix(Matrix matrix, List<Double> list) throws Exception {
-        int x = matrix.getX();
-        int y = matrix.getY();
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                int nub = i * y + j;
-                matrix.setNub(i, j, list.get(nub));
+    private Map<Integer, KBorder> kToBody() throws Exception {
+        Map<Integer, KBorder> borderMap = new HashMap<>();
+        for (Map.Entry<Integer, KClustering> entry : kClusteringMap.entrySet()) {
+            KClustering kClustering = entry.getValue();
+            KBorder kBorder = new KBorder();
+            borderMap.put(entry.getKey(), kBorder);
+            if (kClustering.isReady()) {
+                kBorder.setLength(kClustering.getLength());
+                kBorder.setSpeciesQuantity(kClustering.getSpeciesQuantity());
+                Map<Integer, BoxList> myPosition = new HashMap<>();
+                List<List<Double>> lists = new ArrayList<>();
+                kBorder.setLists(lists);
+                kBorder.setPositionMap(myPosition);
+                Map<Integer, Box> positionMap = kClustering.getPositionMap();
+                Matrix[] matrices = kClustering.getMatrices();
+                for (Map.Entry<Integer, Box> entryBox : positionMap.entrySet()) {
+                    Box box = entryBox.getValue();
+                    BoxList boxList = new BoxList();
+                    List<Double> furList = rowVectorToList(box.getMatrix());
+                    List<Double> borderList = rowVectorToList(box.getMatrixPosition());
+                    boxList.setList(furList);
+                    boxList.setPositionList(borderList);
+                    myPosition.put(entryBox.getKey(), boxList);
+                }
+                for (int i = 0; i < matrices.length; i++) {
+                    lists.add(rowVectorToList(matrices[i]));
+                }
+
+            } else {
+                throw new Exception("not ready");
             }
         }
+
+        return borderMap;
     }
 
     public ModelParameter getModel() throws Exception {//获取模型参数
@@ -215,14 +256,24 @@ public class TempleConfig {
             ModelParameter modelParameter1 = convolutionNerveManager.getModelParameter();
             modelParameter.setDymNerveStudies(modelParameter1.getDymNerveStudies());
             modelParameter.setDymOutNerveStudy(modelParameter1.getDymOutNerveStudy());
+            //获取LVQ模型
+            if (lvq.isReady()) {
+                LvqModel lvqModel = new LvqModel();
+                lvqModel.setLength(lvq.getLength());
+                lvqModel.setTypeNub(lvq.getTypeNub());
+                lvqModel.setMatrixModelList(getLvqModel(lvq.getModel()));
+                modelParameter.setLvqModel(lvqModel);
+            }
 
         } else if (studyPattern == StudyPattern.Speed_Pattern) {
             ModelParameter modelParameter1 = nerveManager.getModelParameter();
             modelParameter.setDepthNerves(modelParameter1.getDepthNerves());
-            modelParameter.setOutNevers(modelParameter1.getOutNevers());
+            modelParameter.setOutNerves(modelParameter1.getOutNerves());
         }
         if (isHavePosition) {//存在边框学习模型参数
+            Map<Integer, KBorder> kBorderMap = kToBody();
             modelParameter.setFrame(frame);
+            modelParameter.setBorderMap(kBorderMap);
         }
         return modelParameter;
     }
@@ -253,18 +304,78 @@ public class TempleConfig {
         return column;
     }
 
-    public double getCutThreshold() {
-        return cutThreshold;
+    //list转行向量
+    private Matrix listToRowVector(List<Double> list) throws Exception {
+        Matrix matrix = new Matrix(1, list.size());
+        for (int i = 0; i < list.size(); i++) {
+            matrix.setNub(0, i, list.get(i));
+        }
+        return matrix;
     }
 
     //注入模型参数
     public void insertModel(ModelParameter modelParameter) throws Exception {
         if (studyPattern == StudyPattern.Accuracy_Pattern) {
             convolutionNerveManager.insertModelParameter(modelParameter);
+            //LVQ模型参数注入
+            LvqModel lvqModel = modelParameter.getLvqModel();
+            if (lvqModel != null) {
+                int length = lvqModel.getLength();
+                int typeNub = lvqModel.getTypeNub();
+                List<MatrixModel> matrixModels = lvqModel.getMatrixModelList();
+                if (length > 0 && typeNub > 0 && matrixModels != null &&
+                        matrixModels.size() > 0) {
+                    MatrixBody[] model = new MatrixBody[matrixModels.size()];
+                    for (int i = 0; i < model.length; i++) {
+                        MatrixModel matrixModel = matrixModels.get(i);
+                        MatrixBody matrixBody = new MatrixBody();
+                        matrixBody.setId(matrixModel.getId());
+                        matrixBody.setMatrix(listToRowVector(matrixModel.getRowVector()));
+                        model[i] = matrixBody;
+                    }
+                    lvq.setLength(length);
+                    lvq.setTypeNub(typeNub);
+                    lvq.setReady(true);
+                    lvq.setModel(model);
+                }
+
+            }
         } else if (studyPattern == StudyPattern.Speed_Pattern) {
             nerveManager.insertModelParameter(modelParameter);
         }
-        Frame frame = modelParameter.getFrame();
+        if (isHavePosition) {
+            frame = modelParameter.getFrame();
+            //边框K均值模型注入
+            Map<Integer, KBorder> borderMap = modelParameter.getBorderMap();
+            if (borderMap != null && borderMap.size() > 0) {
+                for (Map.Entry<Integer, KBorder> entry : borderMap.entrySet()) {
+                    int key = entry.getKey();
+                    KClustering kClustering = kClusteringMap.get(key);
+                    KBorder kBorder = entry.getValue();
+                    List<List<Double>> lists = kBorder.getLists();
+                    Map<Integer, BoxList> boxListMap = kBorder.getPositionMap();
+                    if (lists != null && boxListMap != null && lists.size() > 0 && boxListMap.size() > 0) {
+                        Matrix[] matrices = kClustering.getMatrices();
+                        Map<Integer, Box> boxMap = kClustering.getPositionMap();
+                        for (int i = 0; i < lists.size(); i++) {
+                            Matrix matrix = listToRowVector(lists.get(i));
+                            matrices[i] = matrix;
+                        }
+                        kClustering.setLength(kBorder.getLength());
+                        kClustering.setSpeciesQuantity(kBorder.getSpeciesQuantity());
+                        for (Map.Entry<Integer, BoxList> boxEntry : boxListMap.entrySet()) {
+                            Box box = new Box();
+                            BoxList boxList = boxEntry.getValue();
+                            box.setMatrix(listToRowVector(boxList.getList()));
+                            box.setMatrixPosition(listToRowVector(boxList.getPositionList()));
+                            boxMap.put(boxEntry.getKey(), box);
+                        }
+                        kClustering.setReady(true);
+                    }
+
+                }
+            }
+        }
     }
 
     public void setCutThreshold(double cutThreshold) {

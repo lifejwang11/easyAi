@@ -13,12 +13,48 @@ import java.util.*;
  */
 public class KClustering {
     private List<Box> matrixList = new ArrayList<>();//聚类集合
-    private int length;//向量长度
-    private int speciesQuantity;//种类数量
-    private Matrix[] matrices;//均值K
+    private int length;//向量长度(模型需要返回)
+    private int speciesQuantity;//种类数量(模型需要返回)
+    private Matrix[] matrices;//均值K模型(模型需要返回)
     private Map<Integer, List<Box>> clusterMap = new HashMap<>();//簇
-    private Map<Integer, Box> positionMap = new HashMap<>();
+    private Map<Integer, Box> positionMap = new HashMap<>();//聚类K均值结果(需要返回)
     private boolean isReady = false;
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public void setSpeciesQuantity(int speciesQuantity) {
+        this.speciesQuantity = speciesQuantity;
+    }
+
+    public void setMatrices(Matrix[] matrices) {
+        this.matrices = matrices;
+    }
+
+    public void setPositionMap(Map<Integer, Box> positionMap) {
+        this.positionMap = positionMap;
+    }
+
+    public void setReady(boolean ready) {
+        isReady = ready;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public int getSpeciesQuantity() {
+        return speciesQuantity;
+    }
+
+    public Matrix[] getMatrices() {
+        return matrices;
+    }
+
+    public boolean isReady() {
+        return isReady;
+    }
 
     public Map<Integer, Box> getPositionMap() throws Exception {
         if (!isReady) {
@@ -72,9 +108,6 @@ public class KClustering {
 
         //重新计算均值
         for (Map.Entry<Integer, List<Box>> entry : clusterMap.entrySet()) {
-            if (entry.getValue().size() == 0) {
-                System.out.println("空值：" + entry.getKey());
-            }
             Matrix matrix = average(entry.getValue());
             matrices2[entry.getKey()] = matrix;
         }
