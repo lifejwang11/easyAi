@@ -32,10 +32,6 @@ public class KClustering {
         this.matrices = matrices;
     }
 
-    public void setPositionMap(Map<Integer, Box> positionMap) {
-        this.positionMap = positionMap;
-    }
-
     public void setReady(boolean ready) {
         isReady = ready;
     }

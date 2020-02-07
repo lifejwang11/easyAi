@@ -355,12 +355,14 @@ public class TempleConfig {
                     List<List<Double>> lists = kBorder.getLists();
                     Map<Integer, BoxList> boxListMap = kBorder.getPositionMap();
                     if (lists != null && boxListMap != null && lists.size() > 0 && boxListMap.size() > 0) {
-                        Matrix[] matrices = kClustering.getMatrices();
+                        kClustering.setReady(true);
+                        Matrix[] matrices = new Matrix[lists.size()];
                         Map<Integer, Box> boxMap = kClustering.getPositionMap();
                         for (int i = 0; i < lists.size(); i++) {
                             Matrix matrix = listToRowVector(lists.get(i));
                             matrices[i] = matrix;
                         }
+                        kClustering.setMatrices(matrices);
                         kClustering.setLength(kBorder.getLength());
                         kClustering.setSpeciesQuantity(kBorder.getSpeciesQuantity());
                         for (Map.Entry<Integer, BoxList> boxEntry : boxListMap.entrySet()) {
@@ -370,7 +372,6 @@ public class TempleConfig {
                             box.setMatrixPosition(listToRowVector(boxList.getPositionList()));
                             boxMap.put(boxEntry.getKey(), box);
                         }
-                        kClustering.setReady(true);
                     }
 
                 }
