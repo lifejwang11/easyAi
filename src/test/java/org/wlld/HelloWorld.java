@@ -30,13 +30,13 @@ public class HelloWorld {
     public static void test() throws Exception {
         Picture picture = new Picture();
         TempleConfig templeConfig = new TempleConfig();
-        //templeConfig.setHavePosition(true);
-//        Frame frame = new Frame();
-//        frame.setWidth(3024);
-//        frame.setHeight(4032);
-//        frame.setLengthHeight(100);
-//        frame.setLengthWidth(100);
-//        templeConfig.setFrame(frame);
+        templeConfig.setHavePosition(true);
+        Frame frame = new Frame();
+        frame.setWidth(3024);
+        frame.setHeight(4032);
+        frame.setLengthHeight(100);
+        frame.setLengthWidth(100);
+        templeConfig.setFrame(frame);
         ModelParameter modelParameter = JSONObject.parseObject(ModelData.DATA, ModelParameter.class);
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 3204, 4032, 1);
         templeConfig.insertModel(modelParameter);
@@ -51,26 +51,27 @@ public class HelloWorld {
             operation.learning(right, 1, true);
             operation.learning(wrong, 0, true);
         }
-        templeConfig.startLvq();
+        templeConfig.boxStudy();//边框聚类
+        templeConfig.startLvq();//原型向量量化
         //templeConfig.boxStudy();//边框回归
         //templeConfig.clustering();//进行聚类
 //        ModelParameter modelParameter1 = templeConfig.getModel();
 //        String a = JSON.toJSONString(modelParameter1);
 //        System.out.println(a);
-//        for (int j = 1; j < 2; j++) {
-//            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
-//            Map<Integer, List<FrameBody>> map = operation.lookWithPosition(right, j);
-//            System.out.println("j===" + j);
-//        }
-        //测试集图片,进行识别测试
-        for (int j = 121; j < 140; j++) {
+        for (int j = 1; j < 2; j++) {
             Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
-            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + j + ".png");
-            int rightId = operation.toSee(right);
-            int wrongId = operation.toSee(wrong);
-            System.out.println("该图是菜单：" + rightId);
-            System.out.println("该图是桌子:" + wrongId);
+            Map<Integer, List<FrameBody>> map = operation.lookWithPosition(right, j);
+            System.out.println("j===" + j);
         }
+        //测试集图片,进行识别测试
+//        for (int j = 121; j < 140; j++) {
+//            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
+//            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + j + ".png");
+//            int rightId = operation.toSee(right);
+//            int wrongId = operation.toSee(wrong);
+//            System.out.println("该图是菜单：" + rightId);
+//            System.out.println("该图是桌子:" + wrongId);
+//        }
 
     }
 

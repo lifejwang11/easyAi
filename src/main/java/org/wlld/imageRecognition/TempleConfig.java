@@ -1,7 +1,6 @@
 package org.wlld.imageRecognition;
 
 import org.wlld.MatrixTools.Matrix;
-import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
@@ -89,6 +88,7 @@ public class TempleConfig {
             for (Map.Entry<Integer, KClustering> entry : kClusteringMap.entrySet()) {
                 entry.getValue().start();
             }
+            boxReady = true;
         }
 
     }
@@ -123,7 +123,7 @@ public class TempleConfig {
         this.studyPattern = studyPattern;
         if (isHavePosition) {
             for (int i = 1; i < classificationNub + 1; i++) {
-                kClusteringMap.put(i, new KClustering(20));
+                kClusteringMap.put(i, new KClustering(10));
             }
         }
         switch (studyPattern) {

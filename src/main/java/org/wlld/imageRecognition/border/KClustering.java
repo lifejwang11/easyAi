@@ -57,11 +57,11 @@ public class KClustering {
         Matrix[] matrices2 = new Matrix[speciesQuantity];//待比较均值K
         for (Box matrixBody : matrixList) {//遍历当前集合
             Matrix matrix = matrixBody.getMatrix();
-            double min = 0;
+            double min = -1;
             int id = 0;
             for (int i = 0; i < matrices.length; i++) {
                 double dist = MatrixOperation.getEDist(matrix, matrices[i]);
-                if (min == 0 || dist < min) {
+                if (min == -1 || dist < min) {
                     min = dist;
                     id = i;
                 }
@@ -69,8 +69,12 @@ public class KClustering {
             List<Box> matrixList1 = clusterMap.get(id);
             matrixList1.add(matrixBody);
         }
+
         //重新计算均值
         for (Map.Entry<Integer, List<Box>> entry : clusterMap.entrySet()) {
+            if (entry.getValue().size() == 0) {
+                System.out.println("空值：" + entry.getKey());
+            }
             Matrix matrix = average(entry.getValue());
             matrices2[entry.getKey()] = matrix;
         }
@@ -121,9 +125,9 @@ public class KClustering {
         if (matrixList.size() > 1) {
             Random random = new Random();
             for (int i = 0; i < matrices.length; i++) {//初始化均值向量
-                int index = random.nextInt(matrixList.size());
+                //int index = random.nextInt(matrixList.size());
                 //要进行深度克隆
-                matrices[i] = matrixList.get(index).getMatrix();
+                matrices[i] = matrixList.get(i).getMatrix();
             }
             //进行两者的比较
             boolean isEqual = false;
@@ -139,7 +143,6 @@ public class KClustering {
             }
             while (!isEqual);
             //聚类结束，进行坐标均值矩阵计算
-            System.out.println("聚类循环次数：" + nub);
             position();
             isReady = true;
         } else {

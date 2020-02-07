@@ -135,9 +135,10 @@ public class Operation {//进行计算
                     intoNerve2(eventId, frameBody.getMatrix(), templeConfig.getConvolutionNerveManager().getSensoryNerves(),
                             false, -1, matrixBack);
                     Matrix myMatrix = matrixBack.getMatrix();
-                    //卷积层输出即边框回归的输入的特征向量 TODO 这地有BUG 要改
+                    //卷积层输出即边框回归的输入的特征向量
                     frameBody.setEndMatrix(myMatrix);
-                    int id = getClassificationId2(myMatrix);
+                    Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
+                    int id = getClassificationId2(vector);
                     frameBody.setId(id);
                 }
                 return toPosition(frameBodies, frame.getWidth(), frame.getHeight());
@@ -188,12 +189,12 @@ public class Operation {//进行计算
 
     private Matrix getBoxMatrix(Matrix matrix, Map<Integer, Box> boxMap) throws Exception {
         Matrix positionMatrix = null;
-        double endDist = 0;
+        double endDist = -1;
         for (Map.Entry<Integer, Box> entry : boxMap.entrySet()) {
             Box box = entry.getValue();
             Matrix boxMatrix = box.getMatrix();
             double dist = MatrixOperation.getEDist(matrix, boxMatrix);
-            if (endDist == 0 || dist < endDist) {
+            if (endDist == -1 || dist < endDist) {
                 endDist = dist;
                 positionMatrix = box.getMatrixPosition();
             }
