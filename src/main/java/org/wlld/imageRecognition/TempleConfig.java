@@ -76,7 +76,9 @@ public class TempleConfig {
     }
 
     public void startLvq() throws Exception {//进行量化
-        lvq.start();
+        if (studyPattern == StudyPattern.Accuracy_Pattern) {
+            lvq.start();
+        }
     }
 
     public LVQ getLvq() {

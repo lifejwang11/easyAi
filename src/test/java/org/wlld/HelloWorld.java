@@ -52,6 +52,7 @@ public class HelloWorld {
             operation.learning(wrong, 0, true);
         }
         templeConfig.boxStudy();//边框聚类
+        //精准模式在全部学习结束的时候一定要使用此方法，速度模式不要调用此方法
         templeConfig.startLvq();//原型向量量化
         //templeConfig.boxStudy();//边框回归
         //templeConfig.clustering();//进行聚类
