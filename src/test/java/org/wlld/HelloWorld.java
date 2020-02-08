@@ -31,34 +31,32 @@ public class HelloWorld {
         Picture picture = new Picture();
         TempleConfig templeConfig = new TempleConfig();
         templeConfig.setHavePosition(true);
-        Frame frame = new Frame();
-        frame.setWidth(3024);
-        frame.setHeight(4032);
-        frame.setLengthHeight(100);
-        frame.setLengthWidth(100);
-        templeConfig.setFrame(frame);
-        ModelParameter modelParameter = JSONObject.parseObject(ModelData.DATA, ModelParameter.class);
+//        Frame frame = new Frame();
+//        frame.setWidth(3024);
+//        frame.setHeight(4032);
+//        frame.setLengthHeight(100);
+//        frame.setLengthWidth(100);
+//        templeConfig.setFrame(frame);
+        ModelParameter modelParameter = JSONObject.parseObject(ModelData.DATA2, ModelParameter.class);
+        //ModelParameter modelParameter1 = JSONObject.parseObject(ModelData.DATA, ModelParameter.class);
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 3204, 4032, 1);
         templeConfig.insertModel(modelParameter);
         Operation operation = new Operation(templeConfig);
-        for (int i = 1; i < 100; i++) {//faster rcnn神经网络学习
-            System.out.println("study==" + i);
-            //读取本地URL地址图片,并转化成矩阵
-            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
-            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");
-            //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
-            //第二次学习的时候，第三个参数必须是 true
-            operation.learning(right, 1, true);
-            operation.learning(wrong, 0, true);
-        }
-        templeConfig.boxStudy();//边框聚类
-        //精准模式在全部学习结束的时候一定要使用此方法，速度模式不要调用此方法
-        templeConfig.startLvq();//原型向量量化
+//        for (int i = 1; i < 120; i++) {//faster rcnn神经网络学习
+//            System.out.println("study==" + i);
+//            //读取本地URL地址图片,并转化成矩阵
+//            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
+//            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");
+//            //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
+//            //第二次学习的时候，第三个参数必须是 true
+//            operation.learning(right, 1, true);
+//            operation.learning(wrong, 0, true);
+//        }
+//        templeConfig.boxStudy();//边框聚类
+//        //精准模式在全部学习结束的时候一定要使用此方法，速度模式不要调用此方法
+//        templeConfig.startLvq();//原型向量量化
         //templeConfig.boxStudy();//边框回归
         //templeConfig.clustering();//进行聚类
-//        ModelParameter modelParameter1 = templeConfig.getModel();
-//        String a = JSON.toJSONString(modelParameter1);
-//        System.out.println(a);
         for (int j = 1; j < 2; j++) {
             Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
             Map<Integer, List<FrameBody>> map = operation.lookWithPosition(right, j);

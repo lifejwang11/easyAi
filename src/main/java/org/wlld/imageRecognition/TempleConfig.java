@@ -344,10 +344,13 @@ public class TempleConfig {
             nerveManager.insertModelParameter(modelParameter);
         }
         if (isHavePosition) {
-            frame = modelParameter.getFrame();
+            if (modelParameter.getFrame() != null) {
+                frame = modelParameter.getFrame();
+            }
             //边框K均值模型注入
             Map<Integer, KBorder> borderMap = modelParameter.getBorderMap();
             if (borderMap != null && borderMap.size() > 0) {
+                boxReady = true;
                 for (Map.Entry<Integer, KBorder> entry : borderMap.entrySet()) {
                     int key = entry.getKey();
                     KClustering kClustering = kClusteringMap.get(key);
