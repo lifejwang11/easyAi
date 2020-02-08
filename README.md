@@ -163,6 +163,10 @@
                operation.learning(right, rightTagging, true);
                operation.learning(wrong, wrongTagging, true);
            }
+           //精准模式全部学习结束一定要调用此方法，不调用识别会报错
+           //templeConfig.startLvq();//原型向量量化
+           //如果使用物体在图片中的定位功能，全部学习结束一定要调用此方法，不调用识别会报错
+            //templeConfig.boxStudy();//边框回归
            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/test/a101.png");
            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b1000.png");
            //精准模式检测单张图片将直接返回分类id,而不是通过回调来获取分类概率
