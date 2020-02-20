@@ -3,6 +3,8 @@ package org.wlld;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 
+import java.util.*;
+
 /**
  * @author lidapeng
  * @description
@@ -10,15 +12,16 @@ import org.wlld.MatrixTools.MatrixOperation;
  */
 public class MatrixTest {
     public static void main(String[] args) throws Exception {
-        test4();
-    }
+        Map<Double, String> map = new TreeMap<>();
+        map.put(3.0, "a");
+        map.put(2.0, "b");
+        map.put(4.0, "c");
+        map.put(5.0, "d");
+        map.put(1.0, "e");
+        for (Map.Entry<Double, String> entry : map.entrySet()) {
+            System.out.println(entry.getKey());
+        }
 
-    public static void test4() throws Exception {
-        Matrix matrix = new Matrix(1, 12);
-        String a = "[1,2,3,4,5,6,7,8,9,10,11,12]#";
-        matrix.setAll(a);
-        Matrix matrix1 = MatrixOperation.getPoolVector(matrix);
-        System.out.println(matrix1.getString());
     }
 
     public static void test3() throws Exception {
