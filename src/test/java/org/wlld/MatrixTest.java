@@ -2,7 +2,10 @@ package org.wlld;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.randomForest.DataTable;
+import org.wlld.randomForest.Tree;
 
+import java.awt.*;
 import java.util.*;
 
 /**
@@ -12,17 +15,30 @@ import java.util.*;
  */
 public class MatrixTest {
     public static void main(String[] args) throws Exception {
-        Map<Double, String> map = new TreeMap<>();
-        map.put(3.0, "a");
-        map.put(2.0, "b");
-        map.put(4.0, "c");
-        map.put(5.0, "d");
-        map.put(1.0, "e");
-        for (Map.Entry<Double, String> entry : map.entrySet()) {
-            System.out.println(entry.getKey());
-        }
-
+        test4();
     }
+
+    public static void test4() throws Exception {
+        Set<String> column = new HashSet<>();
+        column.add("height");
+        column.add("weight");
+        column.add("sex");
+        DataTable dataTable = new DataTable(column);
+        dataTable.setKey("sex");
+        Random random = new Random();
+        for (int i = 0; i < 10; i++) {
+            Food food = new Food();
+            food.setHeight(random.nextInt(2));
+            food.setWeight(random.nextInt(2));
+            food.setSex(random.nextInt(2));
+            System.out.println("index==" + i + ",height==" + food.getHeight() +
+                    ",weight==" + food.getWeight() + ",sex==" + food.getSex());
+            dataTable.insert(food);
+        }
+        Tree tree = new Tree(dataTable);
+        tree.study();
+    }
+
 
     public static void test3() throws Exception {
         Matrix matrix = new Matrix(4, 3);

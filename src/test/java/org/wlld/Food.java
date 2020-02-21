@@ -6,22 +6,31 @@ package org.wlld;
  * @date 8:11 上午 2020/2/18
  */
 public class Food {
-    private int foodId;
-    private double testId;
+    private int height;//身高
+    private int weight;//体重
+    private int sex;//性别 1男 2女
 
-    public int getFoodId() {
-        return foodId;
+    public int getHeight() {
+        return height;
     }
 
-    public void setFoodId(int foodId) {
-        this.foodId = foodId;
+    public void setHeight(int height) {
+        this.height = height;
     }
 
-    public double getTestId() {
-        return testId;
+    public int getWeight() {
+        return weight;
     }
 
-    public void setTestId(double testId) {
-        this.testId = testId;
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
+
+    public int getSex() {
+        return sex;
+    }
+
+    public void setSex(int sex) {
+        this.sex = sex;
     }
 }
