@@ -20,6 +20,7 @@ public class Tree {//决策树
         private List<Integer> fatherList;//父级样本
         private Set<String> attribute;//当前可用属性
         private String key;//该节点分类属性
+        private int typeId;//该节点该属性分类的Id值
         private List<Node> nodeList;//下属节点
         private int type;
     }
@@ -108,6 +109,7 @@ public class Tree {//决策树
                     sonNode.attribute = nowAttribute;
                     List<Integer> list = entry.getValue();
                     sonNode.fatherList = list;
+                    sonNode.typeId = entry.getKey();
                     int myNub = list.size();
                     double ent = getEnt(list);
                     double dNub = ArithUtil.div(myNub, fatherNub);
@@ -147,7 +149,7 @@ public class Tree {//决策树
             return nodeList;
         } else {
             //判断类别
-            node.isEnd = true;
+            node.isEnd = true;//叶子节点
             node.type = getType(fatherList);
             return null;
         }
