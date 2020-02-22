@@ -23,16 +23,21 @@ public class MatrixTest {
         column.add("height");
         column.add("weight");
         column.add("sex");
+        column.add("h1");
+        column.add("h2");
         DataTable dataTable = new DataTable(column);
         dataTable.setKey("sex");
         Random random = new Random();
-        for (int i = 0; i < 10; i++) {
+        int cla = 3;
+        for (int i = 0; i < 50; i++) {
             Food food = new Food();
-            food.setHeight(random.nextInt(2));
-            food.setWeight(random.nextInt(2));
-            food.setSex(random.nextInt(2));
-            System.out.println("index==" + i + ",height==" + food.getHeight() +
-                    ",weight==" + food.getWeight() + ",sex==" + food.getSex());
+            food.setHeight(random.nextInt(cla));
+            food.setWeight(random.nextInt(cla));
+            food.setSex(random.nextInt(cla));
+            food.setH1(random.nextInt(cla));
+            food.setH2(random.nextInt(cla));
+//            System.out.println("index==" + i + ",height==" + food.getHeight() +
+//                    ",weight==" + food.getWeight() + ",sex==" + food.getSex());
             dataTable.insert(food);
         }
         Tree tree = new Tree(dataTable);
