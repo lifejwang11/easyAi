@@ -23,6 +23,10 @@ public class DataTable {//数据表
         return length;
     }
 
+    public int getSize() {//获取属性的数量
+        return keyType.size();
+    }
+
     public Map<String, List<Integer>> getTable() {
         return table;
     }

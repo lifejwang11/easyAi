@@ -1,8 +1,11 @@
 package org.wlld;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.randomForest.DataTable;
+import org.wlld.randomForest.Node;
 import org.wlld.randomForest.Tree;
 
 import java.awt.*;
@@ -42,15 +45,29 @@ public class MatrixTest {
         }
         Tree tree = new Tree(dataTable);
         tree.study();
+        Node node = tree.getRootNode();
+        String a = JSON.toJSONString(node);
+        Node node1 = JSONObject.parseObject(a, Node.class);
+        ////
+        Tree tree2 = new Tree(dataTable);
+        tree2.setRootNode(node1);
+        for (int i = 0; i < 10; i++) {
+            Food food = new Food();
+            food.setHeight(random.nextInt(cla));
+            food.setWeight(random.nextInt(cla));
+            food.setSex(random.nextInt(cla));
+            food.setH1(random.nextInt(cla));
+            food.setH2(random.nextInt(cla));
+            int type = tree.judge(food);
+            int type2 = tree2.judge(food);
+            if (type != type2) {
+                System.out.println("出错,type1==" + type + ",type2==" + type2);
+            } else {
+                System.out.println(type);
+            }
+        }
+        System.out.println("结束");
 
-        Food food = new Food();
-        food.setHeight(random.nextInt(cla));
-        food.setWeight(random.nextInt(cla));
-        food.setSex(random.nextInt(cla));
-        food.setH1(random.nextInt(cla));
-        food.setH2(random.nextInt(cla));
-        int type = tree.judge(food);
-        System.out.println(type);
     }
 
 

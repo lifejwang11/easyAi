@@ -18,15 +18,16 @@ public class Tree {//决策树
     private List<Node> lastNodes = new ArrayList<>();//最后一层节点集合
     private Random random = new Random();
 
-    private class Node {
-        private boolean isEnd = false;//是否是最底层
-        private List<Integer> fatherList;//父级样本
-        private Set<String> attribute;//当前可用属性
-        private String key;//该节点分类属性
-        private int typeId;//该节点该属性分类的Id值
-        private List<Node> nodeList;//下属节点
-        private int type;//最底层的类别
-        private Node fatherNode;//父级节点
+    public Node getRootNode() {
+        return rootNode;
+    }
+
+    public DataTable getDataTable() {
+        return dataTable;
+    }
+
+    public void setRootNode(Node rootNode) {
+        this.rootNode = rootNode;
     }
 
     private class Gain {
@@ -35,8 +36,7 @@ public class Tree {//决策树
     }
 
     public Tree(DataTable dataTable) throws Exception {
-        if (dataTable.getKey() != null && dataTable.getLength() > 0) {
-            table = dataTable.getTable();
+        if (dataTable != null && dataTable.getKey() != null) {
             this.dataTable = dataTable;
         } else {
             throw new Exception("dataTable is empty");
@@ -229,7 +229,8 @@ public class Tree {//决策树
     }
 
     public void study() throws Exception {
-        if (dataTable != null) {
+        if (dataTable != null && dataTable.getLength() > 0) {
+            table = dataTable.getTable();
             endList = dataTable.getTable().get(dataTable.getKey());
             Set<String> set = dataTable.getKeyType();
             set.remove(dataTable.getKey());
