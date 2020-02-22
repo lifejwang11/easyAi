@@ -42,6 +42,15 @@ public class MatrixTest {
         }
         Tree tree = new Tree(dataTable);
         tree.study();
+
+        Food food = new Food();
+        food.setHeight(random.nextInt(cla));
+        food.setWeight(random.nextInt(cla));
+        food.setSex(random.nextInt(cla));
+        food.setH1(random.nextInt(cla));
+        food.setH2(random.nextInt(cla));
+        int type = tree.judge(food);
+        System.out.println(type);
     }
 
 
