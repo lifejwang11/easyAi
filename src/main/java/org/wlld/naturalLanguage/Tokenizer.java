@@ -1,11 +1,11 @@
 package org.wlld.naturalLanguage;
 
+import org.wlld.randomForest.DataTable;
+import org.wlld.randomForest.RandomForest;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.Frequency;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author lidapeng
@@ -15,9 +15,10 @@ import java.util.Map;
 public class Tokenizer extends Frequency {
     private List<Sentence> sentences = WordTemple.get().getSentences();//所有断句
     private List<WorldBody> allWorld = WordTemple.get().getAllWorld();//所有词集合
+    private List<List<String>> wordTimes = WordTemple.get().getWordTimes();//所有词编号
     private Word nowWord;//上一次出现的关键字
 
-    public void start(Map<Integer, List<String>> model) {
+    public void start(Map<Integer, List<String>> model) throws Exception {
         //model的主键是类别，值是该类别语句的集合
         for (Map.Entry<Integer, List<String>> mod : model.entrySet()) {
             if (mod.getKey() != 0) {
@@ -35,13 +36,81 @@ public class Tokenizer extends Frequency {
         }
         restructure();//对集合中的词进行词频统计
         //这里分词已经结束,对词进行编号
-        //test();
+        number();
+        //进入随机森林进行学习
+        study();
     }
 
-    private void test() {//分词测试类
+    private void number() {//分词编号
         for (Sentence sentence : sentences) {
-            System.out.println(sentence.getKeyWords());
+            List<Integer> features = sentence.getFeatures();
+            List<String> sentenceList = sentence.getKeyWords();
+            int size = sentenceList.size();//时间序列的深度
+            for (int i = 0; i < size; i++) {
+                if (!wordTimes.contains(i)) {
+                    wordTimes.add(new ArrayList<>());
+                }
+                List<String> list = wordTimes.get(i);
+                int nub = list.size();
+                features.add(nub);
+                list.add(sentenceList.get(i));
+            }
         }
+    }
+
+    private void study() throws Exception {
+        Set<String> column = new HashSet<>();
+        for (int i = 0; i < 8; i++) {
+            int t = i + 1;
+            column.add("a" + t);
+        }
+        column.add("key");
+        DataTable dataTable = new DataTable(column);
+        dataTable.setKey("key");
+        //初始化随机森林
+        RandomForest randomForest = new RandomForest(5);
+        WordTemple.get().setRandomForest(randomForest);//保存随机森林到模版
+        randomForest.init(dataTable);
+        for (Sentence sentence : sentences) {
+            LangBody langBody = new LangBody();
+            List<Integer> features = sentence.getFeatures();
+            langBody.setKey(sentence.getKey());
+            for (int i = 0; i < 8; i++) {
+                int nub = 0;
+                if (features.contains(i)) {
+                    nub = features.get(i);
+                }
+                int t = i + 1;
+                switch (t) {
+                    case 1:
+                        langBody.setA1(nub);
+                        break;
+                    case 2:
+                        langBody.setA2(nub);
+                        break;
+                    case 3:
+                        langBody.setA3(nub);
+                        break;
+                    case 4:
+                        langBody.setA4(nub);
+                        break;
+                    case 5:
+                        langBody.setA5(nub);
+                        break;
+                    case 6:
+                        langBody.setA6(nub);
+                        break;
+                    case 7:
+                        langBody.setA7(nub);
+                        break;
+                    case 8:
+                        langBody.setA8(nub);
+                        break;
+                }
+            }
+            randomForest.insert(langBody);
+        }
+        randomForest.study();
     }
 
     private void restructure() {//对句子里面的Word进行词频统计

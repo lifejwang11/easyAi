@@ -65,7 +65,7 @@ public class TemplateReader {//模板读取类
         word();
     }
 
-    public void word() {
+    public void word() throws Exception {
         Tokenizer tokenizer = new Tokenizer();
         tokenizer.start(model);
     }

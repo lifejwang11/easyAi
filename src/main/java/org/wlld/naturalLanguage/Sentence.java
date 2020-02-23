@@ -1,6 +1,5 @@
 package org.wlld.naturalLanguage;
 
-import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,12 @@ public class Sentence {
     private Word firstWord;
     private List<Word> waitWords = new ArrayList<>();//词
     private List<String> keyWords;//分词结果下标按照时间序列排序
+    private List<Integer> features = new ArrayList<>();//时序特征
     private int key;
+
+    public List<Integer> getFeatures() {
+        return features;
+    }
 
     public List<String> getKeyWords() {
         return keyWords;
