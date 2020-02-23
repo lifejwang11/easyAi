@@ -79,14 +79,14 @@ public class RandomForest {
         }
     }
 
-    public void study() throws Exception {
+    public void study() throws Exception {//学习
         for (int i = 0; i < forest.length; i++) {
             Tree tree = forest[i];
             tree.study();
         }
     }
 
-    public void insert(Object object) {
+    public void insert(Object object) {//添加学习参数
         for (int i = 0; i < forest.length; i++) {
             Tree tree = forest[i];
             tree.getDataTable().insert(object);
