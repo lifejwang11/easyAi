@@ -44,10 +44,9 @@ public class Talk {
                 List<String> keyWords = sentence1.getKeyWords();
                 for (int i = 0; i < 8; i++) {
                     int nub = 0;
-                    List<String> words = wordTimes.get(i);
-                    String word = keyWords.get(i);
-                    if (word != null) {
-                        nub = getNub(words, word);
+                    if (keyWords.size() > i) {
+                        List<String> words = wordTimes.get(i);
+                        nub = getNub(words, keyWords.get(i));
                     }
                     features.add(nub);
                 }

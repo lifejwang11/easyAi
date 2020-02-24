@@ -42,12 +42,13 @@ public class Tokenizer extends Frequency {
     }
 
     private void number() {//分词编号
+        System.out.println("开始编码:" + sentences.size());
         for (Sentence sentence : sentences) {
             List<Integer> features = sentence.getFeatures();
             List<String> sentenceList = sentence.getKeyWords();
             int size = sentenceList.size();//时间序列的深度
             for (int i = 0; i < size; i++) {
-                if (!wordTimes.contains(i)) {
+                if (wordTimes.size() < i + 1) {
                     wordTimes.add(new ArrayList<>());
                 }
                 List<String> list = wordTimes.get(i);
@@ -77,7 +78,7 @@ public class Tokenizer extends Frequency {
             langBody.setKey(sentence.getKey());
             for (int i = 0; i < 8; i++) {
                 int nub = 0;
-                if (features.contains(i)) {
+                if (features.size() > i) {
                     nub = features.get(i);
                 }
                 int t = i + 1;

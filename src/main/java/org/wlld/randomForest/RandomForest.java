@@ -81,6 +81,7 @@ public class RandomForest {
 
     public void study() throws Exception {//学习
         for (int i = 0; i < forest.length; i++) {
+            System.out.println("开始学习==" + i + ",treeNub==" + forest.length);
             Tree tree = forest[i];
             tree.study();
         }
