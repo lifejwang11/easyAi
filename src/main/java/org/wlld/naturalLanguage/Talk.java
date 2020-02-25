@@ -96,7 +96,11 @@ public class Talk {
             for (Word word : waitWorld) {
                 String myWord = word.getWord();
                 WorldBody body = getBody(myWord, listWord);
-                listWord = body.getWorldBodies();
+                if (body == null) {//已经无法查找到对应的词汇了
+                    word.setWordFrequency(1);
+                    break;
+                }
+                listWord = body.getWorldBodies();//这个body报了一次空指针
                 word.setWordFrequency(body.getWordFrequency());
             }
         }
@@ -107,6 +111,7 @@ public class Talk {
     }
 
     private WorldBody getBody(String word, List<WorldBody> worlds) {
+        //TODO 这里有个BUG 当myBody出现空的时候断词已经找不到了
         WorldBody myBody = null;
         for (WorldBody body : worlds) {
             if (body.getWordName().hashCode() == word.hashCode() && body.getWordName().equals(word)) {
