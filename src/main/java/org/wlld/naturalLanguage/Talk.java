@@ -34,11 +34,21 @@ public class Talk {
         //拆词
         List<Sentence> sentences = new ArrayList<>();
         for (int i = 0; i < sens.length; i++) {
-            Sentence sentenceWords = new Sentence();
-            catchSentence(sentence, sentenceWords);
-            sentences.add(sentenceWords);
+            List<Sentence> sentenceList = catchSentence(sentence);
+            int key = 0;
+            int nub = 0;
+            for (int j = 0; j < sentenceList.size(); j++) {
+                Sentence sentence1 = sentenceList.get(j);
+                restructure(sentence1);
+                int size = sentence1.getKeyWords().size();
+                if (size > nub) {
+                    key = j;
+                    nub = size;
+                }
+            }
+            sentences.add(sentenceList.get(key));
         }
-        restructure(sentences);
+
         //进行识别
         if (randomForest != null) {
             for (Sentence sentence1 : sentences) {
@@ -91,34 +101,36 @@ public class Talk {
         return nub;
     }
 
-    private void catchSentence(String sentence, Sentence sentenceWords) {//把句子拆开
+    private List<Sentence> catchSentence(String sentence) {//把句子拆开
         int len = sentence.length();
-        for (int i = 0; i < len; i++) {
-            String word = sentence.substring(0, i + 1);
-            sentenceWords.setWord(word);
+        List<Sentence> sentences = new ArrayList<>();
+        for (int j = 0; j < len - 2; j++) {
+            Sentence sentenceWords = new Sentence();
+            for (int i = j; i < len; i++) {
+                String word = sentence.substring(j, i + 1);
+                sentenceWords.setWord(word);
+            }
+            sentences.add(sentenceWords);
         }
-
+        return sentences;
     }
 
-    private void restructure(List<Sentence> sentences) {//对句子里面的Word进行词频统计
-        for (Sentence words : sentences) {
-            List<WorldBody> listWord = allWorld;
-            List<Word> waitWorld = words.getWaitWords();
-            for (Word word : waitWorld) {
-                String myWord = word.getWord();
-                WorldBody body = getBody(myWord, listWord);
-                if (body == null) {//已经无法查找到对应的词汇了
-                    word.setWordFrequency(1);
-                    break;
-                }
-                listWord = body.getWorldBodies();//这个body报了一次空指针
-                word.setWordFrequency(body.getWordFrequency());
+    private void restructure(Sentence words) {//对句子里面的Word进行词频统计
+        List<WorldBody> listWord = allWorld;
+        List<Word> waitWorld = words.getWaitWords();
+        for (Word word : waitWorld) {
+            String myWord = word.getWord();
+            WorldBody body = getBody(myWord, listWord);
+            if (body == null) {//已经无法查找到对应的词汇了
+                word.setWordFrequency(1);
+                break;
             }
+            listWord = body.getWorldBodies();//这个body报了一次空指针
+            word.setWordFrequency(body.getWordFrequency());
         }
         Tokenizer tokenizer = new Tokenizer();
-        for (Sentence words : sentences) {
-            tokenizer.radiation(words);
-        }
+        tokenizer.radiation(words);
+
     }
 
     private WorldBody getBody(String word, List<WorldBody> worlds) {
