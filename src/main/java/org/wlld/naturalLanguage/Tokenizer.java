@@ -69,7 +69,7 @@ public class Tokenizer extends Frequency {
         DataTable dataTable = new DataTable(column);
         dataTable.setKey("key");
         //初始化随机森林
-        RandomForest randomForest = new RandomForest(5);
+        RandomForest randomForest = new RandomForest(7);
         WordTemple.get().setRandomForest(randomForest);//保存随机森林到模版
         randomForest.init(dataTable);
         for (Sentence sentence : sentences) {

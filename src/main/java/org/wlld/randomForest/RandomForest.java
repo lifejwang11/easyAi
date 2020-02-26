@@ -48,6 +48,7 @@ public class RandomForest {
         for (int i = 0; i < forest.length; i++) {
             Tree tree = forest[i];
             int type = tree.judge(object);
+            //System.out.println(type);
             if (map.containsKey(type)) {
                 map.put(type, map.get(type) + 1);
             } else {
@@ -81,7 +82,7 @@ public class RandomForest {
 
     public void study() throws Exception {//学习
         for (int i = 0; i < forest.length; i++) {
-            System.out.println("开始学习==" + i + ",treeNub==" + forest.length);
+            //System.out.println("开始学习==" + i + ",treeNub==" + forest.length);
             Tree tree = forest[i];
             tree.study();
         }

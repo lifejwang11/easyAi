@@ -2,6 +2,7 @@ package org.wlld.naturalLanguage;
 
 
 import org.wlld.randomForest.RandomForest;
+import org.wlld.tools.ArithUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,8 @@ public class Talk {
     private RandomForest randomForest = WordTemple.get().getRandomForest();//获取随机森林模型
     private List<List<String>> wordTimes = WordTemple.get().getWordTimes();
 
-    public void talk(String sentence) throws Exception {
+    public List<Integer> talk(String sentence) throws Exception {
+        List<Integer> typeList = new ArrayList<>();
         String rgm = null;
         if (sentence.indexOf(",") > -1) {
             rgm = ",";
@@ -41,29 +43,38 @@ public class Talk {
         if (randomForest != null) {
             for (Sentence sentence1 : sentences) {
                 List<Integer> features = sentence1.getFeatures();
-                List<String> keyWords = sentence1.getKeyWords();
+                List<String> keyWords = sentence1.getKeyWords();//拆分的关键词
+                int wrong = 0;
+                int wordNumber = keyWords.size();
                 for (int i = 0; i < 8; i++) {
                     int nub = 0;
                     if (keyWords.size() > i) {
                         List<String> words = wordTimes.get(i);
                         nub = getNub(words, keyWords.get(i));
+                        if (nub == 0) {//出现了不认识的词
+                            wrong++;
+                        }
                     }
                     features.add(nub);
                 }
-                LangBody langBody = new LangBody();
-                langBody.setA1(features.get(0));
-                langBody.setA2(features.get(1));
-                langBody.setA3(features.get(2));
-                langBody.setA4(features.get(3));
-                langBody.setA5(features.get(4));
-                langBody.setA6(features.get(5));
-                langBody.setA7(features.get(6));
-                langBody.setA8(features.get(7));
-                int type = randomForest.forest(langBody);
-                System.out.println("type==" + type);
+                int type = 0;
+                if (ArithUtil.div(wrong, wordNumber) < WordTemple.get().getGarbageTh()) {
+                    LangBody langBody = new LangBody();
+                    langBody.setA1(features.get(0));
+                    langBody.setA2(features.get(1));
+                    langBody.setA3(features.get(2));
+                    langBody.setA4(features.get(3));
+                    langBody.setA5(features.get(4));
+                    langBody.setA6(features.get(5));
+                    langBody.setA7(features.get(6));
+                    langBody.setA8(features.get(7));
+                    type = randomForest.forest(langBody);
+                }
+                typeList.add(type);
             }
+            return typeList;
         } else {
-            System.out.println("随机森林没有训练");
+            throw new Exception("forest is not study");
         }
     }
 
