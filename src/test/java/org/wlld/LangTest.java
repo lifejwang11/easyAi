@@ -20,7 +20,7 @@ public class LangTest {
         TemplateReader templateReader = new TemplateReader();
         templateReader.read("/Users/lidapeng/Desktop/myDocment/a1.txt", "UTF-8", IOConst.NOT_WIN);
         Talk talk = new Talk();
-        List<Integer> list = talk.talk("被锁外面了");
+        List<Integer> list = talk.talk("帮我配把锁");
         System.out.println(list);
     }
 }
