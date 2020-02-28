@@ -17,10 +17,15 @@ public class LangTest {
     }
 
     public static void test() throws Exception {
+        //学习过程 过程（长期内存持有）
+        //模版类
         TemplateReader templateReader = new TemplateReader();
+        //读取模版
         templateReader.read("/Users/lidapeng/Desktop/myDocment/a1.txt", "UTF-8", IOConst.NOT_WIN);
+        //识别过程
         Talk talk = new Talk();
-        List<Integer> list = talk.talk("帮我配把锁");
+        //我饿了，我想吃个饭
+        List<Integer> list = talk.talk("联系个开锁公司");
         System.out.println(list);
     }
 }
