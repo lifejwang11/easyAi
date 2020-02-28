@@ -14,7 +14,7 @@
 * 比如你要分辨当前图像 是 苹果或是香蕉或是桃子，对图像进行判断分类，精准度更高，对图像的切割，针对占比比较大的物体切割，定位。
 * 下面API文档有不清楚的地方可联系作者询问，QQ：794757862
 * 详细视频教程地址：https://www.bilibili.com/video/av89134035
-## 好的让我们从HELLO WORLD 开始:
+## 图像部分API 说明:
     public static void testPic() throws Exception {
            //测试SPEED模式学习过程
            //初始化图像转矩阵类:作用就是说将一个图片文件转化为矩阵类
@@ -119,21 +119,6 @@
            templeConfig.init(pattern, isFirst, 3204, 4032, 1);
    
            return templeConfig;
-       }
-   
-       public static void testModel() throws Exception {
-           // 模型参数获取及注入 实例
-           TempleConfig templeConfig = getTemple(true, StudyPattern.Accuracy_Pattern);
-           ModelParameter modelParameter1 = templeConfig.getModel();
-           String model = JSON.toJSONString(modelParameter1);
-           System.out.println(model);
-           TempleConfig templeConfig2 = getTemple(false, StudyPattern.Accuracy_Pattern);
-           ModelParameter modelParameter3 = JSONObject.parseObject(model, ModelParameter.class);
-           templeConfig2.insertModel(modelParameter3);
-           ModelParameter modelParameter2 = templeConfig2.getModel();
-           String model2 = JSON.toJSONString(modelParameter2);
-           System.out.println(model2);
-   
        }
    
        public static void testPic2() throws Exception {
