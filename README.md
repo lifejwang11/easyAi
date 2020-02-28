@@ -179,6 +179,7 @@
     回调第一个参数是输出值 指的是 这个分类的概率 该数值是0-1之间的浮点
     第二个参数是 分类的id 判断是训练的哪个分类的ID，
     第三个参数是 事件ID,一次判断事件 使用一个ID,让开发者知道是哪次事件的回调判断
+## 自然语言分类API 说明:
     public static void test() throws Exception {   //自然语言分类说明
         //创建模板读取累
         TemplateReader templateReader = new TemplateReader();
