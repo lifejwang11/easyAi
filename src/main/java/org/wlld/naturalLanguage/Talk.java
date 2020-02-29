@@ -105,12 +105,18 @@ public class Talk {
     private List<Sentence> catchSentence(String sentence) {//把句子拆开
         int len = sentence.length();
         List<Sentence> sentences = new ArrayList<>();
-        for (int j = 0; j < len - 2; j++) {
-            Sentence sentenceWords = new Sentence();
-            for (int i = j; i < len; i++) {
-                String word = sentence.substring(j, i + 1);
-                sentenceWords.setWord(word);
+        if (len > 2) {
+            for (int j = 0; j < len - 2; j++) {
+                Sentence sentenceWords = new Sentence();
+                for (int i = j; i < len; i++) {
+                    String word = sentence.substring(j, i + 1);
+                    sentenceWords.setWord(word);
+                }
+                sentences.add(sentenceWords);
             }
+        } else {
+            Sentence sentenceWords = new Sentence();
+            sentenceWords.setWord(sentence);
             sentences.add(sentenceWords);
         }
         return sentences;
