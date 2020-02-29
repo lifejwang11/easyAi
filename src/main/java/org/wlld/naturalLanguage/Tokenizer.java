@@ -41,6 +41,23 @@ public class Tokenizer extends Frequency {
         study();
     }
 
+    private int getKey(List<String> words, String testWord) {
+        int nub = 0;
+        int size = words.size();
+        for (int i = 0; i < size; i++) {
+            String word = words.get(i);
+            if (testWord.hashCode() == word.hashCode() && testWord.equals(word)) {
+                nub = i + 1;
+                break;
+            }
+        }
+        if (nub == 0) {
+            words.add(testWord);
+            nub = words.size();
+        }
+        return nub;
+    }
+
     private void number() {//分词编号
         System.out.println("开始编码:" + sentences.size());
         for (Sentence sentence : sentences) {
@@ -51,10 +68,10 @@ public class Tokenizer extends Frequency {
                 if (wordTimes.size() < i + 1) {
                     wordTimes.add(new ArrayList<>());
                 }
+                String word = sentenceList.get(i);//当前关键字
                 List<String> list = wordTimes.get(i);
-                int nub = list.size();
+                int nub = getKey(list, word);
                 features.add(nub);
-                list.add(sentenceList.get(i));
             }
         }
     }
@@ -69,7 +86,7 @@ public class Tokenizer extends Frequency {
         DataTable dataTable = new DataTable(column);
         dataTable.setKey("key");
         //初始化随机森林
-        RandomForest randomForest = new RandomForest(7);
+        RandomForest randomForest = new RandomForest(11);
         WordTemple.get().setRandomForest(randomForest);//保存随机森林到模版
         randomForest.init(dataTable);
         for (Sentence sentence : sentences) {

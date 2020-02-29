@@ -58,8 +58,8 @@ public class MatrixTest {
             food.setSex(random.nextInt(cla));
             food.setH1(random.nextInt(cla));
             food.setH2(random.nextInt(cla));
-            int type = tree.judge(food);
-            int type2 = tree2.judge(food);
+            int type = tree.judge(food).getType();
+            int type2 = tree2.judge(food).getType();
             if (type != type2) {
                 System.out.println("出错,type1==" + type + ",type2==" + type2);
             } else {

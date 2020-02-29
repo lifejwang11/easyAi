@@ -16,7 +16,16 @@ public class WordTemple {
     private List<WorldBody> allWorld = new ArrayList<>();//所有词集合
     private List<List<String>> wordTimes = new ArrayList<>();//词编号
     private RandomForest randomForest;//保存的随机森林模型
-    private double garbageTh = 0.5;//垃圾分类的阈值默认0.7
+    private double garbageTh = 0.5;//垃圾分类的阈值默认0.5
+    private double trustPunishment = 0.1;//信任惩罚
+
+    public double getTrustPunishment() {
+        return trustPunishment;
+    }
+
+    public void setTrustPunishment(double trustPunishment) {
+        this.trustPunishment = trustPunishment;
+    }
 
     public double getGarbageTh() {
         return garbageTh;

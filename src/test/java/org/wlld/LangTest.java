@@ -25,7 +25,7 @@ public class LangTest {
         //识别过程
         Talk talk = new Talk();
         //我饿了，我想吃个饭
-        List<Integer> list = talk.talk("联系个开锁公司");
+        List<Integer> list = talk.talk("找个上门取件的快递员");
         System.out.println(list);
     }
 }

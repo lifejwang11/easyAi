@@ -46,6 +46,7 @@ public class Talk {
                     nub = size;
                 }
             }
+            //System.out.println(sentenceList.get(key).getKeyWords());
             sentences.add(sentenceList.get(key));
         }
 

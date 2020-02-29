@@ -44,21 +44,24 @@ public class RandomForest {
     }
 
     public int forest(Object object) throws Exception {//随机森林识别
-        Map<Integer, Integer> map = new HashMap<>();
+        Map<Integer, Double> map = new HashMap<>();
         for (int i = 0; i < forest.length; i++) {
             Tree tree = forest[i];
-            int type = tree.judge(object);
+            TreeWithTrust treeWithTrust = tree.judge(object);
+            int type = treeWithTrust.getType();
             //System.out.println(type);
+            double trust = treeWithTrust.getTrust();
             if (map.containsKey(type)) {
-                map.put(type, map.get(type) + 1);
+                map.put(type, ArithUtil.add(map.get(type), trust));
             } else {
-                map.put(type, 1);
+                map.put(type, trust);
             }
         }
         int type = 0;
-        int nub = 0;
-        for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-            int myNub = entry.getValue();
+        double nub = 0;
+        for (Map.Entry<Integer, Double> entry : map.entrySet()) {
+            double myNub = entry.getValue();
+            //System.out.println("type==" + entry.getKey() + ",nub==" + myNub);
             if (myNub > nub) {
                 type = entry.getKey();
                 nub = myNub;
@@ -71,6 +74,8 @@ public class RandomForest {
         //一棵树属性的数量
         if (dataTable.getSize() > 4) {
             int kNub = (int) ArithUtil.div(Math.log(dataTable.getSize()), Math.log(2));
+            //int kNub = dataTable.getSize() - 1;
+           // System.out.println("knNub==" + kNub);
             for (int i = 0; i < forest.length; i++) {
                 Tree tree = new Tree(getRandomData(dataTable, kNub));
                 forest[i] = tree;
@@ -111,6 +116,7 @@ public class RandomForest {
             list.remove(index);
         }
         myName.add(key);
+        //System.out.println(myName);
         DataTable data = new DataTable(myName);
         data.setKey(key);
         return data;

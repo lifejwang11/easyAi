@@ -1,5 +1,6 @@
 package org.wlld.randomForest;
 
+import org.wlld.naturalLanguage.WordTemple;
 import org.wlld.tools.ArithUtil;
 
 import java.lang.reflect.Method;
@@ -199,20 +200,34 @@ public class Tree {//决策树
         Class<?> body = ob.getClass();
         String methodName = "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
         Method method = body.getMethod(methodName);
-        return (int) method.invoke(ob);
+        int nub = (int) method.invoke(ob);
+        return nub;
     }
 
-    public int judge(Object ob) throws Exception {//进行类别判断
+    public TreeWithTrust judge(Object ob) throws Exception {//进行类别判断
         if (rootNode != null) {
-            return goTree(ob, rootNode);
+            TreeWithTrust treeWithTrust = new TreeWithTrust();
+            treeWithTrust.setTrust(1.0);
+            goTree(ob, rootNode, treeWithTrust, 0);
+            return treeWithTrust;
         } else {
             throw new Exception("rootNode is null");
         }
     }
 
-    private int goTree(Object ob, Node node) throws Exception {//从树顶向下攀爬
+    private void punishment(TreeWithTrust treeWithTrust) {//信任惩罚
+        //System.out.println("惩罚");
+        double trust = treeWithTrust.getTrust();//获取当前信任值
+        trust = ArithUtil.mul(trust, WordTemple.get().getTrustPunishment());
+        treeWithTrust.setTrust(trust);
+    }
+
+    private void goTree(Object ob, Node node, TreeWithTrust treeWithTrust, int times) throws Exception {//从树顶向下攀爬
         if (!node.isEnd) {
             int myType = getTypeId(ob, node.key);//当前类别的ID
+            if (myType == 0) {//做信任惩罚
+                punishment(treeWithTrust);
+            }
             List<Node> nodeList = node.nodeList;
             boolean isOk = false;
             for (Node testNode : nodeList) {
@@ -223,12 +238,23 @@ public class Tree {//决策树
                 }
             }
             if (!isOk) {//当前类别缺失，未知的属性值
+                punishment(treeWithTrust);
+                punishment(treeWithTrust);
                 int index = random.nextInt(nodeList.size());
                 node = nodeList.get(index);
             }
-            return goTree(ob, node);
+            times++;
+            goTree(ob, node, treeWithTrust, times);
         } else {
-            return node.type;
+            //当以0作为结束的时候要做严厉的信任惩罚
+            if (node.typeId == 0) {
+                int nub = rootNode.attribute.size() - times;
+                //System.out.println("惩罚次数" + nub);
+                for (int i = 0; i < nub; i++) {
+                    punishment(treeWithTrust);
+                }
+            }
+            treeWithTrust.setType(node.type);
         }
     }
 
