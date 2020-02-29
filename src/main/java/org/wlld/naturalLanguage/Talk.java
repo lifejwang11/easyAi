@@ -105,8 +105,8 @@ public class Talk {
     private List<Sentence> catchSentence(String sentence) {//把句子拆开
         int len = sentence.length();
         List<Sentence> sentences = new ArrayList<>();
-        if (len > 2) {
-            for (int j = 0; j < len - 2; j++) {
+        if (len > 1) {
+            for (int j = 0; j < len - 1; j++) {
                 Sentence sentenceWords = new Sentence();
                 for (int i = j; i < len; i++) {
                     String word = sentence.substring(j, i + 1);
