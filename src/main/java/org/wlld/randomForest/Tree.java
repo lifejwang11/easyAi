@@ -239,7 +239,6 @@ public class Tree {//决策树
             }
             if (!isOk) {//当前类别缺失，未知的属性值
                 punishment(treeWithTrust);
-                punishment(treeWithTrust);
                 int index = random.nextInt(nodeList.size());
                 node = nodeList.get(index);
             }
