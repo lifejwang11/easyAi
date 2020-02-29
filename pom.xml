@@ -8,7 +8,7 @@
     <artifactId>easyAi</artifactId>
     <version>1.0.0</version>
 
-    <name>myBrain</name>
+    <name>easyAi</name>
     <!-- FIXME change it to the project's website -->
     <url>http://www.example.com</url>
     <properties>
