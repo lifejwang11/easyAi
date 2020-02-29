@@ -13,6 +13,33 @@ public class WordModel {
     private RfModel rfModel;//随机森林模型
     private List<WorldBody> allWorld;//所有词集合
     private List<List<String>> wordTimes;//所有分词编号
+    private double garbageTh;//垃圾分类的阈值默认0.5
+    private double trustPunishment;//信任惩罚
+    private double trustTh;//信任阈值
+
+    public double getGarbageTh() {
+        return garbageTh;
+    }
+
+    public void setGarbageTh(double garbageTh) {
+        this.garbageTh = garbageTh;
+    }
+
+    public double getTrustPunishment() {
+        return trustPunishment;
+    }
+
+    public void setTrustPunishment(double trustPunishment) {
+        this.trustPunishment = trustPunishment;
+    }
+
+    public double getTrustTh() {
+        return trustTh;
+    }
+
+    public void setTrustTh(double trustTh) {
+        this.trustTh = trustTh;
+    }
 
     public RfModel getRfModel() {
         return rfModel;

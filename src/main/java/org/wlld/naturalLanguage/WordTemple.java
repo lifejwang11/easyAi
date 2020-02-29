@@ -19,6 +19,27 @@ public class WordTemple {
     private double garbageTh = 0.5;//垃圾分类的阈值默认0.5
     private double trustPunishment = 0.1;//信任惩罚
 
+    public WordModel getModel() {//获取模型
+        WordModel wordModel = new WordModel();
+        wordModel.setAllWorld(allWorld);
+        wordModel.setWordTimes(wordTimes);
+        wordModel.setGarbageTh(garbageTh);
+        wordModel.setTrustPunishment(trustPunishment);
+        wordModel.setTrustTh(randomForest.getTrustTh());
+        wordModel.setRfModel(randomForest.getModel());
+        return wordModel;
+    }
+
+    public void insertModel(WordModel wordModel) throws Exception {//注入模型
+        allWorld = wordModel.getAllWorld();
+        wordTimes = wordModel.getWordTimes();
+        garbageTh = wordModel.getGarbageTh();
+        trustPunishment = wordModel.getTrustPunishment();
+        randomForest = new RandomForest();
+        randomForest.setTrustTh(wordModel.getTrustTh());
+        randomForest.insertModel(wordModel.getRfModel());
+    }
+
     public double getTrustPunishment() {
         return trustPunishment;
     }

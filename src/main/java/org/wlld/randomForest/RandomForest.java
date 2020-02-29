@@ -14,8 +14,15 @@ public class RandomForest {
     private Tree[] forest;
     private double trustTh = 0.1;//信任阈值
 
-    public void setTrustTh(double trustTh) {//设置信任阈值
+    public double getTrustTh() {
+        return trustTh;
+    }
+
+    public void setTrustTh(double trustTh) {
         this.trustTh = trustTh;
+    }
+
+    public RandomForest() {
     }
 
     public RandomForest(int treeNub) throws Exception {
@@ -29,8 +36,12 @@ public class RandomForest {
     public void insertModel(RfModel rfModel) throws Exception {//注入模型
         if (rfModel != null) {
             Map<Integer, Node> nodeMap = rfModel.getNodeMap();
-            for (int i = 0; i < forest.length; i++) {
-                forest[i].setRootNode(nodeMap.get(i));
+            forest = new Tree[nodeMap.size()];
+            for (Map.Entry<Integer, Node> entry : nodeMap.entrySet()) {
+                int key = entry.getKey();
+                Tree tree = new Tree();
+                forest[key] = tree;
+                tree.setRootNode(entry.getValue());
             }
         } else {
             throw new Exception("model is null");

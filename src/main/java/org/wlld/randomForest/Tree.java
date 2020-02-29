@@ -36,6 +36,9 @@ public class Tree {//决策树
         private double gainRatio;
     }
 
+    public Tree() {
+    }
+
     public Tree(DataTable dataTable) throws Exception {
         if (dataTable != null && dataTable.getKey() != null) {
             this.dataTable = dataTable;
