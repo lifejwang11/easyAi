@@ -39,8 +39,6 @@ public class MatrixTest {
             food.setSex(random.nextInt(cla));
             food.setH1(random.nextInt(cla));
             food.setH2(random.nextInt(cla));
-//            System.out.println("index==" + i + ",height==" + food.getHeight() +
-//                    ",weight==" + food.getWeight() + ",sex==" + food.getSex());
             dataTable.insert(food);
         }
         Tree tree = new Tree(dataTable);

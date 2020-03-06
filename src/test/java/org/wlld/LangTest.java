@@ -3,8 +3,13 @@ package org.wlld;
 import org.wlld.naturalLanguage.IOConst;
 import org.wlld.naturalLanguage.Talk;
 import org.wlld.naturalLanguage.TemplateReader;
+import org.wlld.randomForest.DataTable;
+import org.wlld.randomForest.RandomForest;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * @author lidapeng
@@ -13,7 +18,55 @@ import java.util.List;
  */
 public class LangTest {
     public static void main(String[] args) throws Exception {
-        test();
+        test1();
+    }
+
+    public static void test1() throws Exception {
+        Set<String> column = new HashSet<>();
+        column.add("math");
+        column.add("eng");
+        column.add("word");
+        column.add("history");
+        column.add("h1");
+        column.add("h2");
+        column.add("h3");
+        column.add("h4");
+        column.add("point");
+        DataTable dataTable = new DataTable(column);
+        dataTable.setKey("point");
+        RandomForest randomForest = new RandomForest(7);
+        randomForest.init(dataTable);//唤醒随机森林里的树木
+        //创建实体类输入数据
+        for (int i = 0; i < 100; i++) {
+            Student student = new Student();
+            student.setEng(getPoint());
+            student.setH1(getPoint());
+            student.setH2(getPoint());
+            student.setH3(getPoint());
+            student.setH4(getPoint());
+            student.setMath(getPoint());
+            student.setWord(getPoint());
+            student.setHistory(getPoint());
+            student.setPoint(getPoint());
+            randomForest.insert(student);
+        }
+        randomForest.study();
+        //以上都是学习过程
+        Student student = new Student();
+        student.setEng(getPoint());
+        student.setH1(getPoint());
+        student.setH2(getPoint());
+        student.setH3(getPoint());
+        student.setH4(getPoint());
+        student.setMath(getPoint());
+        student.setWord(getPoint());
+        student.setHistory(getPoint());
+        int point = randomForest.forest(student);
+        System.out.println("当前学生成绩的综合评定是：" + point);
+    }
+
+    private static int getPoint() {
+        return new Random().nextInt(3) + 1;
     }
 
     public static void test() throws Exception {
