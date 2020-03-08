@@ -38,7 +38,7 @@
 * 功能还在扩展：
 本包现在的功能还在逐步扩展中
 * 说明文档有不清楚的地方可联系作者询问，QQ：794757862,或者查看视频教程，上有链接
-## 图像部分API 说明:
+## 图像部分最简API 说明:
     public static void testPic() throws Exception {
            //测试SPEED模式学习过程
            //初始化图像转矩阵类:作用就是说将一个图片文件转化为矩阵类
@@ -203,7 +203,7 @@
     回调第一个参数是输出值 指的是 这个分类的概率 该数值是0-1之间的浮点
     第二个参数是 分类的id 判断是训练的哪个分类的ID，
     第三个参数是 事件ID,一次判断事件 使用一个ID,让开发者知道是哪次事件的回调判断
-## 自然语言分类API 说明:
+## 自然语言分类最简API 说明:
     public static void test() throws Exception {   //自然语言分类说明
         //创建模板读取累
         TemplateReader templateReader = new TemplateReader();
@@ -222,6 +222,44 @@
         //这里做一个特别说明，语义分类的分类id不要使用"0",本框架约定如果类别返回数字0，则意味不能理解该语义，即分类失败
         //通常原因是模板量不足，或者用户说的话的语义，不在你的语义分类训练范围内
     }
+## 神经网络最简API说明
+     //创建一个DNN神经网络管理器
+     NerveManager nerveManager = new NerveManager(...);
+     //构造参数
+     //sensoryNerveNub 感知神经元数量 即输入特征数量
+     //hiddenNerverNub  每一层隐层神经元的数量
+     //outNerveNub 输出神经元数量 即分类的类别
+     //hiddenDepth 隐层神经元深度，即学习深度
+     //activeFunction 激活函数
+     //isDynamic 是否启用动态神经元数量(没有特殊需求建议为静态，动态需要专业知识)
+     public NerveManager(int sensoryNerveNub, int hiddenNerverNub, int outNerveNub, int hiddenDepth, ActiveFunction activeFunction, boolean isDynamic)
+     nerveManager.getSensoryNerves()获取感知神经元集合
+     //eventId:事件ID
+     //parameter:输入特征值
+     //isStudy:是否是学习
+     //E:特征标注
+     //OutBack 回调类
+     SensoryNerv.postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E, OutBack outBack)
+     //每一次输出结果都会返回给回调类，通过回调类拿取输出结果，并通过eventId来对应事件
+## 随机森林最简API说明
+        //创建一个内存中的数据表
+        DataTable dataTable = new DataTable(column);
+        //构造参数是列名集合
+        public DataTable(Set<String> key)
+        //指定主列名集合中该表的主键
+        dataTable.setKey("point");
+        //创建一片随机森林
+        RandomForest randomForest = new RandomForest(7);
+        //构造参数为森林里的树木数量
+        public RandomForest(int treeNub)
+        //唤醒随机森林里的树木
+        randomForest.init(dataTable);
+        //将加入数据的实体类一条条插入森林中
+        randomForest.insert(Object object);
+        //森林进行学习
+        randomForest.study();
+        //插入特征数据，森林对该数据的最终分类结果进行判断
+        randomForest.forest(Object objcet);
 #### 最终说明
 * TempleConfig()：配置模版类，一定要静态在内存中长期持有，检测的时候不要每次都NEW，
 一直就使用一个配置类就可以了。
