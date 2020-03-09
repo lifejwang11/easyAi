@@ -91,7 +91,7 @@ public abstract class Nerve {
     protected Matrix dynamicNerve(Matrix matrix, long eventId, boolean isStudy) throws Exception {//动态矩阵处理
         int xn = matrix.getX();
         int yn = matrix.getY();
-        if (xn > 3 && yn > 3) {
+        if (xn >= 3 && yn >= 3) {
             Matrix powerMatrix = null;
             if (isStudy) {
                 if (!matrixMap.containsKey(eventId)) {
