@@ -260,6 +260,10 @@
         randomForest.study();
         //插入特征数据，森林对该数据的最终分类结果进行判断
         randomForest.forest(Object objcet);
+###常见抛错
+* error:Wrong size setting of image in templateConfig
+* 原因是模版配置类图片宽高设置相差太大
+> templeConfig.init(StudyPattern.Accuracy_Pattern, true, width, height, 1);
 #### 最终说明
 * TempleConfig()：配置模版类，一定要静态在内存中长期持有，检测的时候不要每次都NEW，
 一直就使用一个配置类就可以了。

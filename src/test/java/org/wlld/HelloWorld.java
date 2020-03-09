@@ -22,9 +22,7 @@ import java.util.Map;
  */
 public class HelloWorld {
     public static void main(String[] args) throws Exception {
-        int a = ModelData.DATA2.length();
-        System.out.println(a);
-        //test();
+        test();
         //testPic();
         //testModel();
     }
@@ -33,18 +31,19 @@ public class HelloWorld {
     public static void test() throws Exception {
         Picture picture = new Picture();
         TempleConfig templeConfig = new TempleConfig();
-        templeConfig.setHavePosition(true);
+        // templeConfig.setHavePosition(true);
 //        Frame frame = new Frame();
 //        frame.setWidth(3024);
 //        frame.setHeight(4032);
 //        frame.setLengthHeight(100);
 //        frame.setLengthWidth(100);
 //        templeConfig.setFrame(frame);
-        ModelParameter modelParameter = JSONObject.parseObject(ModelData.DATA2, ModelParameter.class);
         //ModelParameter modelParameter1 = JSONObject.parseObject(ModelData.DATA, ModelParameter.class);
-        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 3204, 4032, 1);
-        templeConfig.insertModel(modelParameter);
+        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 1076, 1436, 1);
         Operation operation = new Operation(templeConfig);
+        Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/s1.jpeg");
+        operation.learning(right, 1, false);
+
 //        for (int i = 1; i < 120; i++) {//faster rcnn神经网络学习
 //            System.out.println("study==" + i);
 //            //读取本地URL地址图片,并转化成矩阵
@@ -57,13 +56,13 @@ public class HelloWorld {
 //        }
 //        templeConfig.boxStudy();//边框聚类
 //        //精准模式在全部学习结束的时候一定要使用此方法，速度模式不要调用此方法
-        templeConfig.startLvq();//原型向量量化
-        templeConfig.boxStudy();//边框回归
-        for (int j = 1; j < 2; j++) {
-            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
-            Map<Integer, List<FrameBody>> map = operation.lookWithPosition(right, j);
-            System.out.println("j===" + j);
-        }
+//        templeConfig.startLvq();//原型向量量化
+//        templeConfig.boxStudy();//边框回归
+//        for (int j = 1; j < 2; j++) {
+//            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
+//            Map<Integer, List<FrameBody>> map = operation.lookWithPosition(right, j);
+//            System.out.println("j===" + j);
+//        }
         //测试集图片,进行识别测试
 //        for (int j = 121; j < 140; j++) {
 //            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");

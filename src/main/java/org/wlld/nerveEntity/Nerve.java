@@ -89,37 +89,41 @@ public abstract class Nerve {
     }
 
     protected Matrix dynamicNerve(Matrix matrix, long eventId, boolean isStudy) throws Exception {//动态矩阵处理
-        Matrix powerMatrix = null;
-        if (isStudy) {
-            if (!matrixMap.containsKey(eventId)) {
-                matrixMap.put(eventId, new Matrix(3, 3));
-            }
-            powerMatrix = matrixMap.get(eventId);
-        }
         int xn = matrix.getX();
         int yn = matrix.getY();
-        int x = xn / 3;//线性变换后矩阵的行数
-        int y = yn / 3;//线性变换后矩阵的列数
-        int nub = x * y;//个数
-        Matrix myMatrix = new Matrix(x, y);//线性变化后的矩阵
-        for (int i = 0; i < xn - 3; i += 3) {
-            for (int j = 0; j < yn - 3; j += 3) {
-                //取出矩阵分块 并相加
-                if (isStudy) {
-                    powerMatrix = MatrixOperation.add(powerMatrix, matrix.getSonOfMatrix(i, j, 3, 3));
+        if (xn > 3 && yn > 3) {
+            Matrix powerMatrix = null;
+            if (isStudy) {
+                if (!matrixMap.containsKey(eventId)) {
+                    matrixMap.put(eventId, new Matrix(3, 3));
                 }
-                double dm = MatrixOperation.convolution(matrix, nerveMatrix, i, j);
-                //dm = ArithUtil.sub(ArithUtil.div(dm, 9), threshold);//减偏置项
-                dm = dm / 9 - threshold;
-                //设置输出矩阵 经过激活函数
-                myMatrix.setNub(i / 3, j / 3, activeFunction.function(dm));
+                powerMatrix = matrixMap.get(eventId);
             }
+            int x = xn / 3;//线性变换后矩阵的行数
+            int y = yn / 3;//线性变换后矩阵的列数
+            int nub = x * y;//个数
+            Matrix myMatrix = new Matrix(x, y);//线性变化后的矩阵
+            for (int i = 0; i < xn - 3; i += 3) {
+                for (int j = 0; j < yn - 3; j += 3) {
+                    //取出矩阵分块 并相加
+                    if (isStudy) {
+                        powerMatrix = MatrixOperation.add(powerMatrix, matrix.getSonOfMatrix(i, j, 3, 3));
+                    }
+                    double dm = MatrixOperation.convolution(matrix, nerveMatrix, i, j);
+                    //dm = ArithUtil.sub(ArithUtil.div(dm, 9), threshold);//减偏置项
+                    dm = dm / 9 - threshold;
+                    //设置输出矩阵 经过激活函数
+                    myMatrix.setNub(i / 3, j / 3, activeFunction.function(dm));
+                }
+            }
+            //取平均值
+            if (isStudy) {
+                MatrixOperation.mathMul(powerMatrix, ArithUtil.div(1, nub));
+            }
+            return myMatrix;
+        } else {
+            throw new Exception("Wrong size setting of image in templateConfig");
         }
-        //取平均值
-        if (isStudy) {
-            MatrixOperation.mathMul(powerMatrix, ArithUtil.div(1, nub));
-        }
-        return myMatrix;
     }
 
     public void sendMatrix(long eventId, Matrix parameter, boolean isStudy,
