@@ -260,7 +260,7 @@
         randomForest.study();
         //插入特征数据，森林对该数据的最终分类结果进行判断
         randomForest.forest(Object objcet);
-###常见抛错
+### 常见抛错
 * error:Wrong size setting of image in templateConfig
 * 原因是模版配置类图片宽高设置相差太大
 > templeConfig.init(StudyPattern.Accuracy_Pattern, true, width, height, 1);
