@@ -92,7 +92,7 @@ public class LVQ {
                 //修正矩阵与原矩阵的范数差
                 double dist = vectorEqual(modelMatrix, matrix);
                 if (distEnd == 0 || dist < distEnd) {
-                    id = matrixBody.getId();
+                    id = modelBody.getId();
                     distEnd = dist;
                 }
             }
