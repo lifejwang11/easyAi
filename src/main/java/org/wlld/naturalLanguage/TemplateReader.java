@@ -11,12 +11,7 @@ public class TemplateReader {//模板读取类
     private String charsetName;
 
     public void read(String url, String charsetName) throws Exception {
-        byte sys;
-        if(System.getProperties().getProperty("os.name").toUpperCase().contains("WINDOWS")){
-            sys = IOConst.WIN;
-        }else{
-            sys = IOConst.NOT_WIN;
-        }
+        byte sys = IOConst.getSys();
         this.charsetName = charsetName;
         File file = new File(url);
         InputStream is = new FileInputStream(file);

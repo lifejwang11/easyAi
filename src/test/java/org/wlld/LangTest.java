@@ -1,6 +1,5 @@
 package org.wlld;
 
-import org.wlld.naturalLanguage.IOConst;
 import org.wlld.naturalLanguage.Talk;
 import org.wlld.naturalLanguage.TemplateReader;
 import org.wlld.randomForest.DataTable;
