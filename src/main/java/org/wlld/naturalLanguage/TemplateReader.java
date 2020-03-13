@@ -5,11 +5,17 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
-
+/**模板读取类**/
 public class TemplateReader {//模板读取类
     private Map<Integer, List<String>> model = new HashMap<>();//训练模板
     private String charsetName;
 
+    /**
+     * 读取图片
+     * @param url 文字模板的url
+     * @param charsetName 文字编码(一般使用UTF-8)
+     * @throws Exception 找不到文字抛出异常
+     */
     public void read(String url, String charsetName) throws Exception {
         byte sys = IOConst.getSys();
         this.charsetName = charsetName;

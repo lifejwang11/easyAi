@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author lidapeng
  * 神经网络管理工具
  * 创建神经网络
+ * @author lidapeng
  * @date 11:05 上午 2019/12/21
  */
 public class NerveManager {
@@ -195,7 +195,16 @@ public class NerveManager {
         }
     }
 
-    //初始化神经元参数
+    /**
+     * 初始化神经元参数
+     * @param sensoryNerveNub 输入神经元个数
+     * @param hiddenNerverNub 隐层神经元个数
+     * @param outNerveNub 输出神经元个数
+     * @param hiddenDepth 隐层深度
+     * @param activeFunction 激活函数
+     * @param isDynamic 是否是动态神经元
+     * @throws Exception 如果参数错误则抛异常
+     */
     public NerveManager(int sensoryNerveNub, int hiddenNerverNub, int outNerveNub
             , int hiddenDepth, ActiveFunction activeFunction, boolean isDynamic) throws Exception {
         if (sensoryNerveNub > 0 && hiddenNerverNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
@@ -238,6 +247,12 @@ public class NerveManager {
         return sensoryNerves;
     }
 
+    /**
+     * 初始化
+     * @param initPower 是否是第一次注入
+     * @param isMatrix 参数是否是一个矩阵
+     * @throws Exception
+     */
     public void init(boolean initPower, boolean isMatrix) throws Exception {//进行神经网络的初始化构建
         this.initPower = initPower;
         initDepthNerve(isMatrix);//初始化深度隐层神经元
