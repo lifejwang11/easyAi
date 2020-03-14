@@ -48,7 +48,7 @@ public class Border {
     public void end(Matrix matrix, int id) throws Exception {//长宽
         height = maxX - minX;
         width = maxY - minY;
-        KClustering kClustering = templeConfig.getkClusteringMap().get(id);
+        KClustering kClustering = templeConfig.getKClusteringMap().get(id);
         Matrix positionMatrix = new Matrix(1, 4);
         //多元线性回归的四个输出值
         double tx = ArithUtil.div(minX, modelHeight);

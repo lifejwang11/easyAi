@@ -50,6 +50,29 @@ public class Picture {
         return matrix;
     }
 
+    private ThreeChannelMatrix getThreeChannel(BufferedImage bi) throws Exception {
+        int width = bi.getWidth();//最大宽度
+        int height = bi.getHeight();//最大高度
+        pictureWidth = width;
+        pictureHeight = height;
+        ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
+        Matrix matrixR = new Matrix(height, width);//行，列
+        Matrix matrixG = new Matrix(height, width);//行，列
+        Matrix matrixB = new Matrix(height, width);//行，列
+        threeChannelMatrix.setMatrixR(matrixR);
+        threeChannelMatrix.setMatrixG(matrixG);
+        threeChannelMatrix.setMatrixB(matrixB);
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                int pixel = bi.getRGB(j, i);// 下面三行代码将一个数字转换为RGB数字
+                matrixR.setNub(i, j, (pixel & 0xff0000) >> 16);
+                matrixG.setNub(i, j, (pixel & 0xff00) >> 8);
+                matrixB.setNub(i, j, (pixel & 0xff));
+            }
+        }
+        return threeChannelMatrix;
+    }
+
     public double dimensionReduction(int pixel) {//提取灰度进行降维
         int r = (pixel & 0xff0000) >> 16;//R
         int g = (pixel & 0xff00) >> 8;//G

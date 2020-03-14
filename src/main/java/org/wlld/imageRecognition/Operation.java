@@ -34,7 +34,7 @@ public class Operation {//进行计算
 
     public List<Double> convolution(Matrix matrix, Map<Integer, Double> tagging) throws Exception {
         //进行卷积
-        int maxNub = 0;
+        int maxNub;
         if (templeConfig.getRow() >= templeConfig.getColumn()) {
             maxNub = templeConfig.getRow();
         } else {
@@ -128,7 +128,7 @@ public class Operation {//进行计算
         List<Double> list = new ArrayList<>();
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
-                list.add(ArithUtil.div(matrix.getNumber(i, j), 10));
+                list.add(ArithUtil.div(matrix.getNumber(i, j), 100));
             }
         }
         return list;
@@ -404,14 +404,14 @@ public class Operation {//进行计算
         return list;
     }
 
-    /*
-     * @param eventId 事件ID
-     * @param featureList 特征集合
+    /**
+     * @param eventId          事件ID
+     * @param featureList      特征集合
      * @param sensoryNerveList 感知神经元集合
-     * @param isStudy 是否学习
-     * @param map 标注
-     * @param outBack 输出结果回调类
-     * */
+     * @param isStudy          是否学习
+     * @param map              标注
+     * @param outBack          输出结果回调类
+     */
     private void intoDnnNetwork(long eventId, List<Double> featureList, List<SensoryNerve> sensoryNerveList
             , boolean isStudy, Map<Integer, Double> map, OutBack outBack) throws Exception {//进入DNN 神经网络
         for (int i = 0; i < sensoryNerveList.size(); i++) {
@@ -420,14 +420,14 @@ public class Operation {//进行计算
         }
     }
 
-    /*
-     * @param eventId 事件ID
-     * @param feature 特征矩阵
+    /**
+     * @param eventId          事件ID
+     * @param feature          特征矩阵
      * @param sensoryNerveList 感知神经元集合
-     * @param isKernelStudy 是否进行核学习
-     * @param E 期望矩阵
-     * @param outBack 输出结果回调类
-     * */
+     * @param isKernelStudy    是否进行核学习
+     * @param E                期望矩阵
+     * @param outBack          输出结果回调类
+     */
     private void intoConvolutionNetwork(long eventId, Matrix feature, List<SensoryNerve> sensoryNerveList
             , boolean isKernelStudy, int E, OutBack outBack) throws Exception {//进入卷积神经网络
         for (int i = 0; i < sensoryNerveList.size(); i++) {

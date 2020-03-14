@@ -202,15 +202,15 @@ public class TempleConfig {
         //加载各识别分类的期望矩阵
         matrixMap.put(0, new Matrix(height, width));
         double nub = 10;//每个分类期望参数的跨度
-        for (int k = 0; k < classificationNub; k++) {
+        for (int k = 1; k <= classificationNub; k++) {
             Matrix matrix = new Matrix(height, width);//初始化期望矩阵
-            double t = (k + 1) * nub;//期望矩阵的分类参数数值
+            double t = k * nub;//期望矩阵的分类参数数值
             for (int i = 0; i < height; i++) {//给期望矩阵注入期望参数
                 for (int j = 0; j < width; j++) {
                     matrix.setNub(i, j, t);
                 }
             }
-            matrixMap.put(k + 1, matrix);
+            matrixMap.put(k, matrix);
         }
         convolutionNerveManager = new NerveManager(1, 1,
                 1, deep - 1, new ReLu(), true);
@@ -282,7 +282,7 @@ public class TempleConfig {
             modelParameter.setDymNerveStudies(modelParameter1.getDymNerveStudies());
             modelParameter.setDymOutNerveStudy(modelParameter1.getDymOutNerveStudy());
             //获取LVQ模型
-            if (lvq.isReady()) {
+            if (classifier == Classifier.LVQ && lvq.isReady()) {
                 LvqModel lvqModel = new LvqModel();
                 lvqModel.setLength(lvq.getLength());
                 lvqModel.setTypeNub(lvq.getTypeNub());

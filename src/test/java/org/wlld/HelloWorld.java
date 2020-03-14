@@ -11,6 +11,7 @@ import org.wlld.imageRecognition.TempleConfig;
 import org.wlld.imageRecognition.border.Frame;
 import org.wlld.imageRecognition.border.FrameBody;
 import org.wlld.nerveEntity.ModelParameter;
+import org.wlld.tools.ArithUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,63 +39,83 @@ public class HelloWorld {
 //        frame.setLengthHeight(640);
 //        frame.setLengthWidth(640);
 //        templeConfig.setFrame(frame);
-        templeConfig.setClassifier(Classifier.DNN);
-        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 2);
+        templeConfig.setClassifier(Classifier.VAvg);
+        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 1000, 1000, 3);
         Operation operation = new Operation(templeConfig);
         //a b c d 物品  e是背景
         //一阶段
-        for (int i = 1; i < 290; i++) {//一阶段
-            System.out.println("study1==" + i);
-            //读取本地URL地址图片,并转化成矩阵
-            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".png");
-            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".png");
-            //Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".png");
-            //Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".png");
-            //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
-            //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
-            //第二次学习的时候，第三个参数必须是 true
-            // operation.learning(f, 0, false);
-            operation.learning(a, 0, false);
-            operation.learning(b, 1, false);
-            //operation.learning(c, 2, false);
-            // operation.learning(d, 3, false);
-        }
-        System.out.println("一阶段完毕================");
+//        for (int i = 1; i < 300; i++) {//一阶段
+//            System.out.println("study1===================" + i);
+//            //读取本地URL地址图片,并转化成矩阵
+//            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
+//            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
+//            Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
+//            //Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".png");
+//            //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
+//            //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
+//            //第二次学习的时候，第三个参数必须是 true
+//            // operation.learning(f, 0, false);
+//            operation.learning(a, 1, false);
+//            operation.learning(b, 2, false);
+//            operation.learning(c, 3, false);
+//            // operation.learning(d, 3, false);
+//        }
+//        ModelParameter modelParameter = templeConfig.getModel();
+//        String model = JSON.toJSONString(modelParameter);
+//        System.out.println(model);
+      //  System.out.println("======================================");
+        ModelParameter modelParameter = JSON.parseObject(ModelData.DATA3, ModelParameter.class);
+        templeConfig.insertModel(modelParameter);
         //二阶段
-        for (int i = 1; i < 290; i++) {
-            System.out.println("study2==" + i);
-            //读取本地URL地址图片,并转化成矩阵
-            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".png");
-            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".png");
-            //Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".png");
-            // Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".png");
-            //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
-            //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
-            //第二次学习的时候，第三个参数必须是 true
-            // operation.learning(f, 0, true);
-            operation.learning(a, 0, true);
-            operation.learning(b, 1, true);
-            //operation.learning(c, 2, true);
-            // operation.learning(d, 3, true);
+        for (int j = 0; j < 1; j++) {
+            for (int i = 1; i < 1500; i++) {
+                //System.out.println("study2==================" + i);
+                //读取本地URL地址图片,并转化成矩阵
+                Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
+                Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
+                Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
+                // Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".png");
+                //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
+                //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
+                //第二次学习的时候，第三个参数必须是 true
+                // operation.learning(f, 0, true);
+                //System.out.println("1===============");
+                operation.learning(a, 1, true);
+                //System.out.println("2===============");
+                operation.learning(b, 2, true);
+                operation.learning(c, 3, true);
+                // operation.learning(d, 3, true);
+            }
         }
         templeConfig.finishStudy();//结束学习
-        for (int i = 290; i < 301; i++) {
+        int wrong = 0;
+        int allNub = 0;
+        for (int i = 1500; i <= 1572; i++) {
             //读取本地URL地址图片,并转化成矩阵
-            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".png");
-            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".png");
-            //Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".png");
+            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
+            Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
             // Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".png");
             //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
             //第二次学习的时候，第三个参数必须是 true
+            allNub += 3;
             int an = operation.toSee(a);
             int bn = operation.toSee(b);
+            int cn = operation.toSee(c);
+            if (an != 1) {
+                wrong++;
+            }
+            if (bn != 2) {
+                wrong++;
+            }
+            if (cn != 3) {
+                wrong++;
+            }
             //int cn = operation.toSee(c);
             //int dn = operation.toSee(d);
-            System.out.println("这是0==" + an);
-            System.out.println("这是1==" + bn);
-            //System.out.println("这是2==" + cn);
-            //System.out.println("这是3==" + dn);
         }
+        double wrongPoint = ArithUtil.div(wrong, allNub);
+        System.out.println("错误率：" + (wrongPoint * 100) + "%");
 //        ModelParameter modelParameter2 = templeConfig.getModel();
 //        String model1 = JSON.toJSONString(modelParameter2);
 //        System.out.println("完成阶段==" + model1);
