@@ -210,7 +210,11 @@ public class TempleConfig {
         }
         switch (classifier) {
             case Classifier.DNN:
-                initNerveManager(true, height * width, this.deep);
+                int nub = height * width;
+                if (isThreeChannel) {
+                    nub = nub * 3;
+                }
+                initNerveManager(true, nub, this.deep);
                 break;
             case Classifier.LVQ:
                 lvq = new LVQ(classificationNub, lvqNub);
