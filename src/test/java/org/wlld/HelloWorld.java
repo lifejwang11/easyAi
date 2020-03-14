@@ -31,7 +31,7 @@ public class HelloWorld {
 
     public static void food() throws Exception {
         Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig();
+        TempleConfig templeConfig = new TempleConfig(false);
         //templeConfig.setHavePosition(true);
 //        Frame frame = new Frame();
 //        frame.setWidth(640);
@@ -63,7 +63,7 @@ public class HelloWorld {
 //        ModelParameter modelParameter = templeConfig.getModel();
 //        String model = JSON.toJSONString(modelParameter);
 //        System.out.println(model);
-      //  System.out.println("======================================");
+        //  System.out.println("======================================");
         ModelParameter modelParameter = JSON.parseObject(ModelData.DATA3, ModelParameter.class);
         templeConfig.insertModel(modelParameter);
         //二阶段
@@ -200,7 +200,7 @@ public class HelloWorld {
     public static TempleConfig getTemple(boolean isFirst, int pattern
             , boolean isPosition) throws Exception {
         //创建一个配置模板类，作用：主要是保存及载入一些配置参数用
-        TempleConfig templeConfig = new TempleConfig();
+        TempleConfig templeConfig = new TempleConfig(false);
         if (isPosition) {
             templeConfig.setHavePosition(true);
             Frame frame = new Frame();

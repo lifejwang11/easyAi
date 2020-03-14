@@ -53,8 +53,6 @@ public class Picture {
     private ThreeChannelMatrix getThreeChannel(BufferedImage bi) throws Exception {
         int width = bi.getWidth();//最大宽度
         int height = bi.getHeight();//最大高度
-        pictureWidth = width;
-        pictureHeight = height;
         ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
         Matrix matrixR = new Matrix(height, width);//行，列
         Matrix matrixG = new Matrix(height, width);//行，列

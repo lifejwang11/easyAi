@@ -24,6 +24,9 @@ import java.util.Map;
 public class TempleConfig {
     private NerveManager nerveManager;//神经网络管理器
     private NerveManager convolutionNerveManager;//卷积神经网络管理器
+    private NerveManager convolutionNerveManagerR;//卷积神经网络管理器
+    private NerveManager convolutionNerveManagerG;//卷积神经网络管理器
+    private NerveManager convolutionNerveManagerB;//卷积神经网络管理器
     private int row = 5;//行的最小比例
     private int column = 3;//列的最小比例
     private int deep = 2;//默认深度
@@ -37,8 +40,13 @@ public class TempleConfig {
     private double iouTh = 0.5;//IOU阈值
     private int lvqNub = 30;//lvq循环次数，默认30
     private VectorK vectorK;
+    private boolean isThreeChannel;//是否启用三通道
     private int classifier = Classifier.VAvg;//默认分类类别使用的是向量均值分类
+
     //边框聚类集合 模型需要返回
+    public TempleConfig(boolean isThreeChannel) {
+        this.isThreeChannel = isThreeChannel;
+    }
 
     public int getClassifier() {
         return classifier;
@@ -50,6 +58,18 @@ public class TempleConfig {
 
     public VectorK getVectorK() {
         return vectorK;
+    }
+
+    public NerveManager getConvolutionNerveManagerR() {
+        return convolutionNerveManagerR;
+    }
+
+    public NerveManager getConvolutionNerveManagerG() {
+        return convolutionNerveManagerG;
+    }
+
+    public NerveManager getConvolutionNerveManagerB() {
+        return convolutionNerveManagerB;
     }
 
     public void finishStudy() throws Exception {//结束
@@ -212,6 +232,18 @@ public class TempleConfig {
             }
             matrixMap.put(k, matrix);
         }
+        if (!isThreeChannel) {
+            initNerveManager(convolutionNerveManager, matrixMap, initPower, deep);
+        } else {//启用三通道
+            initNerveManager(convolutionNerveManagerR, matrixMap, initPower, deep);
+            initNerveManager(convolutionNerveManagerG, matrixMap, initPower, deep);
+            initNerveManager(convolutionNerveManagerB, matrixMap, initPower, deep);
+        }
+    }
+
+    private void initNerveManager(NerveManager convolutionNerveManager
+            , Map<Integer, Matrix> matrixMap, boolean initPower, int deep) throws Exception {
+        //初始化卷积神经网络
         convolutionNerveManager = new NerveManager(1, 1,
                 1, deep - 1, new ReLu(), true);
         convolutionNerveManager.setMatrixMap(matrixMap);//给卷积网络管理器注入期望矩阵

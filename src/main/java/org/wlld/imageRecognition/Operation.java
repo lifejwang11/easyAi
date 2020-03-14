@@ -7,6 +7,7 @@ import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
+import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.IdCreator;
@@ -61,6 +62,91 @@ public class Operation {//进行计算
         } else {
             throw new Exception("pattern is wrong");
         }
+    }
+
+    public int toThreeSee(ThreeChannelMatrix threeChannelMatrix) throws Exception {//三通道
+        NerveManager convolutionNerveManagerR = templeConfig.getConvolutionNerveManagerR();
+        NerveManager convolutionNerveManagerB = templeConfig.getConvolutionNerveManagerB();
+        NerveManager convolutionNerveManagerG = templeConfig.getConvolutionNerveManagerG();
+        Matrix matrixR = threeChannelMatrix.getMatrixR();
+        Matrix matrixG = threeChannelMatrix.getMatrixG();
+        Matrix matrixB = threeChannelMatrix.getMatrixB();
+        //进卷积网络
+        MatrixBack matrixBackR = new MatrixBack();
+        MatrixBack matrixBackG = new MatrixBack();
+        MatrixBack matrixBackB = new MatrixBack();
+        intoConvolutionNetwork(1, matrixR, convolutionNerveManagerR.getSensoryNerves(),
+                false, 0, matrixBackR);
+        intoConvolutionNetwork(1, matrixG, convolutionNerveManagerG.getSensoryNerves(),
+                false, 0, matrixBackG);
+        intoConvolutionNetwork(1, matrixB, convolutionNerveManagerB.getSensoryNerves(),
+                false, 0, matrixBackB);
+        Matrix myMatrixR = matrixBackR.getMatrix();
+        Matrix myMatrixG = matrixBackG.getMatrix();
+        Matrix myMatrixB = matrixBackB.getMatrix();
+        List<Double> featureALL = new ArrayList<>();
+        List<Double> featureR = getFeature(myMatrixR);
+        List<Double> featureG = getFeature(myMatrixG);
+        List<Double> featureB = getFeature(myMatrixB);
+        featureALL.addAll(featureR);
+        featureALL.addAll(featureG);
+        featureALL.addAll(featureB);
+        MaxPoint maxPoint = new MaxPoint();
+        long id = IdCreator.get().nextId();
+        intoDnnNetwork(id, featureALL, templeConfig.getSensoryNerves(), false, null, maxPoint);
+        return maxPoint.getId();
+    }
+
+    public void threeLearning(ThreeChannelMatrix threeChannelMatrix, int tagging, boolean isNerveStudy) throws Exception {
+        boolean isKernelStudy = true;
+        if (isNerveStudy) {
+            isKernelStudy = false;
+        }
+        NerveManager convolutionNerveManagerR = templeConfig.getConvolutionNerveManagerR();
+        NerveManager convolutionNerveManagerB = templeConfig.getConvolutionNerveManagerB();
+        NerveManager convolutionNerveManagerG = templeConfig.getConvolutionNerveManagerG();
+        Matrix matrixR = threeChannelMatrix.getMatrixR();
+        Matrix matrixG = threeChannelMatrix.getMatrixG();
+        Matrix matrixB = threeChannelMatrix.getMatrixB();
+        //进卷积网络
+        MatrixBack matrixBackR = new MatrixBack();
+        MatrixBack matrixBackG = new MatrixBack();
+        MatrixBack matrixBackB = new MatrixBack();
+        intoConvolutionNetwork(1, matrixR, convolutionNerveManagerR.getSensoryNerves(),
+                isKernelStudy, tagging, matrixBackR);
+        intoConvolutionNetwork(1, matrixG, convolutionNerveManagerG.getSensoryNerves(),
+                isKernelStudy, tagging, matrixBackG);
+        intoConvolutionNetwork(1, matrixB, convolutionNerveManagerB.getSensoryNerves(),
+                isKernelStudy, tagging, matrixBackB);
+        if (isNerveStudy) {
+            Matrix myMatrixR = matrixBackR.getMatrix();
+            Matrix myMatrixG = matrixBackG.getMatrix();
+            Matrix myMatrixB = matrixBackB.getMatrix();
+            List<Double> featureALL = new ArrayList<>();
+            List<Double> featureR = getFeature(myMatrixR);
+            List<Double> featureG = getFeature(myMatrixG);
+            List<Double> featureB = getFeature(myMatrixB);
+            featureALL.addAll(featureR);
+            featureALL.addAll(featureG);
+            featureALL.addAll(featureB);
+            Map<Integer, Double> map = new HashMap<>();
+            map.put(tagging, 1.0);
+            intoDnnNetwork(1, featureALL, templeConfig.getSensoryNerves(), true, map, null);
+//            int classifier = templeConfig.getClassifier();
+//            switch (classifier) {
+//                case Classifier.DNN:
+//                    dnn(tagging, myMatrixR);
+//                    break;
+//                case Classifier.LVQ:
+//                    lvq(tagging, myMatrixR);
+//                    break;
+//                case Classifier.VAvg:
+//                    vectorAvg(tagging, myMatrixR);
+//                    break;
+//            }
+
+        }
+
     }
 
     //卷积核学习
