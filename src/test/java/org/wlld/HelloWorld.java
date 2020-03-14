@@ -3,6 +3,7 @@ package org.wlld;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
 import org.wlld.imageRecognition.Operation;
 import org.wlld.imageRecognition.Picture;
@@ -22,56 +23,83 @@ import java.util.Map;
  */
 public class HelloWorld {
     public static void main(String[] args) throws Exception {
-        test();
+        food();
         //testPic();
         //testModel();
     }
 
-
-    public static void test() throws Exception {
+    public static void food() throws Exception {
         Picture picture = new Picture();
         TempleConfig templeConfig = new TempleConfig();
         //templeConfig.setHavePosition(true);
 //        Frame frame = new Frame();
-//        frame.setWidth(3024);
-//        frame.setHeight(4032);
-//        frame.setLengthHeight(100);
-//        frame.setLengthWidth(100);
+//        frame.setWidth(640);
+//        frame.setHeight(640);
+//        frame.setLengthHeight(640);
+//        frame.setLengthWidth(640);
 //        templeConfig.setFrame(frame);
-        ModelParameter modelParameter = JSONObject.parseObject(ModelData.DATA, ModelParameter.class);
-        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 1076, 1436, 1);
-        templeConfig.insertModel(modelParameter);
+        templeConfig.setClassifier(Classifier.DNN);
+        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 2);
         Operation operation = new Operation(templeConfig);
-
-        for (int i = 1; i < 100; i++) {//faster rcnn神经网络学习
-            System.out.println("study==" + i);
+        //a b c d 物品  e是背景
+        //一阶段
+        for (int i = 1; i < 290; i++) {//一阶段
+            System.out.println("study1==" + i);
             //读取本地URL地址图片,并转化成矩阵
-            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + i + ".png");
-            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + i + ".png");
+            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".png");
+            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".png");
+            //Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".png");
+            //Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".png");
+            //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
             //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
             //第二次学习的时候，第三个参数必须是 true
-            operation.learning(right, 1, true);
-            operation.learning(wrong, 0, true);
+            // operation.learning(f, 0, false);
+            operation.learning(a, 0, false);
+            operation.learning(b, 1, false);
+            //operation.learning(c, 2, false);
+            // operation.learning(d, 3, false);
         }
-//        //精准模式在全部学习结束的时候一定要使用此方法，速度模式不要调用此方法
-        templeConfig.startLvq();//原型向量量化
-//        templeConfig.boxStudy();//边框回归
-//        for (int j = 1; j < 2; j++) {
-//            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
-//            Map<Integer, List<FrameBody>> map = operation.lookWithPosition(right, j);
-//            System.out.println("j===" + j);
-//        }
-        //测试集图片,进行识别测试
-//        for (int j = 121; j < 140; j++) {
-//            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/c/c" + j + ".png");
-//            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/b/b" + j + ".png");
-//            int rightId = operation.toSee(right);
-//            int wrongId = operation.toSee(wrong);
-//            System.out.println("该图是菜单：" + rightId);
-//            System.out.println("该图是桌子:" + wrongId);
-//        }
-
+        System.out.println("一阶段完毕================");
+        //二阶段
+        for (int i = 1; i < 290; i++) {
+            System.out.println("study2==" + i);
+            //读取本地URL地址图片,并转化成矩阵
+            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".png");
+            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".png");
+            //Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".png");
+            // Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".png");
+            //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
+            //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
+            //第二次学习的时候，第三个参数必须是 true
+            // operation.learning(f, 0, true);
+            operation.learning(a, 0, true);
+            operation.learning(b, 1, true);
+            //operation.learning(c, 2, true);
+            // operation.learning(d, 3, true);
+        }
+        templeConfig.finishStudy();//结束学习
+        for (int i = 290; i < 301; i++) {
+            //读取本地URL地址图片,并转化成矩阵
+            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".png");
+            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".png");
+            //Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".png");
+            // Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".png");
+            //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
+            //第二次学习的时候，第三个参数必须是 true
+            int an = operation.toSee(a);
+            int bn = operation.toSee(b);
+            //int cn = operation.toSee(c);
+            //int dn = operation.toSee(d);
+            System.out.println("这是0==" + an);
+            System.out.println("这是1==" + bn);
+            //System.out.println("这是2==" + cn);
+            //System.out.println("这是3==" + dn);
+        }
+//        ModelParameter modelParameter2 = templeConfig.getModel();
+//        String model1 = JSON.toJSONString(modelParameter2);
+//        System.out.println("完成阶段==" + model1);
     }
+
 
     public static void testPic() throws Exception {
         //测试SPEED模式学习过程

@@ -1,6 +1,7 @@
 package org.wlld.imageRecognition;
 
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
@@ -23,7 +24,6 @@ import java.util.Map;
 public class TempleConfig {
     private NerveManager nerveManager;//神经网络管理器
     private NerveManager convolutionNerveManager;//卷积神经网络管理器
-    private double cutThreshold = 10;//切割阈值默认值
     private int row = 5;//行的最小比例
     private int column = 3;//列的最小比例
     private int deep = 2;//默认深度
@@ -35,11 +35,44 @@ public class TempleConfig {
     private double th = 0.6;//标准阈值
     private boolean boxReady = false;//边框已经学习完毕
     private double iouTh = 0.5;//IOU阈值
-    private int lvqNub = 50;//lvq循环次数，默认50
+    private int lvqNub = 30;//lvq循环次数，默认30
+    private VectorK vectorK;
+    private int classifier = Classifier.VAvg;//默认分类类别使用的是向量均值分类
     //边框聚类集合 模型需要返回
+
+    public int getClassifier() {
+        return classifier;
+    }
+
+    public void setClassifier(int classifier) {//设置最后使用的分类器
+        this.classifier = classifier;
+    }
+
+    public VectorK getVectorK() {
+        return vectorK;
+    }
+
+    public void finishStudy() throws Exception {//结束
+        switch (classifier) {
+            case Classifier.LVQ:
+                lvq.start();
+                break;
+            case Classifier.VAvg:
+                vectorK.study();
+                break;
+        }
+        if (isHavePosition) {
+            for (Map.Entry<Integer, KClustering> entry : kClusteringMap.entrySet()) {
+                entry.getValue().start();
+            }
+            boxReady = true;
+        }
+
+    }
+
     private Map<Integer, KClustering> kClusteringMap = new HashMap<>();
 
-    public Map<Integer, KClustering> getkClusteringMap() {
+    public Map<Integer, KClustering> getKClusteringMap() {
         return kClusteringMap;
     }
 
@@ -79,24 +112,8 @@ public class TempleConfig {
         this.frame = frame;
     }
 
-    public void startLvq() throws Exception {//进行量化
-        if (studyPattern == StudyPattern.Accuracy_Pattern) {
-            lvq.start();
-        }
-    }
-
     public LVQ getLvq() {
         return lvq;
-    }
-
-    public void boxStudy() throws Exception {//边框回归 学习结束之后最后进行调用
-        if (isHavePosition) {
-            for (Map.Entry<Integer, KClustering> entry : kClusteringMap.entrySet()) {
-                entry.getValue().start();
-            }
-            boxReady = true;
-        }
-
     }
 
     public NerveManager getNerveManager() {
@@ -163,14 +180,24 @@ public class TempleConfig {
         nerveManager.init(initPower, false);
     }
 
-    private void initConvolutionVision(boolean initPower, int width, int height) throws Exception {
+    private void initConvolutionVision(boolean initPower, int width, int height) throws Exception {//精准模式
         int deep = 0;
-        lvq = new LVQ(classificationNub + 1, lvqNub);
         Map<Integer, Matrix> matrixMap = new HashMap<>();//主键与期望矩阵的映射
         while (width > 5 && height > 5) {
             width = width / 3;
             height = height / 3;
             deep++;
+        }
+        switch (classifier) {
+            case Classifier.DNN:
+                initNerveManager(true, height * width, this.deep);
+                break;
+            case Classifier.LVQ:
+                lvq = new LVQ(classificationNub, lvqNub);
+                break;
+            case Classifier.VAvg:
+                vectorK = new VectorK(height * width);
+                break;
         }
         //加载各识别分类的期望矩阵
         matrixMap.put(0, new Matrix(height, width));
@@ -179,7 +206,7 @@ public class TempleConfig {
             Matrix matrix = new Matrix(height, width);//初始化期望矩阵
             double t = (k + 1) * nub;//期望矩阵的分类参数数值
             for (int i = 0; i < height; i++) {//给期望矩阵注入期望参数
-                for (int j = 0; j < width - 1; j++) {
+                for (int j = 0; j < width; j++) {
                     matrix.setNub(i, j, t);
                 }
             }
@@ -242,8 +269,6 @@ public class TempleConfig {
                     lists.add(rowVectorToList(matrices[i]));
                 }
 
-            } else {
-                throw new Exception("not ready");
             }
         }
 
@@ -270,7 +295,7 @@ public class TempleConfig {
             modelParameter.setDepthNerves(modelParameter1.getDepthNerves());
             modelParameter.setOutNerves(modelParameter1.getOutNerves());
         }
-        if (isHavePosition) {//存在边框学习模型参数
+        if (isHavePosition && kClusteringMap != null && kClusteringMap.size() > 0) {//存在边框学习模型参数
             Map<Integer, KBorder> kBorderMap = kToBody();
             modelParameter.setFrame(frame);
             modelParameter.setBorderMap(kBorderMap);
@@ -376,14 +401,9 @@ public class TempleConfig {
                             boxMap.put(boxEntry.getKey(), box);
                         }
                     }
-
                 }
             }
         }
-    }
-
-    public void setCutThreshold(double cutThreshold) {
-        this.cutThreshold = cutThreshold;
     }
 
     public int getDeep() {

@@ -40,7 +40,11 @@ public class OutNerve extends Nerve {
             double out = activeFunction.function(sigma);
             if (isStudy) {//输出结果并进行BP调整权重及阈值
                 outNub = out;
-                this.E = E.get(getId());
+                if (E.containsKey(getId())) {
+                    this.E = E.get(getId());
+                } else {
+                    this.E = 0;
+                }
                 gradient = outGradient();//当前梯度变化
                 //调整权重 修改阈值 并进行反向传播
                 updatePower(eventId);
@@ -61,6 +65,8 @@ public class OutNerve extends Nerve {
         Matrix myMatrix = dynamicNerve(matrix, eventId, isKernelStudy);
         if (isKernelStudy) {//回传
             Matrix matrix1 = matrixMapE.get(E);
+            //System.out.println("E================" + E);
+            //System.out.println(myMatrix.getString());
             if (matrix1.getX() <= myMatrix.getX() && matrix1.getY() <= myMatrix.getY()) {
                 double g = getGradient(myMatrix, matrix1);
                 backMatrix(g, eventId);

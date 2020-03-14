@@ -3,11 +3,13 @@ package org.wlld.imageRecognition;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
+import org.wlld.tools.IdCreator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,7 +57,7 @@ public class Operation {//进行计算
     public void study(Matrix matrix, Map<Integer, Double> tagging) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Speed_Pattern) {
             List<Double> list = convolution(matrix, tagging);
-            intoNerve(1, list, templeConfig.getSensoryNerves(), true, tagging, null);
+            intoDnnNetwork(1, list, templeConfig.getSensoryNerves(), true, tagging, null);
         } else {
             throw new Exception("pattern is wrong");
         }
@@ -74,7 +76,7 @@ public class Operation {//进行计算
                 isKernelStudy = false;
             }
             //进卷积网络
-            intoNerve2(1, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
+            intoConvolutionNetwork(1, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
                     isKernelStudy, tagging, matrixBack);
             if (isNerveStudy) {
                 //卷积后的结果
@@ -82,24 +84,61 @@ public class Operation {//进行计算
                 if (templeConfig.isHavePosition() && tagging > 0) {
                     border.end(myMatrix, tagging);
                 }
-                //进行聚类
-                LVQ lvq = templeConfig.getLvq();
-                Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
-                MatrixBody matrixBody = new MatrixBody();
-                matrixBody.setMatrix(vector);
-                matrixBody.setId(tagging);
-                lvq.insertMatrixBody(matrixBody);
+                int classifier = templeConfig.getClassifier();
+                switch (classifier) {
+                    case Classifier.DNN:
+                        dnn(tagging, myMatrix);
+                        break;
+                    case Classifier.LVQ:
+                        lvq(tagging, myMatrix);
+                        break;
+                    case Classifier.VAvg:
+                        vectorAvg(tagging, myMatrix);
+                        break;
+                }
             }
         } else {
             throw new Exception("pattern is wrong");
         }
     }
 
+    private void dnn(int tagging, Matrix myMatrix) throws Exception {//DNN网络学习
+        Map<Integer, Double> map = new HashMap<>();
+        map.put(tagging, 1.0);
+        List<Double> feature = getFeature(myMatrix);
+        intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
+    }
+
+    private void vectorAvg(int tagging, Matrix myMatrix) throws Exception {//特征矩阵均值学习
+        Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
+        VectorK vectorK = templeConfig.getVectorK();
+        vectorK.insertMatrix(tagging, vector);
+    }
+
+    private void lvq(int tagging, Matrix myMatrix) throws Exception {//LVQ学习
+        LVQ lvq = templeConfig.getLvq();
+        Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
+        MatrixBody matrixBody = new MatrixBody();
+        matrixBody.setMatrix(vector);
+        matrixBody.setId(tagging);
+        lvq.insertMatrixBody(matrixBody);
+    }
+
+    private List<Double> getFeature(Matrix matrix) throws Exception {//将特征矩阵转化为集合并除10
+        List<Double> list = new ArrayList<>();
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                list.add(ArithUtil.div(matrix.getNumber(i, j), 10));
+            }
+        }
+        return list;
+    }
+
     //图像视觉 speed 模式
     public void look(Matrix matrix, long eventId) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Speed_Pattern) {
             List<Double> list = convolution(matrix, null);
-            intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null, outBack);
+            intoDnnNetwork(eventId, list, templeConfig.getSensoryNerves(), false, null, outBack);
         } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
             throw new Exception("studyPattern not right");
         }
@@ -127,18 +166,18 @@ public class Operation {//进行计算
                     List<Double> list = sub(matrix1);
                     imageBack.setFrameBody(frameBody);
                     //进入神经网络判断
-                    intoNerve(eventId, list, templeConfig.getSensoryNerves(), false, null, imageBack);
+                    intoDnnNetwork(eventId, list, templeConfig.getSensoryNerves(), false, null, imageBack);
                 }
                 return toPosition(frameBodies, frame.getWidth(), frame.getHeight());
             } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
                 for (FrameBody frameBody : frameBodies) {
-                    intoNerve2(eventId, frameBody.getMatrix(), templeConfig.getConvolutionNerveManager().getSensoryNerves(),
+                    intoConvolutionNetwork(eventId, frameBody.getMatrix(), templeConfig.getConvolutionNerveManager().getSensoryNerves(),
                             false, -1, matrixBack);
                     Matrix myMatrix = matrixBack.getMatrix();
                     //卷积层输出即边框回归的输入的特征向量
                     frameBody.setEndMatrix(myMatrix);
-                    Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
-                    int id = getClassificationId2(vector);
+                    //Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
+                    int id = getClassificationIdByLVQ(myMatrix);
                     frameBody.setId(id);
                 }
                 return toPosition(frameBodies, frame.getWidth(), frame.getHeight());
@@ -209,7 +248,7 @@ public class Operation {//进行计算
             int id = frameBody.getId();
             int x = frameBody.getX();
             int y = frameBody.getY();
-            KClustering kClustering = templeConfig.getkClusteringMap().get(id);
+            KClustering kClustering = templeConfig.getKClusteringMap().get(id);
             Map<Integer, Box> boxMap = kClustering.getPositionMap();
             //将矩阵化为向量
             matrix = MatrixOperation.matrixToVector(matrix, true);
@@ -285,17 +324,54 @@ public class Operation {//进行计算
     //图像视觉 Accuracy 模式
     public int toSee(Matrix matrix) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
-            intoNerve2(2, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
-                    false, -1, matrixBack);
+            intoConvolutionNetwork(2, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
+                    false, 0, matrixBack);
             Matrix myMatrix = matrixBack.getMatrix();
-            Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
-            return getClassificationId2(vector);
+            int classifier = templeConfig.getClassifier();
+            int id = -1;
+            switch (classifier) {
+                case Classifier.LVQ:
+                    id = getClassificationIdByLVQ(myMatrix);
+                    break;
+                case Classifier.DNN:
+                    id = getClassificationIdByDnn(myMatrix);
+                    break;
+                case Classifier.VAvg:
+                    id = getClassificationIdByVag(myMatrix);
+                    break;
+            }
+            return id;
         } else {
             throw new Exception("pattern is wrong");
         }
     }
 
-    private int getClassificationId2(Matrix myVector) throws Exception {
+    private int getClassificationIdByDnn(Matrix myMatrix) throws Exception {
+        List<Double> list = getFeature(myMatrix);
+        MaxPoint maxPoint = new MaxPoint();
+        long id = IdCreator.get().nextId();
+        intoDnnNetwork(id, list, templeConfig.getSensoryNerves(), false, null, maxPoint);
+        return maxPoint.getId();
+    }
+
+    private int getClassificationIdByVag(Matrix myMatrix) throws Exception {//VAG获取分类
+        Matrix myVector = MatrixOperation.matrixToVector(myMatrix, true);
+        Map<Integer, Matrix> matrixK = templeConfig.getVectorK().getMatrixK();
+        double minDist = 0;
+        int id = 0;
+        for (Map.Entry<Integer, Matrix> entry : matrixK.entrySet()) {
+            Matrix matrix = entry.getValue();
+            double dist = MatrixOperation.getEDist(matrix, myVector);
+            if (minDist == 0 || dist < minDist) {
+                minDist = dist;
+                id = entry.getKey();
+            }
+        }
+        return id;
+    }
+
+    private int getClassificationIdByLVQ(Matrix myMatrix) throws Exception {//LVQ获取分类
+        Matrix myVector = MatrixOperation.matrixToVector(myMatrix, true);
         int id = 0;
         double distEnd = 0;
         LVQ lvq = templeConfig.getLvq();
@@ -328,18 +404,34 @@ public class Operation {//进行计算
         return list;
     }
 
-    private void intoNerve(long eventId, List<Double> featureList, List<SensoryNerve> sensoryNerveList
-            , boolean isStudy, Map<Integer, Double> map, OutBack imageBack) throws Exception {
+    /*
+     * @param eventId 事件ID
+     * @param featureList 特征集合
+     * @param sensoryNerveList 感知神经元集合
+     * @param isStudy 是否学习
+     * @param map 标注
+     * @param outBack 输出结果回调类
+     * */
+    private void intoDnnNetwork(long eventId, List<Double> featureList, List<SensoryNerve> sensoryNerveList
+            , boolean isStudy, Map<Integer, Double> map, OutBack outBack) throws Exception {//进入DNN 神经网络
         for (int i = 0; i < sensoryNerveList.size(); i++) {
             sensoryNerveList.get(i).postMessage(eventId, featureList.get(i), isStudy, map
-                    , imageBack);
+                    , outBack);
         }
     }
 
-    private void intoNerve2(long eventId, Matrix featur, List<SensoryNerve> sensoryNerveList
-            , boolean isKernelStudy, int E, OutBack outBack) throws Exception {
+    /*
+     * @param eventId 事件ID
+     * @param feature 特征矩阵
+     * @param sensoryNerveList 感知神经元集合
+     * @param isKernelStudy 是否进行核学习
+     * @param E 期望矩阵
+     * @param outBack 输出结果回调类
+     * */
+    private void intoConvolutionNetwork(long eventId, Matrix feature, List<SensoryNerve> sensoryNerveList
+            , boolean isKernelStudy, int E, OutBack outBack) throws Exception {//进入卷积神经网络
         for (int i = 0; i < sensoryNerveList.size(); i++) {
-            sensoryNerveList.get(i).postMatrixMessage(eventId, featur, isKernelStudy, E, outBack);
+            sensoryNerveList.get(i).postMatrixMessage(eventId, feature, isKernelStudy, E, outBack);
         }
     }
 }

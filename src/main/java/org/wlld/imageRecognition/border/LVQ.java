@@ -19,7 +19,7 @@ public class LVQ {
     private double studyPoint = 0.1;//量化学习率
     private int length;//向量长度(需要返回)
     private boolean isReady = false;
-    private int lvqNub = 50;
+    private int lvqNub;
 
     public void setTypeNub(int typeNub) {
         this.typeNub = typeNub;
