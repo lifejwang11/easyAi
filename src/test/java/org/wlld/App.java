@@ -38,15 +38,15 @@ public class App {
             Map<Integer, Double> map3 = new HashMap<>();
             map1.put(0, 1 + random.nextDouble());
             map1.put(1, 1 + random.nextDouble());
-            map1.put(2, 1 + random.nextDouble());
+            map1.put(2, 0.0);
             //产生鲜明区分
             map2.put(0, random.nextDouble());
             map2.put(1, random.nextDouble());
-            map2.put(2, random.nextDouble());
+            map2.put(2, 0.0);
             //
             map3.put(0, 2 + random.nextDouble());
             map3.put(1, 2 + random.nextDouble());
-            map3.put(2, 2 + random.nextDouble());
+            map3.put(2, 0.0);
             data.add(map1);
             dataB.add(map2);
             dataC.add(map3);
@@ -77,21 +77,21 @@ public class App {
             Map<Integer, Double> map3 = new HashMap<>();
             map1.put(0, 1 + random.nextDouble());
             map1.put(1, 1 + random.nextDouble());
-            map1.put(2, 1 + random.nextDouble());
+            map1.put(2, 0.0);
 
             map2.put(0, random.nextDouble());
             map2.put(1, random.nextDouble());
-            map2.put(2, random.nextDouble());
+            map2.put(2, 0.0);
 
             map3.put(0, 2 + random.nextDouble());
             map3.put(1, 2 + random.nextDouble());
-            map3.put(2, 2 + random.nextDouble());
+            map3.put(2, 0.0);
             data2.add(map1);
             data2B.add(map2);
             data2C.add(map3);
         }
         Back back = new Back();
-        for (Map<Integer, Double> map : data2C) {
+        for (Map<Integer, Double> map : data2) {
             post(nerveManager.getSensoryNerves(), map, null, back, false);
             System.out.println("=====================");
         }

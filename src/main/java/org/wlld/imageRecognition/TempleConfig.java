@@ -11,6 +11,7 @@ import org.wlld.imageRecognition.modelEntity.KBorder;
 import org.wlld.imageRecognition.modelEntity.LvqModel;
 import org.wlld.imageRecognition.modelEntity.MatrixModel;
 import org.wlld.nerveCenter.NerveManager;
+import org.wlld.nerveCenter.Normalization;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
@@ -29,7 +30,7 @@ public class TempleConfig {
     private NerveManager convolutionNerveManagerB;//卷积神经网络管理器
     private int row = 5;//行的最小比例
     private int column = 3;//列的最小比例
-    private int deep = 2;//默认深度
+    private int deep = 1;//默认深度
     private int classificationNub = 1;//分类的数量
     private int studyPattern;//学习模式
     private boolean isHavePosition = false;//是否需要锁定物体位置
@@ -42,6 +43,11 @@ public class TempleConfig {
     private VectorK vectorK;
     private boolean isThreeChannel;//是否启用三通道
     private int classifier = Classifier.VAvg;//默认分类类别使用的是向量均值分类
+    private Normalization normalization = new Normalization();//统一归一化
+
+    public Normalization getNormalization() {
+        return normalization;
+    }
 
     //边框聚类集合 模型需要返回
     public TempleConfig(boolean isThreeChannel) {
@@ -225,33 +231,33 @@ public class TempleConfig {
         }
         //加载各识别分类的期望矩阵
         matrixMap.put(0, new Matrix(height, width));
-        double nub = 10;//每个分类期望参数的跨度
+        double nub = 1;//每个分类期望参数的跨度
         for (int k = 1; k <= classificationNub; k++) {
             Matrix matrix = new Matrix(height, width);//初始化期望矩阵
             double t = k * nub;//期望矩阵的分类参数数值
-            for (int i = 0; i < height; i++) {//给期望矩阵注入期望参数
-                for (int j = 0; j < width; j++) {
+            for (int i = 0; i < height - 1; i++) {//给期望矩阵注入期望参数
+                for (int j = 0; j < width - 1; j++) {
                     matrix.setNub(i, j, t);
                 }
             }
             matrixMap.put(k, matrix);
         }
         if (!isThreeChannel) {
-            initNerveManager(convolutionNerveManager, matrixMap, initPower, deep);
+            convolutionNerveManager = initNerveManager(matrixMap, initPower, deep);
         } else {//启用三通道
-            initNerveManager(convolutionNerveManagerR, matrixMap, initPower, deep);
-            initNerveManager(convolutionNerveManagerG, matrixMap, initPower, deep);
-            initNerveManager(convolutionNerveManagerB, matrixMap, initPower, deep);
+            convolutionNerveManagerR = initNerveManager(matrixMap, initPower, deep);
+            convolutionNerveManagerG = initNerveManager(matrixMap, initPower, deep);
+            convolutionNerveManagerB = initNerveManager(matrixMap, initPower, deep);
         }
     }
 
-    private void initNerveManager(NerveManager convolutionNerveManager
-            , Map<Integer, Matrix> matrixMap, boolean initPower, int deep) throws Exception {
+    private NerveManager initNerveManager(Map<Integer, Matrix> matrixMap, boolean initPower, int deep) throws Exception {
         //初始化卷积神经网络
-        convolutionNerveManager = new NerveManager(1, 1,
+        NerveManager convolutionNerveManager = new NerveManager(1, 1,
                 1, deep - 1, new ReLu(), true);
         convolutionNerveManager.setMatrixMap(matrixMap);//给卷积网络管理器注入期望矩阵
         convolutionNerveManager.init(initPower, true);
+        return convolutionNerveManager;
     }
 
     private List<MatrixModel> getLvqModel(MatrixBody[] matrixBodies) throws Exception {

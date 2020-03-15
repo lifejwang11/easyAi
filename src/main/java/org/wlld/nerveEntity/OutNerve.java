@@ -45,7 +45,7 @@ public class OutNerve extends Nerve {
                 } else {
                     this.E = 0;
                 }
-                //System.out.println("E===" + this.E + ",out==" + out+",nerveId=="+getId());
+                System.out.println("E===" + this.E + ",out==" + out+",nerveId=="+getId());
                 gradient = outGradient();//当前梯度变化
                 //调整权重 修改阈值 并进行反向传播
                 updatePower(eventId);

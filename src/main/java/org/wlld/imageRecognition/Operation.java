@@ -5,12 +5,15 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
+import org.wlld.function.Sigmod;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
 import org.wlld.nerveCenter.NerveManager;
+import org.wlld.nerveCenter.Normalization;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.IdCreator;
+import sun.security.pkcs11.P11Util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -149,6 +152,25 @@ public class Operation {//进行计算
 
     }
 
+    public void threeNormalization(ThreeChannelMatrix threeChannelMatrix) throws Exception {
+        normalization(threeChannelMatrix.getMatrixR(), templeConfig.getConvolutionNerveManagerR());
+        normalization(threeChannelMatrix.getMatrixG(), templeConfig.getConvolutionNerveManagerG());
+        normalization(threeChannelMatrix.getMatrixB(), templeConfig.getConvolutionNerveManagerB());
+
+    }
+
+    public void normalization(Matrix matrix, NerveManager nerveManager) throws Exception {
+        Normalization normalization = templeConfig.getNormalization();
+        intoConvolutionNetwork(1, matrix, nerveManager.getSensoryNerves(),
+                false, 0, matrixBack);
+        Matrix myMatrix = matrixBack.getMatrix();
+        for (int i = 0; i < myMatrix.getX(); i++) {
+            for (int j = 0; j < myMatrix.getY(); j++) {
+                normalization.putFeature(myMatrix.getNumber(i, j));
+            }
+        }
+    }
+
     //卷积核学习
     public void learning(Matrix matrix, int tagging, boolean isNerveStudy) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
@@ -192,6 +214,7 @@ public class Operation {//进行计算
         Map<Integer, Double> map = new HashMap<>();
         map.put(tagging, 1.0);
         List<Double> feature = getFeature(myMatrix);
+        System.out.println(feature);
         intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
     }
 
@@ -212,9 +235,19 @@ public class Operation {//进行计算
 
     private List<Double> getFeature(Matrix matrix) throws Exception {//将特征矩阵转化为集合并除10
         List<Double> list = new ArrayList<>();
+        Normalization normalization = templeConfig.getNormalization();
+        double middle = normalization.getAvg();
+        //double sub = ArithUtil.sub(normalization.getMax(), normalization.getMin());
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
-                list.add(ArithUtil.div(matrix.getNumber(i, j), 100));
+                double nub = matrix.getNumber(i, j);
+                if (nub != 0) {
+                    nub = ArithUtil.sub(nub, middle);//middle
+                    list.add(nub);
+                } else {
+                    list.add(0.0);
+                }
+
             }
         }
         return list;
