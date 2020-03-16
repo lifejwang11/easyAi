@@ -10,36 +10,26 @@ import org.wlld.tools.ArithUtil;
  * @date 1:29 下午 2020/3/15
  */
 public class Normalization {
-    private double max;
-    private double min;
     private long number;
     private double avg;
     private double sigma;
-
-    public double getMax() {
-        return max;
-    }
-
-    public double getMin() {
-        return min;
-    }
 
     public double getAvg() {
         return avg;
     }
 
+    public void setAvg(double avg) {
+        this.avg = avg;
+    }
+
     public void avg() {
-        avg = ArithUtil.div(sigma, number);
-        //System.out.println("avg==" + avg);
+        if (avg == 0) {
+            avg = ArithUtil.div(sigma, number);
+        }
+        System.out.println(avg);
     }
 
     public void putFeature(double nub) {
-        if (nub > max) {
-            max = nub;
-        }
-        if (min == 0 || (nub != 0 && nub < min)) {
-            min = nub;
-        }
         if (nub != 0) {
             sigma = ArithUtil.add(sigma, nub);
             number++;

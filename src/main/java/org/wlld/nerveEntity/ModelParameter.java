@@ -1,5 +1,6 @@
 package org.wlld.nerveEntity;
 
+import org.wlld.MatrixTools.Matrix;
 import org.wlld.imageRecognition.border.Frame;
 import org.wlld.imageRecognition.modelEntity.KBorder;
 import org.wlld.imageRecognition.modelEntity.LvqModel;
@@ -22,7 +23,34 @@ public class ModelParameter {
     private DymNerveStudy dymOutNerveStudy = new DymNerveStudy();//动态神经元输出层
     private Map<Integer, KBorder> borderMap = new HashMap<>();//边框距离模型
     private LvqModel lvqModel;//LVQ模型
+    private Map<Integer, List<Double>> matrixK = new HashMap<>();//均值特征向量
     private Frame frame;//先验边框
+    private double avg;//特别均值
+    private double dnnAvg;//
+
+    public double getDnnAvg() {
+        return dnnAvg;
+    }
+
+    public void setDnnAvg(double dnnAvg) {
+        this.dnnAvg = dnnAvg;
+    }
+
+    public double getAvg() {
+        return avg;
+    }
+
+    public Map<Integer, List<Double>> getMatrixK() {
+        return matrixK;
+    }
+
+    public void setMatrixK(Map<Integer, List<Double>> matrixK) {
+        this.matrixK = matrixK;
+    }
+
+    public void setAvg(double avg) {
+        this.avg = avg;
+    }
 
     public Frame getFrame() {
         return frame;

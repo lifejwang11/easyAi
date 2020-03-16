@@ -4,6 +4,7 @@ package org.wlld.imageRecognition;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Classifier;
+import org.wlld.config.Kernel;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.Sigmod;
 import org.wlld.i.OutBack;
@@ -26,9 +27,11 @@ public class Operation {//进行计算
     private MatrixBack matrixBack = new MatrixBack();
     private ImageBack imageBack = new ImageBack();
     private OutBack outBack;
+    private double avg;
 
     public Operation(TempleConfig templeConfig) {
         this.templeConfig = templeConfig;
+        avg = templeConfig.getAvg();
     }
 
     public Operation(TempleConfig templeConfig, OutBack outBack) {
@@ -55,6 +58,83 @@ public class Operation {//进行计算
         }
         Matrix matrix1 = convolution.getFeatures(matrix, maxNub, templeConfig, id);
         return sub(matrix1);
+    }
+
+    private double one(List<List<Double>> rightLists, double sigma) {
+        for (List<Double> list : rightLists) {
+            for (double nub : list) {
+                sigma = ArithUtil.add(nub, sigma);
+            }
+        }
+        return sigma;
+    }
+
+    private void lastOne(List<List<Double>> rightLists, double avg) {
+        for (List<Double> list : rightLists) {
+            for (int i = 0; i < list.size(); i++) {
+                list.set(i, ArithUtil.sub(list.get(i), avg));
+            }
+        }
+    }
+
+    //从一张图片的局部进行学习
+    public void coverStudy(Matrix matrixRight, Map<Integer, Double> right
+            , Matrix matrixWrong, Map<Integer, Double> wrong) throws Exception {
+        if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
+            //先用边缘算子卷一遍
+            matrixRight = convolution.late(convolution.getBorder(matrixRight, Kernel.ALL_Two), 2);
+            matrixWrong = convolution.late(convolution.getBorder(matrixWrong, Kernel.ALL_Two), 2);
+            List<List<Double>> rightLists = getFeatures(matrixRight);
+            List<List<Double>> wrongLists = getFeatures(matrixWrong);
+            int nub = rightLists.size() * 2 * 9;
+            double sigma = one(rightLists, 0);
+            sigma = one(rightLists, sigma);
+            avg = ArithUtil.div(sigma, nub);
+            templeConfig.setAvg(avg);
+            lastOne(rightLists, avg);
+            lastOne(wrongLists, avg);
+            //特征塞入容器完毕
+            int size = rightLists.size();
+            for (int j = 0; j < 3; j++) {
+                for (int i = 0; i < size; i++) {
+                    List<Double> rightList = rightLists.get(i);
+                    List<Double> wrongList = wrongLists.get(i);
+                    intoDnnNetwork(1, rightList, templeConfig.getSensoryNerves(), true, right, null);
+                    intoDnnNetwork(1, wrongList, templeConfig.getSensoryNerves(), true, wrong, null);
+                    //System.out.println("right:" + rightList);
+                    //System.out.println("wrong:" + wrongList);
+                }
+            }
+        } else {
+            throw new Exception("PATTERN IS NOT COVER");
+        }
+    }
+
+    public double coverPoint(Matrix matrix, int rightId) throws Exception {
+        if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
+            matrix = convolution.late(convolution.getBorder(matrix, Kernel.ALL_Two), 2);
+            List<List<Double>> lists = getFeatures(matrix);
+            //特征塞入容器完毕
+            int size = lists.size();
+            int right = 0;
+            int all = 0;
+            lastOne(lists, avg);
+            for (int i = 0; i < size; i++) {
+                List<Double> list = lists.get(i);
+                MaxPoint maxPoint = new MaxPoint();
+                long pid = IdCreator.get().nextId();
+                intoDnnNetwork(pid, list, templeConfig.getSensoryNerves(), false, null, maxPoint);
+                int id = maxPoint.getId();
+                if (id == rightId) {
+                    right++;
+                }
+                all++;
+            }
+            //ArithUtil.div(coverBody.getRightNub(), size)
+            return ArithUtil.div(right, all);
+        } else {
+            throw new Exception("PATTERN IS NOT COVER");
+        }
     }
 
     //模板学习
@@ -135,19 +215,6 @@ public class Operation {//进行计算
             Map<Integer, Double> map = new HashMap<>();
             map.put(tagging, 1.0);
             intoDnnNetwork(1, featureALL, templeConfig.getSensoryNerves(), true, map, null);
-//            int classifier = templeConfig.getClassifier();
-//            switch (classifier) {
-//                case Classifier.DNN:
-//                    dnn(tagging, myMatrixR);
-//                    break;
-//                case Classifier.LVQ:
-//                    lvq(tagging, myMatrixR);
-//                    break;
-//                case Classifier.VAvg:
-//                    vectorAvg(tagging, myMatrixR);
-//                    break;
-//            }
-
         }
 
     }
@@ -214,7 +281,7 @@ public class Operation {//进行计算
         Map<Integer, Double> map = new HashMap<>();
         map.put(tagging, 1.0);
         List<Double> feature = getFeature(myMatrix);
-        System.out.println(feature);
+        //System.out.println(feature);
         intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
     }
 
@@ -227,6 +294,7 @@ public class Operation {//进行计算
     private void lvq(int tagging, Matrix myMatrix) throws Exception {//LVQ学习
         LVQ lvq = templeConfig.getLvq();
         Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
+        System.out.println(vector.getString());
         MatrixBody matrixBody = new MatrixBody();
         matrixBody.setMatrix(vector);
         matrixBody.setId(tagging);
@@ -237,17 +305,42 @@ public class Operation {//进行计算
         List<Double> list = new ArrayList<>();
         Normalization normalization = templeConfig.getNormalization();
         double middle = normalization.getAvg();
-        //double sub = ArithUtil.sub(normalization.getMax(), normalization.getMin());
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 double nub = matrix.getNumber(i, j);
                 if (nub != 0) {
-                    nub = ArithUtil.sub(nub, middle);//middle
+                    nub = ArithUtil.sub(nub, middle);
                     list.add(nub);
                 } else {
                     list.add(0.0);
                 }
 
+            }
+        }
+        return list;
+    }
+
+    private List<List<Double>> getFeatures(Matrix matrix) throws Exception {
+        List<List<Double>> lists = new ArrayList<>();
+        int x = matrix.getX() - 3;//求导后矩阵的行数
+        int y = matrix.getY() - 3;//求导后矩阵的列数
+        for (int i = 0; i < x; i += 3) {//遍历行
+            for (int j = 0; j < y; j += 3) {//遍历每行的列
+                Matrix myMatrix = matrix.getSonOfMatrix(i, j, 3, 3);
+                lists.add(getListFeature(myMatrix));
+            }
+        }
+        return lists;
+    }
+
+    private List<Double> getListFeature(Matrix matrix) throws Exception {
+        List<Double> list = new ArrayList<>();
+        int x = matrix.getX();
+        int y = matrix.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double nub = matrix.getNumber(i, j) / 300;
+                list.add(nub);
             }
         }
         return list;
@@ -295,8 +388,19 @@ public class Operation {//进行计算
                     Matrix myMatrix = matrixBack.getMatrix();
                     //卷积层输出即边框回归的输入的特征向量
                     frameBody.setEndMatrix(myMatrix);
-                    //Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
-                    int id = getClassificationIdByLVQ(myMatrix);
+                    int classifier = templeConfig.getClassifier();
+                    int id = 0;
+                    switch (classifier) {
+                        case Classifier.LVQ:
+                            id = getClassificationIdByLVQ(myMatrix);
+                            break;
+                        case Classifier.DNN:
+                            id = getClassificationIdByDnn(myMatrix);
+                            break;
+                        case Classifier.VAvg:
+                            id = getClassificationIdByVag(myMatrix);
+                            break;
+                    }
                     frameBody.setId(id);
                 }
                 return toPosition(frameBodies, frame.getWidth(), frame.getHeight());

@@ -8,7 +8,7 @@ import java.util.*;
 
 public class VectorK {
     private Map<Integer, List<Matrix>> matrixMap = new HashMap<>();
-    private Map<Integer, Matrix> matrixK = new HashMap<>();
+    private Map<Integer, Matrix> matrixK = new HashMap<>();//这个作为模型拿出来
     private int length;
 
     public VectorK(int length) {
@@ -43,31 +43,26 @@ public class VectorK {
         return matrix;
     }
 
-    private Matrix mind(List<Matrix> matrixList) throws Exception {//拿中位数
-        Matrix matrix = new Matrix(1, length);
-        List<List<Double>> lists = new ArrayList<>();
-        for (Matrix matrix1 : matrixList) {
-            for (int i = 0; i < matrix1.getY(); i++) {
-                if (lists.size() <= i) {
-                    lists.add(new ArrayList<>());
-                }
-                List<Double> list = lists.get(i);
-                list.add(matrix1.getNumber(0, i));
-                Collections.sort(list);
-            }
-        }
-        for (int i = 0; i < length; i++) {
-            List<Double> list = lists.get(i);
-            int index = list.size() / 2;
-            matrix.setNub(0, i, list.get(index));
-        }
-        return matrix;
-    }
-
     public void study() throws Exception {
         for (Map.Entry<Integer, List<Matrix>> entry : matrixMap.entrySet()) {
             List<Matrix> matrixList = entry.getValue();
             Matrix matrix = sigma(matrixList);
+            matrixK.put(entry.getKey(), matrix);
+        }
+    }
+
+    public Map<Integer, List<Double>> getKMatrix() throws Exception {
+        Map<Integer, List<Double>> matrixList = new HashMap<>();
+        for (Map.Entry<Integer, Matrix> entry : matrixK.entrySet()) {
+            List<Double> list = MatrixOperation.rowVectorToList(entry.getValue());
+            matrixList.put(entry.getKey(), list);
+        }
+        return matrixList;
+    }
+
+    public void insertKMatrix(Map<Integer, List<Double>> matrixList) throws Exception {
+        for (Map.Entry<Integer, List<Double>> entry : matrixList.entrySet()) {
+            Matrix matrix = MatrixOperation.listToRowVector(entry.getValue());
             matrixK.put(entry.getKey(), matrix);
         }
     }

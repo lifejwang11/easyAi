@@ -2,6 +2,9 @@ package org.wlld.MatrixTools;
 
 import org.wlld.tools.ArithUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MatrixOperation {
 
     private MatrixOperation() {
@@ -369,5 +372,23 @@ public class MatrixOperation {
                 matrix.setNub(i, j, ArithUtil.mul(matrix.getNumber(i, j), nub));
             }
         }
+    }
+
+    //行向量转LIST
+    public static List<Double> rowVectorToList(Matrix matrix) throws Exception {
+        List<Double> list = new ArrayList<>();
+        for (int j = 0; j < matrix.getY(); j++) {
+            list.add(matrix.getNumber(0, j));
+        }
+        return list;
+    }
+
+    //list转行向量
+    public static Matrix listToRowVector(List<Double> list) throws Exception {
+        Matrix matrix = new Matrix(1, list.size());
+        for (int i = 0; i < list.size(); i++) {
+            matrix.setNub(0, i, list.get(i));
+        }
+        return matrix;
     }
 }
