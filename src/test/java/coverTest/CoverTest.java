@@ -41,8 +41,8 @@ public class CoverTest {
         Operation operation = new Operation(templeConfig);//初始化运算类
         Picture picture = new Picture();
         Matrix pic1 = picture.getImageMatrixByLocal(url);//从本地磁盘读取图片
-        Matrix pic2 = picture.getImageMatrixByIo(inputStream);//从输入流读取图片
         double point = operation.coverPoint(pic1, 1);//获取覆盖率
+        Matrix pic2 = picture.getImageMatrixByIo(inputStream);//从输入流读取图片
     }
 
     public static void fireStudy() throws Exception {//土壤扰动，桔梗焚烧等识别

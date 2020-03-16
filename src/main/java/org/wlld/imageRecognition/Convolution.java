@@ -40,7 +40,7 @@ public class Convolution {
     private void normalization(Matrix matrix) throws Exception {
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
-                matrix.setNub(i, j, ArithUtil.div(matrix.getNumber(i, j), 10000000));
+                matrix.setNub(i, j, ArithUtil.div(matrix.getNumber(i, j), 1000000));
             }
         }
     }

@@ -254,7 +254,8 @@ public class MatrixOperation {
             xr = i + x;
             for (int j = 0; j < kyMax; j++) {
                 yr = j + y;
-                allNub = matrix.getNumber(xr, yr) * kernel.getNumber(i, j) + allNub;
+                allNub = ArithUtil.add(ArithUtil.mul(matrix.getNumber(xr, yr), kernel.getNumber(i, j)), allNub);
+                // allNub = matrix.getNumber(xr, yr) * kernel.getNumber(i, j) + allNub;
             }
         }
         return allNub;

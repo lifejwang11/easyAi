@@ -91,6 +91,29 @@ public class HelloWorld {
         System.out.println("错误率：" + (wrongPoint * 100) + "%");
     }
 
+    public static void food2() throws Exception {
+        Picture picture = new Picture();
+        TempleConfig templeConfig = new TempleConfig(false);
+        templeConfig.init(StudyPattern.Speed_Pattern, true, 1000, 1000, 2);
+        Operation operation = new Operation(templeConfig);
+        Map<Integer, Double> right = new HashMap<>();
+        Map<Integer, Double> wrong = new HashMap<>();
+        right.put(1, 1.0);
+        wrong.put(2, 1.0);
+        for (int j = 0; j < 20; j++) {
+            for (int i = 1; i < 1500; i++) {//一阶段
+                System.out.println("study1===================" + i);
+                //读取本地URL地址图片,并转化成矩阵
+                Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
+                Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
+                operation.study(a, right);
+                operation.study(c, wrong);
+
+            }
+        }
+
+    }
+
     public static void food() throws Exception {
         Picture picture = new Picture();
         TempleConfig templeConfig = new TempleConfig(false);
@@ -103,29 +126,34 @@ public class HelloWorld {
 //        templeConfig.setFrame(frame);
         templeConfig.setClassifier(Classifier.DNN);
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 1000, 1000, 2);
+//        ModelParameter modelParameter2 = JSON.parseObject(ModelData.DATA, ModelParameter.class);
+//        templeConfig.insertModel(modelParameter2);
         Operation operation = new Operation(templeConfig);
         //a b c d 物品  e是背景
-        //一阶段
-        for (int i = 1; i < 300; i++) {//一阶段
-            System.out.println("study1===================" + i);
-            //读取本地URL地址图片,并转化成矩阵
-            Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
-            //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
-            Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
-            //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
-            //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
-            //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
-            //第二次学习的时候，第三个参数必须是 true
-            // operation.learning(f, 0, false);
-            operation.learning(a, 1, false);
-            // operation.learning(b, 2, false);
-            operation.learning(c, 2, false);
-            //operation.learning(d, 4, false);
+        // 一阶段
+        for (int j = 0; j < 2; j++) {
+
+            for (int i = 1; i < 1500; i++) {//一阶段
+                System.out.println("study1===================" + i);
+                //读取本地URL地址图片,并转化成矩阵
+                Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
+                //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
+                Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
+                //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
+                //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
+                //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
+                //第二次学习的时候，第三个参数必须是 true
+                // operation.learning(f, 0, false);
+                operation.learning(a, 1, false);
+                // operation.learning(b, 2, false);
+                operation.learning(c, 2, false);
+                //operation.learning(d, 4, false);
+            }
         }
 //        ModelParameter modelParameter = JSON.parseObject(ModelData.DATA8, ModelParameter.class);
 //        templeConfig.insertModel(modelParameter);
         //二阶段
-        for (int i = 1; i < 300; i++) {
+        for (int i = 1; i < 1500; i++) {
             Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
             //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
             Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
@@ -137,8 +165,8 @@ public class HelloWorld {
             //operation.normalization(d, templeConfig.getConvolutionNerveManager());
         }
         templeConfig.getNormalization().avg();
-        for (int j = 0; j < 3; j++) {
-            for (int i = 1; i < 300; i++) {
+        for (int j = 0; j < 1; j++) {
+            for (int i = 1; i < 1500; i++) {
                 System.out.println("study2==================" + i);
                 //读取本地URL地址图片,并转化成矩阵
                 Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
@@ -162,15 +190,15 @@ public class HelloWorld {
         ModelParameter modelParameter = templeConfig.getModel();
         String model = JSON.toJSONString(modelParameter);
         System.out.println(model);
-        ModelParameter modelParameter2 = JSON.parseObject(model, ModelParameter.class);
-        TempleConfig templeConfig2 = new TempleConfig(false);
-        templeConfig2.init(StudyPattern.Accuracy_Pattern, true, 1000, 1000, 2);
-        templeConfig2.insertModel(modelParameter2);
-
-        Operation operation2 = new Operation(templeConfig2);
+//        ModelParameter modelParameter2 = JSON.parseObject(model, ModelParameter.class);
+//        TempleConfig templeConfig2 = new TempleConfig(false);
+//        templeConfig2.init(StudyPattern.Accuracy_Pattern, true, 1000, 1000, 2);
+//        templeConfig2.insertModel(modelParameter2);
+//
+//        Operation operation2 = new Operation(templeConfig2);
         int wrong = 0;
         int allNub = 0;
-        for (int i = 300; i <= 320; i++) {
+        for (int i = 1500; i <= 1572; i++) {
             //读取本地URL地址图片,并转化成矩阵
             Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
             //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
@@ -235,8 +263,13 @@ public class HelloWorld {
             operation.coverStudy(right, rightTagging, wrong, wrongTagging);
         }
         System.out.println("学习完成");
+        long sys = System.currentTimeMillis();
         double point = operation.coverPoint(right, 1);
+        long sys2 = System.currentTimeMillis();
+        long sys3 = sys2 - sys;
         double point2 = operation.coverPoint(wrong, 1);
+        System.out.println("识别耗时：" + sys3);
+        System.out.println("测试覆盖1：" + point + ",测试覆盖2:" + point2);
 
     }
 

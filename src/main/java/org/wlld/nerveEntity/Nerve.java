@@ -110,8 +110,8 @@ public abstract class Nerve {
                         powerMatrix = MatrixOperation.add(powerMatrix, matrix.getSonOfMatrix(i, j, 3, 3));
                     }
                     double dm = MatrixOperation.convolution(matrix, nerveMatrix, i, j);
-                    //dm = ArithUtil.sub(ArithUtil.div(dm, 9), threshold);//减偏置项
-                    dm = dm / 9 - threshold;
+                    dm = ArithUtil.sub(ArithUtil.div(dm, 9), threshold);//减偏置项
+                    //dm = dm / 9 - threshold;
                     //设置输出矩阵 经过激活函数
                     myMatrix.setNub(i / 3, j / 3, activeFunction.function(dm));
                 }

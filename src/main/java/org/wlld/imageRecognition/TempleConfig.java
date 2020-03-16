@@ -31,7 +31,7 @@ public class TempleConfig {
     private NerveManager convolutionNerveManagerB;//卷积神经网络管理器
     private int row = 5;//行的最小比例
     private int column = 3;//列的最小比例
-    private int deep = 1;//默认深度
+    private int deep = 3;//默认深度
     private int classificationNub = 2;//分类的数量
     private int studyPattern;//学习模式
     private boolean isHavePosition = false;//是否需要锁定物体位置
@@ -211,7 +211,7 @@ public class TempleConfig {
 
     private void initNerveManager(boolean initPower, int sensoryNerveNub
             , int deep) throws Exception {
-        nerveManager = new NerveManager(sensoryNerveNub, 6,
+        nerveManager = new NerveManager(sensoryNerveNub, 9,
                 classificationNub, deep, new Sigmod(), false);
         nerveManager.init(initPower, false);
     }
@@ -242,7 +242,7 @@ public class TempleConfig {
         }
         //加载各识别分类的期望矩阵
         matrixMap.put(0, new Matrix(height, width));
-        double nub = 0.5;//每个分类期望参数的跨度
+        double nub = 1;//每个分类期望参数的跨度
         for (int k = 1; k <= classificationNub; k++) {
             Matrix matrix = new Matrix(height, width);//初始化期望矩阵
             double t = k * nub;//期望矩阵的分类参数数值
