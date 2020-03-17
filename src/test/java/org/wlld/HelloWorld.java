@@ -136,9 +136,9 @@ public class HelloWorld {
             for (int i = 1; i < 1500; i++) {//一阶段
                 System.out.println("study1===================" + i);
                 //读取本地URL地址图片,并转化成矩阵
-                Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
+                Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
                 //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
-                Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
+                Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
                 //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
                 //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
                 //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
@@ -154,9 +154,9 @@ public class HelloWorld {
 //        templeConfig.insertModel(modelParameter);
         //二阶段
         for (int i = 1; i < 1500; i++) {
-            Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
+            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
             //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
-            Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
+            Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
             //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
 
             operation.normalization(a, templeConfig.getConvolutionNerveManager());
@@ -169,9 +169,9 @@ public class HelloWorld {
             for (int i = 1; i < 1500; i++) {
                 System.out.println("study2==================" + i);
                 //读取本地URL地址图片,并转化成矩阵
-                Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
+                Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
                 //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
-                Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
+                Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
                 //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
                 //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
                 //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
@@ -200,9 +200,9 @@ public class HelloWorld {
         int allNub = 0;
         for (int i = 1500; i <= 1572; i++) {
             //读取本地URL地址图片,并转化成矩阵
-            Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
+            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
             //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
-            Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
+            Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
             //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
             //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
             //第二次学习的时候，第三个参数必须是 true
