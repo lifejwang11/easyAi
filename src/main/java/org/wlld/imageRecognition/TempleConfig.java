@@ -43,7 +43,7 @@ public class TempleConfig {
     private double iouTh = 0.5;//IOU阈值
     private int lvqNub = 10;//lvq循环次数，默认30
     private VectorK vectorK;
-    private boolean isThreeChannel;//是否启用三通道
+    private boolean isThreeChannel = false;//是否启用三通道
     private int classifier = Classifier.VAvg;//默认分类类别使用的是向量均值分类
     private Normalization normalization = new Normalization();//统一归一化
     private double avg = 0;//覆盖均值
@@ -68,6 +68,9 @@ public class TempleConfig {
 
     public Normalization getNormalization() {
         return normalization;
+    }
+
+    public TempleConfig() {
     }
 
     //边框聚类集合 模型需要返回
