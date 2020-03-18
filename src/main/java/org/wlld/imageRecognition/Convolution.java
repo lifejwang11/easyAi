@@ -40,7 +40,7 @@ public class Convolution {
     private void normalization(Matrix matrix) throws Exception {
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
-                matrix.setNub(i, j, ArithUtil.div(matrix.getNumber(i, j), 10000000));
+                matrix.setNub(i, j, ArithUtil.div(matrix.getNumber(i, j), 1000000));
             }
         }
     }
@@ -82,7 +82,7 @@ public class Convolution {
         }
         for (int i = 0; i < x; i++) {//遍历行
             for (int j = 0; j < y; j++) {//遍历每行的列
-                double dm = MatrixOperation.convolution(matrix, kernel, i, j);
+                double dm = MatrixOperation.convolution(matrix, kernel, i, j, false);
                 if (dm > 0) {//存在边缘
                     if (isFirst && border != null) {
                         border.setPosition(i, j);
@@ -96,19 +96,34 @@ public class Convolution {
         if (isOnce) {
             return null;
         } else {
-            return late(myMatrix);
+            return late(myMatrix, 2);
         }
     }
 
-    private Matrix late(Matrix matrix) throws Exception {//迟化处理
+    public Matrix getBorder(Matrix matrix, Matrix kernel) throws Exception {
+        int x = matrix.getX() - 2;//求导后矩阵的行数
+        int y = matrix.getY() - 2;//求导后矩阵的列数
+        Matrix myMatrix = new Matrix(x, y);//最终合成矩阵
+        for (int i = 0; i < x; i++) {//遍历行
+            for (int j = 0; j < y; j++) {//遍历每行的列
+                double dm = MatrixOperation.convolution(matrix, kernel, i, j, false);
+                if (dm > 0) {//存在边缘
+                    myMatrix.setNub(i, j, dm);
+                }
+            }
+        }
+        return myMatrix;
+    }
+
+    protected Matrix late(Matrix matrix, int size) throws Exception {//迟化处理
         int xn = matrix.getX();
         int yn = matrix.getY();
-        int x = xn / 2;//求导后矩阵的行数
-        int y = yn / 2;//求导后矩阵的列数
+        int x = xn / size;//求导后矩阵的行数
+        int y = yn / size;//求导后矩阵的列数
         Matrix myMatrix = new Matrix(x, y);//迟化后的矩阵
-        for (int i = 0; i < xn - 2; i += 2) {
-            for (int j = 0; j < yn - 2; j += 2) {
-                Matrix matrix1 = matrix.getSonOfMatrix(i, j, 2, 2);
+        for (int i = 0; i < xn - size; i += size) {
+            for (int j = 0; j < yn - size; j += size) {
+                Matrix matrix1 = matrix.getSonOfMatrix(i, j, size, size);
                 double maxNub = 0;
                 for (int t = 0; t < matrix1.getX(); t++) {
                     for (int k = 0; k < matrix1.getY(); k++) {
@@ -119,7 +134,7 @@ public class Convolution {
                     }
                 }
                 //迟化的最大值是 MAXNUB
-                myMatrix.setNub(i / 2, j / 2, maxNub);
+                myMatrix.setNub(i / size, j / size, maxNub);
             }
         }
         return myMatrix;

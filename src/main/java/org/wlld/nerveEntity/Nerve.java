@@ -16,14 +16,13 @@ import java.util.*;
  */
 public abstract class Nerve {
     private List<Nerve> son = new ArrayList<>();//轴突下一层的连接神经元
-    private List<Nerve> fathor = new ArrayList<>();//树突上一层的连接神经元
+    private List<Nerve> father = new ArrayList<>();//树突上一层的连接神经元
     protected Map<Integer, Double> dendrites = new HashMap<>();//上一层权重(需要取出)
     protected Map<Integer, Double> wg = new HashMap<>();//上一层权重与梯度的积
     private int id;//同级神经元编号,注意在同层编号中ID应有唯一性
     protected int upNub;//上一层神经元数量
     protected int downNub;//下一层神经元的数量
     protected Map<Long, List<Double>> features = new HashMap<>();
-    //static final Logger logger = LogManager.getLogger(Nerve.class);
     protected Matrix nerveMatrix = new Matrix(3, 3);//权重矩阵可获取及注入
     protected Map<Long, Matrix> matrixMap = new HashMap<>();//参数矩阵
     protected double threshold;//此神经元的阈值需要取出
@@ -35,9 +34,14 @@ public abstract class Nerve {
     protected double sigmaW;//对上一层权重与上一层梯度的积进行求和
     private int backNub = 0;//当前节点被反向传播的次数
     protected ActiveFunction activeFunction;
+    private boolean isAccurate = false;//是否保留精度
 
     public Map<Integer, Double> getDendrites() {
         return dendrites;
+    }
+
+    public void setAccurate(boolean accurate) {//设置是否保留精度
+        isAccurate = accurate;
     }
 
     public Matrix getNerveMatrix() {
@@ -62,13 +66,14 @@ public abstract class Nerve {
 
     protected Nerve(int id, int upNub, String name, int downNub,
                     double studyPoint, boolean init, ActiveFunction activeFunction
-            , boolean isDynamic) throws Exception {//该神经元在同层神经元中的编号
+            , boolean isDynamic, boolean isAccurate) throws Exception {//该神经元在同层神经元中的编号
         this.id = id;
         this.upNub = upNub;
         this.name = name;
         this.downNub = downNub;
         this.studyPoint = studyPoint;
         this.activeFunction = activeFunction;
+        this.isAccurate = isAccurate;
         initPower(init, isDynamic);//生成随机权重
 
     }
@@ -103,17 +108,31 @@ public abstract class Nerve {
             int y = yn / 3;//线性变换后矩阵的列数
             int nub = x * y;//个数
             Matrix myMatrix = new Matrix(x, y);//线性变化后的矩阵
-            for (int i = 0; i < xn - 3; i += 3) {
-                for (int j = 0; j < yn - 3; j += 3) {
-                    //取出矩阵分块 并相加
-                    if (isStudy) {
-                        powerMatrix = MatrixOperation.add(powerMatrix, matrix.getSonOfMatrix(i, j, 3, 3));
+            if (isAccurate) {
+                for (int i = 0; i < xn - 3; i += 3) {
+                    for (int j = 0; j < yn - 3; j += 3) {
+                        //取出矩阵分块 并相加
+                        if (isStudy) {
+                            powerMatrix = MatrixOperation.add(powerMatrix, matrix.getSonOfMatrix(i, j, 3, 3));
+                        }
+                        double dm = MatrixOperation.convolution(matrix, nerveMatrix, i, j, isAccurate);
+                        dm = ArithUtil.sub(ArithUtil.div(dm, 9), threshold);//减偏置项
+                        //设置输出矩阵 经过激活函数
+                        myMatrix.setNub(i / 3, j / 3, activeFunction.function(dm));
                     }
-                    double dm = MatrixOperation.convolution(matrix, nerveMatrix, i, j);
-                    //dm = ArithUtil.sub(ArithUtil.div(dm, 9), threshold);//减偏置项
-                    dm = dm / 9 - threshold;
-                    //设置输出矩阵 经过激活函数
-                    myMatrix.setNub(i / 3, j / 3, activeFunction.function(dm));
+                }
+            } else {
+                for (int i = 0; i < xn - 3; i += 3) {
+                    for (int j = 0; j < yn - 3; j += 3) {
+                        //取出矩阵分块 并相加
+                        if (isStudy) {
+                            powerMatrix = MatrixOperation.add(powerMatrix, matrix.getSonOfMatrix(i, j, 3, 3));
+                        }
+                        double dm = MatrixOperation.convolution(matrix, nerveMatrix, i, j, isAccurate);
+                        dm = dm / 9 - threshold;
+                        //设置输出矩阵 经过激活函数
+                        myMatrix.setNub(i / 3, j / 3, activeFunction.function(dm));
+                    }
                 }
             }
             //取平均值
@@ -138,17 +157,17 @@ public abstract class Nerve {
     }
 
     private void backSendMessage(long eventId) throws Exception {//反向传播
-        if (fathor.size() > 0) {
-            for (int i = 0; i < fathor.size(); i++) {
-                fathor.get(i).backGetMessage(wg.get(i + 1), eventId);
+        if (father.size() > 0) {
+            for (int i = 0; i < father.size(); i++) {
+                father.get(i).backGetMessage(wg.get(i + 1), eventId);
             }
         }
     }
 
     private void backMatrixMessage(double g, long eventId) throws Exception {//反向传播矩阵
-        if (fathor.size() > 0) {
-            for (int i = 0; i < fathor.size(); i++) {
-                fathor.get(i).backMatrix(g, eventId);
+        if (father.size() > 0) {
+            for (int i = 0; i < father.size(); i++) {
+                father.get(i).backMatrix(g, eventId);
             }
         }
     }
@@ -294,6 +313,6 @@ public abstract class Nerve {
     }
 
     public void connectFathor(List<Nerve> nerveList) {
-        fathor.addAll(nerveList);//连接上一层
+        father.addAll(nerveList);//连接上一层
     }
 }

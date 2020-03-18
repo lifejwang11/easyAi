@@ -5,23 +5,37 @@ import org.wlld.tools.ArithUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+/** 矩阵 **/
 public class Matrix {
     private double[][] matrix;//矩阵本体
     private int x;//矩阵的行数
     private int y;//矩阵的列数
-    private boolean isRowVector = false;
+    private boolean isRowVector = false;//是否是单行矩阵
     private boolean isVector = false;//是否是向量
-    private boolean isZero = false;//是否是零矩阵
+    private boolean isZero = false;//是否是单元素矩阵
 
+    /**
+     * 获取行数
+     * @return 获取行数
+     */
     public int getX() {//获取行数
         return x;
     }
 
+    /**
+     * 获取列数
+     * @return 获取列数
+     */
     public int getY() {//获取列数
         return y;
     }
 
-    public Matrix(int x, int y) {//初始化矩阵
+    /**
+     * 初始化矩阵
+     * @param x 行数
+     * @param y 列数
+     */
+    public Matrix(int x, int y) {
         matrix = new double[x][y];
         this.x = x;
         this.y = y;
@@ -37,23 +51,44 @@ public class Matrix {
         }
     }
 
+    /**
+     * 是否为单行
+     * @return true表示此矩阵为一个单行矩阵
+     */
     public boolean isRowVector() {
         return isRowVector;
     }
 
+    /**
+     * 是否是一个向量矩阵
+     * 单行和单列矩阵都是向量矩阵
+     * @return true表示此矩阵为一个向量矩阵
+     */
     public boolean isVector() {
         return isVector;
     }
 
+    /**
+     * 是否是一个单元素矩阵
+     * @return true表示是里面只有一个元素
+     */
     public boolean isZero() {
         return isZero;
     }
 
-    public void clear() {//清除数据
+    /** 清除矩阵数据 **/
+    public void clear() {
         matrix = new double[x][y];
     }
 
-    public Matrix(int x, int y, String matr) throws Exception {//初始化矩阵
+    /**
+     * 初始化矩阵
+     * @param x 行数
+     * @param y 列数
+     * @param matr 数据
+     * @throws Exception
+     */
+    public Matrix(int x, int y, String matr) throws Exception {
         matrix = new double[x][y];
         this.x = x;
         this.y = y;
@@ -178,6 +213,11 @@ public class Matrix {
         return element;
     }
 
+    /**
+     * 求矩阵的行列式 递归算法
+     * @return 计算后的值
+     * @throws Exception 如果矩阵不是一个方阵抛出异常
+     */
     public double getDet() throws Exception {//求矩阵的行列式
         if (x == y) {
             coordinateRoot = new ArrayList<>();
@@ -208,6 +248,11 @@ public class Matrix {
         return parity;
     }
 
+    /**
+     * 给矩阵设置数据
+     * @param messages 数据
+     * @throws Exception 给出的数据不正确时候会抛出异常
+     */
     public void setAll(String messages) throws Exception {//全设置矩阵
         String[] message = messages.split("#");
         if (x == message.length) {
@@ -229,7 +274,15 @@ public class Matrix {
         }
     }
 
-    public Matrix getSonOfMatrix(int x, int y, int xSize, int ySize) {//将矩阵分块
+    /**
+     * 将矩阵分块
+     * @param x 要分块的x坐标
+     * @param y 要分块的y坐标
+     * @param xSize 分块矩阵的宽度
+     * @param ySize 分块矩阵的长度
+     * @return 返回分块后的矩阵
+     */
+    public Matrix getSonOfMatrix(int x, int y, int xSize, int ySize) {
         Matrix myMatrix = new Matrix(xSize, ySize);
         int xr = 0;
         int yr = 0;
@@ -247,7 +300,13 @@ public class Matrix {
         return myMatrix;
     }
 
-    public Matrix getRow(int x) throws Exception {//获取行向量
+    /**
+     * 获取行向量
+     * @param x 你要指定的行数
+     * @return 返回一个一行的矩阵
+     * @throws Exception 超出矩阵范围抛出异常
+     */
+    public Matrix getRow(int x) throws Exception {
         Matrix myMatrix = new Matrix(1, y);
         for (int i = 0; i < y; i++) {
             myMatrix.setNub(0, i, matrix[x][i]);
@@ -255,6 +314,13 @@ public class Matrix {
         return myMatrix;
     }
 
+
+    /**
+     * 获取列向量
+     * @param y 要制定的列数
+     * @return 返回一个一列的矩阵
+     * @throws Exception 超出矩阵范围抛出异常
+     */
     public Matrix getColumn(int y) throws Exception {//获取列向量
         Matrix myMatrix = new Matrix(x, 1);
         for (int i = 0; i < x; i++) {
@@ -263,6 +329,10 @@ public class Matrix {
         return myMatrix;
     }
 
+    /**
+     * 返回一个矩阵字符串
+     * @return 返回一个矩阵字符串
+     */
     public String getString() {//矩阵输出字符串
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < x; i++) {
@@ -280,6 +350,10 @@ public class Matrix {
         return builder.toString();
     }
 
+    /**
+     * 返回一个带坐标的矩阵字符串
+     * @return 返回一个带坐标的矩阵字符串
+     */
     public String getPositionString() {//矩阵输出字符串
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < x; i++) {
@@ -297,7 +371,14 @@ public class Matrix {
         return builder.toString();
     }
 
-    public void setNub(int x, int y, double number) throws Exception {//给矩阵设置值
+    /**
+     * 给矩阵设置值
+     * @param x x坐标
+     * @param y y坐标
+     * @param number 要设置的值
+     * @throws Exception 超出矩阵范围抛出
+     */
+    public void setNub(int x, int y, double number) throws Exception {
         if (this.x >= x && this.y >= y) {
             matrix[x][y] = number;
         } else {
@@ -306,6 +387,13 @@ public class Matrix {
         }
     }
 
+    /**
+     * 取矩阵的数值
+     * @param x x坐标
+     * @param y y坐标
+     * @return 返回指定坐标的数值
+     * @throws Exception  超出矩阵范围抛出
+     */
     public double getNumber(int x, int y) throws Exception {//从矩阵中拿值
         if (this.x >= x && this.y >= y) {
             return matrix[x][y];

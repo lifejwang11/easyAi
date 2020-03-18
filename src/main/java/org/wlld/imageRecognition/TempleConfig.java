@@ -1,6 +1,8 @@
 package org.wlld.imageRecognition;
 
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
@@ -10,6 +12,7 @@ import org.wlld.imageRecognition.modelEntity.KBorder;
 import org.wlld.imageRecognition.modelEntity.LvqModel;
 import org.wlld.imageRecognition.modelEntity.MatrixModel;
 import org.wlld.nerveCenter.NerveManager;
+import org.wlld.nerveCenter.Normalization;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
@@ -23,11 +26,14 @@ import java.util.Map;
 public class TempleConfig {
     private NerveManager nerveManager;//神经网络管理器
     private NerveManager convolutionNerveManager;//卷积神经网络管理器
-    private double cutThreshold = 10;//切割阈值默认值
+    private NerveManager convolutionNerveManagerR;//R卷积神经网络管理器
+    private NerveManager convolutionNerveManagerG;//G卷积神经网络管理器
+    private NerveManager convolutionNerveManagerB;//B卷积神经网络管理器
+    private boolean isAccurate = false;//是否保留精度
     private int row = 5;//行的最小比例
     private int column = 3;//列的最小比例
     private int deep = 2;//默认深度
-    private int classificationNub = 1;//分类的数量
+    private int classificationNub = 2;//分类的数量
     private int studyPattern;//学习模式
     private boolean isHavePosition = false;//是否需要锁定物体位置
     private LVQ lvq;//模型需要返回,精准模式下的原型聚类
@@ -35,16 +41,108 @@ public class TempleConfig {
     private double th = 0.6;//标准阈值
     private boolean boxReady = false;//边框已经学习完毕
     private double iouTh = 0.5;//IOU阈值
-    private int lvqNub = 50;//lvq循环次数，默认50
-    //边框聚类集合 模型需要返回
-    private Map<Integer, KClustering> kClusteringMap = new HashMap<>();
+    private int lvqNub = 10;//lvq循环次数，默认30
+    private VectorK vectorK;
+    private boolean isThreeChannel;//是否启用三通道
+    private int classifier = Classifier.VAvg;//默认分类类别使用的是向量均值分类
+    private Normalization normalization = new Normalization();//统一归一化
+    private double avg = 0;//覆盖均值
+    private int sensoryNerveNub;//输入神经元个数
+    private boolean isShowLog = false;
 
-    public Map<Integer, KClustering> getkClusteringMap() {
-        return kClusteringMap;
+    public boolean isAccurate() {
+        return isAccurate;
     }
 
-    public int getLvqNub() {
-        return lvqNub;
+    public void setAccurate(boolean accurate) {//设置是否保留精度
+        isAccurate = accurate;
+    }
+
+    public double getAvg() {
+        return avg;
+    }
+
+    public void setAvg(double avg) {
+        this.avg = avg;
+    }
+
+    public Normalization getNormalization() {
+        return normalization;
+    }
+
+    //边框聚类集合 模型需要返回
+    public TempleConfig(boolean isThreeChannel, boolean isAccurate) {
+        this.isThreeChannel = isThreeChannel;
+        this.isAccurate = isAccurate;
+    }
+
+    public int getClassifier() {
+        return classifier;
+    }
+
+    public void setClassifier(int classifier) {//设置最后使用的分类器
+        this.classifier = classifier;
+    }
+
+    public VectorK getVectorK() {
+        return vectorK;
+    }
+
+    public NerveManager getConvolutionNerveManagerR() {
+        return convolutionNerveManagerR;
+    }
+
+    public NerveManager getConvolutionNerveManagerG() {
+        return convolutionNerveManagerG;
+    }
+
+    public NerveManager getConvolutionNerveManagerB() {
+        return convolutionNerveManagerB;
+    }
+
+    public void finishStudy() throws Exception {//结束
+        switch (classifier) {
+            case Classifier.LVQ:
+                lvq.start();
+                break;
+            case Classifier.VAvg:
+                vectorK.study();
+                break;
+        }
+        if (isHavePosition) {
+            for (Map.Entry<Integer, KClustering> entry : kClusteringMap.entrySet()) {
+                entry.getValue().start();
+            }
+            boxReady = true;
+        }
+
+    }
+
+    public void isShowLog(boolean isShowLog) {//是否打印学习数据
+        this.isShowLog = isShowLog;
+    }
+
+    public void startLvq() throws Exception {
+        switch (classifier) {
+            case Classifier.LVQ:
+                lvq.start();
+                break;
+            case Classifier.VAvg:
+                vectorK.study();
+                break;
+        }
+        if (isHavePosition) {
+            for (Map.Entry<Integer, KClustering> entry : kClusteringMap.entrySet()) {
+                entry.getValue().start();
+            }
+            boxReady = true;
+        }
+    }
+
+    private Map<Integer, KClustering> kClusteringMap = new HashMap<>();
+
+    public Map<Integer, KClustering> getKClusteringMap() {
+        return kClusteringMap;
     }
 
     public void setLvqNub(int lvqNub) {
@@ -79,24 +177,8 @@ public class TempleConfig {
         this.frame = frame;
     }
 
-    public void startLvq() throws Exception {//进行量化
-        if (studyPattern == StudyPattern.Accuracy_Pattern) {
-            lvq.start();
-        }
-    }
-
     public LVQ getLvq() {
         return lvq;
-    }
-
-    public void boxStudy() throws Exception {//边框回归 学习结束之后最后进行调用
-        if (isHavePosition) {
-            for (Map.Entry<Integer, KClustering> entry : kClusteringMap.entrySet()) {
-                entry.getValue().start();
-            }
-            boxReady = true;
-        }
-
     }
 
     public NerveManager getNerveManager() {
@@ -139,6 +221,9 @@ public class TempleConfig {
             case StudyPattern.Accuracy_Pattern://精准学习模式
                 initConvolutionVision(initPower, width, height);
                 break;
+            case StudyPattern.Cover_Pattern://覆盖学习模式
+                initNerveManager(initPower, 9, deep);
+                break;
         }
     }
 
@@ -158,37 +243,64 @@ public class TempleConfig {
 
     private void initNerveManager(boolean initPower, int sensoryNerveNub
             , int deep) throws Exception {
-        nerveManager = new NerveManager(sensoryNerveNub, 6,
-                classificationNub, deep, new Sigmod(), false);
-        nerveManager.init(initPower, false);
+        nerveManager = new NerveManager(sensoryNerveNub, 9,
+                classificationNub, deep, new Sigmod(), false, isAccurate);
+        nerveManager.init(initPower, false, isShowLog);
     }
 
-    private void initConvolutionVision(boolean initPower, int width, int height) throws Exception {
+    private void initConvolutionVision(boolean initPower, int width, int height) throws Exception {//精准模式
         int deep = 0;
-        lvq = new LVQ(classificationNub + 1, lvqNub);
         Map<Integer, Matrix> matrixMap = new HashMap<>();//主键与期望矩阵的映射
         while (width > 5 && height > 5) {
             width = width / 3;
             height = height / 3;
             deep++;
         }
+        switch (classifier) {
+            case Classifier.DNN:
+                int nub = height * width;
+                if (isThreeChannel) {
+                    nub = nub * 3;
+                }
+                initNerveManager(true, nub, this.deep);
+                break;
+            case Classifier.LVQ:
+                lvq = new LVQ(classificationNub, lvqNub);
+                break;
+            case Classifier.VAvg:
+                sensoryNerveNub = height * width;
+                vectorK = new VectorK(sensoryNerveNub);
+                break;
+        }
         //加载各识别分类的期望矩阵
         matrixMap.put(0, new Matrix(height, width));
-        double nub = 10;//每个分类期望参数的跨度
-        for (int k = 0; k < classificationNub; k++) {
+        double nub = 5;//每个分类期望参数的跨度
+        for (int k = 1; k <= classificationNub; k++) {
             Matrix matrix = new Matrix(height, width);//初始化期望矩阵
-            double t = (k + 1) * nub;//期望矩阵的分类参数数值
+            double t = k * nub;//期望矩阵的分类参数数值
             for (int i = 0; i < height; i++) {//给期望矩阵注入期望参数
-                for (int j = 0; j < width - 1; j++) {
+                for (int j = 0; j < width; j++) {
                     matrix.setNub(i, j, t);
                 }
             }
-            matrixMap.put(k + 1, matrix);
+            matrixMap.put(k, matrix);
         }
-        convolutionNerveManager = new NerveManager(1, 1,
-                1, deep - 1, new ReLu(), true);
+        if (!isThreeChannel) {
+            convolutionNerveManager = initNerveManager(matrixMap, initPower, deep);
+        } else {//启用三通道
+            convolutionNerveManagerR = initNerveManager(matrixMap, initPower, deep);
+            convolutionNerveManagerG = initNerveManager(matrixMap, initPower, deep);
+            convolutionNerveManagerB = initNerveManager(matrixMap, initPower, deep);
+        }
+    }
+
+    private NerveManager initNerveManager(Map<Integer, Matrix> matrixMap, boolean initPower, int deep) throws Exception {
+        //初始化卷积神经网络
+        NerveManager convolutionNerveManager = new NerveManager(1, 1,
+                1, deep - 1, new ReLu(), true, isAccurate);
         convolutionNerveManager.setMatrixMap(matrixMap);//给卷积网络管理器注入期望矩阵
-        convolutionNerveManager.init(initPower, true);
+        convolutionNerveManager.init(initPower, true, isShowLog);
+        return convolutionNerveManager;
     }
 
     private List<MatrixModel> getLvqModel(MatrixBody[] matrixBodies) throws Exception {
@@ -197,21 +309,12 @@ public class TempleConfig {
             MatrixBody matrixBody = matrixBodies[i];
             Matrix matrix = matrixBody.getMatrix();
             MatrixModel matrixModel = new MatrixModel();
-            List<Double> rowVector = rowVectorToList(matrix);
+            List<Double> rowVector = MatrixOperation.rowVectorToList(matrix);
             matrixModel.setId(matrixBody.getId());
             matrixModel.setRowVector(rowVector);
             matrixModelList.add(matrixModel);
         }
         return matrixModelList;
-    }
-
-    //行向量转LIST
-    private List<Double> rowVectorToList(Matrix matrix) throws Exception {
-        List<Double> list = new ArrayList<>();
-        for (int j = 0; j < matrix.getY(); j++) {
-            list.add(matrix.getNumber(0, j));
-        }
-        return list;
     }
 
     private Map<Integer, KBorder> kToBody() throws Exception {
@@ -232,18 +335,16 @@ public class TempleConfig {
                 for (Map.Entry<Integer, Box> entryBox : positionMap.entrySet()) {
                     Box box = entryBox.getValue();
                     BoxList boxList = new BoxList();
-                    List<Double> furList = rowVectorToList(box.getMatrix());
-                    List<Double> borderList = rowVectorToList(box.getMatrixPosition());
+                    List<Double> furList = MatrixOperation.rowVectorToList(box.getMatrix());
+                    List<Double> borderList = MatrixOperation.rowVectorToList(box.getMatrixPosition());
                     boxList.setList(furList);
                     boxList.setPositionList(borderList);
                     myPosition.put(entryBox.getKey(), boxList);
                 }
                 for (int i = 0; i < matrices.length; i++) {
-                    lists.add(rowVectorToList(matrices[i]));
+                    lists.add(MatrixOperation.rowVectorToList(matrices[i]));
                 }
 
-            } else {
-                throw new Exception("not ready");
             }
         }
 
@@ -257,20 +358,39 @@ public class TempleConfig {
             modelParameter.setDymNerveStudies(modelParameter1.getDymNerveStudies());
             modelParameter.setDymOutNerveStudy(modelParameter1.getDymOutNerveStudy());
             //获取LVQ模型
-            if (lvq.isReady()) {
-                LvqModel lvqModel = new LvqModel();
-                lvqModel.setLength(lvq.getLength());
-                lvqModel.setTypeNub(lvq.getTypeNub());
-                lvqModel.setMatrixModelList(getLvqModel(lvq.getModel()));
-                modelParameter.setLvqModel(lvqModel);
+            switch (classifier) {
+                case Classifier.LVQ:
+                    if (lvq.isReady()) {
+                        LvqModel lvqModel = new LvqModel();
+                        lvqModel.setLength(lvq.getLength());
+                        lvqModel.setTypeNub(lvq.getTypeNub());
+                        lvqModel.setMatrixModelList(getLvqModel(lvq.getModel()));
+                        modelParameter.setLvqModel(lvqModel);
+                    }
+                    break;
+                case Classifier.VAvg:
+                    if (vectorK != null) {
+                        Map<Integer, List<Double>> map = vectorK.getKMatrix();
+                        modelParameter.setMatrixK(map);
+                    }
+                    break;
+                case Classifier.DNN:
+                    if (normalization != null) {
+                        modelParameter.setDnnAvg(normalization.getAvg());
+                    }
+                    ModelParameter modelParameter2 = nerveManager.getModelParameter();
+                    modelParameter.setDepthNerves(modelParameter2.getDepthNerves());
+                    modelParameter.setOutNerves(modelParameter2.getOutNerves());
+                    break;
             }
 
-        } else if (studyPattern == StudyPattern.Speed_Pattern) {
+        } else if (studyPattern == StudyPattern.Cover_Pattern) {
             ModelParameter modelParameter1 = nerveManager.getModelParameter();
             modelParameter.setDepthNerves(modelParameter1.getDepthNerves());
             modelParameter.setOutNerves(modelParameter1.getOutNerves());
+            modelParameter1.setAvg(avg);
         }
-        if (isHavePosition) {//存在边框学习模型参数
+        if (isHavePosition && kClusteringMap != null && kClusteringMap.size() > 0) {//存在边框学习模型参数
             Map<Integer, KBorder> kBorderMap = kToBody();
             modelParameter.setFrame(frame);
             modelParameter.setBorderMap(kBorderMap);
@@ -304,44 +424,54 @@ public class TempleConfig {
         return column;
     }
 
-    //list转行向量
-    private Matrix listToRowVector(List<Double> list) throws Exception {
-        Matrix matrix = new Matrix(1, list.size());
-        for (int i = 0; i < list.size(); i++) {
-            matrix.setNub(0, i, list.get(i));
-        }
-        return matrix;
-    }
-
     //注入模型参数
     public void insertModel(ModelParameter modelParameter) throws Exception {
         if (studyPattern == StudyPattern.Accuracy_Pattern) {
             convolutionNerveManager.insertModelParameter(modelParameter);
             //LVQ模型参数注入
-            LvqModel lvqModel = modelParameter.getLvqModel();
-            if (lvqModel != null) {
-                int length = lvqModel.getLength();
-                int typeNub = lvqModel.getTypeNub();
-                List<MatrixModel> matrixModels = lvqModel.getMatrixModelList();
-                if (length > 0 && typeNub > 0 && matrixModels != null &&
-                        matrixModels.size() > 0) {
-                    MatrixBody[] model = new MatrixBody[matrixModels.size()];
-                    for (int i = 0; i < model.length; i++) {
-                        MatrixModel matrixModel = matrixModels.get(i);
-                        MatrixBody matrixBody = new MatrixBody();
-                        matrixBody.setId(matrixModel.getId());
-                        matrixBody.setMatrix(listToRowVector(matrixModel.getRowVector()));
-                        model[i] = matrixBody;
+            switch (classifier) {
+                case Classifier.LVQ:
+                    LvqModel lvqModel = modelParameter.getLvqModel();
+                    if (lvqModel != null) {
+                        int length = lvqModel.getLength();
+                        int typeNub = lvqModel.getTypeNub();
+                        List<MatrixModel> matrixModels = lvqModel.getMatrixModelList();
+                        if (length > 0 && typeNub > 0 && matrixModels != null &&
+                                matrixModels.size() > 0) {
+                            MatrixBody[] model = new MatrixBody[matrixModels.size()];
+                            for (int i = 0; i < model.length; i++) {
+                                MatrixModel matrixModel = matrixModels.get(i);
+                                MatrixBody matrixBody = new MatrixBody();
+                                matrixBody.setId(matrixModel.getId());
+                                matrixBody.setMatrix(MatrixOperation.listToRowVector(matrixModel.getRowVector()));
+                                model[i] = matrixBody;
+                            }
+                            lvq.setLength(length);
+                            lvq.setTypeNub(typeNub);
+                            lvq.setReady(true);
+                            lvq.setModel(model);
+                        }
                     }
-                    lvq.setLength(length);
-                    lvq.setTypeNub(typeNub);
-                    lvq.setReady(true);
-                    lvq.setModel(model);
-                }
-
+                    break;
+                case Classifier.VAvg:
+                    vectorK = new VectorK(sensoryNerveNub);
+                    vectorK.insertKMatrix(modelParameter.getMatrixK());
+                    break;
+                case Classifier.DNN:
+//                    ModelParameter modelParameter1 = new ModelParameter();
+//                    modelParameter1.setDepthNerves(modelParameter.getDepthNerves());
+//                    modelParameter1.setOutNerves(modelParameter.getOutNerves());
+                    nerveManager.insertModelParameter(modelParameter);
+                    normalization = new Normalization();
+                    normalization.setAvg(modelParameter.getDnnAvg());
+                    break;
             }
+
         } else if (studyPattern == StudyPattern.Speed_Pattern) {
             nerveManager.insertModelParameter(modelParameter);
+        } else if (studyPattern == StudyPattern.Cover_Pattern) {
+            nerveManager.insertModelParameter(modelParameter);
+            avg = modelParameter.getAvg();
         }
         if (isHavePosition) {
             if (modelParameter.getFrame() != null) {
@@ -362,7 +492,7 @@ public class TempleConfig {
                         Matrix[] matrices = new Matrix[lists.size()];
                         Map<Integer, Box> boxMap = kClustering.getPositionMap();
                         for (int i = 0; i < lists.size(); i++) {
-                            Matrix matrix = listToRowVector(lists.get(i));
+                            Matrix matrix = MatrixOperation.listToRowVector(lists.get(i));
                             matrices[i] = matrix;
                         }
                         kClustering.setMatrices(matrices);
@@ -371,35 +501,18 @@ public class TempleConfig {
                         for (Map.Entry<Integer, BoxList> boxEntry : boxListMap.entrySet()) {
                             Box box = new Box();
                             BoxList boxList = boxEntry.getValue();
-                            box.setMatrix(listToRowVector(boxList.getList()));
-                            box.setMatrixPosition(listToRowVector(boxList.getPositionList()));
+                            box.setMatrix(MatrixOperation.listToRowVector(boxList.getList()));
+                            box.setMatrixPosition(MatrixOperation.listToRowVector(boxList.getPositionList()));
                             boxMap.put(boxEntry.getKey(), box);
                         }
                     }
-
                 }
             }
         }
     }
 
-    public void setCutThreshold(double cutThreshold) {
-        this.cutThreshold = cutThreshold;
-    }
-
-    public int getDeep() {
-        return deep;
-    }
-
     public void setDeep(int deep) {
         this.deep = deep;
-    }
-
-    public int getClassificationNub() {
-        return classificationNub;
-    }
-
-    public void setClassificationNub(int classificationNub) {
-        this.classificationNub = classificationNub;
     }
 
 }

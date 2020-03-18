@@ -1,15 +1,11 @@
 package org.wlld;
 
-import org.wlld.naturalLanguage.IOConst;
 import org.wlld.naturalLanguage.Talk;
 import org.wlld.naturalLanguage.TemplateReader;
 import org.wlld.randomForest.DataTable;
 import org.wlld.randomForest.RandomForest;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author lidapeng
@@ -18,7 +14,21 @@ import java.util.Set;
  */
 public class LangTest {
     public static void main(String[] args) throws Exception {
-        test1();
+        List<Double> listAll = new ArrayList<>();
+        List<Double> list = new ArrayList<>();
+        List<Double> list2 = new ArrayList<>();
+        List<Double> list3 = new ArrayList<>();
+        list.add(1.0);
+        list.add(2.0);
+        list2.add(3.0);
+        list2.add(4.0);
+        list3.add(5.0);
+        list3.add(6.0);
+        listAll.addAll(list);
+        listAll.addAll(list2);
+        listAll.addAll(list3);
+        System.out.println(listAll);
+        //test1();
     }
 
     public static void test1() throws Exception {

@@ -17,8 +17,8 @@ public class HiddenNerve extends Nerve {
     private int depth;//所处深度
 
     public HiddenNerve(int id, int depth, int upNub, int downNub, double studyPoint,
-                       boolean init, ActiveFunction activeFunction, boolean isDynamic) throws Exception {//隐层神经元
-        super(id, upNub, "HiddenNerve", downNub, studyPoint, init, activeFunction, isDynamic);
+                       boolean init, ActiveFunction activeFunction, boolean isDynamic, boolean isAccurate) throws Exception {//隐层神经元
+        super(id, upNub, "HiddenNerve", downNub, studyPoint, init, activeFunction, isDynamic, isAccurate);
         this.depth = depth;
     }
 

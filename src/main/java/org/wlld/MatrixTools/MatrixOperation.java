@@ -2,6 +2,9 @@ package org.wlld.MatrixTools;
 
 import org.wlld.tools.ArithUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MatrixOperation {
 
     private MatrixOperation() {
@@ -241,17 +244,27 @@ public class MatrixOperation {
         return myMatrix;
     }
 
-    public static double convolution(Matrix matrix, Matrix kernel, int x, int y) throws Exception {//计算卷积
+    public static double convolution(Matrix matrix, Matrix kernel, int x, int y, boolean isAccurate) throws Exception {//计算卷积
         double allNub = 0;
         int xr = 0;
         int yr = 0;
         int kxMax = kernel.getX();
         int kyMax = kernel.getY();
-        for (int i = 0; i < kxMax; i++) {
-            xr = i + x;
-            for (int j = 0; j < kyMax; j++) {
-                yr = j + y;
-                allNub = matrix.getNumber(xr, yr) * kernel.getNumber(i, j) + allNub;
+        if (isAccurate) {
+            for (int i = 0; i < kxMax; i++) {
+                xr = i + x;
+                for (int j = 0; j < kyMax; j++) {
+                    yr = j + y;
+                    allNub = ArithUtil.add(ArithUtil.mul(matrix.getNumber(xr, yr), kernel.getNumber(i, j)), allNub);
+                }
+            }
+        } else {
+            for (int i = 0; i < kxMax; i++) {
+                xr = i + x;
+                for (int j = 0; j < kyMax; j++) {
+                    yr = j + y;
+                    allNub = matrix.getNumber(xr, yr) * kernel.getNumber(i, j) + allNub;
+                }
             }
         }
         return allNub;
@@ -369,5 +382,23 @@ public class MatrixOperation {
                 matrix.setNub(i, j, ArithUtil.mul(matrix.getNumber(i, j), nub));
             }
         }
+    }
+
+    //行向量转LIST
+    public static List<Double> rowVectorToList(Matrix matrix) throws Exception {
+        List<Double> list = new ArrayList<>();
+        for (int j = 0; j < matrix.getY(); j++) {
+            list.add(matrix.getNumber(0, j));
+        }
+        return list;
+    }
+
+    //list转行向量
+    public static Matrix listToRowVector(List<Double> list) throws Exception {
+        Matrix matrix = new Matrix(1, list.size());
+        for (int i = 0; i < list.size(); i++) {
+            matrix.setNub(0, i, list.get(i));
+        }
+        return matrix;
     }
 }

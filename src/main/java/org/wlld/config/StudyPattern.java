@@ -8,4 +8,6 @@ package org.wlld.config;
 public class StudyPattern {
     public static final int Speed_Pattern = 1;//速度学习模式
     public static final int Accuracy_Pattern = 2;//精准学习模式
+    public static final int Cover_Pattern = 3;//覆盖率模式
+
 }

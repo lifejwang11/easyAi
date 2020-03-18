@@ -19,7 +19,7 @@ public class LVQ {
     private double studyPoint = 0.1;//量化学习率
     private int length;//向量长度(需要返回)
     private boolean isReady = false;
-    private int lvqNub = 50;
+    private int lvqNub;
 
     public void setTypeNub(int typeNub) {
         this.typeNub = typeNub;
@@ -86,6 +86,8 @@ public class LVQ {
             long type = matrixBody.getId();//类别
             double distEnd = 0;
             int id = 0;
+            double dis0 = 0;
+            double dis1 = 1;
             for (int i = 0; i < typeNub; i++) {
                 MatrixBody modelBody = model[i];
                 Matrix modelMatrix = modelBody.getMatrix();
@@ -95,10 +97,16 @@ public class LVQ {
                     id = modelBody.getId();
                     distEnd = dist;
                 }
+                if (i == 0) {
+                    dis0 = dist;
+                } else {
+                    dis1 = dist;
+                }
             }
             MatrixBody modelBody = model[id];
             Matrix modelMatrix = modelBody.getMatrix();
             boolean isRight = id == type;
+            System.out.println("type==" + type + ",dis0==" + dis0 + ",dis1==" + dis1);
             Matrix matrix1 = op(matrix, modelMatrix, isRight);
             modelBody.setMatrix(matrix1);
         }

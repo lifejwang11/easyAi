@@ -111,12 +111,14 @@ public class KClustering {
     }
 
     private Matrix averagePosition(List<Box> boxes) throws Exception {
-        double nub = ArithUtil.div(1, boxes.size());
         Matrix matrix = new Matrix(1, 4);
-        for (Box box : boxes) {
-            matrix = MatrixOperation.add(matrix, box.getMatrixPosition());
+        if (boxes.size() > 0) {
+            double nub = ArithUtil.div(1, boxes.size());
+            for (Box box : boxes) {
+                matrix = MatrixOperation.add(matrix, box.getMatrixPosition());
+            }
+            MatrixOperation.mathMul(matrix, nub);
         }
-        MatrixOperation.mathMul(matrix, nub);
         return matrix;
     }
 
@@ -140,12 +142,14 @@ public class KClustering {
     }
 
     private Matrix average(List<Box> matrixList) throws Exception {//进行矩阵均值计算
-        double nub = ArithUtil.div(1, matrixList.size());
         Matrix matrix = new Matrix(1, length);
-        for (Box matrixBody1 : matrixList) {
-            matrix = MatrixOperation.add(matrix, matrixBody1.getMatrix());
+        if (matrixList.size() > 0) {
+            double nub = ArithUtil.div(1, matrixList.size());
+            for (Box matrixBody1 : matrixList) {
+                matrix = MatrixOperation.add(matrix, matrixBody1.getMatrix());
+            }
+            MatrixOperation.mathMul(matrix, nub);
         }
-        MatrixOperation.mathMul(matrix, nub);
         return matrix;
     }
 
@@ -154,9 +158,9 @@ public class KClustering {
         if (matrixList.size() > 1) {
             Random random = new Random();
             for (int i = 0; i < matrices.length; i++) {//初始化均值向量
-                //int index = random.nextInt(matrixList.size());
+                int index = random.nextInt(matrixList.size());
                 //要进行深度克隆
-                matrices[i] = matrixList.get(i).getMatrix();
+                matrices[i] = matrixList.get(index).getMatrix();
             }
             //进行两者的比较
             boolean isEqual = false;
