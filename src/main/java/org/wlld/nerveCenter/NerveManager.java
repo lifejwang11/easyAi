@@ -30,7 +30,7 @@ public class NerveManager {
     private Map<Integer, Matrix> matrixMap = new HashMap<>();//主键与期望矩阵的映射
     private boolean isDynamic;//是否是动态神经网络
     private List<Double> studyList = new ArrayList<>();
-    private boolean isAccurate = false;//是否保留精度
+    private boolean isAccurate;//是否保留精度
 
     public List<Double> getStudyList() {//查看每一次的学习率
         return studyList;
@@ -259,7 +259,7 @@ public class NerveManager {
      * @param isMatrix  参数是否是一个矩阵
      * @throws Exception
      */
-    public void init(boolean initPower, boolean isMatrix) throws Exception {//进行神经网络的初始化构建
+    public void init(boolean initPower, boolean isMatrix, boolean isShowLog) throws Exception {//进行神经网络的初始化构建
         this.initPower = initPower;
         initDepthNerve(isMatrix);//初始化深度隐层神经元
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
@@ -267,7 +267,8 @@ public class NerveManager {
         List<Nerve> lastNeveList = depthNerves.get(depthNerves.size() - 1);
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
-            OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower, activeFunction, isMatrix, isAccurate);
+            OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
+                    activeFunction, isMatrix, isAccurate, isShowLog);
             if (isMatrix) {//是卷积层神经网络
                 outNerve.setMatrixMap(matrixMap);
             }

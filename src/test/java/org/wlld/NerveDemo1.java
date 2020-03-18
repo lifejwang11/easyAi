@@ -33,7 +33,7 @@ public class NerveDemo1 {
          * @param isDynamic 是否是动态神经元
          */
         NerveManager nerveManager = new NerveManager(2, 6, 1, 4, new Sigmod(), false, true);
-        nerveManager.init(true, false);
+        nerveManager.init(true, false, false);
 
 
         //创建训练

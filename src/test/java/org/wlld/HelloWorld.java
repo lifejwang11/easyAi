@@ -125,8 +125,9 @@ public class HelloWorld {
 //        frame.setLengthWidth(640);
 //        templeConfig.setFrame(frame);
         templeConfig.setClassifier(Classifier.DNN);
+        //templeConfig.isShowLog(true);
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 2);
-//        ModelParameter modelParameter2 = JSON.parseObject(ModelData.DATA, ModelParameter.class);
+//        ModelParameter modelParameter2 = JSON.parseObject(ModelData.DATA2, ModelParameter.class);
 //        templeConfig.insertModel(modelParameter2);
         Operation operation = new Operation(templeConfig);
         //a b c d 物品  e是背景
@@ -135,9 +136,9 @@ public class HelloWorld {
             for (int i = 1; i < 1900; i++) {//一阶段
                 System.out.println("study1===================" + i);
                 //读取本地URL地址图片,并转化成矩阵
-                Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
+                Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
                 //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
-                Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
+                Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
                 //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
                 //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
                 //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
@@ -149,8 +150,7 @@ public class HelloWorld {
                 //operation.learning(d, 4, false);
             }
         }
-//        ModelParameter modelParameter = JSON.parseObject(ModelData.DATA8, ModelParameter.class);
-//        templeConfig.insertModel(modelParameter);
+
         //二阶段
         for (int i = 1; i < 1900; i++) {
             System.out.println("avg==" + i);
@@ -194,8 +194,8 @@ public class HelloWorld {
 //        TempleConfig templeConfig2 = new TempleConfig(false);
 //        templeConfig2.init(StudyPattern.Accuracy_Pattern, true, 1000, 1000, 2);
 //        templeConfig2.insertModel(modelParameter2);
-//
-//        Operation operation2 = new Operation(templeConfig2);
+
+        // Operation operation2 = new Operation(templeConfig2);
         int wrong = 0;
         int allNub = 0;
         for (int i = 1900; i <= 2000; i++) {
@@ -211,6 +211,7 @@ public class HelloWorld {
             int cn = operation.toSee(c);
             if (an != 1) {
                 wrong++;
+            } else {
             }
             if (cn != 2) {
                 wrong++;

@@ -26,9 +26,9 @@ import java.util.Map;
 public class TempleConfig {
     private NerveManager nerveManager;//神经网络管理器
     private NerveManager convolutionNerveManager;//卷积神经网络管理器
-    private NerveManager convolutionNerveManagerR;//卷积神经网络管理器
-    private NerveManager convolutionNerveManagerG;//卷积神经网络管理器
-    private NerveManager convolutionNerveManagerB;//卷积神经网络管理器
+    private NerveManager convolutionNerveManagerR;//R卷积神经网络管理器
+    private NerveManager convolutionNerveManagerG;//G卷积神经网络管理器
+    private NerveManager convolutionNerveManagerB;//B卷积神经网络管理器
     private boolean isAccurate = false;//是否保留精度
     private int row = 5;//行的最小比例
     private int column = 3;//列的最小比例
@@ -48,6 +48,7 @@ public class TempleConfig {
     private Normalization normalization = new Normalization();//统一归一化
     private double avg = 0;//覆盖均值
     private int sensoryNerveNub;//输入神经元个数
+    private boolean isShowLog = false;
 
     public boolean isAccurate() {
         return isAccurate;
@@ -115,6 +116,27 @@ public class TempleConfig {
             boxReady = true;
         }
 
+    }
+
+    public void isShowLog(boolean isShowLog) {//是否打印学习数据
+        this.isShowLog = isShowLog;
+    }
+
+    public void startLvq() throws Exception {
+        switch (classifier) {
+            case Classifier.LVQ:
+                lvq.start();
+                break;
+            case Classifier.VAvg:
+                vectorK.study();
+                break;
+        }
+        if (isHavePosition) {
+            for (Map.Entry<Integer, KClustering> entry : kClusteringMap.entrySet()) {
+                entry.getValue().start();
+            }
+            boxReady = true;
+        }
     }
 
     private Map<Integer, KClustering> kClusteringMap = new HashMap<>();
@@ -223,7 +245,7 @@ public class TempleConfig {
             , int deep) throws Exception {
         nerveManager = new NerveManager(sensoryNerveNub, 9,
                 classificationNub, deep, new Sigmod(), false, isAccurate);
-        nerveManager.init(initPower, false);
+        nerveManager.init(initPower, false, isShowLog);
     }
 
     private void initConvolutionVision(boolean initPower, int width, int height) throws Exception {//精准模式
@@ -277,7 +299,7 @@ public class TempleConfig {
         NerveManager convolutionNerveManager = new NerveManager(1, 1,
                 1, deep - 1, new ReLu(), true, isAccurate);
         convolutionNerveManager.setMatrixMap(matrixMap);//给卷积网络管理器注入期望矩阵
-        convolutionNerveManager.init(initPower, true);
+        convolutionNerveManager.init(initPower, true, isShowLog);
         return convolutionNerveManager;
     }
 

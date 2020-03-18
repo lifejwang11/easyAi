@@ -19,10 +19,13 @@ import java.util.Map;
  */
 public class OutNerve extends Nerve {
     private Map<Integer, Matrix> matrixMapE;//主键与期望矩阵的映射
+    private boolean isShowLog;
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
-                    ActiveFunction activeFunction, boolean isDynamic, boolean isAccurate) throws Exception {
+                    ActiveFunction activeFunction, boolean isDynamic, boolean isAccurate
+            , boolean isShowLog) throws Exception {
         super(id, upNub, "OutNerve", downNub, studyPoint, init, activeFunction, isDynamic, isAccurate);
+        this.isShowLog = isShowLog;
     }
 
 
@@ -45,7 +48,9 @@ public class OutNerve extends Nerve {
                 } else {
                     this.E = 0;
                 }
-                System.out.println("E===" + this.E + ",out==" + out + ",nerveId==" + getId());
+                if (isShowLog) {
+                    System.out.println("E==" + this.E + ",out==" + out + ",nerveId==" + getId());
+                }
                 gradient = outGradient();//当前梯度变化
                 //调整权重 修改阈值 并进行反向传播
                 updatePower(eventId);
@@ -66,8 +71,10 @@ public class OutNerve extends Nerve {
         Matrix myMatrix = dynamicNerve(matrix, eventId, isKernelStudy);
         if (isKernelStudy) {//回传
             Matrix matrix1 = matrixMapE.get(E);
-            System.out.println("E================" + E);
-            System.out.println(myMatrix.getString());
+            if (isShowLog) {
+                System.out.println("E================" + E);
+                System.out.println(myMatrix.getString());
+            }
             if (matrix1.getX() <= myMatrix.getX() && matrix1.getY() <= myMatrix.getY()) {
                 double g = getGradient(myMatrix, matrix1);
                 backMatrix(g, eventId);
