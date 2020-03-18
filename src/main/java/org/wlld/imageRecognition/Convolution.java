@@ -82,7 +82,7 @@ public class Convolution {
         }
         for (int i = 0; i < x; i++) {//遍历行
             for (int j = 0; j < y; j++) {//遍历每行的列
-                double dm = MatrixOperation.convolution(matrix, kernel, i, j);
+                double dm = MatrixOperation.convolution(matrix, kernel, i, j, false);
                 if (dm > 0) {//存在边缘
                     if (isFirst && border != null) {
                         border.setPosition(i, j);
@@ -106,7 +106,7 @@ public class Convolution {
         Matrix myMatrix = new Matrix(x, y);//最终合成矩阵
         for (int i = 0; i < x; i++) {//遍历行
             for (int j = 0; j < y; j++) {//遍历每行的列
-                double dm = MatrixOperation.convolution(matrix, kernel, i, j);
+                double dm = MatrixOperation.convolution(matrix, kernel, i, j, false);
                 if (dm > 0) {//存在边缘
                     myMatrix.setNub(i, j, dm);
                 }

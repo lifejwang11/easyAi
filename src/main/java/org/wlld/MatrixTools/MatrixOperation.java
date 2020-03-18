@@ -244,18 +244,27 @@ public class MatrixOperation {
         return myMatrix;
     }
 
-    public static double convolution(Matrix matrix, Matrix kernel, int x, int y) throws Exception {//计算卷积
+    public static double convolution(Matrix matrix, Matrix kernel, int x, int y, boolean isAccurate) throws Exception {//计算卷积
         double allNub = 0;
         int xr = 0;
         int yr = 0;
         int kxMax = kernel.getX();
         int kyMax = kernel.getY();
-        for (int i = 0; i < kxMax; i++) {
-            xr = i + x;
-            for (int j = 0; j < kyMax; j++) {
-                yr = j + y;
-                allNub = ArithUtil.add(ArithUtil.mul(matrix.getNumber(xr, yr), kernel.getNumber(i, j)), allNub);
-                // allNub = matrix.getNumber(xr, yr) * kernel.getNumber(i, j) + allNub;
+        if (isAccurate) {
+            for (int i = 0; i < kxMax; i++) {
+                xr = i + x;
+                for (int j = 0; j < kyMax; j++) {
+                    yr = j + y;
+                    allNub = ArithUtil.add(ArithUtil.mul(matrix.getNumber(xr, yr), kernel.getNumber(i, j)), allNub);
+                }
+            }
+        } else {
+            for (int i = 0; i < kxMax; i++) {
+                xr = i + x;
+                for (int j = 0; j < kyMax; j++) {
+                    yr = j + y;
+                    allNub = matrix.getNumber(xr, yr) * kernel.getNumber(i, j) + allNub;
+                }
             }
         }
         return allNub;

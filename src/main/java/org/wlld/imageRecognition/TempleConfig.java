@@ -29,6 +29,7 @@ public class TempleConfig {
     private NerveManager convolutionNerveManagerR;//卷积神经网络管理器
     private NerveManager convolutionNerveManagerG;//卷积神经网络管理器
     private NerveManager convolutionNerveManagerB;//卷积神经网络管理器
+    private boolean isAccurate = false;//是否保留精度
     private int row = 5;//行的最小比例
     private int column = 3;//列的最小比例
     private int deep = 2;//默认深度
@@ -48,6 +49,14 @@ public class TempleConfig {
     private double avg = 0;//覆盖均值
     private int sensoryNerveNub;//输入神经元个数
 
+    public boolean isAccurate() {
+        return isAccurate;
+    }
+
+    public void setAccurate(boolean accurate) {//设置是否保留精度
+        isAccurate = accurate;
+    }
+
     public double getAvg() {
         return avg;
     }
@@ -61,8 +70,9 @@ public class TempleConfig {
     }
 
     //边框聚类集合 模型需要返回
-    public TempleConfig(boolean isThreeChannel) {
+    public TempleConfig(boolean isThreeChannel, boolean isAccurate) {
         this.isThreeChannel = isThreeChannel;
+        this.isAccurate = isAccurate;
     }
 
     public int getClassifier() {
@@ -212,7 +222,7 @@ public class TempleConfig {
     private void initNerveManager(boolean initPower, int sensoryNerveNub
             , int deep) throws Exception {
         nerveManager = new NerveManager(sensoryNerveNub, 9,
-                classificationNub, deep, new Sigmod(), false);
+                classificationNub, deep, new Sigmod(), false, isAccurate);
         nerveManager.init(initPower, false);
     }
 
@@ -246,8 +256,8 @@ public class TempleConfig {
         for (int k = 1; k <= classificationNub; k++) {
             Matrix matrix = new Matrix(height, width);//初始化期望矩阵
             double t = k * nub;//期望矩阵的分类参数数值
-            for (int i = 0; i < height - 1; i++) {//给期望矩阵注入期望参数
-                for (int j = 0; j < width - 1; j++) {
+            for (int i = 0; i < height; i++) {//给期望矩阵注入期望参数
+                for (int j = 0; j < width; j++) {
                     matrix.setNub(i, j, t);
                 }
             }
@@ -265,7 +275,7 @@ public class TempleConfig {
     private NerveManager initNerveManager(Map<Integer, Matrix> matrixMap, boolean initPower, int deep) throws Exception {
         //初始化卷积神经网络
         NerveManager convolutionNerveManager = new NerveManager(1, 1,
-                1, deep - 1, new ReLu(), true);
+                1, deep - 1, new ReLu(), true, isAccurate);
         convolutionNerveManager.setMatrixMap(matrixMap);//给卷积网络管理器注入期望矩阵
         convolutionNerveManager.init(initPower, true);
         return convolutionNerveManager;
@@ -426,6 +436,9 @@ public class TempleConfig {
                     vectorK.insertKMatrix(modelParameter.getMatrixK());
                     break;
                 case Classifier.DNN:
+//                    ModelParameter modelParameter1 = new ModelParameter();
+//                    modelParameter1.setDepthNerves(modelParameter.getDepthNerves());
+//                    modelParameter1.setOutNerves(modelParameter.getOutNerves());
                     nerveManager.insertModelParameter(modelParameter);
                     normalization = new Normalization();
                     normalization.setAvg(modelParameter.getDnnAvg());

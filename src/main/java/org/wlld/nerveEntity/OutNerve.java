@@ -21,8 +21,8 @@ public class OutNerve extends Nerve {
     private Map<Integer, Matrix> matrixMapE;//主键与期望矩阵的映射
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
-                    ActiveFunction activeFunction, boolean isDynamic) throws Exception {
-        super(id, upNub, "OutNerve", downNub, studyPoint, init, activeFunction, isDynamic);
+                    ActiveFunction activeFunction, boolean isDynamic, boolean isAccurate) throws Exception {
+        super(id, upNub, "OutNerve", downNub, studyPoint, init, activeFunction, isDynamic, isAccurate);
     }
 
 
@@ -45,7 +45,7 @@ public class OutNerve extends Nerve {
                 } else {
                     this.E = 0;
                 }
-                 System.out.println("E===" + this.E + ",out==" + out+",nerveId=="+getId());
+                System.out.println("E===" + this.E + ",out==" + out + ",nerveId==" + getId());
                 gradient = outGradient();//当前梯度变化
                 //调整权重 修改阈值 并进行反向传播
                 updatePower(eventId);

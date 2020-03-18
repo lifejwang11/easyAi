@@ -12,6 +12,7 @@ import java.util.Map;
 /**
  * 神经网络管理工具
  * 创建神经网络
+ *
  * @author lidapeng
  * @date 11:05 上午 2019/12/21
  */
@@ -29,6 +30,7 @@ public class NerveManager {
     private Map<Integer, Matrix> matrixMap = new HashMap<>();//主键与期望矩阵的映射
     private boolean isDynamic;//是否是动态神经网络
     private List<Double> studyList = new ArrayList<>();
+    private boolean isAccurate = false;//是否保留精度
 
     public List<Double> getStudyList() {//查看每一次的学习率
         return studyList;
@@ -197,23 +199,26 @@ public class NerveManager {
 
     /**
      * 初始化神经元参数
+     *
      * @param sensoryNerveNub 输入神经元个数
-     * @param hiddenNerverNub 隐层神经元个数
-     * @param outNerveNub 输出神经元个数
-     * @param hiddenDepth 隐层深度
-     * @param activeFunction 激活函数
-     * @param isDynamic 是否是动态神经元
+     * @param hiddenNerveNub  隐层神经元个数
+     * @param outNerveNub     输出神经元个数
+     * @param hiddenDepth     隐层深度
+     * @param activeFunction  激活函数
+     * @param isDynamic       是否是动态神经元
+     * @param isAccurate      是否保留精度
      * @throws Exception 如果参数错误则抛异常
      */
-    public NerveManager(int sensoryNerveNub, int hiddenNerverNub, int outNerveNub
-            , int hiddenDepth, ActiveFunction activeFunction, boolean isDynamic) throws Exception {
-        if (sensoryNerveNub > 0 && hiddenNerverNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
-            this.hiddenNerveNub = hiddenNerverNub;
+    public NerveManager(int sensoryNerveNub, int hiddenNerveNub, int outNerveNub
+            , int hiddenDepth, ActiveFunction activeFunction, boolean isDynamic, boolean isAccurate) throws Exception {
+        if (sensoryNerveNub > 0 && hiddenNerveNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
+            this.hiddenNerveNub = hiddenNerveNub;
             this.sensoryNerveNub = sensoryNerveNub;
             this.outNerveNub = outNerveNub;
             this.hiddenDepth = hiddenDepth;
             this.activeFunction = activeFunction;
             this.isDynamic = isDynamic;
+            this.isAccurate = isAccurate;
         } else {
             throw new Exception("param is null");
         }
@@ -249,8 +254,9 @@ public class NerveManager {
 
     /**
      * 初始化
+     *
      * @param initPower 是否是第一次注入
-     * @param isMatrix 参数是否是一个矩阵
+     * @param isMatrix  参数是否是一个矩阵
      * @throws Exception
      */
     public void init(boolean initPower, boolean isMatrix) throws Exception {//进行神经网络的初始化构建
@@ -261,7 +267,7 @@ public class NerveManager {
         List<Nerve> lastNeveList = depthNerves.get(depthNerves.size() - 1);
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
-            OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower, activeFunction, isMatrix);
+            OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower, activeFunction, isMatrix, isAccurate);
             if (isMatrix) {//是卷积层神经网络
                 outNerve.setMatrixMap(matrixMap);
             }
@@ -307,7 +313,8 @@ public class NerveManager {
                 } else {
                     downNub = hiddenNerveNub;
                 }
-                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction, isMatrix);
+                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction, isMatrix
+                        , isAccurate);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);

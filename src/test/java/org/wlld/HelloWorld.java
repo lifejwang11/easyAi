@@ -31,7 +31,7 @@ public class HelloWorld {
 
     public static void test() throws Exception {
         Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig(true);
+        TempleConfig templeConfig = new TempleConfig(true, true);
         templeConfig.setClassifier(Classifier.DNN);
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 1000, 1000, 3);
         Operation operation = new Operation(templeConfig);
@@ -93,7 +93,7 @@ public class HelloWorld {
 
     public static void food2() throws Exception {
         Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig(false);
+        TempleConfig templeConfig = new TempleConfig(false, true);
         templeConfig.init(StudyPattern.Speed_Pattern, true, 1000, 1000, 2);
         Operation operation = new Operation(templeConfig);
         Map<Integer, Double> right = new HashMap<>();
@@ -116,7 +116,7 @@ public class HelloWorld {
 
     public static void food() throws Exception {
         Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig(false);
+        TempleConfig templeConfig = new TempleConfig(false, true);
         //templeConfig.setHavePosition(true);
 //        Frame frame = new Frame();
 //        frame.setWidth(640);
@@ -125,15 +125,14 @@ public class HelloWorld {
 //        frame.setLengthWidth(640);
 //        templeConfig.setFrame(frame);
         templeConfig.setClassifier(Classifier.DNN);
-        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 1000, 1000, 2);
+        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 2);
 //        ModelParameter modelParameter2 = JSON.parseObject(ModelData.DATA, ModelParameter.class);
 //        templeConfig.insertModel(modelParameter2);
         Operation operation = new Operation(templeConfig);
         //a b c d 物品  e是背景
         // 一阶段
-        for (int j = 0; j < 2; j++) {
-
-            for (int i = 1; i < 1500; i++) {//一阶段
+        for (int j = 0; j < 1; j++) {
+            for (int i = 1; i < 1900; i++) {//一阶段
                 System.out.println("study1===================" + i);
                 //读取本地URL地址图片,并转化成矩阵
                 Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
@@ -153,7 +152,8 @@ public class HelloWorld {
 //        ModelParameter modelParameter = JSON.parseObject(ModelData.DATA8, ModelParameter.class);
 //        templeConfig.insertModel(modelParameter);
         //二阶段
-        for (int i = 1; i < 1500; i++) {
+        for (int i = 1; i < 1900; i++) {
+            System.out.println("avg==" + i);
             Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
             //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
             Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
@@ -166,7 +166,7 @@ public class HelloWorld {
         }
         templeConfig.getNormalization().avg();
         for (int j = 0; j < 1; j++) {
-            for (int i = 1; i < 1500; i++) {
+            for (int i = 1; i < 1900; i++) {
                 System.out.println("study2==================" + i);
                 //读取本地URL地址图片,并转化成矩阵
                 Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
@@ -198,7 +198,7 @@ public class HelloWorld {
 //        Operation operation2 = new Operation(templeConfig2);
         int wrong = 0;
         int allNub = 0;
-        for (int i = 1500; i <= 1572; i++) {
+        for (int i = 1900; i <= 2000; i++) {
             //读取本地URL地址图片,并转化成矩阵
             Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
             //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
@@ -249,7 +249,7 @@ public class HelloWorld {
 
     public static void test1() throws Exception {//覆盖率计算
         Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig(false);
+        TempleConfig templeConfig = new TempleConfig(false, true);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 320, 240, 2);
         Operation operation = new Operation(templeConfig);
         Map<Integer, Double> rightTagging = new HashMap<>();//分类标注

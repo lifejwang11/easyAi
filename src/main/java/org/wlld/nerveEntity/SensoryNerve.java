@@ -8,22 +8,22 @@ import java.util.Map;
 
 /**
  * 感知神经元输入层
+ *
  * @author lidapeng
  * @date 9:29 上午 2019/12/21
  */
 public class SensoryNerve extends Nerve {
 
     public SensoryNerve(int id, int upNub) throws Exception {
-        super(id, upNub, "SensoryNerve", 0, 0.1, false, null, false);
+        super(id, upNub, "SensoryNerve", 0, 0.1, false, null, false, false);
     }
 
     /**
-     *
-     * @param eventId 唯一的事件id
+     * @param eventId   唯一的事件id
      * @param parameter 输入点的数据
-     * @param isStudy 是否是学习 (学习状态没有输出)
-     * @param E 标注
-     * @param outBack 回调结果
+     * @param isStudy   是否是学习 (学习状态没有输出)
+     * @param E         标注
+     * @param outBack   回调结果
      * @throws Exception
      */
     public void postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E

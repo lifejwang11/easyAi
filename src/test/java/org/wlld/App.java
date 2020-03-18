@@ -26,7 +26,7 @@ public class App {
 
     public static void test3() throws Exception {
         NerveManager nerveManager = new NerveManager(3, 6, 3
-                , 3, new Sigmod(), false);
+                , 3, new Sigmod(), false, true);
         nerveManager.init(true, false);//初始化
         List<Map<Integer, Double>> data = new ArrayList<>();//正样本
         List<Map<Integer, Double>> dataB = new ArrayList<>();//负样本
