@@ -125,8 +125,8 @@ public class HelloWorld {
 //        frame.setLengthWidth(640);
 //        templeConfig.setFrame(frame);
         templeConfig.setClassifier(Classifier.DNN);
-        //templeConfig.isShowLog(true);
-        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 2);
+        templeConfig.isShowLog(true);
+        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 4);
 //        ModelParameter modelParameter2 = JSON.parseObject(ModelData.DATA2, ModelParameter.class);
 //        templeConfig.insertModel(modelParameter2);
         Operation operation = new Operation(templeConfig);
@@ -136,18 +136,16 @@ public class HelloWorld {
             for (int i = 1; i < 1900; i++) {//一阶段
                 System.out.println("study1===================" + i);
                 //读取本地URL地址图片,并转化成矩阵
-                Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
-                //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
-                Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
-                //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
-                //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
+                Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
+                Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
+                Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
+                Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
                 //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
                 //第二次学习的时候，第三个参数必须是 true
-                // operation.learning(f, 0, false);
                 operation.learning(a, 1, false);
-                // operation.learning(b, 2, false);
-                operation.learning(c, 2, false);
-                //operation.learning(d, 4, false);
+                operation.learning(b, 2, false);
+                operation.learning(c, 3, false);
+                operation.learning(d, 4, false);
             }
         }
 
@@ -155,14 +153,13 @@ public class HelloWorld {
         for (int i = 1; i < 1900; i++) {
             System.out.println("avg==" + i);
             Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
-            //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
             Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
-            //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
-
+            Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
             operation.normalization(a, templeConfig.getConvolutionNerveManager());
-            //operation.normalization(b, templeConfig.getConvolutionNerveManager());
+            operation.normalization(b, templeConfig.getConvolutionNerveManager());
             operation.normalization(c, templeConfig.getConvolutionNerveManager());
-            //operation.normalization(d, templeConfig.getConvolutionNerveManager());
+            operation.normalization(d, templeConfig.getConvolutionNerveManager());
         }
         templeConfig.getNormalization().avg();
         for (int j = 0; j < 1; j++) {
@@ -170,19 +167,15 @@ public class HelloWorld {
                 System.out.println("study2==================" + i);
                 //读取本地URL地址图片,并转化成矩阵
                 Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
-                //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
+                Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
                 Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
-                //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
-                //Matrix f = picture.getImageMatrixByLocal("D:\\share\\picture/f" + i + ".png");
+                Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
                 //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
                 //第二次学习的时候，第三个参数必须是 true
-                // operation.learning(f, 0, true);
-                //System.out.println("1===============");
                 operation.learning(a, 1, true);
-                //System.out.println("2===============");
-                //operation.learning(b, 2, true);
-                operation.learning(c, 2, true);
-                //operation.learning(d, 4, true);
+                operation.learning(b, 2, true);
+                operation.learning(c, 3, true);
+                operation.learning(d, 4, true);
             }
         }
 
@@ -198,22 +191,29 @@ public class HelloWorld {
         // Operation operation2 = new Operation(templeConfig2);
         int wrong = 0;
         int allNub = 0;
-        for (int i = 1900; i <= 2000; i++) {
+        for (int i = 1900; i <= 1998; i++) {
             //读取本地URL地址图片,并转化成矩阵
             Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
-            //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
             Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
-            //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
+            Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
             //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
             //第二次学习的时候，第三个参数必须是 true
-            allNub += 2;
+            allNub += 4;
             int an = operation.toSee(a);
+            int bn = operation.toSee(b);
             int cn = operation.toSee(c);
+            int dn = operation.toSee(d);
             if (an != 1) {
                 wrong++;
-            } else {
             }
-            if (cn != 2) {
+            if (bn != 2) {
+                wrong++;
+            }
+            if (cn != 3) {
+                wrong++;
+            }
+            if (dn != 4) {
                 wrong++;
             }
         }

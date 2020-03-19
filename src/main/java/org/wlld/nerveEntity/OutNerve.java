@@ -71,10 +71,10 @@ public class OutNerve extends Nerve {
         Matrix myMatrix = dynamicNerve(matrix, eventId, isKernelStudy);
         if (isKernelStudy) {//回传
             Matrix matrix1 = matrixMapE.get(E);
-            if (isShowLog) {
-                System.out.println("E================" + E);
-                System.out.println(myMatrix.getString());
-            }
+//            if (isShowLog) {
+//                System.out.println("E================" + E);
+//                System.out.println(myMatrix.getString());
+//            }
             if (matrix1.getX() <= myMatrix.getX() && matrix1.getY() <= myMatrix.getY()) {
                 double g = getGradient(myMatrix, matrix1);
                 backMatrix(g, eventId);
