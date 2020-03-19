@@ -114,6 +114,7 @@
         //通常原因是模板量不足，或者用户说的话的语义，不在你的语义分类训练范围内
    ```
 ### 神经网络最简API说明
+``` java
      //创建一个DNN神经网络管理器
      NerveManager nerveManager = new NerveManager(...);
      //构造参数
@@ -132,7 +133,9 @@
      //OutBack 回调类
      SensoryNerv.postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E, OutBack outBack)
      //每一次输出结果都会返回给回调类，通过回调类拿取输出结果，并通过eventId来对应事件
+```
 ### 随机森林最简API说明
+``` java
         //创建一个内存中的数据表
         DataTable dataTable = new DataTable(column);
         //构造参数是列名集合
@@ -151,6 +154,7 @@
         randomForest.study();
         //插入特征数据，森林对该数据的最终分类结果进行判断
         randomForest.forest(Object objcet);
+```
 ### 常见抛错
 * error:Wrong size setting of image in templateConfig
 * 原因是模版配置类图片宽高设置相差太大
