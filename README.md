@@ -74,7 +74,7 @@
   ModelParameter modelParameter = templeConfig.getModel();
   String model = JSON.toJSONString(modelParameter);
 ```
-### 图像识别部分最简API 说明：
+### 单物体图像识别部分最简API 说明：
 ``` java
    //读取一张图片，并将其转化为矩阵
    Matrix a = picture.getImageMatrixByLocal(fileURL);
