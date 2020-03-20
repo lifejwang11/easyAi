@@ -19,15 +19,15 @@ import java.util.Map;
  * @date 12:54 下午 2020/3/16
  */
 public class CoverTest {
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws Exception {
+        cover();
     }
 
     public static void insertModel(String model) throws Exception {//注入模型
         //模型服务启动注入一次，内存长期持有静态化 TempleConfig配置类
         //每个TempleConfig 要单例
         //创建模版类，参数选false就可以
-        TempleConfig templeConfig = new TempleConfig(false,true);
+        TempleConfig templeConfig = new TempleConfig(false, true);
         //初始化模板 注意 width height参数是你训练图片的实际尺寸需要改，其他不用动
         templeConfig.init(StudyPattern.Cover_Pattern, true, 320, 240, 2);
         //反序列化成模型
@@ -47,7 +47,7 @@ public class CoverTest {
 
     public static void fireStudy() throws Exception {//土壤扰动，桔梗焚烧等识别
         Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig(false,true);
+        TempleConfig templeConfig = new TempleConfig(false, true);
         //classificationNub 参数说明，识别几种东西 就写几，比如 土壤扰动，桔梗焚烧 总共2个那么就写2
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 1000, 1000, 2);
         Operation operation = new Operation(templeConfig);
@@ -86,25 +86,28 @@ public class CoverTest {
         //创建图片解析类
         Picture picture = new Picture();
         //创建模版类，参数选false就可以
-        TempleConfig templeConfig = new TempleConfig(false,true);
+        TempleConfig templeConfig = new TempleConfig(false, false);
         //初始化模板 注意 width height参数是你训练图片的实际尺寸需要改，其他不用动
-        templeConfig.init(StudyPattern.Cover_Pattern, true, 320, 240, 2);
+        templeConfig.init(StudyPattern.Cover_Pattern, true, 3840, 5120, 2);
         //创建运算类进行标注
         Operation operation = new Operation(templeConfig);
         Map<Integer, Double> rightTagging = new HashMap<>();//分类标注
         Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
         rightTagging.put(1, 1.0);//100%桔梗全覆盖标注
         wrongTagging.put(2, 1.0);//0%桔梗无覆盖标注
-        //读取100%全覆盖桔梗图片
-        Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/yes1.jpg");
-        //读取0%无覆盖土地图片
-        Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/no4.jpg");
-        //开始训练覆盖率
-        operation.coverStudy(right, rightTagging, wrong, wrongTagging);
+        for (int i = 1; i < 73; i++) {
+            //读取100%全覆盖桔梗图片
+            System.out.println("study=====" + i);
+            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/right/a" + i + ".jpg");
+            //读取0%无覆盖土地图片
+            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/wrong/b" + i + ".jpg");
+            //开始训练覆盖率
+            operation.coverStudy(right, rightTagging, wrong, wrongTagging);
+        }
         //学习完成，获取学习模型参数
         ModelParameter modelParameter = templeConfig.getModel();
         //将模型model保存数据库
         String model = JSON.toJSONString(modelParameter);
-        System.out.println("学习完成");
+        System.out.println(model);
     }
 }
