@@ -44,19 +44,6 @@ public class NerveManager {
         this.matrixMap = matrixMap;
     }
 
-    public double getStudyPoint() {
-        return studyPoint;
-    }
-
-    public void setStudyPoint(double studyPoint) throws Exception {
-        //设置学习率
-        if (studyPoint <= 1 && studyPoint > 0) {
-            this.studyPoint = studyPoint;
-        } else {
-            throw new Exception("studyPoint Values range from 0 to 1");
-        }
-    }
-
     private ModelParameter getDymModelParameter() throws Exception {//获取动态神经元参数
         ModelParameter modelParameter = new ModelParameter();
         List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
@@ -210,7 +197,8 @@ public class NerveManager {
      * @throws Exception 如果参数错误则抛异常
      */
     public NerveManager(int sensoryNerveNub, int hiddenNerveNub, int outNerveNub
-            , int hiddenDepth, ActiveFunction activeFunction, boolean isDynamic, boolean isAccurate) throws Exception {
+            , int hiddenDepth, ActiveFunction activeFunction, boolean isDynamic, boolean isAccurate,
+                        double studyPoint) throws Exception {
         if (sensoryNerveNub > 0 && hiddenNerveNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
             this.hiddenNerveNub = hiddenNerveNub;
             this.sensoryNerveNub = sensoryNerveNub;
@@ -219,6 +207,9 @@ public class NerveManager {
             this.activeFunction = activeFunction;
             this.isDynamic = isDynamic;
             this.isAccurate = isAccurate;
+            if (studyPoint > 0 && studyPoint < 1) {
+                this.studyPoint = studyPoint;
+            }
         } else {
             throw new Exception("param is null");
         }

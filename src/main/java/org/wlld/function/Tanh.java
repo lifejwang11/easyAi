@@ -6,8 +6,10 @@ import org.wlld.tools.ArithUtil;
 public class Tanh implements ActiveFunction {
     @Override
     public double function(double x) {
-        double son = ArithUtil.sub(Math.exp(x), Math.exp(-x));
-        double mother = ArithUtil.add(Math.exp(x), Math.exp(-x));
+        double x1 = Math.exp(x);
+        double x2 = Math.exp(-x);
+        double son = ArithUtil.sub(x1, x2);
+        double mother = ArithUtil.add(x1, x2);
         return ArithUtil.div(son, mother);
     }
 

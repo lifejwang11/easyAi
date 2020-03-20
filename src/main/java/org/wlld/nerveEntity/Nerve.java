@@ -22,7 +22,7 @@ public abstract class Nerve {
     private int id;//同级神经元编号,注意在同层编号中ID应有唯一性
     protected int upNub;//上一层神经元数量
     protected int downNub;//下一层神经元的数量
-    protected Map<Long, List<Double>> features = new HashMap<>();
+    protected Map<Long, List<Double>> features = new HashMap<>();//上一层神经元输入的数值
     protected Matrix nerveMatrix = new Matrix(3, 3);//权重矩阵可获取及注入
     protected Map<Long, Matrix> matrixMap = new HashMap<>();//参数矩阵
     protected double threshold;//此神经元的阈值需要取出
@@ -265,9 +265,7 @@ public abstract class Nerve {
             double w = dendrites.get(i + 1);
             //System.out.println("w==" + w + ",value==" + value);
             sigma = ArithUtil.add(ArithUtil.mul(w, value), sigma);
-            //logger.debug("name:{},eventId:{},id:{},myId:{},w:{},value:{}", name, eventId, i + 1, id, w, value);
         }
-        //logger.debug("当前神经元线性变化已经完成,name:{},id:{}", name, getId());
         return ArithUtil.sub(sigma, threshold);
     }
 
