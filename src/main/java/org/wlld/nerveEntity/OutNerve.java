@@ -46,7 +46,7 @@ public class OutNerve extends Nerve {
                 if (E.containsKey(getId())) {
                     this.E = E.get(getId());
                 } else {
-                    this.E = 0;
+                    this.E = -1;
                 }
                 if (isShowLog) {
                     System.out.println("E==" + this.E + ",out==" + out + ",nerveId==" + getId());
