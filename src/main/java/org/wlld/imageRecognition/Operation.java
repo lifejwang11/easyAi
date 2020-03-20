@@ -281,7 +281,9 @@ public class Operation {//进行计算
         Map<Integer, Double> map = new HashMap<>();
         map.put(tagging, 1.0);
         List<Double> feature = getFeature(myMatrix);
-        //System.out.println(feature);
+        if (templeConfig.isShowLog()) {
+            System.out.println(feature);
+        }
         intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
     }
 

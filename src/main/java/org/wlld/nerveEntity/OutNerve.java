@@ -46,7 +46,7 @@ public class OutNerve extends Nerve {
                 if (E.containsKey(getId())) {
                     this.E = E.get(getId());
                 } else {
-                    this.E = -1;
+                    this.E = 0;
                 }
                 if (isShowLog) {
                     System.out.println("E==" + this.E + ",out==" + out + ",nerveId==" + getId());
@@ -71,10 +71,6 @@ public class OutNerve extends Nerve {
         Matrix myMatrix = dynamicNerve(matrix, eventId, isKernelStudy);
         if (isKernelStudy) {//回传
             Matrix matrix1 = matrixMapE.get(E);
-//            if (isShowLog) {
-//                System.out.println("E================" + E);
-//                System.out.println(myMatrix.getString());
-//            }
             if (matrix1.getX() <= myMatrix.getX() && matrix1.getY() <= myMatrix.getY()) {
                 double g = getGradient(myMatrix, matrix1);
                 backMatrix(g, eventId);

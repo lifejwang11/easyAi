@@ -44,7 +44,7 @@ public class TempleConfig {
     private boolean boxReady = false;//边框已经学习完毕
     private double iouTh = 0.5;//IOU阈值
     private int lvqNub = 10;//lvq循环次数，默认30
-    private VectorK vectorK;
+    private VectorK vectorK;//特征向量均值类
     private boolean isThreeChannel = false;//是否启用三通道
     private int classifier = Classifier.VAvg;//默认分类类别使用的是向量均值分类
     private Normalization normalization = new Normalization();//统一归一化
@@ -52,12 +52,18 @@ public class TempleConfig {
     private int sensoryNerveNub;//输入神经元个数
     private boolean isShowLog = false;
     private ActiveFunction activeFunction = new Tanh();
+    private double studyPoint = 0;
+
     public boolean isAccurate() {
         return isAccurate;
     }
 
     public void setAccurate(boolean accurate) {//设置是否保留精度
         isAccurate = accurate;
+    }
+
+    public void setStudyPoint(double studyPoint) {
+        this.studyPoint = studyPoint;
     }
 
     public void setActiveFunction(ActiveFunction activeFunction) {
@@ -129,6 +135,10 @@ public class TempleConfig {
 
     public void isShowLog(boolean isShowLog) {//是否打印学习数据
         this.isShowLog = isShowLog;
+    }
+
+    public boolean isShowLog() {
+        return isShowLog;
     }
 
     public void startLvq() throws Exception {
@@ -231,7 +241,7 @@ public class TempleConfig {
                 initConvolutionVision(initPower, width, height);
                 break;
             case StudyPattern.Cover_Pattern://覆盖学习模式
-                initNerveManager(initPower, 9, deep);
+                initNerveManager(initPower, 9, deep, studyPoint);
                 break;
         }
     }
@@ -247,13 +257,13 @@ public class TempleConfig {
             row = 5;
             column = (int) (d * row);
         }
-        initNerveManager(initPower, row * column, deep);
+        initNerveManager(initPower, row * column, deep,studyPoint);
     }
 
     private void initNerveManager(boolean initPower, int sensoryNerveNub
-            , int deep) throws Exception {
+            , int deep, double studyPoint) throws Exception {
         nerveManager = new NerveManager(sensoryNerveNub, 9,
-                classificationNub, deep, activeFunction, false, isAccurate);
+                classificationNub, deep, activeFunction, false, isAccurate, studyPoint);
         nerveManager.init(initPower, false, isShowLog);
     }
 
@@ -271,7 +281,7 @@ public class TempleConfig {
                 if (isThreeChannel) {
                     nub = nub * 3;
                 }
-                initNerveManager(true, nub, this.deep);
+                initNerveManager(true, nub, this.deep,studyPoint);
                 break;
             case Classifier.LVQ:
                 lvq = new LVQ(classificationNub, lvqNub);
@@ -306,7 +316,7 @@ public class TempleConfig {
     private NerveManager initNerveManager(Map<Integer, Matrix> matrixMap, boolean initPower, int deep) throws Exception {
         //初始化卷积神经网络
         NerveManager convolutionNerveManager = new NerveManager(1, 1,
-                1, deep - 1, new ReLu(), true, isAccurate);
+                1, deep - 1, new ReLu(), true, isAccurate,studyPoint);
         convolutionNerveManager.setMatrixMap(matrixMap);//给卷积网络管理器注入期望矩阵
         convolutionNerveManager.init(initPower, true, isShowLog);
         return convolutionNerveManager;
@@ -409,10 +419,6 @@ public class TempleConfig {
 
     public List<SensoryNerve> getSensoryNerves() {//获取感知神经元
         return nerveManager.getSensoryNerves();
-    }
-
-    public void setStudy(double studyPoint) throws Exception {//设置学习率
-        nerveManager.setStudyPoint(studyPoint);
     }
 
     public void setStudyList(List<Double> list) {//设置每一层不同的学习率
