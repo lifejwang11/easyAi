@@ -6,6 +6,8 @@ import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
+import org.wlld.function.Tanh;
+import org.wlld.i.ActiveFunction;
 import org.wlld.imageRecognition.border.*;
 import org.wlld.imageRecognition.modelEntity.BoxList;
 import org.wlld.imageRecognition.modelEntity.KBorder;
@@ -49,13 +51,17 @@ public class TempleConfig {
     private double avg = 0;//覆盖均值
     private int sensoryNerveNub;//输入神经元个数
     private boolean isShowLog = false;
-
+    private ActiveFunction activeFunction = new Tanh();
     public boolean isAccurate() {
         return isAccurate;
     }
 
     public void setAccurate(boolean accurate) {//设置是否保留精度
         isAccurate = accurate;
+    }
+
+    public void setActiveFunction(ActiveFunction activeFunction) {
+        this.activeFunction = activeFunction;
     }
 
     public double getAvg() {
@@ -247,7 +253,7 @@ public class TempleConfig {
     private void initNerveManager(boolean initPower, int sensoryNerveNub
             , int deep) throws Exception {
         nerveManager = new NerveManager(sensoryNerveNub, 9,
-                classificationNub, deep, new Sigmod(), false, isAccurate);
+                classificationNub, deep, activeFunction, false, isAccurate);
         nerveManager.init(initPower, false, isShowLog);
     }
 
@@ -461,9 +467,6 @@ public class TempleConfig {
                     vectorK.insertKMatrix(modelParameter.getMatrixK());
                     break;
                 case Classifier.DNN:
-//                    ModelParameter modelParameter1 = new ModelParameter();
-//                    modelParameter1.setDepthNerves(modelParameter.getDepthNerves());
-//                    modelParameter1.setOutNerves(modelParameter.getOutNerves());
                     nerveManager.insertModelParameter(modelParameter);
                     normalization = new Normalization();
                     normalization.setAvg(modelParameter.getDnnAvg());
