@@ -21,44 +21,44 @@ public class FoodTest {
 
     public static void food() throws Exception {
         Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig(false, false);
+        TempleConfig templeConfig = new TempleConfig(false, true);
         templeConfig.setClassifier(Classifier.DNN);
         templeConfig.isShowLog(true);
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 4);
-        ModelParameter modelParameter2 = JSON.parseObject(ModelData.DATA3, ModelParameter.class);
-        templeConfig.insertModel(modelParameter2);
+//        ModelParameter modelParameter2 = JSON.parseObject(ModelData.DATA3, ModelParameter.class);
+//        templeConfig.insertModel(modelParameter2);
         Operation operation = new Operation(templeConfig);
         // 一阶段
-//        for (int j = 0; j < 1; j++) {
-//            for (int i = 1; i < 1900; i++) {//一阶段
-//                System.out.println("study1===================" + i);
-//                //读取本地URL地址图片,并转化成矩阵
-//                Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
-//                Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
-//                Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
-//                Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
-//                //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
-//                //第二次学习的时候，第三个参数必须是 true
-//                operation.learning(a, 1, false);
-//                operation.learning(b, 2, false);
-//                operation.learning(c, 3, false);
-//                operation.learning(d, 4, false);
-//            }
-//        }
+        for (int j = 0; j < 1; j++) {
+            for (int i = 1; i < 1500; i++) {//一阶段
+                System.out.println("study1===================" + i);
+                //读取本地URL地址图片,并转化成矩阵
+                Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
+                Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
+                Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
+                Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
+                //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
+                //第二次学习的时候，第三个参数必须是 true
+                operation.learning(a, 1, false);
+                operation.learning(b, 2, false);
+                operation.learning(c, 3, false);
+                operation.learning(d, 4, false);
+            }
+        }
 
         //二阶段
-//        for (int i = 1; i < 1900; i++) {
-//            System.out.println("avg==" + i);
-//            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
-//            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
-//            Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
-//            Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
-//            operation.normalization(a, templeConfig.getConvolutionNerveManager());
-//            operation.normalization(b, templeConfig.getConvolutionNerveManager());
-//            operation.normalization(c, templeConfig.getConvolutionNerveManager());
-//            operation.normalization(d, templeConfig.getConvolutionNerveManager());
-//        }
-//        templeConfig.getNormalization().avg();
+        for (int i = 1; i < 1500; i++) {
+            System.out.println("avg==" + i);
+            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
+            Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
+            Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
+            operation.normalization(a, templeConfig.getConvolutionNerveManager());
+            operation.normalization(b, templeConfig.getConvolutionNerveManager());
+            operation.normalization(c, templeConfig.getConvolutionNerveManager());
+            operation.normalization(d, templeConfig.getConvolutionNerveManager());
+        }
+        templeConfig.getNormalization().avg();
         for (int j = 0; j < 1; j++) {
             for (int i = 1; i < 1500; i++) {
                 System.out.println("j==" + j + ",study2==================" + i);
