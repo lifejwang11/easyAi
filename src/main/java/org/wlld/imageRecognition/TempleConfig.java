@@ -59,31 +59,23 @@ public class TempleConfig {
     private double lParam = 0;//正则参数
     private int hiddenNerveNub = 9;//隐层神经元个数
 
-    public void setRzType(int rzType) {
+    public void setRzType(int rzType) {//设置正则化函数
         this.rzType = rzType;
     }
 
-    public void setlParam(double lParam) {
+    public void setlParam(double lParam) {//设置正则参数
         this.lParam = lParam;
     }
 
-    public void setMatrixWidth(double matrixWidth) {
+    public void setMatrixWidth(double matrixWidth) {//设置卷积层正则参数
         this.matrixWidth = matrixWidth;
     }
 
-    public boolean isAccurate() {
-        return isAccurate;
-    }
-
-    public void setAccurate(boolean accurate) {//设置是否保留精度
-        isAccurate = accurate;
-    }
-
-    public void setStudyPoint(double studyPoint) {
+    public void setStudyPoint(double studyPoint) {//设置学习率
         this.studyPoint = studyPoint;
     }
 
-    public void setActiveFunction(ActiveFunction activeFunction) {
+    public void setActiveFunction(ActiveFunction activeFunction) {//设置激活函数
         this.activeFunction = activeFunction;
     }
 
@@ -95,7 +87,7 @@ public class TempleConfig {
         this.avg = avg;
     }
 
-    public Normalization getNormalization() {
+    public Normalization getNormalization() {//获取归一化类
         return normalization;
     }
 
@@ -116,7 +108,7 @@ public class TempleConfig {
         this.classifier = classifier;
     }
 
-    public VectorK getVectorK() {
+    public VectorK getVectorK() {//获取均值特征矩阵
         return vectorK;
     }
 
@@ -181,7 +173,7 @@ public class TempleConfig {
         return kClusteringMap;
     }
 
-    public void setLvqNub(int lvqNub) {
+    public void setLvqNub(int lvqNub) {//设置LVQ循环次数
         this.lvqNub = lvqNub;
     }
 
@@ -189,7 +181,7 @@ public class TempleConfig {
         return iouTh;
     }
 
-    public void setIouTh(double iouTh) {
+    public void setIouTh(double iouTh) {//设置IOU阈值
         this.iouTh = iouTh;
     }
 
@@ -209,7 +201,7 @@ public class TempleConfig {
         return frame;
     }
 
-    public void setFrame(Frame frame) {
+    public void setFrame(Frame frame) {//设置视窗
         this.frame = frame;
     }
 
@@ -221,15 +213,11 @@ public class TempleConfig {
         return nerveManager;
     }
 
-    public void setNerveManager(NerveManager nerveManager) {
-        this.nerveManager = nerveManager;
-    }
-
     public boolean isHavePosition() {
         return isHavePosition;
     }
 
-    public void setHavePosition(boolean havePosition) {
+    public void setHavePosition(boolean havePosition) {//设置定位服务
         isHavePosition = havePosition;
     }
 

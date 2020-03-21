@@ -35,7 +35,7 @@ public abstract class Nerve {
     protected double sigmaW;//对上一层权重与上一层梯度的积进行求和
     private int backNub = 0;//当前节点被反向传播的次数
     protected ActiveFunction activeFunction;
-    private boolean isAccurate = false;//是否保留精度
+    private boolean isAccurate;//是否保留精度
     private int rzType;//正则化类型，默认不进行正则化
     private double lParam;//正则参数
 
