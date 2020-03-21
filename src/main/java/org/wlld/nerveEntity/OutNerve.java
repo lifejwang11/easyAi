@@ -23,8 +23,9 @@ public class OutNerve extends Nerve {
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic, boolean isAccurate
-            , boolean isShowLog) throws Exception {
-        super(id, upNub, "OutNerve", downNub, studyPoint, init, activeFunction, isDynamic, isAccurate);
+            , boolean isShowLog, int rzType, double lParam) throws Exception {
+        super(id, upNub, "OutNerve", downNub, studyPoint, init,
+                activeFunction, isDynamic, isAccurate, rzType, lParam);
         this.isShowLog = isShowLog;
     }
 

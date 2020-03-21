@@ -31,6 +31,8 @@ public class NerveManager {
     private boolean isDynamic;//是否是动态神经网络
     private List<Double> studyList = new ArrayList<>();
     private boolean isAccurate;//是否保留精度
+    private int rzType;//正则化类型，默认不进行正则化
+    private double lParam;//正则参数
 
     public List<Double> getStudyList() {//查看每一次的学习率
         return studyList;
@@ -194,11 +196,13 @@ public class NerveManager {
      * @param activeFunction  激活函数
      * @param isDynamic       是否是动态神经元
      * @param isAccurate      是否保留精度
+     * @param rzType          正则函数
+     * @param lParam          正则系数
      * @throws Exception 如果参数错误则抛异常
      */
     public NerveManager(int sensoryNerveNub, int hiddenNerveNub, int outNerveNub
             , int hiddenDepth, ActiveFunction activeFunction, boolean isDynamic, boolean isAccurate,
-                        double studyPoint) throws Exception {
+                        double studyPoint, int rzType, double lParam) throws Exception {
         if (sensoryNerveNub > 0 && hiddenNerveNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
             this.hiddenNerveNub = hiddenNerveNub;
             this.sensoryNerveNub = sensoryNerveNub;
@@ -207,6 +211,8 @@ public class NerveManager {
             this.activeFunction = activeFunction;
             this.isDynamic = isDynamic;
             this.isAccurate = isAccurate;
+            this.rzType = rzType;
+            this.lParam = lParam;
             if (studyPoint > 0 && studyPoint < 1) {
                 this.studyPoint = studyPoint;
             }
@@ -259,7 +265,7 @@ public class NerveManager {
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
-                    activeFunction, isMatrix, isAccurate, isShowLog);
+                    activeFunction, isMatrix, isAccurate, isShowLog, rzType, lParam);
             if (isMatrix) {//是卷积层神经网络
                 outNerve.setMatrixMap(matrixMap);
             }
@@ -306,7 +312,7 @@ public class NerveManager {
                     downNub = hiddenNerveNub;
                 }
                 HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction, isMatrix
-                        , isAccurate);
+                        , isAccurate, rzType, lParam);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);

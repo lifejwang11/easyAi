@@ -3,6 +3,7 @@ package org.wlld.imageRecognition;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Classifier;
+import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
@@ -54,6 +55,17 @@ public class TempleConfig {
     private ActiveFunction activeFunction = new Tanh();
     private double studyPoint = 0;
     private double matrixWidth = 1;//期望矩阵间隔
+    private int rzType = RZ.NOT_RZ;//正则化类型，默认不进行正则化
+    private double lParam = 0;//正则参数
+    private int hiddenNerveNub = 9;//隐层神经元个数
+
+    public void setRzType(int rzType) {
+        this.rzType = rzType;
+    }
+
+    public void setlParam(double lParam) {
+        this.lParam = lParam;
+    }
 
     public void setMatrixWidth(double matrixWidth) {
         this.matrixWidth = matrixWidth;
@@ -120,7 +132,7 @@ public class TempleConfig {
         return convolutionNerveManagerB;
     }
 
-    public void finishStudy() throws Exception {//结束
+    public void finishStudy() throws Exception {//结束学习
         switch (classifier) {
             case Classifier.LVQ:
                 lvq.start();
@@ -267,8 +279,9 @@ public class TempleConfig {
 
     private void initNerveManager(boolean initPower, int sensoryNerveNub
             , int deep, double studyPoint) throws Exception {
-        nerveManager = new NerveManager(sensoryNerveNub, 6,
-                classificationNub, deep, activeFunction, false, isAccurate, studyPoint);
+        nerveManager = new NerveManager(sensoryNerveNub, hiddenNerveNub,
+                classificationNub, deep, activeFunction,
+                false, isAccurate, studyPoint, rzType, lParam);
         nerveManager.init(initPower, false, isShowLog);
     }
 
@@ -320,7 +333,8 @@ public class TempleConfig {
     private NerveManager initNerveManager(Map<Integer, Matrix> matrixMap, boolean initPower, int deep) throws Exception {
         //初始化卷积神经网络
         NerveManager convolutionNerveManager = new NerveManager(1, 1,
-                1, deep - 1, new ReLu(), true, isAccurate, studyPoint);
+                1, deep - 1, new ReLu(),
+                true, isAccurate, studyPoint, rzType, lParam);
         convolutionNerveManager.setMatrixMap(matrixMap);//给卷积网络管理器注入期望矩阵
         convolutionNerveManager.init(initPower, true, isShowLog);
         return convolutionNerveManager;

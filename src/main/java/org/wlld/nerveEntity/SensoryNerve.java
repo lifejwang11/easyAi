@@ -15,7 +15,8 @@ import java.util.Map;
 public class SensoryNerve extends Nerve {
 
     public SensoryNerve(int id, int upNub) throws Exception {
-        super(id, upNub, "SensoryNerve", 0, 0.1, false, null, false, false);
+        super(id, upNub, "SensoryNerve", 0, 0.1, false,
+                null, false, false, 0, 0);
     }
 
     /**
