@@ -21,7 +21,7 @@ public class FoodTest {
 
     public static void food() throws Exception {
         Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig(false, true);
+        TempleConfig templeConfig = new TempleConfig(false, false);
         templeConfig.setClassifier(Classifier.DNN);
         templeConfig.isShowLog(true);
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 4);
@@ -60,7 +60,7 @@ public class FoodTest {
 //        }
 //        templeConfig.getNormalization().avg();
         for (int j = 0; j < 1; j++) {
-            for (int i = 1; i < 1900; i++) {
+            for (int i = 1; i < 1500; i++) {
                 System.out.println("j==" + j + ",study2==================" + i);
                 //读取本地URL地址图片,并转化成矩阵
                 Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
@@ -88,7 +88,7 @@ public class FoodTest {
         // Operation operation2 = new Operation(templeConfig2);
         int wrong = 0;
         int allNub = 0;
-        for (int i = 1900; i <= 1998; i++) {
+        for (int i = 1500; i <= 1600; i++) {
             //读取本地URL地址图片,并转化成矩阵
             Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
             Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");

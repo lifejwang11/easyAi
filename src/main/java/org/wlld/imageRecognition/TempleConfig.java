@@ -262,7 +262,7 @@ public class TempleConfig {
 
     private void initNerveManager(boolean initPower, int sensoryNerveNub
             , int deep, double studyPoint) throws Exception {
-        nerveManager = new NerveManager(sensoryNerveNub, 9,
+        nerveManager = new NerveManager(sensoryNerveNub, 6,
                 classificationNub, deep, activeFunction, false, isAccurate, studyPoint);
         nerveManager.init(initPower, false, isShowLog);
     }

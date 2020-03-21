@@ -223,11 +223,13 @@ public abstract class Nerve {
 
     private void updateW(double h, long eventId) {//h是学习率 * 当前g（梯度）
         List<Double> list = features.get(eventId);
+        double stop = ArithUtil.sub(1, ArithUtil.div(ArithUtil.mul(studyPoint, 0.015), dendrites.size()));
         for (Map.Entry<Integer, Double> entry : dendrites.entrySet()) {
             int key = entry.getKey();//上层隐层神经元的编号
             double w = entry.getValue();//接收到编号为KEY的上层隐层神经元的权重
             double bn = list.get(key - 1);//接收到编号为KEY的上层隐层神经元的输入
             double wp = ArithUtil.mul(bn, h);//编号为KEY的上层隐层神经元权重的变化值
+            w = ArithUtil.mul(w, stop);
             w = ArithUtil.add(w, wp);//修正后的编号为KEY的上层隐层神经元权重
             double dm = ArithUtil.mul(w, gradient);//返回给相对应的神经元
             // System.out.println("allG==" + allG + ",dm==" + dm);

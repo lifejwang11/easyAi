@@ -296,7 +296,9 @@ public class Operation {//进行计算
     private void lvq(int tagging, Matrix myMatrix) throws Exception {//LVQ学习
         LVQ lvq = templeConfig.getLvq();
         Matrix vector = MatrixOperation.matrixToVector(myMatrix, true);
-        System.out.println(vector.getString());
+        if (templeConfig.isShowLog()) {
+            System.out.println(vector.getString());
+        }
         MatrixBody matrixBody = new MatrixBody();
         matrixBody.setMatrix(vector);
         matrixBody.setId(tagging);
