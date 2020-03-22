@@ -23,8 +23,9 @@ public class OutNerve extends Nerve {
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic, boolean isAccurate
-            , boolean isShowLog) throws Exception {
-        super(id, upNub, "OutNerve", downNub, studyPoint, init, activeFunction, isDynamic, isAccurate);
+            , boolean isShowLog, int rzType, double lParam) throws Exception {
+        super(id, upNub, "OutNerve", downNub, studyPoint, init,
+                activeFunction, isDynamic, isAccurate, rzType, lParam);
         this.isShowLog = isShowLog;
     }
 
@@ -72,6 +73,7 @@ public class OutNerve extends Nerve {
         if (isKernelStudy) {//回传
             Matrix matrix1 = matrixMapE.get(E);
             if (isShowLog) {
+                System.out.println("E======" + E);
                 System.out.println(myMatrix.getString());
             }
             if (matrix1.getX() <= myMatrix.getX() && matrix1.getY() <= myMatrix.getY()) {

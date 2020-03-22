@@ -3,6 +3,7 @@ package org.wlld.nerveEntity;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.config.RZ;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
 import org.wlld.tools.ArithUtil;
@@ -34,7 +35,9 @@ public abstract class Nerve {
     protected double sigmaW;//对上一层权重与上一层梯度的积进行求和
     private int backNub = 0;//当前节点被反向传播的次数
     protected ActiveFunction activeFunction;
-    private boolean isAccurate = false;//是否保留精度
+    private boolean isAccurate;//是否保留精度
+    private int rzType;//正则化类型，默认不进行正则化
+    private double lParam;//正则参数
 
     public Map<Integer, Double> getDendrites() {
         return dendrites;
@@ -66,7 +69,7 @@ public abstract class Nerve {
 
     protected Nerve(int id, int upNub, String name, int downNub,
                     double studyPoint, boolean init, ActiveFunction activeFunction
-            , boolean isDynamic, boolean isAccurate) throws Exception {//该神经元在同层神经元中的编号
+            , boolean isDynamic, boolean isAccurate, int rzType, double lParam) throws Exception {//该神经元在同层神经元中的编号
         this.id = id;
         this.upNub = upNub;
         this.name = name;
@@ -74,8 +77,9 @@ public abstract class Nerve {
         this.studyPoint = studyPoint;
         this.activeFunction = activeFunction;
         this.isAccurate = isAccurate;
+        this.rzType = rzType;
+        this.lParam = lParam;
         initPower(init, isDynamic);//生成随机权重
-
     }
 
     protected void setStudyPoint(double studyPoint) {
@@ -221,13 +225,32 @@ public abstract class Nerve {
         backSendMessage(eventId);
     }
 
+    private double regularization(double w, double param) {//正则化类型
+        double re = 0.0;
+        if (rzType != RZ.NOT_RZ) {
+            if (rzType == RZ.L2) {
+                re = ArithUtil.mul(param, -w);
+            } else if (rzType == RZ.L1) {
+                if (w > 0) {
+                    re = -param;
+                } else if (w < 0) {
+                    re = param;
+                }
+            }
+        }
+        return re;
+    }
+
     private void updateW(double h, long eventId) {//h是学习率 * 当前g（梯度）
         List<Double> list = features.get(eventId);
+        double param = ArithUtil.div(ArithUtil.mul(studyPoint, lParam), dendrites.size());
         for (Map.Entry<Integer, Double> entry : dendrites.entrySet()) {
             int key = entry.getKey();//上层隐层神经元的编号
             double w = entry.getValue();//接收到编号为KEY的上层隐层神经元的权重
             double bn = list.get(key - 1);//接收到编号为KEY的上层隐层神经元的输入
             double wp = ArithUtil.mul(bn, h);//编号为KEY的上层隐层神经元权重的变化值
+            double regular = regularization(w, param);//正则化抑制权重s
+            w = ArithUtil.add(w, regular);
             w = ArithUtil.add(w, wp);//修正后的编号为KEY的上层隐层神经元权重
             double dm = ArithUtil.mul(w, gradient);//返回给相对应的神经元
             // System.out.println("allG==" + allG + ",dm==" + dm);

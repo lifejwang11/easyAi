@@ -1,6 +1,7 @@
 package org.wlld;
 
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.config.RZ;
 import org.wlld.function.Sigmod;
 import org.wlld.i.OutBack;
 import org.wlld.nerveCenter.NerveManager;
@@ -32,7 +33,8 @@ public class NerveDemo1 {
          * @param activeFunction 激活函数
          * @param isDynamic 是否是动态神经元
          */
-        NerveManager nerveManager = new NerveManager(2, 6, 1, 4, new Sigmod(), false, true, 0);
+        NerveManager nerveManager = new NerveManager(2, 6, 1, 4, new Sigmod(),
+                false, true, 0, RZ.NOT_RZ, 0);
         nerveManager.init(true, false, false);
 
 
@@ -108,7 +110,8 @@ public class NerveDemo1 {
 
     public static void test3() throws Exception {
         NerveManager nerveManager = new NerveManager(3, 6, 3
-                , 3, new Sigmod(), false, true, 0);
+                , 3, new Sigmod(),
+                false, true, 0, RZ.NOT_RZ, 0);
         nerveManager.init(true, false, false);//初始化
         List<Map<Integer, Double>> data = new ArrayList<>();//正样本
         List<Map<Integer, Double>> dataB = new ArrayList<>();//负样本
