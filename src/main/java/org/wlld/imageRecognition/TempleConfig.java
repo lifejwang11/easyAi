@@ -54,10 +54,14 @@ public class TempleConfig {
     private boolean isShowLog = false;
     private ActiveFunction activeFunction = new Tanh();
     private double studyPoint = 0;
-    private double matrixWidth = 1;//期望矩阵间隔
+    private double matrixWidth = 5;//期望矩阵间隔
     private int rzType = RZ.NOT_RZ;//正则化类型，默认不进行正则化
     private double lParam = 0;//正则参数
     private int hiddenNerveNub = 9;//隐层神经元个数
+
+    public void setHiddenNerveNub(int hiddenNerveNub) {//设置隐层宽度
+        this.hiddenNerveNub = hiddenNerveNub;
+    }
 
     public void setRzType(int rzType) {//设置正则化函数
         this.rzType = rzType;
