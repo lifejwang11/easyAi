@@ -37,8 +37,6 @@ public class FoodTest {
         ModelParameter modelParameter2 = JSON.parseObject(ModelData.DATA3, ModelParameter.class);
         templeConfig.insertModel(modelParameter2);
         Operation operation = new Operation(templeConfig);
-
-
         // 一阶段
 //        for (int j = 0; j < 1; j++) {
 //            for (int i = 1; i < 1500; i++) {//一阶段
@@ -132,7 +130,7 @@ public class FoodTest {
             }
         }
         double wrongPoint = ArithUtil.div(wrong, allNub);
-        System.out.println("错误率1：" + (wrongPoint * 100) + "%");
+        System.out.println("错误率：" + (wrongPoint * 100) + "%");
         ModelParameter modelParameter = templeConfig.getModel();
         String model = JSON.toJSONString(modelParameter);
         System.out.println(model);

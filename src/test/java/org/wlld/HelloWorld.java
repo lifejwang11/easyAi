@@ -40,6 +40,8 @@ public class HelloWorld {
     }
 
     public static void pictureDemo1() throws Exception {//图像学习DEMO
+        //easyAI 包持续更新，现阶段一直在优化
+        //
         Picture picture = new Picture();
         //使用精度计算
         TempleConfig templeConfig = new TempleConfig(false, true);
@@ -55,10 +57,10 @@ public class HelloWorld {
         for (int i = 1; i < 1900; i++) {//一阶段
             System.out.println("study1===================" + i);
             //读取本地URL地址图片,并转化成矩阵
-            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
-            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
-            Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
-            Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
+            Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
+            Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
+            Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
             operation.learning(a, 1, false);
             operation.learning(b, 2, false);
             operation.learning(c, 3, false);
@@ -66,12 +68,12 @@ public class HelloWorld {
         }
 
         //二阶段学习
-        for (int i = 1; i < 1900; i++) {
+        for (int i = 1; i < 1900; i++) {//特征归一化
             System.out.println("avg==" + i);
-            Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
-            Matrix b = picture.getImageMatrixByLocal("D:\\share\\picture/b" + i + ".jpg");
-            Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
-            Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
+            Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
+            Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
+            Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
             operation.normalization(a, templeConfig.getConvolutionNerveManager());
             operation.normalization(b, templeConfig.getConvolutionNerveManager());
             operation.normalization(c, templeConfig.getConvolutionNerveManager());
