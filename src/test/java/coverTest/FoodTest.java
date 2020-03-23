@@ -23,14 +23,16 @@ public class FoodTest {
     public static void food() throws Exception {
         Picture picture = new Picture();
         TempleConfig templeConfig = new TempleConfig();
+
         templeConfig.setClassifier(Classifier.DNN);
-        //templeConfig.setMatrixWidth(10);
+        templeConfig.setMatrixWidth(5);
         templeConfig.isShowLog(true);
         templeConfig.setRzType(RZ.L2);
-        //templeConfig.setDeep(1);
-        //templeConfig.setStudyPoint(0.05);
-        // templeConfig.setHiddenNerveNub(6);
+        templeConfig.setDeep(1);
+        templeConfig.setStudyPoint(0.05);
+        templeConfig.setHiddenNerveNub(6);
         templeConfig.setlParam(0.015);//0.015
+
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 4);
         ModelParameter modelParameter2 = JSON.parseObject(ModelData.DATA3, ModelParameter.class);
         templeConfig.insertModel(modelParameter2);
