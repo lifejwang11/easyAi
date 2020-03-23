@@ -6,7 +6,6 @@ import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Classifier;
 import org.wlld.config.Kernel;
 import org.wlld.config.StudyPattern;
-import org.wlld.function.Sigmod;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
 import org.wlld.nerveCenter.NerveManager;
@@ -14,7 +13,6 @@ import org.wlld.nerveCenter.Normalization;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.IdCreator;
-import sun.security.pkcs11.P11Util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -357,6 +355,37 @@ public class Operation {//进行计算
             intoDnnNetwork(eventId, list, templeConfig.getSensoryNerves(), false, null, outBack);
         } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
             throw new Exception("studyPattern not right");
+        }
+    }
+
+    public List<Integer> manyLook(Matrix matrix, long eventId) throws Exception {//无定位多物体识别
+        if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
+            List<Integer> list = new ArrayList<>();
+            Frame frame = templeConfig.getFrame();
+            List<FrameBody> frameBodies = convolution.getRegion(matrix, frame);
+            for (FrameBody frameBody : frameBodies) {
+                MatrixBack matrixBack = new MatrixBack();
+                intoConvolutionNetwork(eventId, frameBody.getMatrix(), templeConfig.getConvolutionNerveManager().getSensoryNerves(),
+                        false, -1, matrixBack);
+                Matrix myMatrix = matrixBack.getMatrix();
+                int classifier = templeConfig.getClassifier();
+                int id = 0;
+                switch (classifier) {
+                    case Classifier.LVQ:
+                        id = getClassificationIdByLVQ(myMatrix);
+                        break;
+                    case Classifier.DNN:
+                        id = getClassificationIdByDnn(myMatrix);
+                        break;
+                    case Classifier.VAvg:
+                        id = getClassificationIdByVag(myMatrix);
+                        break;
+                }
+                list.add(id);
+            }
+            return list;
+        } else {
+            throw new Exception("wrong model");
         }
     }
 

@@ -421,8 +421,10 @@ public class TempleConfig {
         }
         if (isHavePosition && kClusteringMap != null && kClusteringMap.size() > 0) {//存在边框学习模型参数
             Map<Integer, KBorder> kBorderMap = kToBody();
-            modelParameter.setFrame(frame);
             modelParameter.setBorderMap(kBorderMap);
+        }
+        if (frame != null) {
+            modelParameter.setFrame(frame);
         }
         return modelParameter;
     }
@@ -495,10 +497,10 @@ public class TempleConfig {
             nerveManager.insertModelParameter(modelParameter);
             avg = modelParameter.getAvg();
         }
+        if (modelParameter.getFrame() != null) {
+            frame = modelParameter.getFrame();
+        }
         if (isHavePosition) {
-            if (modelParameter.getFrame() != null) {
-                frame = modelParameter.getFrame();
-            }
             //边框K均值模型注入
             Map<Integer, KBorder> borderMap = modelParameter.getBorderMap();
             if (borderMap != null && borderMap.size() > 0) {

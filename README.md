@@ -190,6 +190,8 @@ public class Classifier {//分类器
  Picture picture = new Picture();
  //创建一个静态单例配置模板
  static TempleConfig templeConfig = new TempleConfig();
+ //使用DNN分类器
+ templeConfig.setClassifier(Classifier.DNN);
  //第三个参数和第四个参数分别是训练图片的宽和高，为保证训练的稳定性请保证训练图片大小的一致性
  templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 2);
  //将配置模板类作为构造塞入计算类
