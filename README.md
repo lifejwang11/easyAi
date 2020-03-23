@@ -238,6 +238,23 @@ templeConfig.setDeep(int deep);
 >增加一层深度，训练图片的数量至少乘以3，否则准确度不仅不会增加，反而会下降
 >>优点：更深的深度准确率可以无限接近100%，我们只要训练量足够大，我们就可以更深，越深越无敌
 >>>缺点：增加深度意味着成几何倍数提升的训练量，同时也意味着过拟合的风险
+* 修改可调参数
+``` java
+        //选择分类器
+        templeConfig.setClassifier(Classifier.DNN);
+        //选择期望矩阵宽度
+        templeConfig.setMatrixWidth(5);
+        //选择正则化模式
+        templeConfig.setRzType(RZ.L2);
+        //选择DNN 深度
+        templeConfig.setDeep(1);
+        //设置学习率
+        templeConfig.setStudyPoint(0.05);
+        //设置DNN隐层宽度
+        templeConfig.setHiddenNerveNub(6);
+        //设置正则系数
+        templeConfig.setlParam(0.015);//0.015
+```
 ### 什么样的图片会严重影响准确率
 * 训练图片或者识别图片有，比较大片的遮盖，暗光，阴影，或者使图片模糊的情况，识别和训练都会有严重的干扰
 * 训练图片要求会比较高，要求若物体无背景则扣干净，有背景的话使用统一背景不要变动，不要一个训练一个物体有很多种背景
