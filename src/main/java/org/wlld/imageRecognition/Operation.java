@@ -363,8 +363,8 @@ public class Operation {//进行计算
             List<Integer> list = new ArrayList<>();
             Frame frame = templeConfig.getFrame();
             List<FrameBody> frameBodies = convolution.getRegion(matrix, frame);
+            MatrixBack matrixBack = new MatrixBack();
             for (FrameBody frameBody : frameBodies) {
-                MatrixBack matrixBack = new MatrixBack();
                 intoConvolutionNetwork(eventId, frameBody.getMatrix(), templeConfig.getConvolutionNerveManager().getSensoryNerves(),
                         false, -1, matrixBack);
                 Matrix myMatrix = matrixBack.getMatrix();
@@ -415,6 +415,7 @@ public class Operation {//进行计算
                 }
                 return toPosition(frameBodies, frame.getWidth(), frame.getHeight());
             } else if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
+                MatrixBack matrixBack = new MatrixBack();
                 for (FrameBody frameBody : frameBodies) {
                     intoConvolutionNetwork(eventId, frameBody.getMatrix(), templeConfig.getConvolutionNerveManager().getSensoryNerves(),
                             false, -1, matrixBack);
