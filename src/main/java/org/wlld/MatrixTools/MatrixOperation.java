@@ -401,4 +401,17 @@ public class MatrixOperation {
         }
         return matrix;
     }
+
+    //list转行向量定长
+    public static Matrix listToRowVector(List<Double> list, int nub) throws Exception {
+        Matrix matrix = new Matrix(1, nub);
+        for (int i = 0; i < nub; i++) {
+            double n = 0;
+            if (list.size() > i) {
+                n = list.get(i);
+            }
+            matrix.setNub(0, i, n);
+        }
+        return matrix;
+    }
 }

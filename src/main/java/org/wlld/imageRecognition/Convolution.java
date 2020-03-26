@@ -51,7 +51,7 @@ public class Convolution {
         return border;
     }
 
-    protected List<FrameBody> getRegion(Matrix matrix, Frame frame) {
+    public List<FrameBody> getRegion(Matrix matrix, Frame frame) {
         int xFrame = frame.getHeight();
         int yFrame = frame.getWidth();
         int x = matrix.getX();
