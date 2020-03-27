@@ -2,7 +2,8 @@ package org.wlld.imageRecognition.segmentation;
 
 import org.wlld.MatrixTools.Matrix;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author lidapeng
@@ -16,10 +17,8 @@ public class RegionBody {
     private int point = 0xFFF;
     private int bit = 4 * 3;
     private int id;//本区域主键
-    //主键是行数，值是列坐标的集合
-    private Map<Integer, List<Integer>> row = new TreeMap<>();
-    //主键是列数，值是行坐标的集合
-    private Map<Integer, List<Integer>> column = new TreeMap<>();
+    private double minPixel = -1;//最小像素值
+    private double maxPixel = 0;//最大像素值
     private List<Integer> pixels = new ArrayList<>();
 
     RegionBody(int id) {
@@ -28,10 +27,22 @@ public class RegionBody {
 
     public void merge(RegionBody body, Matrix regionMap) throws Exception {//合并区域
         List<Integer> myPixels = body.getPixels();
+        setPixel(body.getMaxPixel());
+        setPixel(body.getMinPixel());
         for (int pixel : myPixels) {
             int x = pixel >> bit;
             int y = pixel & point;
             insertPosition(x, y, regionMap);
+        }
+
+    }
+
+    public void setPixel(double pixel) {
+        if (pixel < minPixel || minPixel == -1) {
+            minPixel = pixel;
+        }
+        if (pixel > maxPixel) {
+            maxPixel = pixel;
         }
     }
 
@@ -51,33 +62,19 @@ public class RegionBody {
         //行在前，列在后
         int pixel = x << bit | y;
         pixels.add(pixel);
-        putXy(row, x, y);
-        putXy(column, y, x);
         //给区域地图中的像素分配区域ID
         regionMap.setNub(x, y, id);
     }
 
-    private void putXy(Map<Integer, List<Integer>> map, int x, int y) {
-        if (map.containsKey(x)) {
-            List<Integer> list = map.get(x);
-            list.add(y);
-            Collections.sort(list);
-        } else {
-            List<Integer> pointList = new ArrayList<>();
-            pointList.add(y);
-            map.put(x, pointList);
-        }
+    public double getMinPixel() {
+        return minPixel;
+    }
+
+    public double getMaxPixel() {
+        return maxPixel;
     }
 
     public List<Integer> getPixels() {
         return pixels;
-    }
-
-    public Map<Integer, List<Integer>> getRow() {
-        return row;
-    }
-
-    public Map<Integer, List<Integer>> getColumn() {
-        return column;
     }
 }

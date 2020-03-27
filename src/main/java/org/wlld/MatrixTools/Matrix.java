@@ -205,14 +205,11 @@ public class Matrix {
     }
 
     private double mulFather(Coordinate coordinate, double element, List<Coordinate> div) {
-//        System.out.println("x=====" + coordinate.x + ",y===" + coordinate.y +
-//                ",element==" + matrix[coordinate.x][coordinate.y]);
         div.add(coordinate);
         element = ArithUtil.mul(matrix[coordinate.x][coordinate.y], element);
         if (coordinate.father != null) {
             element = mulFather(coordinate.father, element, div);
         } else {//道路尽头
-            //System.out.println("尽头============" + element);
             if (invinverse(div)) {//偶排列
                 defNub = defNub + element;
             } else {//奇排列
