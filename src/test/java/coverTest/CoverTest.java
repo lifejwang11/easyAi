@@ -92,23 +92,32 @@ public class CoverTest {
         //初始化模板 注意 width height参数是你训练图片的实际尺寸需要改，其他不用动
         //创建运算类进行标注
         templeConfig.setActiveFunction(new Sigmod());
-        templeConfig.setRzType(RZ.L2);
-        templeConfig.setlParam(0.015);
+        //templeConfig.setRzType(RZ.L2);
+        //templeConfig.setlParam(0.015);
+        templeConfig.isShowLog(true);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 640, 480, 2);
         Operation operation = new Operation(templeConfig);
         Map<Integer, Double> rightTagging = new HashMap<>();//分类标注
         Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
         rightTagging.put(1, 1.0);//100%桔梗全覆盖标注
         wrongTagging.put(2, 1.0);//0%桔梗无覆盖标注
-        for (int i = 1; i < 3; i++) {
-            //读取100%全覆盖桔梗图片
-            System.out.println("study=====" + i);
-            Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/r1/right" + i + ".jpg");
-            //读取0%无覆盖土地图片
-            Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/r2/wrong" + i + ".jpg");
-            //开始训练覆盖率
-            operation.coverStudy(right, rightTagging, wrong, wrongTagging);
-        }
+
+        //读取100%全覆盖桔梗图片
+        Matrix right = picture.getImageMatrixByLocal("D:/b.jpg");
+        //读取0%无覆盖土地图片
+        Matrix wrong = picture.getImageMatrixByLocal("D:/a.jpg");
+        //开始训练覆盖率
+        operation.coverStudy(right, rightTagging, wrong, wrongTagging);
+
+        //识别初的该图片所属的分类id,既为训练时设定的标注
+        Matrix pic1 = picture.getImageMatrixByLocal("D:/a.jpg");//从本地磁盘读取图片
+        Matrix pic2 = picture.getImageMatrixByLocal("D:/b.jpg");//从本地磁盘读取图片
+        double point = operation.coverPoint(pic1, 1);//获取覆盖率
+        double point2 = operation.coverPoint(pic2, 1);//获取覆盖率
+
+        System.out.println("point==" + point);
+        System.out.println("point2==" + point2);
+
         //学习完成，获取学习模型参数
         ModelParameter modelParameter = templeConfig.getModel();
         //将模型model保存数据库

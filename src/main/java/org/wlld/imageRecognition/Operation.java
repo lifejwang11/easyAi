@@ -93,8 +93,9 @@ public class Operation {//进行计算
             lastOne(wrongLists, avg);
             //特征塞入容器完毕
             int size = rightLists.size();
-            for (int j = 0; j < 3; j++) {
+            for (int j = 0; j < 1; j++) {
                 for (int i = 0; i < size; i++) {
+                    System.out.println("============================="+i);
                     List<Double> rightList = rightLists.get(i);
                     List<Double> wrongList = wrongLists.get(i);
                     intoDnnNetwork(1, rightList, templeConfig.getSensoryNerves(), true, right, null);

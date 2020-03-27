@@ -47,7 +47,7 @@ public class ImageSegmentation {
         double[] array = new double[]{left, right, top, bottom};
         double[] pixelArray = new double[]{leftPixel, rightPixel, topPixel, bottomPixel};
         int minIndex = getMin(array);
-        int i, j = 0;
+        int i, j;
         switch (minIndex) {
             case 0:
                 i = x;
