@@ -95,8 +95,6 @@ public class HelloWorld {
             operation.learning(c, 3, true);
             operation.learning(d, 4, true);
         }
-
-
         templeConfig.finishStudy();//结束学习
         ModelParameter modelParameter = templeConfig.getModel();
         String model = JSON.toJSONString(modelParameter);

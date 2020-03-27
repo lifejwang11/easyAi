@@ -88,6 +88,7 @@ public class Operation {//进行计算
             double sigma = one(rightLists, 0);
             sigma = one(rightLists, sigma);
             avg = ArithUtil.div(sigma, nub);
+            System.out.println("AVG==" + avg);
             templeConfig.setAvg(avg);
             lastOne(rightLists, avg);
             lastOne(wrongLists, avg);
@@ -95,7 +96,7 @@ public class Operation {//进行计算
             int size = rightLists.size();
             for (int j = 0; j < 1; j++) {
                 for (int i = 0; i < size; i++) {
-                    System.out.println("============================="+i);
+                    System.out.println("=============================" + i);
                     List<Double> rightList = rightLists.get(i);
                     List<Double> wrongList = wrongLists.get(i);
                     intoDnnNetwork(1, rightList, templeConfig.getSensoryNerves(), true, right, null);

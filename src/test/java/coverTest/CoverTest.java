@@ -3,6 +3,7 @@ package coverTest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.ModelData;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.Sigmod;
@@ -83,12 +84,12 @@ public class CoverTest {
 
     }
 
-    //覆盖率学习
+    //覆盖率学习 有学习才能有识别
     public static void cover() throws Exception {
         //创建图片解析类
         Picture picture = new Picture();
         //创建模版类，参数选false就可以
-        TempleConfig templeConfig = new TempleConfig(false, false);
+        TempleConfig templeConfig = new TempleConfig();
         //初始化模板 注意 width height参数是你训练图片的实际尺寸需要改，其他不用动
         //创建运算类进行标注
         templeConfig.setActiveFunction(new Sigmod());
@@ -96,22 +97,24 @@ public class CoverTest {
         //templeConfig.setlParam(0.015);
         templeConfig.isShowLog(true);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 640, 480, 2);
+        ModelParameter modelParameter = JSON.parseObject(ModelData.DATA8, ModelParameter.class);
+        templeConfig.insertModel(modelParameter);
         Operation operation = new Operation(templeConfig);
-        Map<Integer, Double> rightTagging = new HashMap<>();//分类标注
-        Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
-        rightTagging.put(1, 1.0);//100%桔梗全覆盖标注
-        wrongTagging.put(2, 1.0);//0%桔梗无覆盖标注
+//        Map<Integer, Double> rightTagging = new HashMap<>();//分类标注
+//        Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
+//        rightTagging.put(1, 1.0);//100%桔梗全覆盖标注
+//        wrongTagging.put(2, 1.0);//0%桔梗无覆盖标注
 
         //读取100%全覆盖桔梗图片
-        Matrix right = picture.getImageMatrixByLocal("D:/b.jpg");
+        //Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/b.jpg");
         //读取0%无覆盖土地图片
-        Matrix wrong = picture.getImageMatrixByLocal("D:/a.jpg");
+        //Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/a.jpg");
         //开始训练覆盖率
-        operation.coverStudy(right, rightTagging, wrong, wrongTagging);
+        //operation.coverStudy(right, rightTagging, wrong, wrongTagging);
 
         //识别初的该图片所属的分类id,既为训练时设定的标注
-        Matrix pic1 = picture.getImageMatrixByLocal("D:/a.jpg");//从本地磁盘读取图片
-        Matrix pic2 = picture.getImageMatrixByLocal("D:/b.jpg");//从本地磁盘读取图片
+        Matrix pic1 = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/a.jpg");//从本地磁盘读取图片
+        Matrix pic2 = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/b.jpg");//从本地磁盘读取图片
         double point = operation.coverPoint(pic1, 1);//获取覆盖率
         double point2 = operation.coverPoint(pic2, 1);//获取覆盖率
 
@@ -119,9 +122,9 @@ public class CoverTest {
         System.out.println("point2==" + point2);
 
         //学习完成，获取学习模型参数
-        ModelParameter modelParameter = templeConfig.getModel();
-        //将模型model保存数据库
-        String model = JSON.toJSONString(modelParameter);
-        System.out.println(model);
+//        ModelParameter modelParameter = templeConfig.getModel();
+//       //将模型model保存数据库
+//        String model = JSON.toJSONString(modelParameter);
+//        System.out.println(model);
     }
 }

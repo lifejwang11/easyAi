@@ -70,7 +70,7 @@ public class LangTest {
         TemplateReader templateReader = new TemplateReader();
         //读取语言模版，第一个参数是模版地址，第二个参数是编码方式 (教程里的第三个参数已经省略)
         //同时也是学习过程
-        templateReader.read("D:/a1.txt", "UTF-8");
+        templateReader.read("/Users/lidapeng/Desktop/myDocment/a1.txt", "UTF-8");
         //学习结束获取模型参数
         //WordModel wordModel = WordTemple.get().getModel();
         //不用学习注入模型参数

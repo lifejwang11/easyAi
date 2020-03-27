@@ -417,7 +417,7 @@ public class TempleConfig {
             ModelParameter modelParameter1 = nerveManager.getModelParameter();
             modelParameter.setDepthNerves(modelParameter1.getDepthNerves());
             modelParameter.setOutNerves(modelParameter1.getOutNerves());
-            modelParameter1.setAvg(avg);
+            modelParameter.setAvg(avg);
         }
         if (isHavePosition && kClusteringMap != null && kClusteringMap.size() > 0) {//存在边框学习模型参数
             Map<Integer, KBorder> kBorderMap = kToBody();
