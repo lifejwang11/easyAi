@@ -87,7 +87,6 @@ public class ImageSegmentation {
     public void createMST() throws Exception {
         int x = matrix.getX() - 1;
         int y = matrix.getY() - 1;
-        long a = System.currentTimeMillis();
         for (int i = 1; i < x; i++) {
             for (int j = 1; j < y; j++) {
                 if (regionMap.getNumber(i, j) == 0.0) {
@@ -95,18 +94,22 @@ public class ImageSegmentation {
                 }
             }
         }
-        long b = System.currentTimeMillis();
-        long c = b - a;
-        System.out.println("耗时：" + c);
-        System.out.println("第一次分区数量：" + regionBodyList.size());
+        mergeMST();
+
     }
 
     private void mergeMST() throws Exception {//合并选区
         int x = matrix.getX() - 1;
         int y = matrix.getY() - 1;
+        double now = 0;
         for (int i = 1; i < x; i++) {
             for (int j = 1; j < y; j++) {
-                regionMap.getNumber(i, j);
+                double self = regionMap.getNumber(i, j);
+                if (now == 0) {
+                    now = self;
+                } else if (now != self) {//区域NOW尝试与区域self合并
+
+                }
             }
         }
     }
