@@ -1,6 +1,7 @@
 package coverTest;
 
 import com.alibaba.fastjson.JSON;
+import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.ModelData;
 import org.wlld.config.Classifier;
@@ -16,7 +17,13 @@ import java.util.*;
 public class FoodTest {
 
     public static void main(String[] args) throws Exception {
-
+        if (System.getProperties().getProperty("os.name").toUpperCase().contains("WINDOWS")) {
+            System.out.println("win==");
+        }
+//        Picture picture = new Picture();
+//        Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a1.jpg");
+//        ImageSegmentation imageSegmentation = new ImageSegmentation(a);
+//        imageSegmentation.createMST();
     }
 
     public static void food() throws Exception {
