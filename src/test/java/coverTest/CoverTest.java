@@ -97,20 +97,14 @@ public class CoverTest {
         //templeConfig.setlParam(0.015);
         templeConfig.isShowLog(true);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 640, 480, 2);
-        ModelParameter modelParameter = JSON.parseObject(ModelData.DATA8, ModelParameter.class);
-        templeConfig.insertModel(modelParameter);
         Operation operation = new Operation(templeConfig);
-//        Map<Integer, Double> rightTagging = new HashMap<>();//分类标注
-//        Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
-//        rightTagging.put(1, 1.0);//100%桔梗全覆盖标注
-//        wrongTagging.put(2, 1.0);//0%桔梗无覆盖标注
-
-        //读取100%全覆盖桔梗图片
-        //Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/b.jpg");
-        //读取0%无覆盖土地图片
-        //Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/a.jpg");
-        //开始训练覆盖率
-        //operation.coverStudy(right, rightTagging, wrong, wrongTagging);
+        Map<Integer, Double> rightTagging = new HashMap<>();//分类标注
+        Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
+        rightTagging.put(1, 1.0);//100%桔梗全覆盖标注
+        wrongTagging.put(2, 1.0);//0%桔梗无覆盖标注
+        Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/b.jpg");
+        Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/a.jpg");
+        operation.coverStudy(right, rightTagging, wrong, wrongTagging);
 
         //识别初的该图片所属的分类id,既为训练时设定的标注
         Matrix pic1 = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/a.jpg");//从本地磁盘读取图片
@@ -120,11 +114,5 @@ public class CoverTest {
 
         System.out.println("point==" + point);
         System.out.println("point2==" + point2);
-
-        //学习完成，获取学习模型参数
-//        ModelParameter modelParameter = templeConfig.getModel();
-//       //将模型model保存数据库
-//        String model = JSON.toJSONString(modelParameter);
-//        System.out.println(model);
     }
 }

@@ -343,7 +343,7 @@ public class Operation {//进行计算
         int y = matrix.getY();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                double nub = matrix.getNumber(i, j) / 300;
+                double nub = matrix.getNumber(i, j) / 255;
                 list.add(nub);
             }
         }

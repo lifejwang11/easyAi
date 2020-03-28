@@ -94,22 +94,44 @@ public class ImageSegmentation {
                 }
             }
         }
-        mergeMST();
-
+        for (int i = 0; i < 3; i++) {
+            mergeMSTX();
+        }
     }
 
-    private void mergeMST() throws Exception {//合并选区
+
+    private void mergeMSTX() throws Exception {//合并选区
         int x = matrix.getX() - 1;
         int y = matrix.getY() - 1;
-        double now = 0;
+        int now = (int) regionMap.getNumber(1, 1);
+        int nowX = 1;
+        int nowY = 1;
         for (int i = 1; i < x; i++) {
             for (int j = 1; j < y; j++) {
-                double self = regionMap.getNumber(i, j);
-                if (now == 0) {
-                    now = self;
-                } else if (now != self) {//区域NOW尝试与区域self合并
-
+                int self = (int) regionMap.getNumber(i, j);
+                if (now != self) {//遇到不同选区 区域NOW尝试与区域self合并
+                    double nowPoint = matrix.getNumber(nowX, nowY);
+                    double selfPoint = matrix.getNumber(i, j);
+                    RegionBody nowMST = regionBodyList.get(now);
+                    RegionBody selfMST = regionBodyList.get(self);
+                    double nowDiff = nowMST.getMaxDiff();
+                    double selfDiff = selfMST.getMaxDiff();
+                    double diff = Math.abs(nowPoint - selfPoint);//当前边的差异性
+                    double minDiff;
+                    if (nowDiff > selfDiff) {//差异性最小的是SELF
+                        minDiff = selfDiff;
+                    } else {//差异性最小的是NOW
+                        minDiff = nowDiff;
+                    }
+                    if (diff <= minDiff) {//进行合并
+                        nowMST.merge(selfMST, regionMap);
+                        regionBodyList.remove(self);
+                    } else {//不进行合并
+                        now = self;
+                    }
                 }
+                nowX = i;
+                nowY = j;
             }
         }
     }

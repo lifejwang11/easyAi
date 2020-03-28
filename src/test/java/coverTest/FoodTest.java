@@ -1,7 +1,6 @@
 package coverTest;
 
 import com.alibaba.fastjson.JSON;
-import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.ModelData;
 import org.wlld.config.Classifier;
@@ -18,7 +17,7 @@ public class FoodTest {
 
     public static void main(String[] args) throws Exception {
         Picture picture = new Picture();
-        Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a1.jpg");
+        Matrix a = picture.getImageMatrixByLocal("D:\\share/t1.jpg");
         ImageSegmentation imageSegmentation = new ImageSegmentation(a);
         imageSegmentation.createMST();
         //food();
