@@ -93,7 +93,7 @@ public class CoverTest {
         //初始化模板 注意 width height参数是你训练图片的实际尺寸需要改，其他不用动
         //创建运算类进行标注
         templeConfig.setActiveFunction(new Sigmod());
-        //templeConfig.setRzType(RZ.L2);
+        //templeConfig.setRzType(RZ.L1);
         //templeConfig.setlParam(0.015);
         templeConfig.isShowLog(true);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 640, 480, 2);

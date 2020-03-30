@@ -24,13 +24,93 @@ import java.util.Map;
 public class PicTest {
     public static void main(String[] args) throws Exception {
         Picture picture = new Picture();
-        Matrix right = picture.getImageMatrixByLocal("D:\\share/a1.jpg");
-        Matrix wrong = picture.getImageMatrixByLocal("D:\\share/b1.jpg");
-        Matrix a = picture.getImageMatrixByLocal("D:\\share/c1.jpg");
-        Matrix b = picture.getImageMatrixByLocal("D:\\share/d1.jpg");
-        //segImage(right, wrong, a, b);
+        Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a1.jpg");
+        Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b1.jpg");
+        Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c1.jpg");
+        Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d1.jpg");
+        segImage(right, wrong, a, b);
 
-        testImage(right, wrong, a, b);
+        //testImage(right, wrong, a, b);
+        //test();
+    }
+
+    public static void test() throws Exception {//对图像进行识别测试
+        Picture picture = new Picture();
+        TempleConfig templeConfig = new TempleConfig();
+        templeConfig.setClassifier(Classifier.DNN);
+        templeConfig.isShowLog(true);
+        templeConfig.setMatrixWidth(1);
+        templeConfig.setRzType(RZ.L1);
+        templeConfig.setlParam(0.5);//0.015
+        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 18, 18, 4);
+        Operation operation = new Operation(templeConfig);
+        for (int i = 1; i < 10; i++) {
+            Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
+            Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
+            Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
+            List<Matrix> rightLists = getFeatures2(a, 18);
+            List<Matrix> wrongLists = getFeatures2(b, 18);
+            List<Matrix> listList1 = getFeatures2(c, 18);
+            List<Matrix> listList2 = getFeatures2(d, 18);
+            int nu = listList1.size();
+            for (int j = 0; j < nu; j++) {
+                System.out.println("study1==========" + i);
+                Matrix aj = rightLists.get(j);
+                Matrix bj = wrongLists.get(j);
+                Matrix cj = listList1.get(j);
+                Matrix dj = listList2.get(j);
+                operation.learning(aj, 1, false);
+                operation.learning(bj, 2, false);
+                operation.learning(cj, 3, false);
+                operation.learning(dj, 4, false);
+            }
+        }
+        for (int i = 1; i < 10; i++) {
+            Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
+            Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
+            Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
+            List<Matrix> rightLists = getFeatures2(a, 18);
+            List<Matrix> wrongLists = getFeatures2(b, 18);
+            List<Matrix> listList1 = getFeatures2(c, 18);
+            List<Matrix> listList2 = getFeatures2(d, 18);
+            int nu = listList1.size();
+            for (int j = 0; j < nu; j++) {
+                System.out.println("study1==========" + i);
+                Matrix aj = rightLists.get(j);
+                Matrix bj = wrongLists.get(j);
+                Matrix cj = listList1.get(j);
+                Matrix dj = listList2.get(j);
+                operation.normalization(aj, templeConfig.getConvolutionNerveManager());
+                operation.normalization(bj, templeConfig.getConvolutionNerveManager());
+                operation.normalization(cj, templeConfig.getConvolutionNerveManager());
+                operation.normalization(dj, templeConfig.getConvolutionNerveManager());
+            }
+        }
+        templeConfig.getNormalization().avg();
+        for (int i = 1; i < 10; i++) {
+            Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
+            Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
+            Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
+            List<Matrix> rightLists = getFeatures2(a, 18);
+            List<Matrix> wrongLists = getFeatures2(b, 18);
+            List<Matrix> listList1 = getFeatures2(c, 18);
+            List<Matrix> listList2 = getFeatures2(d, 18);
+            int nu = listList1.size();
+            for (int j = 0; j < nu; j++) {
+                System.out.println("study2==========" + i);
+                Matrix aj = rightLists.get(j);
+                Matrix bj = wrongLists.get(j);
+                Matrix cj = listList1.get(j);
+                Matrix dj = listList2.get(j);
+                operation.learning(aj, 1, true);
+                operation.learning(bj, 2, true);
+                operation.learning(cj, 3, true);
+                operation.learning(dj, 4, true);
+            }
+        }
     }
 
     public static void testImage(Matrix rightMatrix, Matrix wrongMatrix, Matrix matrix1, Matrix matrix2) throws Exception {
@@ -49,12 +129,13 @@ public class PicTest {
         templeConfig.setClassifier(Classifier.DNN);
         templeConfig.setMatrixWidth(1);
         templeConfig.isShowLog(true);
+        templeConfig.setMatrixWidth(1);
         templeConfig.setRzType(RZ.L2);
         templeConfig.setlParam(0.015);//0.015
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 18, 18, 4);
         Operation operation = new Operation(templeConfig);
         System.out.println("x==" + x + ",y==" + y + ",nu==" + nu);
-        for (int j = 0; j < 2; j++) {
+        for (int j = 0; j < 1; j++) {
             for (int i = 0; i < nu; i++) {
                 System.out.println("study1==========" + i);
                 Matrix a = rightLists.get(i);
@@ -94,14 +175,22 @@ public class PicTest {
 
     }
 
+    public static void test1(Matrix matrix, Operation operation) throws Exception {
+        matrix = late(matrix, 5);
+        int max = matrix.getX() * matrix.getY();
+        List<List<Double>> rightLists = getFeatures(matrix);
+        int size = rightLists.size();
+        
+    }
+
     public static void segImage(Matrix rightMatrix, Matrix wrongMatrix, Matrix matrix1, Matrix matrix2) throws Exception {
         NerveManager nerveManager = new NerveManager(9, 9, 4, 2, new Tanh(),
-                false, false, 0.1, RZ.L1, 0.02);
+                false, false, 0.1, RZ.L1, 0.5);
         nerveManager.init(true, false, true);
-        rightMatrix = late(rightMatrix, 3);
-        wrongMatrix = late(wrongMatrix, 3);
-        matrix1 = late(matrix1, 3);
-        matrix2 = late(matrix2, 3);
+        rightMatrix = late(rightMatrix, 5);
+        wrongMatrix = late(wrongMatrix, 5);
+        matrix1 = late(matrix1, 5);
+        matrix2 = late(matrix2, 5);
         Map<Integer, Double> right = new HashMap<>();
         Map<Integer, Double> wrong = new HashMap<>();
         Map<Integer, Double> lists1 = new HashMap<>();
@@ -116,7 +205,7 @@ public class PicTest {
         List<List<Double>> listList1 = getFeatures(matrix1);
         List<List<Double>> listList2 = getFeatures(matrix2);
         int size = rightLists.size();
-        System.out.println("SIZE==" + (size / 18));
+        System.out.println("SIZE==" + size);
 
         double all = 0;
         int nub = 0;
@@ -161,7 +250,7 @@ public class PicTest {
         }
         for (int j = 0; j < 1; j++) {
             for (int i = 0; i < size; i++) {
-                System.out.println("i============================================" + i);
+                System.out.println("i========================" + i);
                 List<Double> rightList = rightLists.get(i);
                 List<Double> wrongList = wrongLists.get(i);
                 List<Double> list1 = listList1.get(i);
