@@ -72,7 +72,7 @@ public class FoodTest {
                 Matrix a = picture.getImageMatrixByLocal("D:\\share\\cai/a" + i + ".jpg");
                 Matrix b = picture.getImageMatrixByLocal("D:\\share\\cai/b" + i + ".jpg");
                 Matrix c = picture.getImageMatrixByLocal("D:\\share\\cai/c" + i + ".jpg");
-               // Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
+                // Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
                 //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
                 //第二次学习的时候，第三个参数必须是 true
                 operation.learning(a, 1, true);
@@ -116,31 +116,5 @@ public class FoodTest {
         ModelParameter modelParameter = templeConfig.getModel();
         String model = JSON.toJSONString(modelParameter);
         System.out.println(model);
-    }
-
-    public static void test1() throws Exception {//覆盖率计算
-        Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig(false, true);
-        templeConfig.init(StudyPattern.Cover_Pattern, true, 320, 240, 2);
-        Operation operation = new Operation(templeConfig);
-        Map<Integer, Double> rightTagging = new HashMap<>();//分类标注
-        Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
-        rightTagging.put(1, 1.0);
-        wrongTagging.put(2, 1.0);
-        Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/yes1.jpg");
-        Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/no4.jpg");
-        int a = 1;
-//        for (int i = 0; i < a; i++) {
-//            operation.coverStudy(right, rightTagging, wrong, wrongTagging);
-//        }
-        System.out.println("学习完成");
-        long sys = System.currentTimeMillis();
-        double point = operation.coverPoint(right);
-        long sys2 = System.currentTimeMillis();
-        long sys3 = sys2 - sys;
-        double point2 = operation.coverPoint(wrong);
-        System.out.println("识别耗时：" + sys3);
-        System.out.println("测试覆盖1：" + point + ",测试覆盖2:" + point2);
-
     }
 }

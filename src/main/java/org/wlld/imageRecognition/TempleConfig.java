@@ -49,8 +49,7 @@ public class TempleConfig {
     private boolean isThreeChannel = false;//是否启用三通道
     private int classifier = Classifier.VAvg;//默认分类类别使用的是向量均值分类
     private Normalization normalization = new Normalization();//统一归一化
-    private double avg = 0;//覆盖均值
-    private int sensoryNerveNub;//输入神经元个数
+    private int sensoryNerveNub = 9;//输入神经元个数
     private boolean isShowLog = false;
     private ActiveFunction activeFunction = new Tanh();
     private double studyPoint = 0;
@@ -90,14 +89,6 @@ public class TempleConfig {
 
     public void setActiveFunction(ActiveFunction activeFunction) {//设置激活函数
         this.activeFunction = activeFunction;
-    }
-
-    public double getAvg() {
-        return avg;
-    }
-
-    public void setAvg(double avg) {
-        this.avg = avg;
     }
 
     public Normalization getNormalization() {//获取归一化类
@@ -426,7 +417,6 @@ public class TempleConfig {
             ModelParameter modelParameter1 = nerveManager.getModelParameter();
             modelParameter.setDepthNerves(modelParameter1.getDepthNerves());
             modelParameter.setOutNerves(modelParameter1.getOutNerves());
-            modelParameter.setAvg(avg);
         }
         if (isHavePosition && kClusteringMap != null && kClusteringMap.size() > 0) {//存在边框学习模型参数
             Map<Integer, KBorder> kBorderMap = kToBody();
@@ -504,7 +494,6 @@ public class TempleConfig {
             nerveManager.insertModelParameter(modelParameter);
         } else if (studyPattern == StudyPattern.Cover_Pattern) {
             nerveManager.insertModelParameter(modelParameter);
-            avg = modelParameter.getAvg();
         }
         if (modelParameter.getFrame() != null) {
             frame = modelParameter.getFrame();
