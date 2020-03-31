@@ -6,7 +6,9 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.ModelData;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
+import org.wlld.function.ReLu;
 import org.wlld.function.Sigmod;
+import org.wlld.function.Tanh;
 import org.wlld.imageRecognition.Operation;
 import org.wlld.imageRecognition.Picture;
 import org.wlld.imageRecognition.TempleConfig;
@@ -44,7 +46,7 @@ public class CoverTest {
         Operation operation = new Operation(templeConfig);//初始化运算类
         Picture picture = new Picture();
         Matrix pic1 = picture.getImageMatrixByLocal(url);//从本地磁盘读取图片
-        double point = operation.coverPoint(pic1, 1);//获取覆盖率
+        double point = operation.coverPoint(pic1);//获取覆盖率
         Matrix pic2 = picture.getImageMatrixByIo(inputStream);//从输入流读取图片
     }
 
@@ -92,27 +94,39 @@ public class CoverTest {
         TempleConfig templeConfig = new TempleConfig();
         //初始化模板 注意 width height参数是你训练图片的实际尺寸需要改，其他不用动
         //创建运算类进行标注
-        templeConfig.setActiveFunction(new Sigmod());
-        //templeConfig.setRzType(RZ.L1);
-        //templeConfig.setlParam(0.015);
+        //templeConfig.setActiveFunction(new Sigmod());
+        templeConfig.setDeep(1);//不动了
+        templeConfig.setSensoryNerveNub(9);
         templeConfig.isShowLog(true);
-        templeConfig.init(StudyPattern.Cover_Pattern, true, 640, 480, 2);
+        templeConfig.setStudyPoint(0.01);//不动
+        templeConfig.setSoftMax(true);
+        templeConfig.setRzType(RZ.L1);//不动
+        templeConfig.setlParam(0.01);//不动
+        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         Operation operation = new Operation(templeConfig);
         Map<Integer, Double> rightTagging = new HashMap<>();//分类标注
         Map<Integer, Double> wrongTagging = new HashMap<>();//分类标注
+        Map<Integer, Double> testTagging = new HashMap<>();//分类标注
         rightTagging.put(1, 1.0);//100%桔梗全覆盖标注
         wrongTagging.put(2, 1.0);//0%桔梗无覆盖标注
-        Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/b.jpg");
-        Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/a.jpg");
-        operation.coverStudy(right, rightTagging, wrong, wrongTagging);
+        testTagging.put(3, 1.0);
+        for (int j = 1; j < 2; j++) {
+            for (int i = 1; i < 50; i++) {
+                Matrix right = picture.getImageMatrixByLocal("D:\\share\\cai/a" + i + ".jpg");
+                Matrix wrong = picture.getImageMatrixByLocal("D:\\share\\cai/b" + i + ".jpg");
+                Matrix test = picture.getImageMatrixByLocal("D:\\share\\cai/c" + i + ".jpg");
+                //Matrix test2 = picture.getImageMatrixByLocal("D:\\share\\jb/f" + i + ".jpg");
+                operation.coverStudy(right, rightTagging, wrong, wrongTagging, test, testTagging);
+            }
+        }
 
         //识别初的该图片所属的分类id,既为训练时设定的标注
-        Matrix pic1 = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/a.jpg");//从本地磁盘读取图片
-        Matrix pic2 = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/picture/b.jpg");//从本地磁盘读取图片
-        double point = operation.coverPoint(pic1, 1);//获取覆盖率
-        double point2 = operation.coverPoint(pic2, 1);//获取覆盖率
+        Matrix pic1 = picture.getImageMatrixByLocal("D:\\share\\cai/a20.jpg");//从本地磁盘读取图片
+        Matrix pic2 = picture.getImageMatrixByLocal("D:\\share\\cai/b20.jpg");//从本地磁盘读取图片
+        Matrix pic3 = picture.getImageMatrixByLocal("D:\\share\\cai/c20.jpg");//从本地磁盘读取图片
+        double point = operation.coverPoint(pic1);//获取覆盖率
+        double point2 = operation.coverPoint(pic2);//获取覆盖率
+        double point3 = operation.coverPoint(pic3);//获取覆盖率
 
-        System.out.println("point==" + point);
-        System.out.println("point2==" + point2);
     }
 }

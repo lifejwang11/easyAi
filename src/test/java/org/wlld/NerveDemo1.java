@@ -35,7 +35,7 @@ public class NerveDemo1 {
          */
         NerveManager nerveManager = new NerveManager(2, 6, 1, 4, new Sigmod(),
                 false, true, 0, RZ.NOT_RZ, 0);
-        nerveManager.init(true, false, false);
+        nerveManager.init(true, false, false, false);
 
 
         //创建训练
@@ -112,7 +112,7 @@ public class NerveDemo1 {
         NerveManager nerveManager = new NerveManager(3, 6, 3
                 , 3, new Sigmod(),
                 false, true, 0, RZ.NOT_RZ, 0);
-        nerveManager.init(true, false, false);//初始化
+        nerveManager.init(true, false, false,false);//初始化
         List<Map<Integer, Double>> data = new ArrayList<>();//正样本
         List<Map<Integer, Double>> dataB = new ArrayList<>();//负样本
         List<Map<Integer, Double>> dataC = new ArrayList<>();//负样本

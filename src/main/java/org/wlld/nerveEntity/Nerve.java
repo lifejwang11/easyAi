@@ -333,7 +333,7 @@ public abstract class Nerve {
         son.addAll(nerveList);//连接下一层
     }
 
-    public void connectFathor(List<Nerve> nerveList) {
+    public void connectFather(List<Nerve> nerveList) {
         father.addAll(nerveList);//连接上一层
     }
 }

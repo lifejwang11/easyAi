@@ -35,7 +35,7 @@ public class TempleConfig {
     private boolean isAccurate = false;//是否保留精度
     private int row = 5;//行的最小比例
     private int column = 3;//列的最小比例
-    private int deep = 2;//默认深度
+    private int deep = 1;//默认深度
     private int classificationNub = 2;//分类的数量
     private int studyPattern;//学习模式
     private boolean isHavePosition = false;//是否需要锁定物体位置
@@ -58,6 +58,15 @@ public class TempleConfig {
     private int rzType = RZ.NOT_RZ;//正则化类型，默认不进行正则化
     private double lParam = 0;//正则参数
     private int hiddenNerveNub = 9;//隐层神经元个数
+    private boolean isSoftMax = false;//是否启用softMax层
+
+    public void setSoftMax(boolean softMax) {
+        isSoftMax = softMax;
+    }
+
+    public void setSensoryNerveNub(int sensoryNerveNub) {
+        this.sensoryNerveNub = sensoryNerveNub;
+    }
 
     public void setHiddenNerveNub(int hiddenNerveNub) {//设置隐层宽度
         this.hiddenNerveNub = hiddenNerveNub;
@@ -250,7 +259,7 @@ public class TempleConfig {
                 initConvolutionVision(initPower, width, height);
                 break;
             case StudyPattern.Cover_Pattern://覆盖学习模式
-                initNerveManager(initPower, 9, deep, studyPoint);
+                initNerveManager(initPower, sensoryNerveNub, deep, studyPoint);
                 break;
         }
     }
@@ -274,7 +283,7 @@ public class TempleConfig {
         nerveManager = new NerveManager(sensoryNerveNub, hiddenNerveNub,
                 classificationNub, deep, activeFunction,
                 false, isAccurate, studyPoint, rzType, lParam);
-        nerveManager.init(initPower, false, isShowLog);
+        nerveManager.init(initPower, false, isShowLog, isSoftMax);
     }
 
     private void initConvolutionVision(boolean initPower, int width, int height) throws Exception {//精准模式
@@ -328,7 +337,7 @@ public class TempleConfig {
                 1, deep - 1, new ReLu(),
                 true, isAccurate, studyPoint, rzType, lParam);
         convolutionNerveManager.setMatrixMap(matrixMap);//给卷积网络管理器注入期望矩阵
-        convolutionNerveManager.init(initPower, true, isShowLog);
+        convolutionNerveManager.init(initPower, true, isShowLog, false);
         return convolutionNerveManager;
     }
 

@@ -180,13 +180,13 @@ public class PicTest {
         int max = matrix.getX() * matrix.getY();
         List<List<Double>> rightLists = getFeatures(matrix);
         int size = rightLists.size();
-        
+
     }
 
     public static void segImage(Matrix rightMatrix, Matrix wrongMatrix, Matrix matrix1, Matrix matrix2) throws Exception {
         NerveManager nerveManager = new NerveManager(9, 9, 4, 2, new Tanh(),
                 false, false, 0.1, RZ.L1, 0.5);
-        nerveManager.init(true, false, true);
+        nerveManager.init(true, false, true, false);
         rightMatrix = late(rightMatrix, 5);
         wrongMatrix = late(wrongMatrix, 5);
         matrix1 = late(matrix1, 5);
