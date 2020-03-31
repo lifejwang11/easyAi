@@ -4,7 +4,6 @@ package org.wlld.imageRecognition;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Classifier;
-import org.wlld.config.Kernel;
 import org.wlld.config.StudyPattern;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
@@ -25,11 +24,9 @@ public class Operation {//进行计算
     private MatrixBack matrixBack = new MatrixBack();
     private ImageBack imageBack = new ImageBack();
     private OutBack outBack;
-    private double avg;
 
     public Operation(TempleConfig templeConfig) {
         this.templeConfig = templeConfig;
-        avg = templeConfig.getAvg();
     }
 
     public Operation(TempleConfig templeConfig, OutBack outBack) {
@@ -58,80 +55,62 @@ public class Operation {//进行计算
         return sub(matrix1);
     }
 
-    private double one(List<List<Double>> rightLists, double sigma) {
-        for (List<Double> list : rightLists) {
-            for (double nub : list) {
-                sigma = ArithUtil.add(nub, sigma);
-            }
-        }
-        return sigma;
-    }
-
-    private void lastOne(List<List<Double>> rightLists, double avg) {
-        for (List<Double> list : rightLists) {
-            for (int i = 0; i < list.size(); i++) {
-                list.set(i, ArithUtil.sub(list.get(i), avg));
-            }
-        }
-    }
-
     //从一张图片的局部进行学习
-    public void coverStudy(Matrix matrixRight, Map<Integer, Double> right
-            , Matrix matrixWrong, Map<Integer, Double> wrong) throws Exception {
+    public void coverStudy(Map<Integer, Matrix> matrixMap, int poolSize, int nerveNub) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
-            //先用边缘算子卷一遍
-            matrixRight = convolution.late(convolution.getBorder(matrixRight, Kernel.ALL_Two), 2);
-            matrixWrong = convolution.late(convolution.getBorder(matrixWrong, Kernel.ALL_Two), 2);
-            List<List<Double>> rightLists = getFeatures(matrixRight);
-            List<List<Double>> wrongLists = getFeatures(matrixWrong);
-            int nub = rightLists.size() * 2 * 9;
-            double sigma = one(rightLists, 0);
-            sigma = one(rightLists, sigma);
-            avg = ArithUtil.div(sigma, nub);
-            System.out.println("AVG==" + avg);
-            templeConfig.setAvg(avg);
-            lastOne(rightLists, avg);
-            lastOne(wrongLists, avg);
+            int size = 0;
+            List<CoverBody> coverBodies = new ArrayList<>();
+            for (Map.Entry<Integer, Matrix> entry : matrixMap.entrySet()) {
+                CoverBody coverBody = new CoverBody();
+                Matrix matrix = convolution.late(entry.getValue(), poolSize);
+                Map<Integer, Double> tag = new HashMap<>();
+                tag.put(entry.getKey(), 1.0);
+                List<List<Double>> lists = getFeatures(matrix, nerveNub);
+                size = lists.size();
+                coverBody.setFeature(lists);
+                coverBody.setTag(tag);
+                coverBodies.add(coverBody);
+            }
             //特征塞入容器完毕
-            int size = rightLists.size();
-            for (int j = 0; j < 1; j++) {
-                for (int i = 0; i < size; i++) {
-                    System.out.println("=============================" + i);
-                    List<Double> rightList = rightLists.get(i);
-                    List<Double> wrongList = wrongLists.get(i);
-                    intoDnnNetwork(1, rightList, templeConfig.getSensoryNerves(), true, right, null);
-                    intoDnnNetwork(1, wrongList, templeConfig.getSensoryNerves(), true, wrong, null);
-                    //System.out.println("right:" + rightList);
-                    //System.out.println("wrong:" + wrongList);
+            for (int i = 0; i < size; i++) {
+                for (CoverBody coverBody : coverBodies) {
+                    List<Double> list = coverBody.getFeature().get(i);
+                    intoDnnNetwork(1, list, templeConfig.getSensoryNerves(), true, coverBody.getTag(), null);
                 }
             }
+
         } else {
             throw new Exception("PATTERN IS NOT COVER");
         }
     }
 
-    public double coverPoint(Matrix matrix, int rightId) throws Exception {
+    public Map<Integer, Double> coverPoint(Matrix matrix, int poolSize, int nerveNub) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
-            matrix = convolution.late(convolution.getBorder(matrix, Kernel.ALL_Two), 2);
-            List<List<Double>> lists = getFeatures(matrix);
+            Map<Integer, Double> coverMap = new HashMap<>();
+            Map<Integer, Integer> typeNub = new HashMap<>();
+            matrix = convolution.late(matrix, poolSize);
+            List<List<Double>> lists = getFeatures(matrix, nerveNub);
             //特征塞入容器完毕
             int size = lists.size();
-            int right = 0;
             int all = 0;
-            lastOne(lists, avg);
             for (int i = 0; i < size; i++) {
                 List<Double> list = lists.get(i);
                 MaxPoint maxPoint = new MaxPoint();
                 long pid = IdCreator.get().nextId();
                 intoDnnNetwork(pid, list, templeConfig.getSensoryNerves(), false, null, maxPoint);
                 int id = maxPoint.getId();
-                if (id == rightId) {
-                    right++;
+                if (typeNub.containsKey(id)) {
+                    typeNub.put(id, typeNub.get(id) + 1);
+                } else {
+                    typeNub.put(id, 1);
                 }
                 all++;
             }
-            //ArithUtil.div(coverBody.getRightNub(), size)
-            return ArithUtil.div(right, all);
+            for (Map.Entry<Integer, Integer> entry : typeNub.entrySet()) {
+                int nub = entry.getValue();
+                coverMap.put(entry.getKey(), ArithUtil.div(nub, all));
+            }
+            return coverMap;
         } else {
             throw new Exception("PATTERN IS NOT COVER");
         }
@@ -324,13 +303,13 @@ public class Operation {//进行计算
         return list;
     }
 
-    private List<List<Double>> getFeatures(Matrix matrix) throws Exception {
+    private List<List<Double>> getFeatures(Matrix matrix, int size) throws Exception {
         List<List<Double>> lists = new ArrayList<>();
-        int x = matrix.getX() - 3;//求导后矩阵的行数
-        int y = matrix.getY() - 3;//求导后矩阵的列数
-        for (int i = 0; i < x; i += 3) {//遍历行
-            for (int j = 0; j < y; j += 3) {//遍历每行的列
-                Matrix myMatrix = matrix.getSonOfMatrix(i, j, 3, 3);
+        int x = matrix.getX() - size;//求导后矩阵的行数
+        int y = matrix.getY() - size;//求导后矩阵的列数
+        for (int i = 0; i < x; i += size) {//遍历行
+            for (int j = 0; j < y; j += size) {//遍历每行的列
+                Matrix myMatrix = matrix.getSonOfMatrix(i, j, size, size);
                 lists.add(getListFeature(myMatrix));
             }
         }
@@ -343,7 +322,7 @@ public class Operation {//进行计算
         int y = matrix.getY();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                double nub = matrix.getNumber(i, j) / 300;
+                double nub = matrix.getNumber(i, j) / 255;
                 list.add(nub);
             }
         }

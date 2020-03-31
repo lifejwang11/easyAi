@@ -20,20 +20,25 @@ import java.util.Map;
 public class OutNerve extends Nerve {
     private Map<Integer, Matrix> matrixMapE;//主键与期望矩阵的映射
     private boolean isShowLog;
+    private boolean isSoftMax;
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic, boolean isAccurate
-            , boolean isShowLog, int rzType, double lParam) throws Exception {
+            , boolean isShowLog, int rzType, double lParam, boolean isSoftMax) throws Exception {
         super(id, upNub, "OutNerve", downNub, studyPoint, init,
                 activeFunction, isDynamic, isAccurate, rzType, lParam);
         this.isShowLog = isShowLog;
+        this.isSoftMax = isSoftMax;
     }
 
+    void getGBySoftMax(double g, long eventId, int id) throws Exception {//接收softMax层回传梯度
+        gradient = g;
+        updatePower(eventId);
+    }
 
     public void setMatrixMap(Map<Integer, Matrix> matrixMap) {
         matrixMapE = matrixMap;
     }
-
 
     @Override
     public void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
@@ -41,26 +46,33 @@ public class OutNerve extends Nerve {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
             double sigma = calculation(eventId);
-            double out = activeFunction.function(sigma);
-            if (isStudy) {//输出结果并进行BP调整权重及阈值
-                outNub = out;
-                if (E.containsKey(getId())) {
-                    this.E = E.get(getId());
-                } else {
-                    this.E = 0;
+            if (isSoftMax) {
+                if (!isStudy) {
+                    destoryParameter(eventId);
                 }
-                if (isShowLog) {
-                    System.out.println("E==" + this.E + ",out==" + out + ",nerveId==" + getId());
-                }
-                gradient = outGradient();//当前梯度变化
-                //调整权重 修改阈值 并进行反向传播
-                updatePower(eventId);
-            } else {//获取最后输出
-                destoryParameter(eventId);
-                if (outBack != null) {
-                    outBack.getBack(out, getId(), eventId);
-                } else {
-                    throw new Exception("not find outBack");
+                sendMessage(eventId, sigma, isStudy, E, outBack);
+            } else {
+                double out = activeFunction.function(sigma);
+                if (isStudy) {//输出结果并进行BP调整权重及阈值
+                    outNub = out;
+                    if (E.containsKey(getId())) {
+                        this.E = E.get(getId());
+                    } else {
+                        this.E = 0;
+                    }
+                    if (isShowLog) {
+                        System.out.println("E==" + this.E + ",out==" + out + ",nerveId==" + getId());
+                    }
+                    gradient = outGradient();//当前梯度变化
+                    //调整权重 修改阈值 并进行反向传播
+                    updatePower(eventId);
+                } else {//获取最后输出
+                    destoryParameter(eventId);
+                    if (outBack != null) {
+                        outBack.getBack(out, getId(), eventId);
+                    } else {
+                        throw new Exception("not find outBack");
+                    }
                 }
             }
         }

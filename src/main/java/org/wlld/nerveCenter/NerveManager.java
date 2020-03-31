@@ -24,6 +24,7 @@ public class NerveManager {
     private List<SensoryNerve> sensoryNerves = new ArrayList<>();//感知神经元
     private List<List<Nerve>> depthNerves = new ArrayList<>();//隐层神经元
     private List<Nerve> outNerves = new ArrayList<>();//输出神经元
+    private List<Nerve> softMaxList = new ArrayList<>();//softMax层
     private boolean initPower;
     private double studyPoint = 0.1;//学习率
     private ActiveFunction activeFunction;
@@ -256,25 +257,35 @@ public class NerveManager {
      * @param isMatrix  参数是否是一个矩阵
      * @throws Exception
      */
-    public void init(boolean initPower, boolean isMatrix, boolean isShowLog) throws Exception {//进行神经网络的初始化构建
+    public void init(boolean initPower, boolean isMatrix, boolean isShowLog, boolean isSoftMax) throws Exception {//进行神经网络的初始化构建
         this.initPower = initPower;
         initDepthNerve(isMatrix);//初始化深度隐层神经元
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
         //最后一层隐层神经元啊
-        List<Nerve> lastNeveList = depthNerves.get(depthNerves.size() - 1);
+        List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
-                    activeFunction, isMatrix, isAccurate, isShowLog, rzType, lParam);
+                    activeFunction, isMatrix, isAccurate, isShowLog, rzType, lParam, isSoftMax);
             if (isMatrix) {//是卷积层神经网络
                 outNerve.setMatrixMap(matrixMap);
             }
+            if (isSoftMax) {
+                SoftMax softMax = new SoftMax(i, outNerveNub, false, outNerve,isShowLog);
+                softMaxList.add(softMax);
+            }
             //输出层神经元连接最后一层隐层神经元
-            outNerve.connectFathor(lastNeveList);
+            outNerve.connectFather(lastNerveList);
             outNerves.add(outNerve);
         }
+        //生成softMax层
+        if (isSoftMax) {//增加softMax层
+            for (Nerve nerve : outNerves) {
+                nerve.connect(softMaxList);
+            }
+        }
         //最后一层隐层神经元 与输出神经元进行连接
-        for (Nerve nerve : lastNeveList) {
+        for (Nerve nerve : lastNerveList) {
             nerve.connect(outNerves);
         }
 
@@ -328,7 +339,7 @@ public class NerveManager {
                 hiddenNerve.connect(nextHiddenNerveList);
             }
             for (Nerve nextHiddenNerve : nextHiddenNerveList) {
-                nextHiddenNerve.connectFathor(hiddenNerveList);
+                nextHiddenNerve.connectFather(hiddenNerveList);
             }
         }
     }

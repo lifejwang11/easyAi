@@ -21,8 +21,36 @@ public class RegionBody {
     private double maxPixel = 0;//最大像素值
     private List<Integer> pixels = new ArrayList<>();
 
+    public int getMinX() {
+        return minX;
+    }
+
+    public int getMaxX() {
+        return maxX;
+    }
+
+    public int getMinY() {
+        return minY;
+    }
+
+    public int getMaxY() {
+        return maxY;
+    }
+
     RegionBody(int id) {
         this.id = id;
+    }
+
+    public double getMaxDiff() {
+        return maxPixel - minPixel;
+    }
+
+    public int getHeight() {
+        return maxX - minX;
+    }
+
+    public int getWidth() {
+        return maxY - minY;
     }
 
     public void merge(RegionBody body, Matrix regionMap) throws Exception {//合并区域
