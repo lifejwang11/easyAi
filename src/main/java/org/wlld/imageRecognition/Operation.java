@@ -4,6 +4,7 @@ package org.wlld.imageRecognition;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Classifier;
+import org.wlld.config.Kernel;
 import org.wlld.config.StudyPattern;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
@@ -62,7 +63,7 @@ public class Operation {//进行计算
             List<CoverBody> coverBodies = new ArrayList<>();
             for (Map.Entry<Integer, Matrix> entry : matrixMap.entrySet()) {
                 CoverBody coverBody = new CoverBody();
-                Matrix matrix = convolution.late(entry.getValue(), poolSize);
+                Matrix matrix = convolution.late(convolution.getBorder(entry.getValue(), Kernel.ALL_Two), poolSize);
                 Map<Integer, Double> tag = new HashMap<>();
                 tag.put(entry.getKey(), 1.0);
                 List<List<Double>> lists = getFeatures(matrix, nerveNub);
@@ -88,7 +89,7 @@ public class Operation {//进行计算
         if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
             Map<Integer, Double> coverMap = new HashMap<>();
             Map<Integer, Integer> typeNub = new HashMap<>();
-            matrix = convolution.late(matrix, poolSize);
+            matrix = convolution.late(convolution.getBorder(matrix, Kernel.ALL_Two), poolSize);
             List<List<Double>> lists = getFeatures(matrix, nerveNub);
             //特征塞入容器完毕
             int size = lists.size();
