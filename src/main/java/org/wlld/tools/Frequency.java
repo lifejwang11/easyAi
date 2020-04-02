@@ -12,6 +12,15 @@ public abstract class Frequency {//统计频数
         return allNub;
     }
 
+    public double sigma(double... m) {//求和
+        int len = m.length;
+        double allNub = 0;
+        for (int i = 0; i < len; i++) {
+            allNub = ArithUtil.add(allNub, m[i]);
+        }
+        return allNub;
+    }
+
     public double getPointLength(double x, double y, double i, double j) {//获取两个二维坐标之间的欧式距离
         return Math.sqrt(ArithUtil.add(Math.pow(ArithUtil.sub(x, i), 2), Math.pow(ArithUtil.sub(y, j), 2)));
     }
@@ -29,6 +38,14 @@ public abstract class Frequency {//统计频数
     public double sd(double... m) {//计算标准差
         double var = variance(m);
         return Math.sqrt(var);
+    }
+
+    public double dcByAvg(double[] m, double ave) {//带均值算离散
+        double allNub = 0;
+        for (int i = 0; i < m.length; i++) {
+            allNub = allNub + Math.pow(m[i] - ave, 2);
+        }
+        return ArithUtil.div(Math.sqrt(ArithUtil.div(allNub, m.length)), ave);//离散系数
     }
 
     public double dc(double... m) {//计算离散系数

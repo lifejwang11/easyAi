@@ -63,7 +63,7 @@ public class Operation {//进行计算
             List<CoverBody> coverBodies = new ArrayList<>();
             for (Map.Entry<Integer, Matrix> entry : matrixMap.entrySet()) {
                 CoverBody coverBody = new CoverBody();
-                Matrix matrix = convolution.late(convolution.getBorder(entry.getValue(), Kernel.ALL_Two), poolSize);
+                Matrix matrix = convolution.late(convolution.getBorder(entry.getValue(), Kernel.All), poolSize);
                 Map<Integer, Double> tag = new HashMap<>();
                 tag.put(entry.getKey(), 1.0);
                 List<List<Double>> lists = getFeatures(matrix, nerveNub);
@@ -76,6 +76,7 @@ public class Operation {//进行计算
             for (int i = 0; i < size; i++) {
                 for (CoverBody coverBody : coverBodies) {
                     List<Double> list = coverBody.getFeature().get(i);
+                    System.out.println("feature:" + list);
                     intoDnnNetwork(1, list, templeConfig.getSensoryNerves(), true, coverBody.getTag(), null);
                 }
             }
@@ -89,7 +90,7 @@ public class Operation {//进行计算
         if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
             Map<Integer, Double> coverMap = new HashMap<>();
             Map<Integer, Integer> typeNub = new HashMap<>();
-            matrix = convolution.late(convolution.getBorder(matrix, Kernel.ALL_Two), poolSize);
+            matrix = convolution.late(convolution.getBorder(matrix, Kernel.All), poolSize);
             List<List<Double>> lists = getFeatures(matrix, nerveNub);
             //特征塞入容器完毕
             int size = lists.size();

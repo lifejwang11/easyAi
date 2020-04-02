@@ -23,15 +23,15 @@ import java.util.Map;
 
 public class PicTest {
     public static void main(String[] args) throws Exception {
-        Picture picture = new Picture();
-        Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a1.jpg");
-        Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b1.jpg");
-        Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c1.jpg");
-        Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d1.jpg");
-        segImage(right, wrong, a, b);
+        //Picture picture = new Picture();
+        //Matrix right = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a1.jpg");
+        //Matrix wrong = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b1.jpg");
+        //Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c1.jpg");
+        //Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d1.jpg");
+        //segImage(right, wrong, a, b);
 
         //testImage(right, wrong, a, b);
-        //test();
+        test();
     }
 
     public static void test() throws Exception {//对图像进行识别测试
@@ -39,76 +39,78 @@ public class PicTest {
         TempleConfig templeConfig = new TempleConfig();
         templeConfig.setClassifier(Classifier.DNN);
         templeConfig.isShowLog(true);
-        templeConfig.setMatrixWidth(1);
-        templeConfig.setRzType(RZ.L1);
-        templeConfig.setlParam(0.5);//0.015
-        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 18, 18, 4);
+        templeConfig.setMatrixWidth(10);
+        templeConfig.setSoftMax(true);
+        templeConfig.setStudyPoint(0.003);
+        templeConfig.setRzType(RZ.L2);
+        templeConfig.setlParam(0.01);//0.015
+        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 20, 20, 2);
         Operation operation = new Operation(templeConfig);
-        for (int i = 1; i < 10; i++) {
-            Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
-            Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
-            Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
-            Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
-            List<Matrix> rightLists = getFeatures2(a, 18);
-            List<Matrix> wrongLists = getFeatures2(b, 18);
-            List<Matrix> listList1 = getFeatures2(c, 18);
-            List<Matrix> listList2 = getFeatures2(d, 18);
-            int nu = listList1.size();
+        for (int i = 1; i < 90; i++) {
+            Matrix a = picture.getImageMatrixByLocal("D:\\share\\cai/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("D:\\share\\cai/b" + i + ".jpg");
+           // Matrix c = picture.getImageMatrixByLocal("D:\\share\\cai/c" + i + ".jpg");
+            // Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
+            List<Matrix> rightLists = getFeatures2(a, 20);
+            List<Matrix> wrongLists = getFeatures2(b, 20);
+            //List<Matrix> listList1 = getFeatures2(c, 20);
+            //List<Matrix> listList2 = getFeatures2(d, 18);
+            int nu = rightLists.size();
             for (int j = 0; j < nu; j++) {
                 System.out.println("study1==========" + i);
                 Matrix aj = rightLists.get(j);
                 Matrix bj = wrongLists.get(j);
-                Matrix cj = listList1.get(j);
-                Matrix dj = listList2.get(j);
+               // Matrix cj = listList1.get(j);
+                // Matrix dj = listList2.get(j);
                 operation.learning(aj, 1, false);
                 operation.learning(bj, 2, false);
-                operation.learning(cj, 3, false);
-                operation.learning(dj, 4, false);
+               // operation.learning(cj, 3, false);
+                //operation.learning(dj, 4, false);
             }
         }
-        for (int i = 1; i < 10; i++) {
-            Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
-            Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
-            Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
-            Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
-            List<Matrix> rightLists = getFeatures2(a, 18);
-            List<Matrix> wrongLists = getFeatures2(b, 18);
-            List<Matrix> listList1 = getFeatures2(c, 18);
-            List<Matrix> listList2 = getFeatures2(d, 18);
-            int nu = listList1.size();
+        for (int i = 1; i < 90; i++) {
+            Matrix a = picture.getImageMatrixByLocal("D:\\share\\cai/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("D:\\share\\cai/b" + i + ".jpg");
+            //Matrix c = picture.getImageMatrixByLocal("D:\\share\\cai/c" + i + ".jpg");
+            // Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
+            List<Matrix> rightLists = getFeatures2(a, 20);
+            List<Matrix> wrongLists = getFeatures2(b, 20);
+            //List<Matrix> listList1 = getFeatures2(c, 20);
+            //List<Matrix> listList2 = getFeatures2(d, 18);
+            int nu = rightLists.size();
             for (int j = 0; j < nu; j++) {
                 System.out.println("study1==========" + i);
                 Matrix aj = rightLists.get(j);
                 Matrix bj = wrongLists.get(j);
-                Matrix cj = listList1.get(j);
-                Matrix dj = listList2.get(j);
+               // Matrix cj = listList1.get(j);
+                //Matrix dj = listList2.get(j);
                 operation.normalization(aj, templeConfig.getConvolutionNerveManager());
                 operation.normalization(bj, templeConfig.getConvolutionNerveManager());
-                operation.normalization(cj, templeConfig.getConvolutionNerveManager());
-                operation.normalization(dj, templeConfig.getConvolutionNerveManager());
+                //operation.normalization(cj, templeConfig.getConvolutionNerveManager());
+                // operation.normalization(dj, templeConfig.getConvolutionNerveManager());
             }
         }
         templeConfig.getNormalization().avg();
-        for (int i = 1; i < 10; i++) {
-            Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
-            Matrix b = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/b" + i + ".jpg");
-            Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
-            Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
-            List<Matrix> rightLists = getFeatures2(a, 18);
-            List<Matrix> wrongLists = getFeatures2(b, 18);
-            List<Matrix> listList1 = getFeatures2(c, 18);
-            List<Matrix> listList2 = getFeatures2(d, 18);
-            int nu = listList1.size();
+        for (int i = 1; i < 90; i++) {
+            Matrix a = picture.getImageMatrixByLocal("D:\\share\\cai/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("D:\\share\\cai/b" + i + ".jpg");
+            //Matrix c = picture.getImageMatrixByLocal("D:\\share\\cai/c" + i + ".jpg");
+            //Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
+            List<Matrix> rightLists = getFeatures2(a, 20);
+            List<Matrix> wrongLists = getFeatures2(b, 20);
+            //List<Matrix> listList1 = getFeatures2(c, 20);
+            //List<Matrix> listList2 = getFeatures2(d, 18);
+            int nu = rightLists.size();
             for (int j = 0; j < nu; j++) {
                 System.out.println("study2==========" + i);
                 Matrix aj = rightLists.get(j);
                 Matrix bj = wrongLists.get(j);
-                Matrix cj = listList1.get(j);
-                Matrix dj = listList2.get(j);
+                //Matrix cj = listList1.get(j);
+                // Matrix dj = listList2.get(j);
                 operation.learning(aj, 1, true);
                 operation.learning(bj, 2, true);
-                operation.learning(cj, 3, true);
-                operation.learning(dj, 4, true);
+                //operation.learning(cj, 3, true);
+                //operation.learning(dj, 4, true);
             }
         }
     }

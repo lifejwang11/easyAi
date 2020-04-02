@@ -27,7 +27,7 @@ public class HelloWorld {
             //初始化
             templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 4);
             //从数据库里把模型拿出来，并反序列化成模型
-            ModelParameter modelParameter2 = JSON.parseObject(ModelData.DATA3, ModelParameter.class);
+            ModelParameter modelParameter2 = JSON.parseObject(ModelData.DATA, ModelParameter.class);
             //模型注入配置模板
             templeConfig.insertModel(modelParameter2);
         } catch (Exception e) {
