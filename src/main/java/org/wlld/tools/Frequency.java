@@ -1,5 +1,7 @@
 package org.wlld.tools;
 
+import java.util.List;
+
 public abstract class Frequency {//统计频数
 
     public double average(double... m) {//计算平均值
@@ -7,6 +9,16 @@ public abstract class Frequency {//统计频数
         double allNub = 0;
         for (int i = 0; i < len; i++) {
             allNub = allNub + m[i];
+        }
+        allNub = ArithUtil.div(allNub, len);
+        return allNub;
+    }
+
+    public double averageByList(List<Double> m) {//计算平均值
+        int len = m.size();
+        double allNub = 0;
+        for (int i = 0; i < len; i++) {
+            allNub = allNub + m.get(i);
         }
         allNub = ArithUtil.div(allNub, len);
         return allNub;
@@ -33,6 +45,14 @@ public abstract class Frequency {//统计频数
         }
         double var = ArithUtil.div(allNub, m.length);
         return var;
+    }
+
+    public double varianceByAve(double[] m, double ave) {//计算方差 计算方差，依赖平均值
+        double allNub = 0;
+        for (int i = 0; i < m.length; i++) {
+            allNub = allNub + Math.pow(m[i] - ave, 2);
+        }
+        return ArithUtil.div(allNub, m.length);
     }
 
     public double sd(double... m) {//计算标准差

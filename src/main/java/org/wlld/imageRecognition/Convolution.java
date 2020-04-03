@@ -39,7 +39,7 @@ public class Convolution extends Frequency {
         return matrix;
     }
 
-    public void imageTrance(Matrix matrix, int size) throws Exception {//矩阵和卷积核大小
+    public List<List<Double>> imageTrance(Matrix matrix, int size, int featureNub) throws Exception {//矩阵和卷积核大小
         int xn = matrix.getX();
         int yn = matrix.getY();
         int xSize = xn / size;//求导后矩阵的行数
@@ -52,22 +52,25 @@ public class Convolution extends Frequency {
                 double[] nubs = new double[size * size];//平均值数组
                 for (int t = 0; t < size; t++) {
                     for (int k = 0; k < size; k++) {
-                        double nub = matrix1.getNumber(t, k);
+                        double nub = matrix1.getNumber(t, k) / 255;
                         nubs[t * size + k] = nub;
                     }
                 }
                 double avg = average(nubs);//平均值
                 double dc = dcByAvg(nubs, avg);//当前离散系数
+                //double va = varianceByAve(nubs, avg);//方差
                 //离散系数作为X，AVG作为Y
-                Y[i * ySize + j] = avg;
-                X[i * ySize + j] = dc;
+                int t = i / size * ySize + j / size;
+                Y[t] = avg;
+                X[t] = dc;
             }
         }
         //计算当前图形的线性回归
         RegressionBody regressionBody = new RegressionBody();
         regressionBody.lineRegression(Y, X, this);
-
+        return regressionBody.mappingMatrix(featureNub);
     }
+
 
     private void normalization(Matrix matrix) throws Exception {
         for (int i = 0; i < matrix.getX(); i++) {
