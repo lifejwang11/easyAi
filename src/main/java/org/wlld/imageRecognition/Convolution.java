@@ -6,7 +6,9 @@ import org.wlld.config.Kernel;
 import org.wlld.imageRecognition.border.Border;
 import org.wlld.imageRecognition.border.Frame;
 import org.wlld.imageRecognition.border.FrameBody;
+import org.wlld.imageRecognition.modelEntity.RegressionBody;
 import org.wlld.tools.ArithUtil;
+import org.wlld.tools.Frequency;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +18,7 @@ import java.util.List;
  * 图像卷积
  * @date 9:23 上午 2020/1/2
  */
-public class Convolution {
+public class Convolution extends Frequency {
     protected Matrix getFeatures(Matrix matrix, int maxNub, TempleConfig templeConfig
             , int id) throws Exception {
         boolean isFirst = true;
@@ -36,6 +38,39 @@ public class Convolution {
         //已经不可以再缩小了，最后做一层卷积，然后提取最大值
         return matrix;
     }
+
+    public List<List<Double>> imageTrance(Matrix matrix, int size, int featureNub) throws Exception {//矩阵和卷积核大小
+        int xn = matrix.getX();
+        int yn = matrix.getY();
+        int xSize = xn / size;//求导后矩阵的行数
+        int ySize = yn / size;//求导后矩阵的列数
+        double[] Y = new double[xSize * ySize];
+        double[] X = new double[xSize * ySize];
+        for (int i = 0; i < xn - size; i += size) {
+            for (int j = 0; j < yn - size; j += size) {
+                Matrix matrix1 = matrix.getSonOfMatrix(i, j, size, size);
+                double[] nubs = new double[size * size];//平均值数组
+                for (int t = 0; t < size; t++) {
+                    for (int k = 0; k < size; k++) {
+                        double nub = matrix1.getNumber(t, k) / 255;
+                        nubs[t * size + k] = nub;
+                    }
+                }
+                double avg = average(nubs);//平均值
+                double dc = dcByAvg(nubs, avg);//当前离散系数
+                //double va = varianceByAve(nubs, avg);//方差
+                //离散系数作为X，AVG作为Y
+                int t = i / size * ySize + j / size;
+                Y[t] = avg;
+                X[t] = dc;
+            }
+        }
+        //计算当前图形的线性回归
+        RegressionBody regressionBody = new RegressionBody();
+        regressionBody.lineRegression(Y, X, this);
+        return regressionBody.mappingMatrix(featureNub);
+    }
+
 
     private void normalization(Matrix matrix) throws Exception {
         for (int i = 0; i < matrix.getX(); i++) {
