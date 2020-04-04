@@ -134,13 +134,13 @@ public class CoverTest {
                 matrixMap.put(2, matrix2);
                 matrixMap.put(3, matrix3);
                 //poolSize 越大 识别速度越快，准确率相对变低，
-                operation.coverStudy(matrixMap, 25, 3);
+                operation.coverStudy(matrixMap, 20, 3);
             }
         }
         ModelParameter modelParameter = templeConfig.getModel();
         String model = JSON.toJSONString(modelParameter);
         System.out.println(model);
-        test(operation, 25, 3);
+        test(operation, 20, 3);
         //识别初的该图片所属的分类id,既为训练时设定的标注
     }
 }

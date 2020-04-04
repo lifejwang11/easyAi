@@ -64,7 +64,7 @@ public class Operation {//进行计算
             List<CoverBody> coverBodies = new ArrayList<>();
             for (Map.Entry<Integer, Matrix> entry : matrixMap.entrySet()) {
                 CoverBody coverBody = new CoverBody();
-                Matrix matrix = convolution.late(convolution.getBorder(entry.getValue(), Kernel.All), poolSize);
+                Matrix matrix = convolution.late(entry.getValue(), poolSize);
                 Map<Integer, Double> tag = new HashMap<>();
                 tag.put(entry.getKey(), 1.0);//getFeatures(matrix, nerveNub)
                 List<List<Double>> lists = getFeatures(matrix, nerveNub);//convolution.imageTrance(entry.getValue(), poolSize, featureNub, entry.getKey());
@@ -93,7 +93,7 @@ public class Operation {//进行计算
         if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
             Map<Integer, Double> coverMap = new HashMap<>();
             Map<Integer, Integer> typeNub = new HashMap<>();
-            matrix = convolution.late(convolution.getBorder(matrix, Kernel.All), poolSize);//getFeatures(matrix, nerveNub)
+            matrix = convolution.late(matrix, poolSize);//getFeatures(matrix, nerveNub)
             List<List<Double>> lists = getFeatures(matrix, nerveNub);//convolution.imageTrance(matrix, poolSize, nerveNub * nerveNub, 0);
             //特征塞入容器完毕
             int size = lists.size();
