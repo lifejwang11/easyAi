@@ -7,12 +7,11 @@ import org.wlld.ModelData;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.Sigmod;
-import org.wlld.imageRecognition.Operation;
-import org.wlld.imageRecognition.Picture;
-import org.wlld.imageRecognition.TempleConfig;
+import org.wlld.imageRecognition.*;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.tools.ArithUtil;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +22,7 @@ import java.util.Map;
  */
 public class CoverTest {
     public static void main(String[] args) throws Exception {
-        cover();
+        cover2();
         //test(null, 25, 3);
     }
 
@@ -105,6 +104,14 @@ public class CoverTest {
         }
         double wrongPoint = ArithUtil.div(wrongNub, allNub) * 100;
         System.out.println("wrongPoint==" + wrongPoint + "%");
+    }
+
+    public static void cover2() throws Exception {
+        Convolution convolution = new Convolution();
+        Picture picture = new Picture();
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\docment/a.jpg");
+        convolution.kc(threeChannelMatrix, 5, 5);
+
     }
 
     //覆盖率学习 有学习才能有识别
