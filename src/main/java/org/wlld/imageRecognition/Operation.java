@@ -66,8 +66,8 @@ public class Operation {//进行计算
                 CoverBody coverBody = new CoverBody();
                 Matrix matrix = convolution.late(entry.getValue(), poolSize);
                 Map<Integer, Double> tag = new HashMap<>();
-                tag.put(entry.getKey(), 1.0);//getFeatures(matrix, nerveNub)
-                List<List<Double>> lists = getFeatures(matrix, nerveNub);//convolution.imageTrance(entry.getValue(), poolSize, featureNub, entry.getKey());
+                tag.put(entry.getKey(), 1.0);
+                List<List<Double>> lists = getFeatures(matrix, nerveNub);
                 size = lists.size();
                 coverBody.setFeature(lists);
                 coverBody.setTag(tag);

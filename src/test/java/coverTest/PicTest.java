@@ -31,7 +31,7 @@ public class PicTest {
         //segImage(right, wrong, a, b);
 
         //testImage(right, wrong, a, b);
-        test();
+        //test();
     }
 
     public static void test() throws Exception {//对图像进行识别测试
@@ -49,7 +49,7 @@ public class PicTest {
         for (int i = 1; i < 90; i++) {
             Matrix a = picture.getImageMatrixByLocal("D:\\share\\cai/a" + i + ".jpg");
             Matrix b = picture.getImageMatrixByLocal("D:\\share\\cai/b" + i + ".jpg");
-           // Matrix c = picture.getImageMatrixByLocal("D:\\share\\cai/c" + i + ".jpg");
+            // Matrix c = picture.getImageMatrixByLocal("D:\\share\\cai/c" + i + ".jpg");
             // Matrix d = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/d" + i + ".jpg");
             List<Matrix> rightLists = getFeatures2(a, 20);
             List<Matrix> wrongLists = getFeatures2(b, 20);
@@ -60,11 +60,11 @@ public class PicTest {
                 System.out.println("study1==========" + i);
                 Matrix aj = rightLists.get(j);
                 Matrix bj = wrongLists.get(j);
-               // Matrix cj = listList1.get(j);
+                // Matrix cj = listList1.get(j);
                 // Matrix dj = listList2.get(j);
                 operation.learning(aj, 1, false);
                 operation.learning(bj, 2, false);
-               // operation.learning(cj, 3, false);
+                // operation.learning(cj, 3, false);
                 //operation.learning(dj, 4, false);
             }
         }
@@ -82,7 +82,7 @@ public class PicTest {
                 System.out.println("study1==========" + i);
                 Matrix aj = rightLists.get(j);
                 Matrix bj = wrongLists.get(j);
-               // Matrix cj = listList1.get(j);
+                // Matrix cj = listList1.get(j);
                 //Matrix dj = listList2.get(j);
                 operation.normalization(aj, templeConfig.getConvolutionNerveManager());
                 operation.normalization(bj, templeConfig.getConvolutionNerveManager());

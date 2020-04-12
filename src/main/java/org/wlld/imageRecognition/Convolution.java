@@ -40,7 +40,7 @@ public class Convolution extends Frequency {
         return matrix;
     }
 
-    public void kc(ThreeChannelMatrix threeChannelMatrix, int size, int sqNub) throws Exception {
+    public List<List<Double>> kc(ThreeChannelMatrix threeChannelMatrix, int size, int sqNub) throws Exception {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
@@ -72,11 +72,17 @@ public class Convolution extends Frequency {
                 }
             }
         }
+        double[] features = new double[sqNub];
+        for (int i = 0; i < sqNub; i++) {
+            features[i] = rgbNorms.get(i).getNorm();
+        }
+        //System.out.println(Arrays.toString(features));
         minNorm = ArithUtil.div(minNorm, 2);
-        System.out.println("min==" + minNorm);
+        return checkImage(matrixR, matrixG, matrixB, minNorm, 3, features);
     }
 
-    private void checkImage(Matrix matrixR, Matrix matrixG, Matrix matrixB, double minNorm, int size) {
+    private List<List<Double>> checkImage(Matrix matrixR, Matrix matrixG, Matrix matrixB, double minNorm, int size
+            , double[] features) throws Exception {
         List<List<Double>> lists = new ArrayList<>();
         int x = matrixR.getX() - size;//求导后矩阵的行数
         int y = matrixR.getY() - size;//求导后矩阵的列数
@@ -85,21 +91,25 @@ public class Convolution extends Frequency {
                 Matrix myMatrixR = matrixR.getSonOfMatrix(i, j, size, size);
                 Matrix myMatrixG = matrixG.getSonOfMatrix(i, j, size, size);
                 Matrix myMatrixB = matrixB.getSonOfMatrix(i, j, size, size);
-
+                List<Double> list = getListFeature(myMatrixR, myMatrixG, myMatrixB, minNorm, features);
+                //System.out.println("feature====" + list);
+                lists.add(list);
             }
         }
+        return lists;
     }
 
-    private void getListFeature(Matrix matrixR, Matrix matrixG, Matrix matrixB, double minNorm) throws Exception {
+    private List<Double> getListFeature(Matrix matrixR, Matrix matrixG, Matrix matrixB, double minNorm
+            , double[] features) throws Exception {
         int x = matrixR.getX();
         int y = matrixR.getY();
-        Map<Double, Integer> map = new HashMap<>();
+        List<Double> list = new ArrayList<>();
+        double[] feat = new double[features.length];
         List<RGBNorm> rgbNormList = meanClustering.getMatrices();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 double[] color = new double[]{matrixR.getNumber(i, j) / 255, matrixG.getNumber(i, j) / 255, matrixB.getNumber(i, j) / 255};
                 int id = -1;
-                double feature = 0;
                 double minDist = 0;
                 for (int t = 0; t < rgbNormList.size(); t++) {
                     RGBNorm rgbNorm = rgbNormList.get(t);
@@ -113,13 +123,15 @@ public class Convolution extends Frequency {
                     id = -1;
                 }
                 if (id > -1) {
-                    feature = rgbNormList.get(id).getNorm();
-                }
-                if (!map.containsKey(feature)) {
-                    map.put(feature, 1);
+                    feat[id] = rgbNormList.get(id).getNorm();
                 }
             }
         }
+        //
+        for (int i = 0; i < feat.length; i++) {
+            list.add(feat[i]);
+        }
+        return list;
     }
 
     public List<List<Double>> imageTrance(Matrix matrix, int size, int featureNub) throws Exception {//矩阵和卷积核大小

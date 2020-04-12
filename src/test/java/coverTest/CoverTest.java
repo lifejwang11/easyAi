@@ -107,11 +107,26 @@ public class CoverTest {
     }
 
     public static void cover2() throws Exception {
-        Convolution convolution = new Convolution();
+        //创建图片解析类 桔梗覆盖，桔梗焚烧，土壤扰动
         Picture picture = new Picture();
-        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\docment/a.jpg");
-        convolution.kc(threeChannelMatrix, 5, 5);
+        //创建模版类，参数选false就可以
+        TempleConfig templeConfig = new TempleConfig();
+        //初始化模板 注意 width height参数是你训练图片的实际尺寸需要改，其他不用动
+        //创建运算类进行标注
+        //templeConfig.setActiveFunction(new Sigmod());
+        templeConfig.isShowLog(true);
+        templeConfig.setStudyPoint(0.01);//不动
+        //templeConfig.setSoftMax(true);
+        templeConfig.setSensoryNerveNub(5);
+        templeConfig.setRzType(RZ.L1);//不动
+        templeConfig.setlParam(0.015);//不动
+        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
+        Operation operation = new Operation(templeConfig);
+        for (int i = 1; i < 90; i++) {
+            Map<Integer, Matrix> matrixMap = new HashMap<>();
+            ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("url");
 
+        }
     }
 
     //覆盖率学习 有学习才能有识别
