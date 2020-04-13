@@ -89,6 +89,7 @@ public class MeanClustering {
                 }
             }
             while (isNext);
+
         } else {
             throw new Exception("matrixList number less than 2");
         }

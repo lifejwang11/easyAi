@@ -14,7 +14,13 @@ import java.util.*;
  */
 public class LangTest {
     public static void main(String[] args) throws Exception {
-        test();
+        // test();
+        List<Double> list = new ArrayList<>();
+        list.add(3.0);
+        list.add(1.0);
+        list.add(4.0);
+        Collections.sort(list);
+        System.out.println(list);
     }
 
     public static void test1() throws Exception {

@@ -40,13 +40,15 @@ public class Convolution extends Frequency {
         return matrix;
     }
 
-    public List<List<Double>> kc(ThreeChannelMatrix threeChannelMatrix, int size, int sqNub) throws Exception {
+    public List<List<Double>> kc(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub
+            , int regionSize) throws Exception {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
-        matrixR = late(matrixR, size);
-        matrixG = late(matrixG, size);
-        matrixB = late(matrixB, size);
+        matrixR = late(matrixR, poolSize);
+        matrixG = late(matrixG, poolSize);
+        matrixB = late(matrixB, poolSize);
+        RGBSort rgbSort = new RGBSort();
         int x = matrixR.getX();
         int y = matrixR.getY();
         meanClustering = new MeanClustering(sqNub);
@@ -72,13 +74,14 @@ public class Convolution extends Frequency {
                 }
             }
         }
+        Collections.sort(rgbNorms, rgbSort);
         double[] features = new double[sqNub];
         for (int i = 0; i < sqNub; i++) {
             features[i] = rgbNorms.get(i).getNorm();
         }
         //System.out.println(Arrays.toString(features));
-        minNorm = ArithUtil.div(minNorm, 2);
-        return checkImage(matrixR, matrixG, matrixB, minNorm, 3, features);
+        minNorm = ArithUtil.div(minNorm, 1);
+        return checkImage(matrixR, matrixG, matrixB, minNorm, regionSize, features);
     }
 
     private List<List<Double>> checkImage(Matrix matrixR, Matrix matrixG, Matrix matrixB, double minNorm, int size
@@ -92,7 +95,7 @@ public class Convolution extends Frequency {
                 Matrix myMatrixG = matrixG.getSonOfMatrix(i, j, size, size);
                 Matrix myMatrixB = matrixB.getSonOfMatrix(i, j, size, size);
                 List<Double> list = getListFeature(myMatrixR, myMatrixG, myMatrixB, minNorm, features);
-                //System.out.println("feature====" + list);
+                // System.out.println("feature====" + list);
                 lists.add(list);
             }
         }

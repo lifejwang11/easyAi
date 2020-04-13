@@ -6,6 +6,15 @@ import java.util.Map;
 public class CoverBody {
     private List<List<Double>> feature;//特征
     private Map<Integer, Double> tag;//标注
+    private int type;
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
 
     public List<List<Double>> getFeature() {
         return feature;

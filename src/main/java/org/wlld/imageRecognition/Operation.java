@@ -56,45 +56,42 @@ public class Operation {//进行计算
         return sub(matrix1);
     }
 
-    //从一张图片的局部进行学习
-    public void coverStudy(Map<Integer, Matrix> matrixMap, int poolSize, int nerveNub) throws Exception {
+    public void coverStudy(Map<Integer, ThreeChannelMatrix> matrixMap, int poolSize, int sqNub, int regionSize,
+                           int times) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
             int size = 0;
-            //int featureNub = nerveNub * nerveNub;
             List<CoverBody> coverBodies = new ArrayList<>();
-            for (Map.Entry<Integer, Matrix> entry : matrixMap.entrySet()) {
+            for (Map.Entry<Integer, ThreeChannelMatrix> entry : matrixMap.entrySet()) {
                 CoverBody coverBody = new CoverBody();
-                Matrix matrix = convolution.late(entry.getValue(), poolSize);
                 Map<Integer, Double> tag = new HashMap<>();
                 tag.put(entry.getKey(), 1.0);
-                List<List<Double>> lists = getFeatures(matrix, nerveNub);
+                List<List<Double>> lists = convolution.kc(entry.getValue(), poolSize, sqNub, regionSize);
                 size = lists.size();
                 coverBody.setFeature(lists);
                 coverBody.setTag(tag);
                 coverBodies.add(coverBody);
             }
             //特征塞入容器完毕
-            for (int i = 0; i < size; i++) {
-                for (CoverBody coverBody : coverBodies) {
-                    List<Double> list = coverBody.getFeature().get(i);
-                    if (templeConfig.isShowLog()) {
-                        System.out.println("feature:" + list);
+            for (int j = 0; j < times; j++) {
+                for (int i = 0; i < size; i++) {
+                    for (CoverBody coverBody : coverBodies) {
+                        List<Double> list = coverBody.getFeature().get(i);
+                        if (templeConfig.isShowLog()) {
+                            System.out.println("feature:" + list);
+                        }
+                        intoDnnNetwork(1, list, templeConfig.getSensoryNerves(), true, coverBody.getTag(), null);
                     }
-                    intoDnnNetwork(1, list, templeConfig.getSensoryNerves(), true, coverBody.getTag(), null);
                 }
-            }
 
-        } else {
-            throw new Exception("PATTERN IS NOT COVER");
+            }
         }
     }
 
-    public Map<Integer, Double> coverPoint(Matrix matrix, int poolSize, int nerveNub) throws Exception {
+    public Map<Integer, Double> coverPoint(ThreeChannelMatrix matrix, int poolSize, int sqNub, int regionSize) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
             Map<Integer, Double> coverMap = new HashMap<>();
             Map<Integer, Integer> typeNub = new HashMap<>();
-            matrix = convolution.late(matrix, poolSize);//getFeatures(matrix, nerveNub)
-            List<List<Double>> lists = getFeatures(matrix, nerveNub);//convolution.imageTrance(matrix, poolSize, nerveNub * nerveNub, 0);
+            List<List<Double>> lists = convolution.kc(matrix, poolSize, sqNub, regionSize);
             //特征塞入容器完毕
             int size = lists.size();
             int all = 0;
@@ -655,6 +652,7 @@ public class Operation {//进行计算
      * @param map              标注
      * @param outBack          输出结果回调类
      */
+
     private void intoDnnNetwork(long eventId, List<Double> featureList, List<SensoryNerve> sensoryNerveList
             , boolean isStudy, Map<Integer, Double> map, OutBack outBack) throws Exception {//进入DNN 神经网络
         for (int i = 0; i < sensoryNerveList.size(); i++) {
