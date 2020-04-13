@@ -10,8 +10,7 @@ import org.wlld.imageRecognition.modelEntity.RegressionBody;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.Frequency;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author lidapeng
@@ -19,6 +18,8 @@ import java.util.List;
  * @date 9:23 上午 2020/1/2
  */
 public class Convolution extends Frequency {
+    private MeanClustering meanClustering;
+
     protected Matrix getFeatures(Matrix matrix, int maxNub, TempleConfig templeConfig
             , int id) throws Exception {
         boolean isFirst = true;
@@ -37,6 +38,103 @@ public class Convolution extends Frequency {
         }
         //已经不可以再缩小了，最后做一层卷积，然后提取最大值
         return matrix;
+    }
+
+    public List<List<Double>> kc(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub
+            , int regionSize) throws Exception {
+        Matrix matrixR = threeChannelMatrix.getMatrixR();
+        Matrix matrixG = threeChannelMatrix.getMatrixG();
+        Matrix matrixB = threeChannelMatrix.getMatrixB();
+        matrixR = late(matrixR, poolSize);
+        matrixG = late(matrixG, poolSize);
+        matrixB = late(matrixB, poolSize);
+        RGBSort rgbSort = new RGBSort();
+        int x = matrixR.getX();
+        int y = matrixR.getY();
+        meanClustering = new MeanClustering(sqNub);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double[] color = new double[]{matrixR.getNumber(i, j) / 255, matrixG.getNumber(i, j) / 255, matrixB.getNumber(i, j) / 255};
+                meanClustering.setColor(color);
+            }
+        }
+        meanClustering.start();
+        List<RGBNorm> rgbNorms = meanClustering.getMatrices();
+        double minNorm = 0;
+        int normSize = rgbNorms.size();
+        for (int i = 0; i < normSize; i++) {
+            RGBNorm rgbNorm = rgbNorms.get(i);
+            double[] rgb = rgbNorm.getRgb();
+            for (int j = 0; j < normSize; j++) {
+                if (j != i) {
+                    double normSub = getEDist(rgb, rgbNorms.get(j).getRgb());
+                    if (minNorm == 0 || normSub < minNorm) {
+                        minNorm = normSub;
+                    }
+                }
+            }
+        }
+        Collections.sort(rgbNorms, rgbSort);
+        double[] features = new double[sqNub];
+        for (int i = 0; i < sqNub; i++) {
+            features[i] = rgbNorms.get(i).getNorm();
+        }
+        //System.out.println(Arrays.toString(features));
+        minNorm = ArithUtil.div(minNorm, 1);
+        return checkImage(matrixR, matrixG, matrixB, minNorm, regionSize, features);
+    }
+
+    private List<List<Double>> checkImage(Matrix matrixR, Matrix matrixG, Matrix matrixB, double minNorm, int size
+            , double[] features) throws Exception {
+        List<List<Double>> lists = new ArrayList<>();
+        int x = matrixR.getX() - size;//求导后矩阵的行数
+        int y = matrixR.getY() - size;//求导后矩阵的列数
+        for (int i = 0; i < x; i += size) {//遍历行
+            for (int j = 0; j < y; j += size) {//遍历每行的列
+                Matrix myMatrixR = matrixR.getSonOfMatrix(i, j, size, size);
+                Matrix myMatrixG = matrixG.getSonOfMatrix(i, j, size, size);
+                Matrix myMatrixB = matrixB.getSonOfMatrix(i, j, size, size);
+                List<Double> list = getListFeature(myMatrixR, myMatrixG, myMatrixB, minNorm, features);
+                // System.out.println("feature====" + list);
+                lists.add(list);
+            }
+        }
+        return lists;
+    }
+
+    private List<Double> getListFeature(Matrix matrixR, Matrix matrixG, Matrix matrixB, double minNorm
+            , double[] features) throws Exception {
+        int x = matrixR.getX();
+        int y = matrixR.getY();
+        List<Double> list = new ArrayList<>();
+        double[] feat = new double[features.length];
+        List<RGBNorm> rgbNormList = meanClustering.getMatrices();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double[] color = new double[]{matrixR.getNumber(i, j) / 255, matrixG.getNumber(i, j) / 255, matrixB.getNumber(i, j) / 255};
+                int id = -1;
+                double minDist = 0;
+                for (int t = 0; t < rgbNormList.size(); t++) {
+                    RGBNorm rgbNorm = rgbNormList.get(t);
+                    double dist = getEDist(color, rgbNorm.getRgb());
+                    if (minDist == 0 || dist < minDist) {
+                        minDist = dist;
+                        id = t;
+                    }
+                }
+                if (minDist >= minNorm) {
+                    id = -1;
+                }
+                if (id > -1) {
+                    feat[id] = rgbNormList.get(id).getNorm();
+                }
+            }
+        }
+        //
+        for (int i = 0; i < feat.length; i++) {
+            list.add(feat[i]);
+        }
+        return list;
     }
 
     public List<List<Double>> imageTrance(Matrix matrix, int size, int featureNub) throws Exception {//矩阵和卷积核大小
@@ -160,14 +258,18 @@ public class Convolution extends Frequency {
             for (int j = 0; j < yn - size; j += size) {
                 Matrix matrix1 = matrix.getSonOfMatrix(i, j, size, size);
                 double maxNub = 0;
+                int n = size * size;
+                double sigma = 0;
                 for (int t = 0; t < matrix1.getX(); t++) {
                     for (int k = 0; k < matrix1.getY(); k++) {
                         double nub = matrix1.getNumber(t, k);
+                        sigma = sigma + nub;
                         if (nub > maxNub) {
                             maxNub = nub;
                         }
                     }
                 }
+                maxNub = ArithUtil.div(sigma, n);
                 //迟化的最大值是 MAXNUB
                 myMatrix.setNub(i / size, j / size, maxNub);
             }

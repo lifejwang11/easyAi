@@ -5,7 +5,7 @@ import org.wlld.i.OutBack;
 
 public class MaxPoint implements OutBack {
     private int id;
-    private double point = -1;
+    private double point = 0;
 
     public int getId() {
         return id;

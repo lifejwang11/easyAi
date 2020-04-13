@@ -60,7 +60,7 @@ public class KClustering {
     }
 
     public KClustering(int speciesQuantity) {
-        this.speciesQuantity = speciesQuantity;
+        this.speciesQuantity = speciesQuantity;//聚类的数量
         matrices = new Matrix[speciesQuantity];
         for (int i = 0; i < speciesQuantity; i++) {
             clusterMap.put(i, new ArrayList<>());
@@ -163,8 +163,7 @@ public class KClustering {
                 matrices[i] = matrixList.get(index).getMatrix();
             }
             //进行两者的比较
-            boolean isEqual = false;
-            int nub = 0;
+            boolean isEqual;
             do {
                 Matrix[] matrices2 = averageMatrix();
                 isEqual = equals(matrices, matrices2);
@@ -172,7 +171,6 @@ public class KClustering {
                     matrices = matrices2;
                     clear();
                 }
-                nub++;
             }
             while (!isEqual);
             //聚类结束，进行坐标均值矩阵计算
