@@ -32,8 +32,8 @@ public class Tree {//决策树
     }
 
     private class Gain {
-        private double gain;
-        private double gainRatio;
+        private double gain;//信息增益
+        private double gainRatio;//信息增益率
     }
 
     public Tree() {
@@ -143,7 +143,7 @@ public class Tree {//决策树
                 if (gainRatio == -1) {
                     break;
                 }
-                if (gain.gain >= avgGain && (gain.gainRatio >= gainRatio || gain.gainRatio == -1)) {
+                if (gainMap.size() == 1 || (gain.gain >= avgGain && (gain.gainRatio >= gainRatio || gain.gainRatio == -1))) {
                     gainRatio = gain.gainRatio;
                     key = entry.getKey();
                 }

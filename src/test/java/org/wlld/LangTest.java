@@ -2,6 +2,8 @@ package org.wlld;
 
 import org.wlld.naturalLanguage.Talk;
 import org.wlld.naturalLanguage.TemplateReader;
+import org.wlld.naturalLanguage.WordModel;
+import org.wlld.naturalLanguage.WordTemple;
 import org.wlld.randomForest.DataTable;
 import org.wlld.randomForest.RandomForest;
 
@@ -14,13 +16,7 @@ import java.util.*;
  */
 public class LangTest {
     public static void main(String[] args) throws Exception {
-        // test();
-        List<Double> list = new ArrayList<>();
-        list.add(3.0);
-        list.add(1.0);
-        list.add(4.0);
-        Collections.sort(list);
-        System.out.println(list);
+        test();
     }
 
     public static void test1() throws Exception {
@@ -76,15 +72,15 @@ public class LangTest {
         TemplateReader templateReader = new TemplateReader();
         //读取语言模版，第一个参数是模版地址，第二个参数是编码方式 (教程里的第三个参数已经省略)
         //同时也是学习过程
-        templateReader.read("/Users/lidapeng/Desktop/myDocment/a1.txt", "UTF-8");
+        templateReader.read("D:\\b/a.txt", "UTF-8");
         //学习结束获取模型参数
-        //WordModel wordModel = WordTemple.get().getModel();
+       // WordModel wordModel = WordTemple.get().getModel();
         //不用学习注入模型参数
-        //WordTemple.get().insertModel(wordModel);
+       // WordTemple.get().insertModel(wordModel);
         Talk talk = new Talk();
         //输入语句进行识别，若有标点符号会形成LIST中的每个元素
         //返回的集合中每个值代表了输入语句，每个标点符号前语句的分类
-        List<Integer> list = talk.talk("帮我配把锁");
+        List<Integer> list = talk.talk("有个快递尽快代我邮寄出去");
         System.out.println(list);
     }
 }

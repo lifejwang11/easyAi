@@ -63,6 +63,7 @@ public class Tokenizer extends Frequency {
         for (Sentence sentence : sentences) {
             List<Integer> features = sentence.getFeatures();
             List<String> sentenceList = sentence.getKeyWords();
+            //System.out.println("关键词==="+sentenceList);
             int size = sentenceList.size();//时间序列的深度
             for (int i = 0; i < size; i++) {
                 if (wordTimes.size() < i + 1) {
