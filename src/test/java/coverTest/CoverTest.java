@@ -70,17 +70,11 @@ public class CoverTest {
     }
 
     public static void cover() throws Exception {
-        //创建图片解析类 桔梗覆盖，桔梗焚烧，土壤扰动
         Picture picture = new Picture();
-        //创建模版类，参数选false就可以
         TempleConfig templeConfig = new TempleConfig();
-        //初始化模板 注意 width height参数是你训练图片的实际尺寸需要改，其他不用动
-        //创建运算类进行标注
-        //templeConfig.setActiveFunction(new Sigmod());
         templeConfig.isShowLog(true);
         templeConfig.setStudyPoint(0.01);//不动
         templeConfig.setSoftMax(true);
-        templeConfig.setDeep(2);
         templeConfig.setSensoryNerveNub(2);
         templeConfig.setRzType(RZ.L1);//不动
         templeConfig.setlParam(0.015);//不动
