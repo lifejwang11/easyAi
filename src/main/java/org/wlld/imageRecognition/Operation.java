@@ -65,7 +65,7 @@ public class Operation {//进行计算
                 CoverBody coverBody = new CoverBody();
                 Map<Integer, Double> tag = new HashMap<>();
                 tag.put(entry.getKey(), 1.0);
-                List<List<Double>> lists = convolution.kc(entry.getValue(), poolSize, sqNub, regionSize);
+                List<List<Double>> lists = convolution.kAvg(entry.getValue(), poolSize, sqNub, regionSize);
                 size = lists.size();
                 coverBody.setFeature(lists);
                 coverBody.setTag(tag);
@@ -82,7 +82,6 @@ public class Operation {//进行计算
                         intoDnnNetwork(1, list, templeConfig.getSensoryNerves(), true, coverBody.getTag(), null);
                     }
                 }
-
             }
         }
     }
@@ -91,7 +90,7 @@ public class Operation {//进行计算
         if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
             Map<Integer, Double> coverMap = new HashMap<>();
             Map<Integer, Integer> typeNub = new HashMap<>();
-            List<List<Double>> lists = convolution.kc(matrix, poolSize, sqNub, regionSize);
+            List<List<Double>> lists = convolution.kAvg(matrix, poolSize, sqNub, regionSize);
             //特征塞入容器完毕
             int size = lists.size();
             int all = 0;
