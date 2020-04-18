@@ -23,6 +23,16 @@ public class Picture {
         return getImage(bi);
     }
 
+    public ThreeChannelMatrix getThreeMatrix(InputStream file) throws Exception {
+        BufferedImage bi = null;
+        try {
+            bi = ImageIO.read(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return this.getThreeChannel(bi);
+    }
+
     public ThreeChannelMatrix getThreeMatrix(String fileURL) throws Exception {
         File file = new File(fileURL);
         BufferedImage bi = null;

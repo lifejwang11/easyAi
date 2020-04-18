@@ -40,6 +40,72 @@ public class Convolution extends Frequency {
         return matrix;
     }
 
+    private List<ThreeChannelMatrix> regionThreeChannelMatrix(ThreeChannelMatrix threeChannelMatrix, int size) {
+        List<ThreeChannelMatrix> threeChannelMatrixList = new ArrayList<>();
+        Matrix matrixRAll = threeChannelMatrix.getMatrixR();
+        Matrix matrixGAll = threeChannelMatrix.getMatrixG();
+        Matrix matrixBAll = threeChannelMatrix.getMatrixB();
+        int x = matrixRAll.getX();
+        int y = matrixRAll.getY();
+        for (int i = 0; i <= x - size; i += size) {
+            for (int j = 0; j <= y - size; j += size) {
+                ThreeChannelMatrix threeMatrix = new ThreeChannelMatrix();
+                Matrix matrixR = matrixRAll.getSonOfMatrix(i, j, size, size);
+                Matrix matrixG = matrixGAll.getSonOfMatrix(i, j, size, size);
+                Matrix matrixB = matrixBAll.getSonOfMatrix(i, j, size, size);
+                threeMatrix.setMatrixR(matrixR);
+                threeMatrix.setMatrixG(matrixG);
+                threeMatrix.setMatrixB(matrixB);
+                threeChannelMatrixList.add(threeMatrix);
+            }
+        }
+        return threeChannelMatrixList;
+    }
+
+    public List<List<Double>> kAvg(ThreeChannelMatrix threeMatrix, int poolSize, int sqNub
+            , int regionSize) throws Exception {
+        RGBSort rgbSort = new RGBSort();
+        List<List<Double>> features = new ArrayList<>();
+        Matrix matrixR = threeMatrix.getMatrixR();
+        Matrix matrixG = threeMatrix.getMatrixG();
+        Matrix matrixB = threeMatrix.getMatrixB();
+        matrixR = late(matrixR, poolSize);
+        matrixG = late(matrixG, poolSize);
+        matrixB = late(matrixB, poolSize);
+        threeMatrix.setMatrixR(matrixR);
+        threeMatrix.setMatrixG(matrixG);
+        threeMatrix.setMatrixB(matrixB);
+        List<ThreeChannelMatrix> threeChannelMatrixList = regionThreeChannelMatrix(threeMatrix, regionSize);
+        for (ThreeChannelMatrix threeChannelMatrix : threeChannelMatrixList) {
+            List<Double> feature = new ArrayList<>();
+            MeanClustering meanClustering = new MeanClustering(sqNub);
+            matrixR = threeChannelMatrix.getMatrixR();
+            matrixG = threeChannelMatrix.getMatrixG();
+            matrixB = threeChannelMatrix.getMatrixB();
+            int x = matrixR.getX();
+            int y = matrixR.getY();
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    double[] color = new double[]{matrixR.getNumber(i, j) / 255, matrixG.getNumber(i, j) / 255, matrixB.getNumber(i, j) / 255};
+                    meanClustering.setColor(color);
+                }
+            }
+            meanClustering.start();
+            List<RGBNorm> rgbNorms = meanClustering.getMatrices();
+            Collections.sort(rgbNorms, rgbSort);
+            double[] dm = new double[sqNub];
+            for (RGBNorm rgbNorm : rgbNorms) {
+                feature.add(rgbNorm.getNorm());
+            }
+            for (int t = 0; t < dm.length; t++) {
+                dm[t] = rgbNorms.get(t).getNorm();
+            }
+            //System.out.println(Arrays.toString(dm));
+            features.add(feature);
+        }
+        return features;
+    }
+
     public List<List<Double>> kc(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub
             , int regionSize) throws Exception {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
@@ -79,8 +145,8 @@ public class Convolution extends Frequency {
         for (int i = 0; i < sqNub; i++) {
             features[i] = rgbNorms.get(i).getNorm();
         }
-        //System.out.println(Arrays.toString(features));
-        minNorm = ArithUtil.div(minNorm, 1);
+       // System.out.println(Arrays.toString(features));
+        minNorm = ArithUtil.div(minNorm, 2);
         return checkImage(matrixR, matrixG, matrixB, minNorm, regionSize, features);
     }
 

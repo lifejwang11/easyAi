@@ -81,14 +81,24 @@ public class MeanClustering {
             }
             //进行两者的比较
             boolean isNext;
-            do {
+            for (int i = 0; i < 40; i++) {
                 averageMatrix();
                 isNext = isNext();
                 if (isNext) {
                     clear();
+                } else {
+                    break;
                 }
             }
-            while (isNext);
+//            boolean isNext;
+//            do {
+//                averageMatrix();
+//                isNext = isNext();
+//                if (isNext) {
+//                    clear();
+//                }
+//            }
+//            while (isNext);
 
         } else {
             throw new Exception("matrixList number less than 2");
