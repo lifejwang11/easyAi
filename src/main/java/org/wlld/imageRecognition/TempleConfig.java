@@ -41,7 +41,7 @@ public class TempleConfig {
     private boolean isHavePosition = false;//是否需要锁定物体位置
     private LVQ lvq;//模型需要返回,精准模式下的原型聚类
     private Frame frame;//先验边框
-    private double th = 0.6;//标准阈值
+    private double th = -1;//标准阈值
     private boolean boxReady = false;//边框已经学习完毕
     private double iouTh = 0.5;//IOU阈值
     private int lvqNub = 10;//lvq循环次数，默认30
@@ -253,6 +253,31 @@ public class TempleConfig {
                 initNerveManager(initPower, sensoryNerveNub, deep, studyPoint);
                 break;
         }
+    }
+
+    public void initCover(boolean initPower, int width, int height, int kNub) throws Exception {
+        int deep = 0;
+        Map<Integer, Matrix> matrixMap = new HashMap<>();//主键与期望矩阵的映射
+        while (width > 5 && height > 5) {
+            width = width / 3;
+            height = height / 3;
+            deep++;
+        }
+        int nub = height * width * 3 + kNub;
+        initNerveManager(true, nub, this.deep, studyPoint);
+        //加载各识别分类的期望矩阵
+        matrixMap.put(0, new Matrix(height, width));
+        for (int k = 1; k <= classificationNub; k++) {
+            Matrix matrix = new Matrix(height, width);//初始化期望矩阵
+            double t = k * matrixWidth;//期望矩阵的分类参数数值
+            for (int i = 0; i < height; i++) {//给期望矩阵注入期望参数
+                for (int j = 0; j < width; j++) {
+                    matrix.setNub(i, j, t);
+                }
+            }
+            matrixMap.put(k, matrix);
+        }
+        convolutionNerveManager = initNerveManager(matrixMap, initPower, deep);
     }
 
     private void initModelVision(boolean initPower, int width, int height) throws Exception {//初始标准模板视觉

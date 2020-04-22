@@ -7,6 +7,10 @@ public class MaxPoint implements OutBack {
     private int id;
     private double point = -1;
 
+    public void setTh(double th) {
+        point = th;
+    }
+
     public int getId() {
         return id;
     }

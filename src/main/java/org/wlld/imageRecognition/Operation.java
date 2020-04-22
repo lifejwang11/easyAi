@@ -10,6 +10,7 @@ import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveCenter.Normalization;
+import org.wlld.nerveEntity.Nerve;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.IdCreator;
@@ -54,6 +55,78 @@ public class Operation {//进行计算
         }
         Matrix matrix1 = convolution.getFeatures(matrix, maxNub, templeConfig, id);
         return sub(matrix1);
+    }
+
+    public void coverStudyOne(Map<Integer, ThreeChannelMatrix> matrixMap, int regionSize) throws Exception {//先学卷积核
+        Frame frame = new Frame();
+        frame.setHeight(regionSize);
+        frame.setWidth(regionSize);
+        frame.setLengthHeight(regionSize);
+        frame.setLengthWidth(regionSize);
+        List<SensoryNerve> sensoryNerve = templeConfig.getConvolutionNerveManager().getSensoryNerves();
+        for (Map.Entry<Integer, ThreeChannelMatrix> entry : matrixMap.entrySet()) {
+            Matrix matrix = entry.getValue().getH();
+            List<FrameBody> frameBodies = convolution.getRegion(matrix, frame);
+            int key = entry.getKey();
+            int size = frameBodies.size();
+            for (int i = 0; i < size; i++) {
+                FrameBody frameBody = frameBodies.get(i);
+                intoConvolutionNetwork(1, frameBody.getMatrix(), sensoryNerve, true, key, null);
+            }
+        }
+    }
+
+    public void coverStudyTwo(Map<Integer, ThreeChannelMatrix> matrixMap, int poolSize, int sqNub, int regionSize,
+                              int times) throws Exception {
+        int size = templeConfig.getSensoryNerves().size();
+        List<SensoryNerve> sensoryNerve = templeConfig.getConvolutionNerveManager().getSensoryNerves();
+        Frame frame = new Frame();
+        frame.setHeight(regionSize);
+        frame.setWidth(regionSize);
+        frame.setLengthHeight(regionSize);
+        frame.setLengthWidth(regionSize);
+        List<CoverBody> coverBodies = new ArrayList<>();
+        for (Map.Entry<Integer, ThreeChannelMatrix> entry : matrixMap.entrySet()) {
+            List<FrameBody> frameBodies = convolution.getRegion(entry.getValue().getH(), frame);
+            int key = entry.getKey();
+            int sizeA = frameBodies.size();
+            List<List<Double>> featureList = new ArrayList<>();
+            for (int i = 0; i < sizeA; i++) {
+                FrameBody frameBody = frameBodies.get(i);
+                MatrixBack matrixBack = new MatrixBack();
+                intoConvolutionNetwork(1, frameBody.getMatrix(), sensoryNerve, false, 0, matrixBack);
+                Matrix matrix1 = matrixBack.getMatrix();
+                List<Double> feature = getFeatures(matrix1);
+                featureList.add(feature);
+            }
+            CoverBody coverBody = new CoverBody();
+            Map<Integer, Double> tag = new HashMap<>();
+            tag.put(entry.getKey(), 1.0);
+            //聚类RGB特征
+            List<List<Double>> lists = convolution.kAvg(entry.getValue(), poolSize, sqNub, regionSize);
+            coverBody.setcFeature(featureList);
+            coverBody.setFeature(lists);
+            coverBody.setTag(tag);
+            coverBodies.add(coverBody);
+        }
+        for (int j = 0; j < times; j++) {
+            for (int i = 0; i < size; i++) {
+                List<Double> list;
+                for (CoverBody coverBody : coverBodies) {
+                    List<Double> list1 = coverBody.getFeature().get(i);
+                    List<Double> list2 = coverBody.getcFeature().get(i);
+                    if (i < list1.size()) {
+                        list = list1;
+                    } else {
+                        list = list2;
+                    }
+                    if (templeConfig.isShowLog()) {
+                        System.out.println("feature:" + list);
+                    }
+                    intoDnnNetwork(1, list, templeConfig.getSensoryNerves(), true, coverBody.getTag(), null);
+                }
+            }
+        }
     }
 
     public void coverStudy(Map<Integer, ThreeChannelMatrix> matrixMap, int poolSize, int sqNub, int regionSize,
@@ -285,6 +358,17 @@ public class Operation {//进行计算
         lvq.insertMatrixBody(matrixBody);
     }
 
+    private List<Double> getFeatures(Matrix matrix) throws Exception {
+        List<Double> list = new ArrayList<>();
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                double nub = matrix.getNumber(i, j);
+                list.add(nub);
+            }
+        }
+        return list;
+    }
+
     private List<Double> getFeature(Matrix matrix) throws Exception {//将特征矩阵转化为集合并除10
         List<Double> list = new ArrayList<>();
         Normalization normalization = templeConfig.getNormalization();
@@ -298,7 +382,6 @@ public class Operation {//进行计算
                 } else {
                     list.add(0.0);
                 }
-
             }
         }
         return list;
@@ -588,6 +671,7 @@ public class Operation {//进行计算
     private int getClassificationIdByDnn(Matrix myMatrix) throws Exception {
         List<Double> list = getFeature(myMatrix);
         MaxPoint maxPoint = new MaxPoint();
+        maxPoint.setTh(templeConfig.getTh());
         long id = IdCreator.get().nextId();
         intoDnnNetwork(id, list, templeConfig.getSensoryNerves(), false, null, maxPoint);
         return maxPoint.getId();

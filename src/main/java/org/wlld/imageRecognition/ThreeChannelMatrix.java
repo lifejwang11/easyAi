@@ -6,6 +6,15 @@ public class ThreeChannelMatrix {
     Matrix matrixR;
     Matrix matrixG;
     Matrix matrixB;
+    Matrix H;
+
+    public Matrix getH() {
+        return H;
+    }
+
+    public void setH(Matrix h) {
+        H = h;
+    }
 
     public Matrix getMatrixR() {
         return matrixR;
