@@ -6,13 +6,22 @@ import org.wlld.config.Classifier;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.imageRecognition.*;
+import org.wlld.imageRecognition.segmentation.Watershed;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.tools.ArithUtil;
 
 public class FoodTest {
 
     public static void main(String[] args) throws Exception {
-        food();
+        //food();
+        rain();
+    }
+
+    public static void rain() throws Exception {//降雨
+        Picture picture = new Picture();
+        Matrix matrix = picture.getImageMatrixByLocal("D:\\share\\cai/i1.jpg");
+        Watershed watershed = new Watershed(matrix);
+        watershed.rainfall();
     }
 
     public static void food() throws Exception {
@@ -21,36 +30,38 @@ public class FoodTest {
         templeConfig.setClassifier(Classifier.DNN);
         templeConfig.isShowLog(true);
         templeConfig.setSoftMax(true);
-        //templeConfig.setStudyPoint(0.01);
+        templeConfig.setTh(0);
+        //templeConfig.setMatrixWidth(5);
+        templeConfig.setStudyPoint(0.02);
         templeConfig.setRzType(RZ.L1);
-        templeConfig.setlParam(0.015);//0.015
+        templeConfig.setlParam(0.016);//0.015
         templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 480, 2);
         Operation operation = new Operation(templeConfig);
         // 一阶段
-        for (int j = 0; j < 5; j++) {
-            for (int i = 1; i < 45; i++) {//一阶段
+        for (int j = 0; j < 2; j++) {
+            for (int i = 1; i < 233; i++) {//一阶段
                 System.out.println("study1===================" + i);
                 //读取本地URL地址图片,并转化成矩阵
-                Matrix a = picture.getImageMatrixByLocal("D:\\rao/c" + i + ".jpg");
-                Matrix b = picture.getImageMatrixByLocal("D:\\rao/f" + i + ".jpg");
+                Matrix a = picture.getImageMatrixByLocal("D:\\pic\\6\\a/a" + i + ".jpg");
+                Matrix b = picture.getImageMatrixByLocal("D:\\pic\\6\\b/b" + i + ".jpg");
                 operation.learning(a, 1, false);
                 operation.learning(b, 2, false);
             }
         }
-        //二阶段
-        for (int i = 1; i < 45; i++) {
+        // 二阶段
+        for (int i = 1; i < 233; i++) {
             System.out.println("avg==" + i);
-            Matrix a = picture.getImageMatrixByLocal("D:\\rao/c" + i + ".jpg");
-            Matrix b = picture.getImageMatrixByLocal("D:\\rao/f" + i + ".jpg");
+            Matrix a = picture.getImageMatrixByLocal("D:\\pic\\6\\a/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("D:\\pic\\6\\b/b" + i + ".jpg");
             operation.normalization(a, templeConfig.getConvolutionNerveManager());
             operation.normalization(b, templeConfig.getConvolutionNerveManager());
         }
         templeConfig.getNormalization().avg();
-        for (int j = 0; j < 10; j++) {
-            for (int i = 1; i < 45; i++) {
+        for (int j = 0; j < 5; j++) {
+            for (int i = 1; i < 233; i++) {
                 System.out.println("j==" + j + ",study2==================" + i);
-                Matrix a = picture.getImageMatrixByLocal("D:\\rao/c" + i + ".jpg");
-                Matrix b = picture.getImageMatrixByLocal("D:\\rao/f" + i + ".jpg");
+                Matrix a = picture.getImageMatrixByLocal("D:\\pic\\6\\a/a" + i + ".jpg");
+                Matrix b = picture.getImageMatrixByLocal("D:\\pic\\6\\b/b" + i + ".jpg");
                 operation.learning(a, 1, true);
                 operation.learning(b, 2, true);
             }
@@ -58,17 +69,12 @@ public class FoodTest {
         templeConfig.finishStudy();//结束学习
         int wrong = 0;
         int allNub = 0;
-        for (int i = 1; i <= 44; i++) {
+        for (int i = 1; i <= 232; i++) {
             //读取本地URL地址图片,并转化成矩阵
-            Matrix a = picture.getImageMatrixByLocal("D:\\rao/c" + i + ".jpg");
-            Matrix b = picture.getImageMatrixByLocal("D:\\rao/f" + i + ".jpg");
-            allNub += 2;
+            Matrix a = picture.getImageMatrixByLocal("D:\\pic\\6\\a/a" + i + ".jpg");
+            allNub++;
             int an = operation.toSee(a);
             if (an != 1) {
-                wrong++;
-            }
-            int bn = operation.toSee(b);
-            if (bn != 2) {
                 wrong++;
             }
         }
@@ -78,4 +84,5 @@ public class FoodTest {
         String model = JSON.toJSONString(modelParameter);
         System.out.println(model);
     }
+
 }

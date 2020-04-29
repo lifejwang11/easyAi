@@ -643,6 +643,17 @@ public class Operation {//进行计算
         return iou;
     }
 
+    public double toSeeById(Matrix matrix, int id) throws Exception {//返回某一个分类的概率
+        intoConvolutionNetwork(2, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
+                false, 0, matrixBack);
+        List<Double> list = getFeature(matrixBack.getMatrix());
+        MaxPoint maxPoint = new MaxPoint();
+        maxPoint.setPid(id);
+        long t = IdCreator.get().nextId();
+        intoDnnNetwork(t, list, templeConfig.getSensoryNerves(), false, null, maxPoint);
+        return maxPoint.getpPoint();
+    }
+
     //图像视觉 Accuracy 模式
     public int toSee(Matrix matrix) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
@@ -685,6 +696,7 @@ public class Operation {//进行计算
         for (Map.Entry<Integer, Matrix> entry : matrixK.entrySet()) {
             Matrix matrix = entry.getValue();
             double dist = MatrixOperation.getEDist(matrix, myVector);
+            System.out.println("距离===" + dist + ",类别==" + entry.getKey());
             if (minDist == 0 || dist < minDist) {
                 minDist = dist;
                 id = entry.getKey();

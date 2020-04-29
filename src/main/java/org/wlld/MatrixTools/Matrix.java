@@ -398,7 +398,6 @@ public class Matrix {
         if (this.x >= x && this.y >= y) {
             matrix[x][y] = number;
         } else {
-            System.out.println("myX==" + this.x + ",myY==" + this.y + ",x==" + x + ",y==" + y);
             throw new Exception("matrix length too little");
         }
     }

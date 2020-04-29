@@ -14,7 +14,7 @@ public abstract class Frequency {//统计频数
         return allNub;
     }
 
-    public double getEDist(double[] x1, double[] x2) {//返回两个等长数组之间的欧式距离
+    public static double getEDist(double[] x1, double[] x2) {//返回两个等长数组之间的欧式距离
         double[] y = new double[x1.length];
         for (int i = 0; i < y.length; i++) {
             y[i] = x1[i] - x2[i];

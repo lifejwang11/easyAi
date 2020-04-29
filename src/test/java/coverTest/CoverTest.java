@@ -23,8 +23,19 @@ import java.util.Map;
  */
 public class CoverTest {
     public static void main(String[] args) throws Exception {
-        cover2("D:\\pic\\6/4.jpg");
-        //test(null, 2, 2, 20);
+//        TempleConfig templeConfig = new TempleConfig();
+//        templeConfig.setClassifier(Classifier.DNN);
+//        templeConfig.setTh(0);
+//        templeConfig.setSoftMax(true);
+//        templeConfig.init(StudyPattern.Accuracy_Pattern, false, 640, 480, 2);
+//        ModelParameter modelParameter = JSON.parseObject(ModelData.DATA3, ModelParameter.class);
+//        templeConfig.insertModel(modelParameter);
+//        Operation operation = new Operation(templeConfig);
+//        for (int i = 1; i < 100; i++) {
+//            cover2(operation, "D:\\pic\\6\\a/a" + i + ".jpg");
+//        }
+         //test(null, 2, 3, 40, "c", 3);
+        cover();
     }
 
     public static void insertModel(String model) throws Exception {//注入模型
@@ -43,47 +54,50 @@ public class CoverTest {
         //覆盖率计算,计算以前，内存中已经注入过模型了
         TempleConfig templeConfig = new TempleConfig();
         templeConfig.setSensoryNerveNub(3);
-        //templeConfig.setSoftMax(true);
-        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 2);
+        templeConfig.setSoftMax(true);
+        templeConfig.setDeep(2);
+        templeConfig.setHiddenNerveNub(9);
+        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 4);
         ModelParameter modelParameter = JSONObject.parseObject(ModelData.DATA, ModelParameter.class);
         templeConfig.insertModel(modelParameter);
         return new Operation(templeConfig);//初始化运算类
     }
 
-    public static void test(Operation operation, int poolSize, int sqlNub, int regionSize, String url) throws Exception {
+    public static void test(Operation operation, int poolSize, int sqlNub, int regionSize,
+                            String name, int t) throws Exception {
         Picture picture = new Picture();
-        int allNub = 0;
         int wrong = 0;
         if (operation == null) {
             operation = getModel();
         }
-        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix(url);
-        Map<Integer, Double> map1 = operation.coverPoint(threeChannelMatrix, poolSize, sqlNub, regionSize);
-        for (Map.Entry<Integer, Double> entry : map1.entrySet()) {
-            int key = entry.getKey();
-            double value = entry.getValue();
-            System.out.println("key===" + key + ",value==" + value);
+        for (int i = 1; i < 100; i++) {
+            String na = "D:\\share\\cai/" + name + i + ".jpg";
+            //System.out.println("name======================" + na);
+            ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix(na);
+            Map<Integer, Double> map1 = operation.coverPoint(threeChannelMatrix, poolSize, sqlNub, regionSize);
+            int id = 0;
+            double point = 0;
+            for (Map.Entry<Integer, Double> entry : map1.entrySet()) {
+                int key = entry.getKey();
+                double value = entry.getValue();
+               // System.out.println("key==" + key + ",value==" + value);
+                if (value > point) {
+                    point = value;
+                    id = key;
+                }
+            }
+            if (id != t) {
+                wrong++;
+            }
         }
-
+        System.out.println("错误率：" + wrong + "%");
     }
 
-    public static void cover2(String url) throws Exception {
+    public static void cover2(Operation operation, String url) throws Exception {
         Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig();
-        templeConfig.setClassifier(Classifier.DNN);
-        templeConfig.setTh(0.9);
-        templeConfig.setSoftMax(true);
-        templeConfig.init(StudyPattern.Accuracy_Pattern, false, 640, 480, 2);
-        ModelParameter modelParameter = JSON.parseObject(ModelData.DATA3, ModelParameter.class);
-        templeConfig.insertModel(modelParameter);
-        Operation operation = new Operation(templeConfig);
         Matrix matrix = picture.getImageMatrixByLocal(url);
-        int type = operation.toSee(matrix);
-        if (type != 1) {//不是扰动
-            test(null, 2, 3, 18, url);
-        } else {//是扰动
-            System.out.println("是扰动====");
-        }
+        double type = operation.toSeeById(matrix, 1);
+        System.out.println("type==" + type);
     }
 
     public static void cover() throws Exception {
@@ -94,30 +108,31 @@ public class CoverTest {
         //初始化模板 注意 width height参数是你训练图片的实际尺寸需要改，其他不用动
         //创建运算类进行标注
         templeConfig.isShowLog(true);
-        templeConfig.setStudyPoint(0.01);//不动
-        //templeConfig.setSoftMax(true);
+        templeConfig.setStudyPoint(0.005);//不动
+        templeConfig.setSoftMax(true);
         //templeConfig.setDeep(2);
-        //templeConfig.setHiddenNerveNub(12);
-        templeConfig.setSensoryNerveNub(3);
+        //templeConfig.setHiddenNerveNub(9);
+        templeConfig.setSensoryNerveNub(4);
         templeConfig.setRzType(RZ.L1);//不动//3 18
-        templeConfig.setlParam(0.015);//不动
-        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 2);
+        templeConfig.setlParam(0.01);//不动
+        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 4);
         Operation operation = new Operation(templeConfig);
-        for (int i = 1; i < 45; i++) {
+        for (int i = 1; i < 100; i++) {
             Map<Integer, ThreeChannelMatrix> matrixMap = new HashMap<>();
-            //桔梗覆盖
-            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\pic\\test/b" + i + ".jpg");
-            //土壤扰动
-            ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\pic\\test/c" + i + ".jpg");
-            //ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("D:\\pic\\test/d" + i + ".jpg");
-            //ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix("D:\\share\\jie/4.jpg");
-            matrixMap.put(1, threeChannelMatrix1);//桔梗覆盖
-            matrixMap.put(2, threeChannelMatrix2);//土壤扰动
-            //matrixMap.put(3, threeChannelMatrix3);//白地
-            operation.coverStudy(matrixMap, 2, 3, 18, 2);
+            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\share\\cai/a" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\share\\cai/b" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("D:\\share\\cai/c" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix("D:\\share\\cai/d" + i + ".jpg");
+
+            matrixMap.put(1, threeChannelMatrix1);
+            matrixMap.put(2, threeChannelMatrix2);
+            matrixMap.put(3, threeChannelMatrix3);
+            matrixMap.put(4, threeChannelMatrix4);
+            operation.coverStudy(matrixMap, 5, 4, 10, 2);
         }
         ModelParameter modelParameter = templeConfig.getModel();
         String model = JSON.toJSONString(modelParameter);
         System.out.println(model);
+       // test(operation, 2, 3, 40, "d", 4);
     }
 }

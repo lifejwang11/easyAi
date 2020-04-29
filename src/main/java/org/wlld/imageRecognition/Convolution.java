@@ -40,7 +40,7 @@ public class Convolution extends Frequency {
         return matrix;
     }
 
-    private List<ThreeChannelMatrix> regionThreeChannelMatrix(ThreeChannelMatrix threeChannelMatrix, int size) {
+    private  List<ThreeChannelMatrix> regionThreeChannelMatrix(ThreeChannelMatrix threeChannelMatrix, int size) {
         List<ThreeChannelMatrix> threeChannelMatrixList = new ArrayList<>();
         Matrix matrixRAll = threeChannelMatrix.getMatrixR();
         Matrix matrixGAll = threeChannelMatrix.getMatrixG();
@@ -62,7 +62,18 @@ public class Convolution extends Frequency {
         return threeChannelMatrixList;
     }
 
-    public List<List<Double>> kAvg(ThreeChannelMatrix threeMatrix, int poolSize, int sqNub
+//    public static void main(String[] args) throws Exception {
+//        Picture picture = new Picture();
+//        for (int i = 1; i < 10; i++) {
+//            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\share\\cai/a" + i + ".jpg");
+//            ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\share\\cai/b" + i + ".jpg");
+//            kc(threeChannelMatrix1, 2, 3, 40);
+//            kc(threeChannelMatrix2, 2, 3, 40);
+//            System.out.println("============================================");
+//        }
+//    }
+
+    public  List<List<Double>> kAvg(ThreeChannelMatrix threeMatrix, int poolSize, int sqNub
             , int regionSize) throws Exception {
         RGBSort rgbSort = new RGBSort();
         List<List<Double>> features = new ArrayList<>();
@@ -100,13 +111,13 @@ public class Convolution extends Frequency {
             for (int t = 0; t < dm.length; t++) {
                 dm[t] = rgbNorms.get(t).getNorm();
             }
-            //System.out.println(Arrays.toString(dm));
+            System.out.println(Arrays.toString(dm));
             features.add(feature);
         }
         return features;
     }
 
-    public List<List<Double>> kc(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub
+    public  List<List<Double>> kc(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub
             , int regionSize) throws Exception {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
@@ -117,7 +128,7 @@ public class Convolution extends Frequency {
         RGBSort rgbSort = new RGBSort();
         int x = matrixR.getX();
         int y = matrixR.getY();
-        meanClustering = new MeanClustering(sqNub);
+        MeanClustering meanClustering = new MeanClustering(sqNub);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 double[] color = new double[]{matrixR.getNumber(i, j) / 255, matrixG.getNumber(i, j) / 255, matrixB.getNumber(i, j) / 255};
@@ -145,9 +156,9 @@ public class Convolution extends Frequency {
         for (int i = 0; i < sqNub; i++) {
             features[i] = rgbNorms.get(i).getNorm();
         }
-       // System.out.println(Arrays.toString(features));
+        System.out.println(Arrays.toString(features));
         minNorm = ArithUtil.div(minNorm, 2);
-        return checkImage(matrixR, matrixG, matrixB, minNorm, regionSize, features);
+        return null;//checkImage(matrixR, matrixG, matrixB, minNorm, regionSize, features);
     }
 
     private List<List<Double>> checkImage(Matrix matrixR, Matrix matrixG, Matrix matrixB, double minNorm, int size
@@ -314,7 +325,7 @@ public class Convolution extends Frequency {
         return myMatrix;
     }
 
-    protected Matrix late(Matrix matrix, int size) throws Exception {//迟化处理
+    protected  Matrix late(Matrix matrix, int size) throws Exception {//迟化处理
         int xn = matrix.getX();
         int yn = matrix.getY();
         int x = xn / size;//求导后矩阵的行数
