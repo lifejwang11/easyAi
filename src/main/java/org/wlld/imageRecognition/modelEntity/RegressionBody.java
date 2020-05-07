@@ -9,26 +9,26 @@ import java.util.List;
 public class RegressionBody {
     private double w;
     private double b;
-    private double[] X;
+    private double maxDis;//最大距离
 
-    public List<List<Double>> mappingMatrix(int size) {
-        int len = X.length - size;
-        List<List<Double>> lists = new ArrayList<>();
-        for (int i = 0; i < len; i += size) {
-            List<Double> list = new ArrayList<>();
-            for (int t = i; t < i + size; t++) {
-                double nub = ArithUtil.add(ArithUtil.mul(w, X[t]), b);
-                list.add(nub);
+    public void getMaxDis(double[] Y, double[] X) {//获取当前的最大距离
+        double allNub = 0;
+        for (int i = 0; i < X.length; i++) {
+            double y = ArithUtil.add(ArithUtil.mul(X[i], w), b);
+            double dis = Math.abs(ArithUtil.sub(Y[i], y));
+            allNub = ArithUtil.add(allNub, dis);
+            System.out.println("dis======" + dis);
+            if (dis > maxDis) {
+                maxDis = dis;
             }
-            lists.add(list);
         }
-        return lists;
+        allNub = ArithUtil.div(allNub, X.length);//当前最大值：0.1955576793420405,allNub==0.035958733
+        System.out.println("当前最大值：" + maxDis + ",allNub==" + allNub);
     }
 
     public void lineRegression(double[] Y, double[] X, Frequency frequency) {//进行二元线性回归
         double avX = frequency.average(X);//平均值
         int len = Y.length;
-        this.X = X;
         double wFenZi = 0;
         double wFenMu;
         double xSigma = 0;//X求和
@@ -49,6 +49,5 @@ public class RegressionBody {
             bSigma = ArithUtil.add(ArithUtil.sub(y, ArithUtil.mul(w, x)), bSigma);
         }
         b = ArithUtil.div(bSigma, len);
-
     }
 }

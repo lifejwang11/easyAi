@@ -40,7 +40,7 @@ public class Convolution extends Frequency {
         return matrix;
     }
 
-    private  List<ThreeChannelMatrix> regionThreeChannelMatrix(ThreeChannelMatrix threeChannelMatrix, int size) {
+    private List<ThreeChannelMatrix> regionThreeChannelMatrix(ThreeChannelMatrix threeChannelMatrix, int size) {
         List<ThreeChannelMatrix> threeChannelMatrixList = new ArrayList<>();
         Matrix matrixRAll = threeChannelMatrix.getMatrixR();
         Matrix matrixGAll = threeChannelMatrix.getMatrixG();
@@ -63,17 +63,17 @@ public class Convolution extends Frequency {
     }
 
 //    public static void main(String[] args) throws Exception {
-//        Picture picture = new Picture();
-//        for (int i = 1; i < 10; i++) {
-//            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\share\\cai/a" + i + ".jpg");
-//            ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\share\\cai/b" + i + ".jpg");
-//            kc(threeChannelMatrix1, 2, 3, 40);
-//            kc(threeChannelMatrix2, 2, 3, 40);
-//            System.out.println("============================================");
-//        }
+//        Picture picture = new Picture();//imageTrance
+//        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\share/a.png");
+//        ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\share/b.png");
+//        XYBody xyBody = imageTrance(threeChannelMatrix.getMatrixRGB(), 40);
+//        XYBody xyBody2 = imageTrance(threeChannelMatrix2.getMatrixRGB(), 40);
+//        regression(xyBody);
+//        RegressionBody regressionBody = xyBody.getRegressionBody();
+//        regressionBody.getMaxDis(xyBody2.getY(), xyBody2.getX());//av==0.8493586867
 //    }
 
-    public  List<List<Double>> kAvg(ThreeChannelMatrix threeMatrix, int poolSize, int sqNub
+    public List<List<Double>> kAvg(ThreeChannelMatrix threeMatrix, int poolSize, int sqNub
             , int regionSize) throws Exception {
         RGBSort rgbSort = new RGBSort();
         List<List<Double>> features = new ArrayList<>();
@@ -111,13 +111,13 @@ public class Convolution extends Frequency {
             for (int t = 0; t < dm.length; t++) {
                 dm[t] = rgbNorms.get(t).getNorm();
             }
-            System.out.println(Arrays.toString(dm));
+            //System.out.println(Arrays.toString(dm));
             features.add(feature);
         }
         return features;
     }
 
-    public  List<List<Double>> kc(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub
+    public List<List<Double>> kc(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub
             , int regionSize) throws Exception {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
@@ -214,36 +214,44 @@ public class Convolution extends Frequency {
         return list;
     }
 
-    public List<List<Double>> imageTrance(Matrix matrix, int size, int featureNub) throws Exception {//矩阵和卷积核大小
+    private  void regression(XYBody xyBody) {
+        //计算当前图形的线性回归
+        RegressionBody regressionBody = new RegressionBody();
+        regressionBody.lineRegression(xyBody.getY(), xyBody.getX(),this);
+        xyBody.setRegressionBody(regressionBody);
+    }
+
+    public  XYBody imageTrance(Matrix matrix, int size) throws Exception {//矩阵和卷积核大小
         int xn = matrix.getX();
         int yn = matrix.getY();
         int xSize = xn / size;//求导后矩阵的行数
         int ySize = yn / size;//求导后矩阵的列数
         double[] Y = new double[xSize * ySize];
         double[] X = new double[xSize * ySize];
+        double rgbN = Kernel.rgbN;
         for (int i = 0; i < xn - size; i += size) {
             for (int j = 0; j < yn - size; j += size) {
                 Matrix matrix1 = matrix.getSonOfMatrix(i, j, size, size);
                 double[] nubs = new double[size * size];//平均值数组
                 for (int t = 0; t < size; t++) {
                     for (int k = 0; k < size; k++) {
-                        double nub = matrix1.getNumber(t, k) / 255;
+                        double nub = matrix1.getNumber(t, k) / rgbN;
                         nubs[t * size + k] = nub;
                     }
                 }
                 double avg = average(nubs);//平均值
-                double dc = dcByAvg(nubs, avg);//当前离散系数
-                //double va = varianceByAve(nubs, avg);//方差
+                //double dc = frequency.dcByAvg(nubs, avg);//当前离散系数
+                double va = varianceByAve(nubs, avg);//方差
                 //离散系数作为X，AVG作为Y
                 int t = i / size * ySize + j / size;
                 Y[t] = avg;
-                X[t] = dc;
+                X[t] = va;
             }
         }
-        //计算当前图形的线性回归
-        RegressionBody regressionBody = new RegressionBody();
-        regressionBody.lineRegression(Y, X, this);
-        return regressionBody.mappingMatrix(featureNub);
+        XYBody xyBody = new XYBody();
+        xyBody.setX(X);
+        xyBody.setY(Y);
+        return xyBody;
     }
 
 
@@ -325,7 +333,7 @@ public class Convolution extends Frequency {
         return myMatrix;
     }
 
-    protected  Matrix late(Matrix matrix, int size) throws Exception {//迟化处理
+    protected Matrix late(Matrix matrix, int size) throws Exception {//迟化处理
         int xn = matrix.getX();
         int yn = matrix.getY();
         int x = xn / size;//求导后矩阵的行数

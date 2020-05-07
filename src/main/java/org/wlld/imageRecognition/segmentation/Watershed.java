@@ -2,7 +2,6 @@ package org.wlld.imageRecognition.segmentation;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Kernel;
-import org.wlld.imageRecognition.border.FrameBody;
 
 import java.util.*;
 
@@ -201,6 +200,9 @@ public class Watershed {
         int x = matrix.getX();
         int y = matrix.getY();
         int size = xSize * ySize;
+        double minPoint = 1;
+        int xr = 0;
+        int yr = 0;
         for (int i = 0; i <= x - xSize; i += xSize) {
             for (int j = 0; j <= y - ySize; j += ySize) {
                 Matrix myMatrix = rainfallMap.getSonOfMatrix(i, j, xSize, ySize);
@@ -213,9 +215,15 @@ public class Watershed {
                     }
                 }
                 double cover = (double) sigma / (double) size;//降雨率产生剧烈波动时则出现坐标
-                System.out.println("cover==" + cover + ",x==" + i + ",y==" + j);
+                if (cover < minPoint) {
+                    xr = i;
+                    yr = j;
+                    //System.out.println("cover==" + cover + ",x==" + i + ",y==" + j);
+                    minPoint = cover;
+                }
             }
         }
+        System.out.println("min==" + minPoint + ",x==" + xr + ",y==" + yr);
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值

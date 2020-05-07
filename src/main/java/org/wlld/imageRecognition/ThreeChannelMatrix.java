@@ -7,6 +7,15 @@ public class ThreeChannelMatrix {
     Matrix matrixG;
     Matrix matrixB;
     Matrix H;
+    Matrix matrixRGB;
+
+    public Matrix getMatrixRGB() {
+        return matrixRGB;
+    }
+
+    public void setMatrixRGB(Matrix matrixRGB) {
+        this.matrixRGB = matrixRGB;
+    }
 
     public Matrix getH() {
         return H;
