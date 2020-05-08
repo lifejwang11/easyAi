@@ -11,25 +11,22 @@ import java.util.*;
  * @date 10:25 上午 2020/1/13
  */
 public class Watershed {
-    private Matrix matrix;//灰度图像
+    private Matrix matrix;//RGB范数图像
     private Matrix rainfallMap;//降雨图
-    private int rainNub = Kernel.rainNub;//默认降雨点的数量
-    private int th = Kernel.th;//灰度阈值
-    private List<Point> pointList = new ArrayList<>();
+    private Matrix rainDensityMap;//降雨密度图
+    private Matrix regionMap;//分区图
+    private int xSize;//单元高度
+    private int ySize;//单元宽度
+    private double th = Kernel.th;//灰度阈值
+    private List<RegionBody> regionList = new ArrayList<>();
     private int xMax;
     private int yMax;
-
-    class Point {
-        private int x;
-        private int y;
-        private boolean isLow;//已经到最低处了
-        private boolean isFull;//已经满了
-    }
 
     public Watershed(Matrix matrix) throws Exception {
         if (matrix != null) {
             this.matrix = matrix;
             rainfallMap = new Matrix(matrix.getX(), matrix.getY());
+            rainDensityMap = new Matrix(matrix.getX() / 30, matrix.getY() / 30);
             xMax = rainfallMap.getX() - 1;
             yMax = rainfallMap.getY() - 1;
         } else {
@@ -94,7 +91,7 @@ public class Watershed {
         return new double[]{top, left, bottom, right, leftTop, leftBottom, rightBottom, rightTop};
     }
 
-    private int[] rain(int x, int y, boolean isFirst) throws Exception {//先往下降，直到不能再降了为止
+    private int[] rain(int x, int y) throws Exception {//先往下降，直到不能再降了为止
         //有两种情况停止：1，最小值是自身。2，周围已经灌满水了,包括自身
         double[] pixels = getPixels(x, y);
         int[] point = new int[8];
@@ -147,8 +144,6 @@ public class Watershed {
                     rainfallMap.setNub(row, column, 1);
                 }
             }
-        } else {//我自己就是最小了
-
         }
         return point;
     }
@@ -164,14 +159,12 @@ public class Watershed {
     private void fall(int i, int j) throws Exception {
         List<Integer> list = new ArrayList<>();
         list.add((i << 12) | j);
-        boolean isFirst = true;
         do {
             List<Integer> list2 = new ArrayList<>();
             for (int pixel : list) {
                 int x = pixel >> 12;
                 int y = pixel & 0xfff;
-                int[] nodes = rain(x, y, isFirst);
-                isFirst = false;
+                int[] nodes = rain(x, y);
                 pull(list2, nodes);
             }
             list = list2;
@@ -190,19 +183,27 @@ public class Watershed {
             }
         }
         //进行区域提取
-        int xSize = x / 30;
-        int ySize = y / 30;
+        xSize = x / 30;
+        ySize = y / 30;
         System.out.println("xSize==" + xSize + ",ySize==" + ySize);
-        sigmaPixel(xSize, ySize);
+        sigmaPixel();
     }
 
-    private void sigmaPixel(int xSize, int ySize) throws Exception {
+
+    private void getPosition() throws Exception {
+        int x = rainDensityMap.getX();
+        int y = rainDensityMap.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double nub = rainDensityMap.getNumber(i, j);
+            }
+        }
+    }
+
+    private void sigmaPixel() throws Exception {//生成降雨密度图
         int x = matrix.getX();
         int y = matrix.getY();
         int size = xSize * ySize;
-        double minPoint = 1;
-        int xr = 0;
-        int yr = 0;
         for (int i = 0; i <= x - xSize; i += xSize) {
             for (int j = 0; j <= y - ySize; j += ySize) {
                 Matrix myMatrix = rainfallMap.getSonOfMatrix(i, j, xSize, ySize);
@@ -215,15 +216,11 @@ public class Watershed {
                     }
                 }
                 double cover = (double) sigma / (double) size;//降雨率产生剧烈波动时则出现坐标
-                if (cover < minPoint) {
-                    xr = i;
-                    yr = j;
-                    //System.out.println("cover==" + cover + ",x==" + i + ",y==" + j);
-                    minPoint = cover;
+                if (cover > th) {//降雨密度图
+                    rainDensityMap.setNub(i / 30, j / 30, 1);
                 }
             }
         }
-        System.out.println("min==" + minPoint + ",x==" + xr + ",y==" + yr);
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值
