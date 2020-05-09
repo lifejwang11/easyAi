@@ -18,17 +18,24 @@ public class Watershed {
     private int xSize;//单元高度
     private int ySize;//单元宽度
     private double th = Kernel.th;//灰度阈值
-    private List<RegionBody> regionList = new ArrayList<>();
+    private Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
+    private int regionNub = Kernel.Region_Nub;//一张图分多少份
     private int xMax;
     private int yMax;
+    private int rxMax;
+    private int ryMax;
+    private int id = 0;
 
     public Watershed(Matrix matrix) throws Exception {
         if (matrix != null) {
             this.matrix = matrix;
             rainfallMap = new Matrix(matrix.getX(), matrix.getY());
-            rainDensityMap = new Matrix(matrix.getX() / 30, matrix.getY() / 30);
+            rainDensityMap = new Matrix(matrix.getX() / regionNub, matrix.getY() / regionNub);
+            regionMap = new Matrix(matrix.getX() / regionNub, matrix.getY() / regionNub);
             xMax = rainfallMap.getX() - 1;
             yMax = rainfallMap.getY() - 1;
+            rxMax = regionMap.getX() - 1;
+            ryMax = regionMap.getY() - 1;
         } else {
             throw new Exception("matrix is null");
         }
@@ -183,12 +190,55 @@ public class Watershed {
             }
         }
         //进行区域提取
-        xSize = x / 30;
-        ySize = y / 30;
+        xSize = x / regionNub;
+        ySize = y / regionNub;
         System.out.println("xSize==" + xSize + ",ySize==" + ySize);
         sigmaPixel();
     }
 
+    private void setRegion(int x, int y, int type) throws Exception {
+        int i = 0;
+        int j = 0;
+        for (int t = 0; t < 8; t++) {
+            switch (t) {
+                case 0:
+                    i = x - 1;
+                    j = y;
+                    break;
+                case 1:
+                    i = x - 1;
+                    j = y - 1;
+                    break;
+                case 2:
+                    i = x - 1;
+                    j = y + 1;
+                    break;
+                case 3:
+                    i = x;
+                    j = y - 1;
+                    break;
+                case 4:
+                    i = x;
+                    j = y + 1;
+                    break;
+                case 5:
+                    i = x + 1;
+                    j = y - 1;
+                    break;
+                case 6:
+                    i = x + 1;
+                    j = y;
+                    break;
+                case 7:
+                    i = x + 1;
+                    j = y + 1;
+                    break;
+            }
+            if (i > -1 && j > -1 && i <= rxMax && j <= ryMax && regionMap.getNumber(i, j) == 1) {
+                regionBodyMap.get(type).setPoint(i, j, type);
+            }
+        }
+    }
 
     private void getPosition() throws Exception {
         int x = rainDensityMap.getX();
@@ -196,6 +246,13 @@ public class Watershed {
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 double nub = rainDensityMap.getNumber(i, j);
+                if (nub == 1) {
+                    id++;
+                    RegionBody regionBody = new RegionBody(regionMap);
+                    regionBody.setPoint(x, y, id);
+                    regionBodyMap.put(id, regionBody);
+                    setRegion(i, j, id);
+                }
             }
         }
     }
@@ -217,10 +274,11 @@ public class Watershed {
                 }
                 double cover = (double) sigma / (double) size;//降雨率产生剧烈波动时则出现坐标
                 if (cover > th) {//降雨密度图
-                    rainDensityMap.setNub(i / 30, j / 30, 1);
+                    rainDensityMap.setNub(i / regionNub, j / regionNub, 1);
                 }
             }
         }
+        getPosition();
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值
