@@ -21,7 +21,7 @@ public class FoodTest {
 
     public static void rain() throws Exception {//降雨
         Picture picture = new Picture();
-        Matrix matrix = picture.getImageMatrixByLocal("D:\\share\\cai/d1.jpg");
+        Matrix matrix = picture.getImageMatrixByLocal("D:\\share/c.png");
         Watershed watershed = new Watershed(matrix);
         watershed.rainfall();
     }

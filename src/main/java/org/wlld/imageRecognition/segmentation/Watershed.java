@@ -2,6 +2,7 @@ package org.wlld.imageRecognition.segmentation;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Kernel;
+import org.wlld.tools.ArithUtil;
 
 import java.util.*;
 
@@ -13,24 +14,24 @@ import java.util.*;
 public class Watershed {
     private Matrix matrix;//RGB范数图像
     private Matrix rainfallMap;//降雨图
-    private Matrix rainDensityMap;//降雨密度图
     private Matrix regionMap;//分区图
     private int xSize;//单元高度
     private int ySize;//单元宽度
     private double th = Kernel.th;//灰度阈值
+    private double regionTh = Kernel.Region_Th;
+    private int regionSize = Kernel.Region_Dif;
     private Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
     private int regionNub = Kernel.Region_Nub;//一张图分多少份
     private int xMax;
     private int yMax;
+    private int id = 1;
     private int rxMax;
     private int ryMax;
-    private int id = 0;
 
     public Watershed(Matrix matrix) throws Exception {
         if (matrix != null) {
             this.matrix = matrix;
             rainfallMap = new Matrix(matrix.getX(), matrix.getY());
-            rainDensityMap = new Matrix(matrix.getX() / regionNub, matrix.getY() / regionNub);
             regionMap = new Matrix(matrix.getX() / regionNub, matrix.getY() / regionNub);
             xMax = rainfallMap.getX() - 1;
             yMax = rainfallMap.getY() - 1;
@@ -194,67 +195,88 @@ public class Watershed {
         ySize = y / regionNub;
         System.out.println("xSize==" + xSize + ",ySize==" + ySize);
         sigmaPixel();
+//        int nub = 0;
+//        System.out.println("region size==" + regionBodyMap.size());
+//        for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
+//            RegionBody regionBody = entry.getValue();
+//            int maxX = regionBody.getMaxX();
+//            int maxY = regionBody.getMaxY();
+//            int minX = regionBody.getMinX();
+//            int minY = regionBody.getMinY();
+//            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
+//        }
+//        System.out.println("nub===" + nub);
     }
 
-    private void setRegion(int x, int y, int type) throws Exception {
-        int i = 0;
-        int j = 0;
-        for (int t = 0; t < 8; t++) {
-            switch (t) {
-                case 0:
-                    i = x - 1;
-                    j = y;
-                    break;
-                case 1:
-                    i = x - 1;
-                    j = y - 1;
-                    break;
-                case 2:
-                    i = x - 1;
-                    j = y + 1;
-                    break;
-                case 3:
-                    i = x;
-                    j = y - 1;
-                    break;
-                case 4:
-                    i = x;
-                    j = y + 1;
-                    break;
-                case 5:
-                    i = x + 1;
-                    j = y - 1;
-                    break;
-                case 6:
-                    i = x + 1;
-                    j = y;
-                    break;
-                case 7:
-                    i = x + 1;
-                    j = y + 1;
-                    break;
-            }
-            if (i > -1 && j > -1 && i <= rxMax && j <= ryMax && regionMap.getNumber(i, j) == 1) {
-                regionBodyMap.get(type).setPoint(i, j, type);
-            }
-        }
-    }
-
-    private void getPosition() throws Exception {
-        int x = rainDensityMap.getX();
-        int y = rainDensityMap.getY();
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                double nub = rainDensityMap.getNumber(i, j);
-                if (nub == 1) {
-                    id++;
-                    RegionBody regionBody = new RegionBody(regionMap);
-                    regionBody.setPoint(x, y, id);
-                    regionBodyMap.put(id, regionBody);
-                    setRegion(i, j, id);
+    private void setType(int type, int x, int y) throws Exception {
+        for (int i = x; i < x + 3; i++) {
+            for (int j = y; j < y + 3; j++) {
+                if (regionMap.getNumber(i, j) != 0) {
+                    regionMap.setNub(i, j, type);
                 }
             }
         }
+    }
+
+    private void mergeRegion() throws Exception {//区域合并
+        int x = regionMap.getX() - 2;
+        int y = regionMap.getY() - 2;
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                Matrix matrix = regionMap.getSonOfMatrix(i, j, regionSize, regionSize);
+                int type = 0;
+                int state = 0;
+                for (int k = 0; k < matrix.getX(); k++) {
+                    for (int l = 0; l < matrix.getY(); l++) {
+                        int nub = (int) matrix.getNumber(k, l);
+                        if (nub > 1 && type == 0) {//存在大于1的数
+                            type = nub;
+                            state = state | (1 << 1);
+                        } else if (nub == 1) {
+                            state = state | 1;
+                        }
+                    }
+                }
+                if ((state & 2) != 0) {//存在大于1的数
+                    setType(type, i, j);
+                } else if ((state & 1) != 0) {//不存在大于1的数，但是存在1,生成新的ID
+                    id++;
+                    regionBodyMap.put(id, new RegionBody());
+                    setType(id, i, j);
+                }
+            }
+        }
+    }
+
+    private void createRegion() throws Exception {
+        int x = regionMap.getX();
+        int y = regionMap.getY();
+        for (int i = 0; i < x; i++) {
+            Map<Integer, Integer> map = new HashMap<>();
+            for (int j = 0; j < y; j++) {
+                int type = (int) regionMap.getNumber(i, j);
+                if (type > 1) {
+                    if (map.containsKey(type)) {
+                        map.put(type, map.get(type) + 1);
+                    } else {
+                        map.put(type, 1);
+                    }
+                }
+            }
+            ///
+            for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
+                int type = entry.getKey();
+                RegionBody regionBody = entry.getValue();
+                if (map.containsKey(type)) {//如果这个类型存在
+                    int nub = map.get(type);
+                    double point = ArithUtil.div(nub, ryMax);
+                    if (point > regionTh) {
+                        //regionBody.setX();
+                    }
+                }
+            }
+        }
+
     }
 
     private void sigmaPixel() throws Exception {//生成降雨密度图
@@ -274,11 +296,12 @@ public class Watershed {
                 }
                 double cover = (double) sigma / (double) size;//降雨率产生剧烈波动时则出现坐标
                 if (cover > th) {//降雨密度图
-                    rainDensityMap.setNub(i / regionNub, j / regionNub, 1);
+                    regionMap.setNub(i / regionNub, j / regionNub, 1);
                 }
             }
         }
-        getPosition();
+        mergeRegion();
+        // System.out.println(regionMap.getString());
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值
