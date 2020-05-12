@@ -128,6 +128,6 @@ public class CoverTest {
         ModelParameter modelParameter = templeConfig.getModel();
         String model = JSON.toJSONString(modelParameter);
         System.out.println(model);
-         test(operation, 2, 3, 18, "d", 2);
+        test(operation, 2, 3, 18, "d", 2);
     }
 }

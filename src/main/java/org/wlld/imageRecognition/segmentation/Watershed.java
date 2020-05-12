@@ -25,18 +25,18 @@ public class Watershed {
     private int xMax;
     private int yMax;
     private int id = 1;
-    private int rxMax;
-    private int ryMax;
+    private List<Specifications> specifications;
 
-    public Watershed(Matrix matrix) throws Exception {
-        if (matrix != null) {
+    public Watershed(Matrix matrix, List<Specifications> specifications) throws Exception {
+        if (matrix != null && specifications != null && specifications.size() > 0) {
             this.matrix = matrix;
+            this.specifications = specifications;
+            xSize = matrix.getX() / regionNub;
+            ySize = matrix.getY() / regionNub;
             rainfallMap = new Matrix(matrix.getX(), matrix.getY());
-            regionMap = new Matrix(matrix.getX() / regionNub, matrix.getY() / regionNub);
+            regionMap = new Matrix(regionNub, regionNub);
             xMax = rainfallMap.getX() - 1;
             yMax = rainfallMap.getY() - 1;
-            rxMax = regionMap.getX() - 1;
-            ryMax = regionMap.getY() - 1;
         } else {
             throw new Exception("matrix is null");
         }
@@ -180,7 +180,7 @@ public class Watershed {
 
     }
 
-    public void rainfall() throws Exception {//开始降雨
+    public List<RegionBody> rainfall() throws Exception {//开始降雨
         int x = matrix.getX();
         int y = matrix.getY();
         for (int i = 0; i < x; i++) {
@@ -191,21 +191,28 @@ public class Watershed {
             }
         }
         //进行区域提取
-        xSize = x / regionNub;
-        ySize = y / regionNub;
-        System.out.println("xSize==" + xSize + ",ySize==" + ySize);
         sigmaPixel();
-//        int nub = 0;
-//        System.out.println("region size==" + regionBodyMap.size());
-//        for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
-//            RegionBody regionBody = entry.getValue();
-//            int maxX = regionBody.getMaxX();
-//            int maxY = regionBody.getMaxY();
-//            int minX = regionBody.getMinX();
-//            int minY = regionBody.getMinY();
-//            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
-//        }
-//        System.out.println("nub===" + nub);
+        List<RegionBody> regionBodies = new ArrayList<>();
+        for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
+            RegionBody regionBody = entry.getValue();
+            if (check(regionBody.getMinX(), regionBody.getMinY(), regionBody.getMaxX(), regionBody.getMaxY())) {
+                regionBodies.add(regionBody);
+            }
+        }
+        return regionBodies;
+    }
+
+    private boolean check(int minX, int minY, int maxX, int maxY) {
+        boolean isRight = false;
+        for (Specifications specification : specifications) {
+            int width = maxY - minY;
+            int height = maxX - minX;
+            if (width >= specification.getWidth() && height >= specification.getHeight()) {
+                isRight = true;
+                break;
+            }
+        }
+        return isRight;
     }
 
     private void setType(int type, int x, int y) throws Exception {
@@ -263,20 +270,43 @@ public class Watershed {
                     }
                 }
             }
-            ///
             for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
                 int type = entry.getKey();
                 RegionBody regionBody = entry.getValue();
                 if (map.containsKey(type)) {//如果这个类型存在
                     int nub = map.get(type);
-                    double point = ArithUtil.div(nub, ryMax);
+                    double point = ArithUtil.div(nub, regionNub);
                     if (point > regionTh) {
-                        //regionBody.setX();
+                        regionBody.setX(i * xSize);
                     }
                 }
             }
         }
+        for (int j = 0; j < y; j++) {
+            Map<Integer, Integer> map = new HashMap<>();
+            for (int i = 0; i < x; i++) {
+                int type = (int) regionMap.getNumber(i, j);
+                if (type > 1) {
+                    if (map.containsKey(type)) {
+                        map.put(type, map.get(type) + 1);
+                    } else {
+                        map.put(type, 1);
+                    }
+                }
+            }
+            for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
+                int type = entry.getKey();
+                RegionBody regionBody = entry.getValue();
+                if (map.containsKey(type)) {//如果这个类型存在
+                    int nub = map.get(type);
+                    double point = ArithUtil.div(nub, regionNub);
+                    if (point > regionTh) {
+                        regionBody.setY(j * ySize);
+                    }
+                }
+            }
 
+        }
     }
 
     private void sigmaPixel() throws Exception {//生成降雨密度图
@@ -296,12 +326,13 @@ public class Watershed {
                 }
                 double cover = (double) sigma / (double) size;//降雨率产生剧烈波动时则出现坐标
                 if (cover > th) {//降雨密度图
-                    regionMap.setNub(i / regionNub, j / regionNub, 1);
+                    regionMap.setNub(i / xSize, j / ySize, 1);
                 }
             }
         }
         mergeRegion();
         // System.out.println(regionMap.getString());
+        createRegion();
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值

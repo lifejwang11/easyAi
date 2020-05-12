@@ -5,12 +5,16 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Classifier;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
-import org.wlld.function.Sigmod;
-import org.wlld.function.Tanh;
 import org.wlld.imageRecognition.*;
+import org.wlld.imageRecognition.segmentation.RegionBody;
+import org.wlld.imageRecognition.segmentation.Specifications;
 import org.wlld.imageRecognition.segmentation.Watershed;
+import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.tools.ArithUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FoodTest {
 
@@ -20,10 +24,25 @@ public class FoodTest {
     }
 
     public static void rain() throws Exception {//降雨
+        Convolution convolution = new Convolution();
         Picture picture = new Picture();
         Matrix matrix = picture.getImageMatrixByLocal("D:\\share/c.png");
-        Watershed watershed = new Watershed(matrix);
-        watershed.rainfall();
+        List<Specifications> specificationsList = new ArrayList<>();
+        Specifications specifications = new Specifications();
+        specifications.setWidth(400);
+        specifications.setHeight(400);
+        specificationsList.add(specifications);
+        Watershed watershed = new Watershed(matrix, specificationsList);
+        List<RegionBody> regionList = watershed.rainfall();
+
+    }
+
+    public static void study() throws Exception {
+        Picture picture = new Picture();
+        Convolution convolution = new Convolution();
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("");
+        List<Double> feature = convolution.getCenterColor(threeChannelMatrix, 2, 4);
+
     }
 
     public static void food() throws Exception {
