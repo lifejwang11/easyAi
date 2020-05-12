@@ -6,6 +6,24 @@ public class ThreeChannelMatrix {
     Matrix matrixR;
     Matrix matrixG;
     Matrix matrixB;
+    Matrix H;
+    Matrix matrixRGB;
+
+    public Matrix getMatrixRGB() {
+        return matrixRGB;
+    }
+
+    public void setMatrixRGB(Matrix matrixRGB) {
+        this.matrixRGB = matrixRGB;
+    }
+
+    public Matrix getH() {
+        return H;
+    }
+
+    public void setH(Matrix h) {
+        H = h;
+    }
 
     public Matrix getMatrixR() {
         return matrixR;

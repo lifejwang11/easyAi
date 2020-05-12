@@ -2,119 +2,116 @@ package coverTest;
 
 import com.alibaba.fastjson.JSON;
 import org.wlld.MatrixTools.Matrix;
-import org.wlld.ModelData;
 import org.wlld.config.Classifier;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.imageRecognition.*;
-import org.wlld.imageRecognition.segmentation.ImageSegmentation;
+import org.wlld.imageRecognition.segmentation.RegionBody;
+import org.wlld.imageRecognition.segmentation.Specifications;
+import org.wlld.imageRecognition.segmentation.Watershed;
+import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.tools.ArithUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FoodTest {
 
     public static void main(String[] args) throws Exception {
+        //food();
+        rain();
+    }
 
-        food();
+    public static void rain() throws Exception {//降雨
+        Convolution convolution = new Convolution();
+        Picture picture = new Picture();
+        Matrix matrix = picture.getImageMatrixByLocal("D:\\share/c.png");
+        List<Specifications> specificationsList = new ArrayList<>();
+        Specifications specifications = new Specifications();
+        specifications.setWidth(400);
+        specifications.setHeight(400);
+        specificationsList.add(specifications);
+        Watershed watershed = new Watershed(matrix, specificationsList);
+        List<RegionBody> regionList = watershed.rainfall();
+
+    }
+
+    public static void study() throws Exception {
+        Picture picture = new Picture();
+        Convolution convolution = new Convolution();
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("");
+        List<Double> feature = convolution.getCenterColor(threeChannelMatrix, 2, 4);
+
     }
 
     public static void food() throws Exception {
-        Picture picture = new Picture();
-        TempleConfig templeConfig = new TempleConfig();
+        Picture picture = new Picture();//创建图片解析类
+        TempleConfig templeConfig = new TempleConfig();//创建配置模板类
+        templeConfig.setClassifier(Classifier.DNN);//使用DNN 分类器
+        //templeConfig.setActiveFunction(new Sigmod());//设置激活函数
+        templeConfig.setDeep(2);//设置深度 深度神经网络 深度越深速度越慢
+        //数量越大越准 但是影响量比较小 不绝对 盲试
+        templeConfig.setHiddenNerveNub(9);//设置隐层神经元数量
+        templeConfig.isShowLog(true);//输出打印数据
+        //
+        //templeConfig.setSoftMax(true);//启用最后一层的SOFTMAX
+        //templeConfig.setTh(-1);//设置阈值
+        templeConfig.setStudyPoint(0.012);//设置学习率 0-1
+        templeConfig.setRzType(RZ.L1);//设置正则函数
+        templeConfig.setlParam(0.015);//设置正则参数
 
-        templeConfig.setClassifier(Classifier.DNN);
-        templeConfig.isShowLog(true);
-        templeConfig.setRzType(RZ.L2);
-        templeConfig.setlParam(0.01);//0.015
-        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 400, 400, 3);
-//      ModelParameter modelParameter1 = JSON.parseObject(ModelData.DATA, ModelParameter.class);
-//      templeConfig.insertModel(modelParameter1);
-        Operation operation = new Operation(templeConfig);
+        templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 480, 2);
+        Operation operation = new Operation(templeConfig);//计算类
         // 一阶段
         for (int j = 0; j < 2; j++) {
             for (int i = 1; i < 101; i++) {//一阶段
                 System.out.println("study1===================" + i);
                 //读取本地URL地址图片,并转化成矩阵
-                Matrix a = picture.getImageMatrixByLocal("D:\\share\\cai/a" + i + ".jpg");
-                Matrix b = picture.getImageMatrixByLocal("D:\\share\\cai/b" + i + ".jpg");
-                Matrix c = picture.getImageMatrixByLocal("D:\\share\\cai/c" + i + ".jpg");
-                //Matrix d = picture.getImageMatrixByLocal("D:\\share\\cai/d" + i + ".jpg");
-                //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
-                //第二次学习的时候，第三个参数必须是 true
+                Matrix a = picture.getImageMatrixByLocal("D:\\pic\\1/a" + i + ".jpg");
+                Matrix b = picture.getImageMatrixByLocal("D:\\pic\\2/b" + i + ".jpg");
                 operation.learning(a, 1, false);
                 operation.learning(b, 2, false);
-                operation.learning(c, 3, false);
-                //operation.learning(d, 4, false);
             }
         }
-        //二阶段
+        // 二阶段 归一化
         for (int i = 1; i < 101; i++) {
             System.out.println("avg==" + i);
-            Matrix a = picture.getImageMatrixByLocal("D:\\share\\cai/a" + i + ".jpg");
-            Matrix b = picture.getImageMatrixByLocal("D:\\share\\cai/b" + i + ".jpg");
-            Matrix c = picture.getImageMatrixByLocal("D:\\share\\cai/c" + i + ".jpg");
-            //Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
+            Matrix a = picture.getImageMatrixByLocal("D:\\pic\\1/a" + i + ".jpg");
+            Matrix b = picture.getImageMatrixByLocal("D:\\pic\\2/b" + i + ".jpg");
             operation.normalization(a, templeConfig.getConvolutionNerveManager());
             operation.normalization(b, templeConfig.getConvolutionNerveManager());
-            operation.normalization(c, templeConfig.getConvolutionNerveManager());
-            //operation.normalization(d, templeConfig.getConvolutionNerveManager());
         }
         templeConfig.getNormalization().avg();
-//        ModelParameter modelParameter2 = templeConfig.getModel();
-//        String model2 = JSON.toJSONString(modelParameter2);
-//        System.out.println(model2);
-        for (int j = 0; j < 10; j++) {
+
+        for (int j = 0; j < 3; j++) {
             for (int i = 1; i < 101; i++) {
                 System.out.println("j==" + j + ",study2==================" + i);
-                //读取本地URL地址图片,并转化成矩阵
-                Matrix a = picture.getImageMatrixByLocal("D:\\share\\cai/a" + i + ".jpg");
-                Matrix b = picture.getImageMatrixByLocal("D:\\share\\cai/b" + i + ".jpg");
-                Matrix c = picture.getImageMatrixByLocal("D:\\share\\cai/c" + i + ".jpg");
-                // Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
-                //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
-                //第二次学习的时候，第三个参数必须是 true
+                Matrix a = picture.getImageMatrixByLocal("D:\\pic\\1/a" + i + ".jpg");
+                Matrix b = picture.getImageMatrixByLocal("D:\\pic\\2/b" + i + ".jpg");
                 operation.learning(a, 1, true);
                 operation.learning(b, 2, true);
-                operation.learning(c, 3, true);
-                //operation.learning(d, 4, true);
             }
         }
         templeConfig.finishStudy();//结束学习
+        ModelParameter modelParameter = templeConfig.getModel();
+        String model = JSON.toJSONString(modelParameter);
+        System.out.println(model);
 
         int wrong = 0;
         int allNub = 0;
-        for (int i = 10; i <= 20; i++) {
+        for (int i = 1; i <= 100; i++) {
             //读取本地URL地址图片,并转化成矩阵
-            Matrix a = picture.getImageMatrixByLocal("D:\\share\\cai/a" + i + ".jpg");
-            Matrix b = picture.getImageMatrixByLocal("D:\\share\\cai/b" + i + ".jpg");
-            Matrix c = picture.getImageMatrixByLocal("D:\\share\\cai/c" + i + ".jpg");
-            //Matrix d = picture.getImageMatrixByLocal("D:\\share\\picture/d" + i + ".jpg");
-            //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
-            //第二次学习的时候，第三个参数必须是 true
-            allNub += 3;
+            Matrix a = picture.getImageMatrixByLocal("D:\\pic\\1/a" + i + ".jpg");
+            allNub++;
             int an = operation.toSee(a);
             if (an != 1) {
                 wrong++;
             }
-            int bn = operation.toSee(b);
-            if (bn != 2) {
-                wrong++;
-            }
-            int cn = operation.toSee(c);
-            if (cn != 3) {
-                wrong++;
-            }
-            /*int dn = operation.toSee(d);
-            if (dn != 4) {
-                wrong++;
-            }*/
         }
         double wrongPoint = ArithUtil.div(wrong, allNub);
         System.out.println("错误率：" + (wrongPoint * 100) + "%");
-        ModelParameter modelParameter = templeConfig.getModel();
-        String model = JSON.toJSONString(modelParameter);
-        System.out.println(model);
+
     }
+
 }

@@ -8,6 +8,11 @@ public class Kernel {
     private static final String Horizontal_Number = "[-1,-2,-1]#[0,0,0]#[1,2,1]#";//横卷积核
     private static final String All_Number = "[1,-2,1]#[-2,4,-2]#[1,-2,1]#";//角卷积
     private static final String All_Number2 = "[-1,0,-1]#[0,4,0]#[-1,0,-1]#";
+    public static final int Region_Nub = 30;//一张图有多少份
+    public static final int Region_Dif = 3;//区域内的最大间隔
+    public static final double Region_Th = 0.2;//区域分割阈值
+    public static final double th = 0.5;//分水岭灰度阈值
+    public static final double rgbN = 441.6729559300637;//RGB范数归一化最大值
     public static Matrix Vertical;
     public static Matrix Horizontal;
     public static Matrix All;

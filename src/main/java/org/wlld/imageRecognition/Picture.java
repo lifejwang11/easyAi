@@ -77,16 +77,23 @@ public class Picture {
         ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
         Matrix matrixR = new Matrix(height, width);//行，列
         Matrix matrixG = new Matrix(height, width);//行，列
-        Matrix matrixB = new Matrix(height, width);//行，列
+        Matrix matrixB = new Matrix(height, width);//行，
+        Matrix matrixRGB = new Matrix(height, width);
         threeChannelMatrix.setMatrixR(matrixR);
         threeChannelMatrix.setMatrixG(matrixG);
         threeChannelMatrix.setMatrixB(matrixB);
+        threeChannelMatrix.setMatrixRGB(matrixRGB);
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 int pixel = bi.getRGB(j, i);// 下面三行代码将一个数字转换为RGB数字
-                matrixR.setNub(i, j, (pixel & 0xff0000) >> 16);
-                matrixG.setNub(i, j, (pixel & 0xff00) >> 8);
-                matrixB.setNub(i, j, (pixel & 0xff));
+                int r = (pixel & 0xff0000) >> 16;//R
+                int g = (pixel & 0xff00) >> 8;//G
+                int b = (pixel & 0xff);//B
+                double rgb = Math.sqrt(Math.pow(r, 2) + Math.pow(g, 2) + Math.pow(b, 2));
+                matrixRGB.setNub(i, j, rgb);
+                matrixR.setNub(i, j, r);
+                matrixG.setNub(i, j, g);
+                matrixB.setNub(i, j, b);
             }
         }
         return threeChannelMatrix;

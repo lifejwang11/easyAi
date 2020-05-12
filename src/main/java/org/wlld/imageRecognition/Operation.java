@@ -10,6 +10,7 @@ import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveCenter.Normalization;
+import org.wlld.nerveEntity.Nerve;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.IdCreator;
@@ -285,6 +286,17 @@ public class Operation {//进行计算
         lvq.insertMatrixBody(matrixBody);
     }
 
+    private List<Double> getFeatures(Matrix matrix) throws Exception {
+        List<Double> list = new ArrayList<>();
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                double nub = matrix.getNumber(i, j);
+                list.add(nub);
+            }
+        }
+        return list;
+    }
+
     private List<Double> getFeature(Matrix matrix) throws Exception {//将特征矩阵转化为集合并除10
         List<Double> list = new ArrayList<>();
         Normalization normalization = templeConfig.getNormalization();
@@ -298,7 +310,6 @@ public class Operation {//进行计算
                 } else {
                     list.add(0.0);
                 }
-
             }
         }
         return list;
@@ -560,6 +571,17 @@ public class Operation {//进行计算
         return iou;
     }
 
+    public double toSeeById(Matrix matrix, int id) throws Exception {//返回某一个分类的概率
+        intoConvolutionNetwork(2, matrix, templeConfig.getConvolutionNerveManager().getSensoryNerves(),
+                false, 0, matrixBack);
+        List<Double> list = getFeature(matrixBack.getMatrix());
+        MaxPoint maxPoint = new MaxPoint();
+        maxPoint.setPid(id);
+        long t = IdCreator.get().nextId();
+        intoDnnNetwork(t, list, templeConfig.getSensoryNerves(), false, null, maxPoint);
+        return maxPoint.getpPoint();
+    }
+
     //图像视觉 Accuracy 模式
     public int toSee(Matrix matrix) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Accuracy_Pattern) {
@@ -588,6 +610,7 @@ public class Operation {//进行计算
     private int getClassificationIdByDnn(Matrix myMatrix) throws Exception {
         List<Double> list = getFeature(myMatrix);
         MaxPoint maxPoint = new MaxPoint();
+        maxPoint.setTh(templeConfig.getTh());
         long id = IdCreator.get().nextId();
         intoDnnNetwork(id, list, templeConfig.getSensoryNerves(), false, null, maxPoint);
         return maxPoint.getId();
@@ -601,6 +624,7 @@ public class Operation {//进行计算
         for (Map.Entry<Integer, Matrix> entry : matrixK.entrySet()) {
             Matrix matrix = entry.getValue();
             double dist = MatrixOperation.getEDist(matrix, myVector);
+            System.out.println("距离===" + dist + ",类别==" + entry.getKey());
             if (minDist == 0 || dist < minDist) {
                 minDist = dist;
                 id = entry.getKey();

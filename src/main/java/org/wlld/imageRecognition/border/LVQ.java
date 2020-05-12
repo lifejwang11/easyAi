@@ -16,7 +16,7 @@ public class LVQ {
     private int typeNub;//原型聚类个数,即分类个数(需要模型返回)
     private MatrixBody[] model;//原型向量(需要模型返回)
     private List<MatrixBody> matrixList = new ArrayList<>();
-    private double studyPoint = 0.1;//量化学习率
+    private double studyPoint = 0.01;//量化学习率
     private int length;//向量长度(需要返回)
     private boolean isReady = false;
     private int lvqNub;

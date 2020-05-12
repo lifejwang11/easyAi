@@ -41,7 +41,6 @@ public class HelloWorld {
 
     public static void pictureDemo1() throws Exception {//图像学习DEMO
         //easyAI 包持续更新，现阶段一直在优化
-        //
         Picture picture = new Picture();
         //使用精度计算
         TempleConfig templeConfig = new TempleConfig(false, true);

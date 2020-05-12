@@ -106,8 +106,7 @@ public class Convolution extends Frequency {
         return features;
     }
 
-    public List<List<Double>> kc(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub
-            , int regionSize) throws Exception {
+    public List<Double> getCenterColor(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub) throws Exception {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
@@ -117,7 +116,7 @@ public class Convolution extends Frequency {
         RGBSort rgbSort = new RGBSort();
         int x = matrixR.getX();
         int y = matrixR.getY();
-        meanClustering = new MeanClustering(sqNub);
+        MeanClustering meanClustering = new MeanClustering(sqNub);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 double[] color = new double[]{matrixR.getNumber(i, j) / 255, matrixG.getNumber(i, j) / 255, matrixB.getNumber(i, j) / 255};
@@ -126,113 +125,52 @@ public class Convolution extends Frequency {
         }
         meanClustering.start();
         List<RGBNorm> rgbNorms = meanClustering.getMatrices();
-        double minNorm = 0;
-        int normSize = rgbNorms.size();
-        for (int i = 0; i < normSize; i++) {
-            RGBNorm rgbNorm = rgbNorms.get(i);
-            double[] rgb = rgbNorm.getRgb();
-            for (int j = 0; j < normSize; j++) {
-                if (j != i) {
-                    double normSub = getEDist(rgb, rgbNorms.get(j).getRgb());
-                    if (minNorm == 0 || normSub < minNorm) {
-                        minNorm = normSub;
-                    }
-                }
-            }
-        }
         Collections.sort(rgbNorms, rgbSort);
-        double[] features = new double[sqNub];
+        List<Double> feature = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {
-            features[i] = rgbNorms.get(i).getNorm();
+            feature.add(rgbNorms.get(i).getNorm());
         }
-       // System.out.println(Arrays.toString(features));
-        minNorm = ArithUtil.div(minNorm, 2);
-        return checkImage(matrixR, matrixG, matrixB, minNorm, regionSize, features);
+        return feature;
     }
 
-    private List<List<Double>> checkImage(Matrix matrixR, Matrix matrixG, Matrix matrixB, double minNorm, int size
-            , double[] features) throws Exception {
-        List<List<Double>> lists = new ArrayList<>();
-        int x = matrixR.getX() - size;//求导后矩阵的行数
-        int y = matrixR.getY() - size;//求导后矩阵的列数
-        for (int i = 0; i < x; i += size) {//遍历行
-            for (int j = 0; j < y; j += size) {//遍历每行的列
-                Matrix myMatrixR = matrixR.getSonOfMatrix(i, j, size, size);
-                Matrix myMatrixG = matrixG.getSonOfMatrix(i, j, size, size);
-                Matrix myMatrixB = matrixB.getSonOfMatrix(i, j, size, size);
-                List<Double> list = getListFeature(myMatrixR, myMatrixG, myMatrixB, minNorm, features);
-                // System.out.println("feature====" + list);
-                lists.add(list);
-            }
-        }
-        return lists;
+    private void regression(XYBody xyBody) {
+        //计算当前图形的线性回归
+        RegressionBody regressionBody = new RegressionBody();
+        regressionBody.lineRegression(xyBody.getY(), xyBody.getX(), this);
+        xyBody.setRegressionBody(regressionBody);
     }
 
-    private List<Double> getListFeature(Matrix matrixR, Matrix matrixG, Matrix matrixB, double minNorm
-            , double[] features) throws Exception {
-        int x = matrixR.getX();
-        int y = matrixR.getY();
-        List<Double> list = new ArrayList<>();
-        double[] feat = new double[features.length];
-        List<RGBNorm> rgbNormList = meanClustering.getMatrices();
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                double[] color = new double[]{matrixR.getNumber(i, j) / 255, matrixG.getNumber(i, j) / 255, matrixB.getNumber(i, j) / 255};
-                int id = -1;
-                double minDist = 0;
-                for (int t = 0; t < rgbNormList.size(); t++) {
-                    RGBNorm rgbNorm = rgbNormList.get(t);
-                    double dist = getEDist(color, rgbNorm.getRgb());
-                    if (minDist == 0 || dist < minDist) {
-                        minDist = dist;
-                        id = t;
-                    }
-                }
-                if (minDist >= minNorm) {
-                    id = -1;
-                }
-                if (id > -1) {
-                    feat[id] = rgbNormList.get(id).getNorm();
-                }
-            }
-        }
-        //
-        for (int i = 0; i < feat.length; i++) {
-            list.add(feat[i]);
-        }
-        return list;
-    }
-
-    public List<List<Double>> imageTrance(Matrix matrix, int size, int featureNub) throws Exception {//矩阵和卷积核大小
+    public XYBody imageTrance(Matrix matrix, int size) throws Exception {//矩阵和卷积核大小
         int xn = matrix.getX();
         int yn = matrix.getY();
         int xSize = xn / size;//求导后矩阵的行数
         int ySize = yn / size;//求导后矩阵的列数
         double[] Y = new double[xSize * ySize];
         double[] X = new double[xSize * ySize];
+        double rgbN = Kernel.rgbN;
         for (int i = 0; i < xn - size; i += size) {
             for (int j = 0; j < yn - size; j += size) {
                 Matrix matrix1 = matrix.getSonOfMatrix(i, j, size, size);
                 double[] nubs = new double[size * size];//平均值数组
                 for (int t = 0; t < size; t++) {
                     for (int k = 0; k < size; k++) {
-                        double nub = matrix1.getNumber(t, k) / 255;
+                        double nub = matrix1.getNumber(t, k) / rgbN;
                         nubs[t * size + k] = nub;
                     }
                 }
                 double avg = average(nubs);//平均值
-                double dc = dcByAvg(nubs, avg);//当前离散系数
-                //double va = varianceByAve(nubs, avg);//方差
+                //double dc = frequency.dcByAvg(nubs, avg);//当前离散系数
+                double va = varianceByAve(nubs, avg);//方差
                 //离散系数作为X，AVG作为Y
                 int t = i / size * ySize + j / size;
                 Y[t] = avg;
-                X[t] = dc;
+                X[t] = va;
             }
         }
-        //计算当前图形的线性回归
-        RegressionBody regressionBody = new RegressionBody();
-        regressionBody.lineRegression(Y, X, this);
-        return regressionBody.mappingMatrix(featureNub);
+        XYBody xyBody = new XYBody();
+        xyBody.setX(X);
+        xyBody.setY(Y);
+        return xyBody;
     }
 
 
