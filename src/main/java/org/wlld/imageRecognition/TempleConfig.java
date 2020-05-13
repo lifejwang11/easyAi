@@ -58,6 +58,15 @@ public class TempleConfig {
     private double lParam = 0;//正则参数
     private int hiddenNerveNub = 9;//隐层神经元个数
     private boolean isSoftMax = false;//是否启用softMax层
+    private int poolSize = 2;//池化尺寸
+
+    public int getPoolSize() {
+        return poolSize;
+    }
+
+    public void setPoolSize(int poolSize) {
+        this.poolSize = poolSize;
+    }
 
     public void setSoftMax(boolean softMax) {
         isSoftMax = softMax;

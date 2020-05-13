@@ -75,6 +75,7 @@ public class Picture {
         int width = bi.getWidth();//最大宽度
         int height = bi.getHeight();//最大高度
         ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
+        Matrix matrixH = new Matrix(height, width);
         Matrix matrixR = new Matrix(height, width);//行，列
         Matrix matrixG = new Matrix(height, width);//行，列
         Matrix matrixB = new Matrix(height, width);//行，
@@ -82,6 +83,7 @@ public class Picture {
         threeChannelMatrix.setMatrixR(matrixR);
         threeChannelMatrix.setMatrixG(matrixG);
         threeChannelMatrix.setMatrixB(matrixB);
+        threeChannelMatrix.setH(matrixH);
         threeChannelMatrix.setMatrixRGB(matrixRGB);
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -94,6 +96,7 @@ public class Picture {
                 matrixR.setNub(i, j, r);
                 matrixG.setNub(i, j, g);
                 matrixB.setNub(i, j, b);
+                matrixH.setNub(i, j, (r * 38 + g * 75 + b * 15) >> 7);
             }
         }
         return threeChannelMatrix;

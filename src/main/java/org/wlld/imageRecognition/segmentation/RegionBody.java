@@ -9,6 +9,15 @@ public class RegionBody {
     private int minY = -1;
     private int maxX;
     private int maxY;
+    private int type;
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
 
     public void setX(int x) {
         if (x < minX || minX == -1) {
