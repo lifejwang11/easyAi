@@ -26,18 +26,29 @@ public class FoodTest {
     public static void rain() throws Exception {//降雨
         Convolution convolution = new Convolution();
         Picture picture = new Picture();
-        Matrix matrix = picture.getImageMatrixByLocal("D:\\share/c.png");
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\share/c.png");
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
         specifications.setWidth(400);
         specifications.setHeight(400);
         specificationsList.add(specifications);
-        Watershed watershed = new Watershed(matrix, specificationsList);
+        Watershed watershed = new Watershed(threeChannelMatrix.getH(), specificationsList);
         List<RegionBody> regionList = watershed.rainfall();
 
     }
 
     public static void study() throws Exception {
+        TempleConfig templeConfig = new TempleConfig();
+        templeConfig.setSoftMax(true);
+        templeConfig.isShowLog(true);
+        templeConfig.setStudyPoint(0.01);//不动
+        templeConfig.setSoftMax(true);
+        //templeConfig.setDeep(2);
+        //templeConfig.setHiddenNerveNub(9);
+        templeConfig.setSensoryNerveNub(4);//多出来的
+        templeConfig.setRzType(RZ.L1);//不动//3 18
+        templeConfig.setlParam(0.015);//不动
+        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 2);
         Picture picture = new Picture();
         Convolution convolution = new Convolution();
         ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("");

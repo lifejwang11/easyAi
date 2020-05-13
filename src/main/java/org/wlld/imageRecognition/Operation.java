@@ -8,6 +8,9 @@ import org.wlld.config.Kernel;
 import org.wlld.config.StudyPattern;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
+import org.wlld.imageRecognition.segmentation.RegionBody;
+import org.wlld.imageRecognition.segmentation.Specifications;
+import org.wlld.imageRecognition.segmentation.Watershed;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveCenter.Normalization;
 import org.wlld.nerveEntity.Nerve;
@@ -55,6 +58,34 @@ public class Operation {//进行计算
         }
         Matrix matrix1 = convolution.getFeatures(matrix, maxNub, templeConfig, id);
         return sub(matrix1);
+    }
+
+    public void colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag) throws Exception {
+        Map<Integer, Double> map = new HashMap<>();
+        map.put(tag, 1.0);
+        List<Double> feature = convolution.getCenterColor(threeChannelMatrix, templeConfig.getPoolSize(),
+                templeConfig.getSensoryNerves().size());
+        intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
+    }
+
+    public List<RegionBody> colorLook(ThreeChannelMatrix threeChannelMatrix, List<Specifications> specificationsList) throws Exception {
+        Watershed watershed = new Watershed(threeChannelMatrix.getH(), specificationsList);
+        List<RegionBody> regionList = watershed.rainfall();
+        for (RegionBody regionBody : regionList) {
+            MaxPoint maxPoint = new MaxPoint();
+            int minX = regionBody.getMinX();
+            int minY = regionBody.getMinY();
+            int maxX = regionBody.getMaxX();
+            int maxY = regionBody.getMaxY();
+            int xSize = maxX - minX;
+            int ySize = maxY - minY;
+            convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
+            List<Double> feature = convolution.getCenterColor(threeChannelMatrix, templeConfig.getPoolSize(),
+                    templeConfig.getSensoryNerves().size());
+            intoDnnNetwork(IdCreator.get().nextId(), feature, templeConfig.getSensoryNerves(), false, null, maxPoint);
+            regionBody.setType(maxPoint.getId());
+        }
+        return regionList;
     }
 
     public void coverStudy(Map<Integer, ThreeChannelMatrix> matrixMap, int poolSize, int sqNub, int regionSize,

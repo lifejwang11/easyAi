@@ -188,6 +188,15 @@ public class Convolution extends Frequency {
         return border;
     }
 
+    public void getRegionMatrix(ThreeChannelMatrix threeChannelMatrix, int x, int y, int xSize, int ySize) {
+        Matrix matrixR = threeChannelMatrix.getMatrixR().getSonOfMatrix(x, y, xSize, ySize);
+        Matrix matrixG = threeChannelMatrix.getMatrixG().getSonOfMatrix(x, y, xSize, ySize);
+        Matrix matrixB = threeChannelMatrix.getMatrixB().getSonOfMatrix(x, y, xSize, ySize);
+        threeChannelMatrix.setMatrixR(matrixR);
+        threeChannelMatrix.setMatrixG(matrixG);
+        threeChannelMatrix.setMatrixB(matrixB);
+    }
+
     public List<FrameBody> getRegion(Matrix matrix, Frame frame) {
         int xFrame = frame.getHeight();
         int yFrame = frame.getWidth();
