@@ -130,6 +130,7 @@ public class Convolution extends Frequency {
         for (int i = 0; i < sqNub; i++) {
             feature.add(rgbNorms.get(i).getNorm());
         }
+        System.out.println("feature==" + feature);
         return feature;
     }
 

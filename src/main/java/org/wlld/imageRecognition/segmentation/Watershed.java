@@ -22,6 +22,7 @@ public class Watershed {
     private int regionSize = Kernel.Region_Dif;
     private Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
     private int regionNub = Kernel.Region_Nub;//一张图分多少份
+    private double rainTh = Kernel.Rain_Th;
     private int xMax;
     private int yMax;
     private int id = 1;
@@ -33,6 +34,7 @@ public class Watershed {
             this.specifications = specifications;
             xSize = matrix.getX() / regionNub;
             ySize = matrix.getY() / regionNub;
+            System.out.println("xSize===" + xSize + ",ysize===" + ySize);
             rainfallMap = new Matrix(matrix.getX(), matrix.getY());
             regionMap = new Matrix(regionNub, regionNub);
             xMax = rainfallMap.getX() - 1;
@@ -216,8 +218,8 @@ public class Watershed {
     }
 
     private void setType(int type, int x, int y) throws Exception {
-        for (int i = x; i < x + 3; i++) {
-            for (int j = y; j < y + 3; j++) {
+        for (int i = x; i < x + regionSize; i++) {
+            for (int j = y; j < y + regionSize; j++) {
                 if (regionMap.getNumber(i, j) != 0) {
                     regionMap.setNub(i, j, type);
                 }
@@ -225,9 +227,121 @@ public class Watershed {
         }
     }
 
+    private void lineRegion() throws Exception {
+        int x = regionMap.getX();
+        int y = regionMap.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                int type = (int) regionMap.getNumber(i, j);
+                if (type > 1) {
+                    RegionBody regionBody = regionBodyMap.get(type);
+                    for (int t = 0; t < 8; t++) {
+                        int row = 0;
+                        int column = 0;
+                        switch (t) {
+                            case 0://上
+                                row = i - 1;
+                                break;
+                            case 1://左
+                                column = j - 1;
+                                break;
+                            case 2://下
+                                row = i + 1;
+                                break;
+                            case 3://右
+                                column = j + 1;
+                                break;
+                            case 4://左上
+                                column = j - 1;
+                                row = i - 1;
+                                break;
+                            case 5://左下
+                                column = j - 1;
+                                row = i + 1;
+                                break;
+                            case 6://右下
+                                column = j + 1;
+                                row = i + 1;
+                                break;
+                            case 7://右上
+                                column = j + 1;
+                                row = i - 1;
+                                break;
+                        }
+                        if (row >= 0 && row < regionNub && column >= 0 && column < regionNub) {
+                            int otherType = (int) regionMap.getNumber(row, column);
+                            if (otherType > 1 && otherType != type) {
+                                RegionBody otherRegionBody = regionBodyMap.get(otherType);
+                                regionBody.mergeRegion(otherRegionBody);
+                                regionBodyMap.remove(otherType);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void getRegion() throws Exception {
+        int x = regionMap.getX();
+        int y = regionMap.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                int type = (int) regionMap.getNumber(i, j);
+                if (type == 1) {
+                    id++;
+                    RegionBody regionBody = new RegionBody(regionMap, id);
+                    regionBody.setPoint(i, j);
+                    regionBodyMap.put(id, regionBody);
+                    for (int t = 0; t < 8; t++) {
+                        int row = 0;
+                        int column = 0;
+                        switch (t) {
+                            case 0://上
+                                row = i - 1;
+                                break;
+                            case 1://左
+                                column = j - 1;
+                                break;
+                            case 2://下
+                                row = i + 1;
+                                break;
+                            case 3://右
+                                column = j + 1;
+                                break;
+                            case 4://左上
+                                column = j - 1;
+                                row = i - 1;
+                                break;
+                            case 5://左下
+                                column = j - 1;
+                                row = i + 1;
+                                break;
+                            case 6://右下
+                                column = j + 1;
+                                row = i + 1;
+                                break;
+                            case 7://右上
+                                column = j + 1;
+                                row = i - 1;
+                                break;
+                        }
+                        //  System.out.println("row==" + row + ",column==" + column + ",region==" + regionNub);
+                        if (row >= 0 && row < regionNub && column >= 0 && column < regionNub) {
+                            double nub = regionMap.getNumber(row, column);
+                            if (nub == 1) {
+                                regionBody.setPoint(row, column);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private void mergeRegion() throws Exception {//区域合并
-        int x = regionMap.getX() - 2;
-        int y = regionMap.getY() - 2;
+        int x = regionMap.getX() - regionSize + 1;
+        int y = regionMap.getY() - regionSize + 1;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 Matrix matrix = regionMap.getSonOfMatrix(i, j, regionSize, regionSize);
@@ -248,7 +362,7 @@ public class Watershed {
                     setType(type, i, j);
                 } else if ((state & 1) != 0) {//不存在大于1的数，但是存在1,生成新的ID
                     id++;
-                    regionBodyMap.put(id, new RegionBody());
+                    regionBodyMap.put(id, new RegionBody(regionMap, id));
                     setType(id, i, j);
                 }
             }
@@ -313,8 +427,8 @@ public class Watershed {
         int x = matrix.getX();
         int y = matrix.getY();
         int size = xSize * ySize;
-        for (int i = 0; i <= x - xSize; i += xSize) {
-            for (int j = 0; j <= y - ySize; j += ySize) {
+        for (int i = 0; i < xSize * regionNub; i += xSize) {
+            for (int j = 0; j < ySize * regionNub; j += ySize) {
                 Matrix myMatrix = rainfallMap.getSonOfMatrix(i, j, xSize, ySize);
                 int sigma = 0;
                 for (int t = 0; t < xSize; t++) {
@@ -325,14 +439,18 @@ public class Watershed {
                     }
                 }
                 double cover = (double) sigma / (double) size;//降雨率产生剧烈波动时则出现坐标
+                // System.out.println("x==" + i + ",y==" + j + ",cover==" + cover);
                 if (cover > th) {//降雨密度图
                     regionMap.setNub(i / xSize, j / ySize, 1);
                 }
             }
         }
-        mergeRegion();
-        // System.out.println(regionMap.getString());
-        createRegion();
+        getRegion();
+        lineRegion();
+        System.out.println(regionMap.getString());
+        System.out.println("========================");
+        //mergeRegion();
+        //createRegion();
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值
