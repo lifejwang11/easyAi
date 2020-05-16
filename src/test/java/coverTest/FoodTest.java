@@ -25,10 +25,14 @@ public class FoodTest {
     }
 
     public static void test2() throws Exception {
+        //test();
         TempleConfig templeConfig = new TempleConfig();
         Picture picture = new Picture();
-        templeConfig.setSensoryNerveNub(5);
+        templeConfig.setSensoryNerveNub(4);
         templeConfig.setStudyPoint(0.01);
+        templeConfig.setRegionTh(0.05);
+        templeConfig.sethTh(0.88);
+        templeConfig.setRegionNub(80);
         templeConfig.setSoftMax(true);
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
@@ -37,19 +41,19 @@ public class FoodTest {
         specificationsList.add(specifications);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         Operation operation = new Operation(templeConfig);
-        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\cai\\e/e3.jpg");
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\cai\\e/e2.jpg");
         operation.colorLook(threeChannelMatrix, specificationsList);
     }
 
     public static void test() throws Exception {
         TempleConfig templeConfig = new TempleConfig();
         Picture picture = new Picture();
-        templeConfig.setSensoryNerveNub(5);
+        templeConfig.setSensoryNerveNub(4);
         templeConfig.setStudyPoint(0.01);
         templeConfig.setSoftMax(true);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         Operation operation = new Operation(templeConfig);
-        for (int j = 0; j < 2; j++) {
+        for (int j = 0; j < 1; j++) {
             for (int i = 1; i <= 10; i++) {
                 ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\cai/a/a" + i + ".jpg");
                 ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\cai/b/b" + i + ".jpg");
@@ -60,20 +64,6 @@ public class FoodTest {
                 System.out.println("=======================================");
             }
         }
-    }
-
-    public static void rain() throws Exception {//降雨
-        Convolution convolution = new Convolution();
-        Picture picture = new Picture();
-        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\share/c.png");
-        List<Specifications> specificationsList = new ArrayList<>();
-        Specifications specifications = new Specifications();
-        specifications.setWidth(400);
-        specifications.setHeight(400);
-        specificationsList.add(specifications);
-        Watershed watershed = new Watershed(threeChannelMatrix.getH(), specificationsList);
-        List<RegionBody> regionList = watershed.rainfall();
-
     }
 
     public static void study() throws Exception {

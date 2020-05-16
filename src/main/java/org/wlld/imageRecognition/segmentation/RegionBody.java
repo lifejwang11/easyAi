@@ -17,6 +17,15 @@ public class RegionBody {
     private int type;
     private List<Integer> pointList = new ArrayList<>();
     private Matrix regionMap;//分区图
+    private boolean isDestroy = false;
+
+    public boolean isDestroy() {
+        return isDestroy;
+    }
+
+    public void setDestroy(boolean destroy) {
+        isDestroy = destroy;
+    }
 
     RegionBody(Matrix regionMap, int type) {
         //System.out.println("type===" + type);

@@ -2,6 +2,7 @@ package org.wlld.imageRecognition.segmentation;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Kernel;
+import org.wlld.imageRecognition.TempleConfig;
 import org.wlld.tools.ArithUtil;
 
 import java.util.*;
@@ -18,18 +19,20 @@ public class Watershed {
     private int xSize;//单元高度
     private int ySize;//单元宽度
     private double th = Kernel.th;//灰度阈值
-    private double regionTh = Kernel.Region_Th;
+    private double regionTh = Kernel.Region_Th;//绝对行数或者列数是否录入的阈值
     private int regionSize = Kernel.Region_Dif;
-    private Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
     private int regionNub = Kernel.Region_Nub;//一张图分多少份
-    private double rainTh = Kernel.Rain_Th;
+    private Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
     private int xMax;
     private int yMax;
     private int id = 1;
     private List<Specifications> specifications;
 
-    public Watershed(Matrix matrix, List<Specifications> specifications) throws Exception {
+    public Watershed(Matrix matrix, List<Specifications> specifications, TempleConfig templeConfig) throws Exception {
         if (matrix != null && specifications != null && specifications.size() > 0) {
+            th = templeConfig.gethTh();
+            regionTh = templeConfig.getRegionTh();
+            regionNub = templeConfig.getRegionNub();
             this.matrix = matrix;
             this.specifications = specifications;
             xSize = matrix.getX() / regionNub;
@@ -365,6 +368,37 @@ public class Watershed {
                     regionBodyMap.put(id, new RegionBody(regionMap, id));
                     setType(id, i, j);
                 }
+
+            }
+        }
+    }
+
+    private void mergeRegions() {
+        for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
+            RegionBody regionBody = entry.getValue();
+            if (!regionBody.isDestroy()) {
+                int minX = regionBody.getMinX();
+                int maxX = regionBody.getMaxX();
+                int minY = regionBody.getMinY();
+                int maxY = regionBody.getMaxY();
+                int key = entry.getKey();
+                for (Map.Entry<Integer, RegionBody> entry2 : regionBodyMap.entrySet()) {
+                    RegionBody regionBody1 = entry2.getValue();
+                    int testKey = entry2.getKey();
+                    if (testKey != key && !regionBody1.isDestroy()) {
+                        int otherMinX = regionBody1.getMinX();
+                        int otherMaxX = regionBody1.getMaxX();
+                        int otherMinY = regionBody1.getMinY();
+                        int otherMaxY = regionBody1.getMaxY();
+                        boolean one = (otherMaxY >= maxY && maxY > otherMinY) || (otherMaxY < maxY && otherMaxY > minY);
+                        boolean two = maxX + xSize == otherMinX || otherMaxX + xSize == minX;
+                        if (one && two) {//这个两个区域进行合并
+                            regionBody1.setDestroy(true);//这个区域被合并了
+                            regionBody.setX(otherMinX);
+                            regionBody.setX(otherMaxX);
+                        }
+                    }
+                }
             }
         }
     }
@@ -439,18 +473,16 @@ public class Watershed {
                     }
                 }
                 double cover = (double) sigma / (double) size;//降雨率产生剧烈波动时则出现坐标
-                // System.out.println("x==" + i + ",y==" + j + ",cover==" + cover);
+                 //System.out.println("x==" + i + ",y==" + j + ",cover==" + cover);
                 if (cover > th) {//降雨密度图
                     regionMap.setNub(i / xSize, j / ySize, 1);
                 }
             }
         }
-        getRegion();
-        lineRegion();
+        mergeRegion();
         System.out.println(regionMap.getString());
-        System.out.println("========================");
-        //mergeRegion();
-        //createRegion();
+        createRegion();
+        mergeRegions();
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值

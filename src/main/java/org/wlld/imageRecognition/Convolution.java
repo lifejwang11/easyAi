@@ -130,7 +130,7 @@ public class Convolution extends Frequency {
         for (int i = 0; i < sqNub; i++) {
             feature.add(rgbNorms.get(i).getNorm());
         }
-        System.out.println("feature==" + feature);
+        //System.out.println("feature==" + feature);
         return feature;
     }
 
@@ -189,13 +189,17 @@ public class Convolution extends Frequency {
         return border;
     }
 
-    public void getRegionMatrix(ThreeChannelMatrix threeChannelMatrix, int x, int y, int xSize, int ySize) {
+    public ThreeChannelMatrix getRegionMatrix(ThreeChannelMatrix threeChannelMatrix, int x, int y, int xSize, int ySize) {
+        ThreeChannelMatrix threeChannelMatrix1 = new ThreeChannelMatrix();
         Matrix matrixR = threeChannelMatrix.getMatrixR().getSonOfMatrix(x, y, xSize, ySize);
         Matrix matrixG = threeChannelMatrix.getMatrixG().getSonOfMatrix(x, y, xSize, ySize);
         Matrix matrixB = threeChannelMatrix.getMatrixB().getSonOfMatrix(x, y, xSize, ySize);
-        threeChannelMatrix.setMatrixR(matrixR);
-        threeChannelMatrix.setMatrixG(matrixG);
-        threeChannelMatrix.setMatrixB(matrixB);
+        threeChannelMatrix1.setMatrixR(matrixR);
+        threeChannelMatrix1.setMatrixG(matrixG);
+        threeChannelMatrix1.setMatrixB(matrixB);
+        threeChannelMatrix1.setH(threeChannelMatrix.getH());
+        threeChannelMatrix1.setMatrixRGB(threeChannelMatrix.getMatrixRGB());
+        return threeChannelMatrix1;
     }
 
     public List<FrameBody> getRegion(Matrix matrix, Frame frame) {

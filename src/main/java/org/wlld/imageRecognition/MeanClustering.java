@@ -81,7 +81,7 @@ public class MeanClustering {
             }
             //进行两者的比较
             boolean isNext;
-            for (int i = 0; i < 40; i++) {
+            for (int i = 0; i < 50; i++) {
                 averageMatrix();
                 isNext = isNext();
                 if (isNext) {
