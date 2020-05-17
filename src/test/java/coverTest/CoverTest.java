@@ -23,9 +23,9 @@ import java.util.Map;
  */
 public class CoverTest {
     public static void main(String[] args) throws Exception {
-        double a = 200;
-        double b = 200;
-        double c = 200;
+        double a = 220;
+        double b = 220;
+        double c = 220;
         double d = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2) + Math.pow(c, 2));
         System.out.println(d);
         //cover();

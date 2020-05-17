@@ -23,7 +23,10 @@ public class RegionBody {
         return isDestroy;
     }
 
-    public void setDestroy(boolean destroy) {
+    public void setDestroy(boolean destroy, int id) {
+        if (type == 168) {
+           // System.out.println("id===" + id);
+        }
         isDestroy = destroy;
     }
 
@@ -67,10 +70,10 @@ public class RegionBody {
         if (y > maxY) {
             maxY = y;
         }
-        int pixel = x << 12 | y;
-        pointList.add(pixel);
+        //int pixel = x << 12 | y;
+        //pointList.add(pixel);
         //System.out.println("type==" + type);
-        regionMap.setNub(x, y, type);
+       // regionMap.setNub(x, y, type);
     }
 
     public void setX(int x) {

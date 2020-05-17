@@ -70,7 +70,7 @@ public class Operation {//进行计算
     }
 
     public List<RegionBody> colorLook(ThreeChannelMatrix threeChannelMatrix, List<Specifications> specificationsList) throws Exception {
-        Watershed watershed = new Watershed(threeChannelMatrix.getH(), specificationsList, templeConfig);
+        Watershed watershed = new Watershed(threeChannelMatrix.getMatrixRGB(), specificationsList, templeConfig);
         List<RegionBody> regionList = watershed.rainfall();
         for (RegionBody regionBody : regionList) {
             MaxPoint maxPoint = new MaxPoint();

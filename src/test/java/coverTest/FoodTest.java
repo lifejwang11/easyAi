@@ -30,9 +30,9 @@ public class FoodTest {
         Picture picture = new Picture();
         templeConfig.setSensoryNerveNub(4);
         templeConfig.setStudyPoint(0.01);
-        templeConfig.setRegionTh(0.05);
-        templeConfig.sethTh(0.88);
-        templeConfig.setRegionNub(80);
+        templeConfig.setRegionTh(0);
+        templeConfig.sethTh(0.7);
+        templeConfig.setRegionNub(200);
         templeConfig.setSoftMax(true);
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
@@ -41,7 +41,7 @@ public class FoodTest {
         specificationsList.add(specifications);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         Operation operation = new Operation(templeConfig);
-        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\cai\\e/e2.jpg");
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\cai\\e/e1.jpg");
         operation.colorLook(threeChannelMatrix, specificationsList);
     }
 

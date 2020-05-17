@@ -23,6 +23,7 @@ public class Watershed {
     private int regionSize = Kernel.Region_Dif;
     private int regionNub = Kernel.Region_Nub;//一张图分多少份
     private Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
+    private double rainTh = 2;
     private int xMax;
     private int yMax;
     private int id = 1;
@@ -58,24 +59,24 @@ public class Watershed {
         double top = -1;//上边
         double bottom = -1;//下边
         if (x == 0) {
-            top = 255;
-            leftTop = 255;
-            rightTop = 255;
+            top = Kernel.rgbN;
+            leftTop = Kernel.rgbN;
+            rightTop = Kernel.rgbN;
         }
         if (y == 0) {
-            leftTop = 255;
-            left = 255;
-            leftBottom = 255;
+            leftTop = Kernel.rgbN;
+            left = Kernel.rgbN;
+            leftBottom = Kernel.rgbN;
         }
         if (x == xMax) {
-            leftBottom = 255;
-            bottom = 255;
-            rightBottom = 255;
+            leftBottom = Kernel.rgbN;
+            bottom = Kernel.rgbN;
+            rightBottom = Kernel.rgbN;
         }
         if (y == yMax) {
-            rightTop = 255;
-            right = 255;
-            rightBottom = 255;
+            rightTop = Kernel.rgbN;
+            right = Kernel.rgbN;
+            rightBottom = Kernel.rgbN;
         }
         if (top == -1 && rainfallMap.getNumber(x - 1, y) == 0) {
             top = matrix.getNumber(x - 1, y);
@@ -373,29 +374,37 @@ public class Watershed {
         }
     }
 
-    private void mergeRegions() {
+    private void mergeRegions() throws Exception {
         for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
             RegionBody regionBody = entry.getValue();
             if (!regionBody.isDestroy()) {
-                int minX = regionBody.getMinX();
-                int maxX = regionBody.getMaxX();
-                int minY = regionBody.getMinY();
-                int maxY = regionBody.getMaxY();
-                int key = entry.getKey();
+                int key = entry.getKey();//156
+                if (key == 155) {
+                    //System.out.println("155===");
+                }
                 for (Map.Entry<Integer, RegionBody> entry2 : regionBodyMap.entrySet()) {
+                    int minX = regionBody.getMinX();
+                    int maxX = regionBody.getMaxX();
+                    int minY = regionBody.getMinY();
+                    int maxY = regionBody.getMaxY();
                     RegionBody regionBody1 = entry2.getValue();
                     int testKey = entry2.getKey();
+                    if (testKey == 204) {
+                        int a = 0;
+                    }
                     if (testKey != key && !regionBody1.isDestroy()) {
                         int otherMinX = regionBody1.getMinX();
                         int otherMaxX = regionBody1.getMaxX();
                         int otherMinY = regionBody1.getMinY();
                         int otherMaxY = regionBody1.getMaxY();
-                        boolean one = (otherMaxY >= maxY && maxY > otherMinY) || (otherMaxY < maxY && otherMaxY > minY);
-                        boolean two = maxX + xSize == otherMinX || otherMaxX + xSize == minX;
-                        if (one && two) {//这个两个区域进行合并
-                            regionBody1.setDestroy(true);//这个区域被合并了
-                            regionBody.setX(otherMinX);
-                            regionBody.setX(otherMaxX);
+                        //boolean one = (otherMaxY >= maxY && maxY > otherMinY) || (otherMaxY < maxY && otherMaxY > minY);
+                        boolean two = maxX + xSize >= otherMinX || (otherMaxX + xSize >= minX && maxX > otherMaxX);
+                        if (two) {//这个两个区域进行合并
+                            regionBody1.setDestroy(true, regionBody.getType());//这个区域被合并了
+                            regionBody.setPoint(otherMinX, otherMinY);
+                            regionBody.setPoint(otherMaxX, otherMaxY);
+                            //regionBody.setX(otherMinX);
+                            //regionBody.setX(otherMaxX);
                         }
                     }
                 }
@@ -473,7 +482,10 @@ public class Watershed {
                     }
                 }
                 double cover = (double) sigma / (double) size;//降雨率产生剧烈波动时则出现坐标
-                 //System.out.println("x==" + i + ",y==" + j + ",cover==" + cover);
+//                if (i == 648 && j > 700) {
+//                    System.out.println("x==" + i + ",y==" + j + ",cover==" + cover);
+//                    System.out.println("=========");
+//                }
                 if (cover > th) {//降雨密度图
                     regionMap.setNub(i / xSize, j / ySize, 1);
                 }
@@ -489,7 +501,7 @@ public class Watershed {
         int minIdx = 0;
         for (int i = 0; i < array.length; i++) {
             double nub = array[i];
-            if (nub > -1 && nub < mySelf) {
+            if (nub > -1 && nub < mySelf - rainTh && nub < Kernel.maxRain) {
                 minIdx = minIdx | (1 << i);
             }
         }
