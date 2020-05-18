@@ -231,118 +231,6 @@ public class Watershed {
         }
     }
 
-    private void lineRegion() throws Exception {
-        int x = regionMap.getX();
-        int y = regionMap.getY();
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                int type = (int) regionMap.getNumber(i, j);
-                if (type > 1) {
-                    RegionBody regionBody = regionBodyMap.get(type);
-                    for (int t = 0; t < 8; t++) {
-                        int row = 0;
-                        int column = 0;
-                        switch (t) {
-                            case 0://上
-                                row = i - 1;
-                                break;
-                            case 1://左
-                                column = j - 1;
-                                break;
-                            case 2://下
-                                row = i + 1;
-                                break;
-                            case 3://右
-                                column = j + 1;
-                                break;
-                            case 4://左上
-                                column = j - 1;
-                                row = i - 1;
-                                break;
-                            case 5://左下
-                                column = j - 1;
-                                row = i + 1;
-                                break;
-                            case 6://右下
-                                column = j + 1;
-                                row = i + 1;
-                                break;
-                            case 7://右上
-                                column = j + 1;
-                                row = i - 1;
-                                break;
-                        }
-                        if (row >= 0 && row < regionNub && column >= 0 && column < regionNub) {
-                            int otherType = (int) regionMap.getNumber(row, column);
-                            if (otherType > 1 && otherType != type) {
-                                RegionBody otherRegionBody = regionBodyMap.get(otherType);
-                                regionBody.mergeRegion(otherRegionBody);
-                                regionBodyMap.remove(otherType);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void getRegion() throws Exception {
-        int x = regionMap.getX();
-        int y = regionMap.getY();
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                int type = (int) regionMap.getNumber(i, j);
-                if (type == 1) {
-                    id++;
-                    RegionBody regionBody = new RegionBody(regionMap, id);
-                    regionBody.setPoint(i, j);
-                    regionBodyMap.put(id, regionBody);
-                    for (int t = 0; t < 8; t++) {
-                        int row = 0;
-                        int column = 0;
-                        switch (t) {
-                            case 0://上
-                                row = i - 1;
-                                break;
-                            case 1://左
-                                column = j - 1;
-                                break;
-                            case 2://下
-                                row = i + 1;
-                                break;
-                            case 3://右
-                                column = j + 1;
-                                break;
-                            case 4://左上
-                                column = j - 1;
-                                row = i - 1;
-                                break;
-                            case 5://左下
-                                column = j - 1;
-                                row = i + 1;
-                                break;
-                            case 6://右下
-                                column = j + 1;
-                                row = i + 1;
-                                break;
-                            case 7://右上
-                                column = j + 1;
-                                row = i - 1;
-                                break;
-                        }
-                        //  System.out.println("row==" + row + ",column==" + column + ",region==" + regionNub);
-                        if (row >= 0 && row < regionNub && column >= 0 && column < regionNub) {
-                            double nub = regionMap.getNumber(row, column);
-                            if (nub == 1) {
-                                regionBody.setPoint(row, column);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private void mergeRegion() throws Exception {//区域合并
         int x = regionMap.getX() - regionSize + 1;
         int y = regionMap.getY() - regionSize + 1;
@@ -366,7 +254,7 @@ public class Watershed {
                     setType(type, i, j);
                 } else if ((state & 1) != 0) {//不存在大于1的数，但是存在1,生成新的ID
                     id++;
-                    regionBodyMap.put(id, new RegionBody(regionMap, id));
+                    regionBodyMap.put(id, new RegionBody(regionMap, id, xSize, ySize));
                     setType(id, i, j);
                 }
 
@@ -374,95 +262,82 @@ public class Watershed {
         }
     }
 
-    private void mergeRegions() throws Exception {
-        for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
-            RegionBody regionBody = entry.getValue();
-            if (!regionBody.isDestroy()) {
-                int key = entry.getKey();//156
-                if (key == 155) {
-                    //System.out.println("155===");
-                }
-                for (Map.Entry<Integer, RegionBody> entry2 : regionBodyMap.entrySet()) {
-                    int minX = regionBody.getMinX();
-                    int maxX = regionBody.getMaxX();
-                    int minY = regionBody.getMinY();
-                    int maxY = regionBody.getMaxY();
-                    RegionBody regionBody1 = entry2.getValue();
-                    int testKey = entry2.getKey();
-                    if (testKey == 204) {
-                        int a = 0;
-                    }
-                    if (testKey != key && !regionBody1.isDestroy()) {
-                        int otherMinX = regionBody1.getMinX();
-                        int otherMaxX = regionBody1.getMaxX();
-                        int otherMinY = regionBody1.getMinY();
-                        int otherMaxY = regionBody1.getMaxY();
-                        //boolean one = (otherMaxY >= maxY && maxY > otherMinY) || (otherMaxY < maxY && otherMaxY > minY);
-                        boolean two = maxX + xSize >= otherMinX || (otherMaxX + xSize >= minX && maxX > otherMaxX);
-                        if (two) {//这个两个区域进行合并
-                            regionBody1.setDestroy(true, regionBody.getType());//这个区域被合并了
-                            regionBody.setPoint(otherMinX, otherMinY);
-                            regionBody.setPoint(otherMaxX, otherMaxY);
-                            //regionBody.setX(otherMinX);
-                            //regionBody.setX(otherMaxX);
+    private boolean compare(List<Integer> myList, List<Integer> otherList, int row) {
+        boolean isMerge = false;
+        List<Integer> list = new ArrayList<>();
+        for (int pixel : myList) {
+            int x = pixel >> 12;
+            if (x == row) {
+                list.add(pixel);
+            }
+        }
+        int nub = 0;
+        for (int pixel : list) {
+            int pix = (row + 1) << 12 | (pixel & 0xfff);
+            if (otherList.contains(pix)) {
+                nub++;
+            }
+        }
+        if (nub / list.size() > 0.3) {
+            isMerge = true;
+        }
+        return isMerge;
+    }
+
+    private void merge() throws Exception {
+        int xSize = regionMap.getX();
+        int ySize = regionMap.getY();
+        for (int i = 0; i < xSize - 1; i++) {//132
+            List<Integer> list = new ArrayList<>();
+            for (int j = 0; j < ySize; j++) {
+                int type = (int) regionMap.getNumber(i, j);
+                if (type > 1 && i + 1 < regionNub) {
+                    int otherType = (int) regionMap.getNumber(i + 1, j);
+                    if (otherType > 1 && otherType != type) {
+                        if (!list.contains(otherType)) {
+                            RegionBody myRegion = regionBodyMap.get(type);
+                            RegionBody otherRegion = regionBodyMap.get(otherType);
+                            myRegion.mergeRegion(otherRegion);
+                            regionBodyMap.remove(otherType);
+                            list.add(otherType);
                         }
                     }
+
                 }
             }
         }
     }
 
-    private void createRegion() throws Exception {
+    private void createMerge() throws Exception {
         int x = regionMap.getX();
         int y = regionMap.getY();
+        int t = 0;
+        boolean isZero = false;
         for (int i = 0; i < x; i++) {
-            Map<Integer, Integer> map = new HashMap<>();
+            if (!isZero) {
+                t++;
+            }
+            boolean isFirstOne = false;
             for (int j = 0; j < y; j++) {
                 int type = (int) regionMap.getNumber(i, j);
-                if (type > 1) {
-                    if (map.containsKey(type)) {
-                        map.put(type, map.get(type) + 1);
+                if (type == 1) {
+                    RegionBody regionBody;
+                    if (regionBodyMap.containsKey(t)) {
+                        regionBody = regionBodyMap.get(t);
                     } else {
-                        map.put(type, 1);
+                        regionBody = new RegionBody(regionMap, t, xSize, ySize);
+                        regionBodyMap.put(t, regionBody);
                     }
+                    regionBody.setPoint(i, j);
+                    isFirstOne = true;
+                    isZero = false;
+                } else if (isFirstOne) {
+                    if (!isZero) {
+                        t++;
+                    }
+                    isZero = true;
                 }
             }
-            for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
-                int type = entry.getKey();
-                RegionBody regionBody = entry.getValue();
-                if (map.containsKey(type)) {//如果这个类型存在
-                    int nub = map.get(type);
-                    double point = ArithUtil.div(nub, regionNub);
-                    if (point > regionTh) {
-                        regionBody.setX(i * xSize);
-                    }
-                }
-            }
-        }
-        for (int j = 0; j < y; j++) {
-            Map<Integer, Integer> map = new HashMap<>();
-            for (int i = 0; i < x; i++) {
-                int type = (int) regionMap.getNumber(i, j);
-                if (type > 1) {
-                    if (map.containsKey(type)) {
-                        map.put(type, map.get(type) + 1);
-                    } else {
-                        map.put(type, 1);
-                    }
-                }
-            }
-            for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
-                int type = entry.getKey();
-                RegionBody regionBody = entry.getValue();
-                if (map.containsKey(type)) {//如果这个类型存在
-                    int nub = map.get(type);
-                    double point = ArithUtil.div(nub, regionNub);
-                    if (point > regionTh) {
-                        regionBody.setY(j * ySize);
-                    }
-                }
-            }
-
         }
     }
 
@@ -491,10 +366,13 @@ public class Watershed {
                 }
             }
         }
-        mergeRegion();
+        //mergeRegion();
+        createMerge();
+        merge();
         System.out.println(regionMap.getString());
-        createRegion();
-        mergeRegions();
+        System.out.println("=============");
+        //createRegion();
+        // mergeRegions();
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值

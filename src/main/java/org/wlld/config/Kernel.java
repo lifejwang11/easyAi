@@ -13,7 +13,7 @@ public class Kernel {
     public static final double Region_Th = 0.05;//区域分割阈值
     public static final double th = 0.88;//分水岭灰度阈值
     public static final double rgbN = 441.6729559300637;//RGB范数归一化最大值
-    public static final double maxRain = 381.051177665153;//超过此阈值则不降水
+    public static final double maxRain = 340; //381.051177665153;//超过此阈值则不降水
     public static Matrix Vertical;
     public static Matrix Horizontal;
     public static Matrix All;

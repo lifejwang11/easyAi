@@ -15,25 +15,17 @@ public class RegionBody {
     private int maxX;
     private int maxY;
     private int type;
+    private int xSize;
+    private int ySize;
     private List<Integer> pointList = new ArrayList<>();
     private Matrix regionMap;//分区图
-    private boolean isDestroy = false;
 
-    public boolean isDestroy() {
-        return isDestroy;
-    }
-
-    public void setDestroy(boolean destroy, int id) {
-        if (type == 168) {
-           // System.out.println("id===" + id);
-        }
-        isDestroy = destroy;
-    }
-
-    RegionBody(Matrix regionMap, int type) {
+    RegionBody(Matrix regionMap, int type, int xSize, int ySize) {
         //System.out.println("type===" + type);
         this.regionMap = regionMap;
         this.type = type;
+        this.xSize = xSize;
+        this.ySize = ySize;
     }
 
     public List<Integer> getPointList() {
@@ -70,10 +62,10 @@ public class RegionBody {
         if (y > maxY) {
             maxY = y;
         }
-        //int pixel = x << 12 | y;
-        //pointList.add(pixel);
+        int pixel = x << 12 | y;
+        pointList.add(pixel);
         //System.out.println("type==" + type);
-       // regionMap.setNub(x, y, type);
+        regionMap.setNub(x, y, type);
     }
 
     public void setX(int x) {
@@ -95,18 +87,18 @@ public class RegionBody {
     }
 
     public int getMinX() {
-        return minX;
+        return minX * xSize;
     }
 
     public int getMinY() {
-        return minY;
+        return minY * ySize;
     }
 
     public int getMaxX() {
-        return maxX;
+        return maxX * xSize;
     }
 
     public int getMaxY() {
-        return maxY;
+        return maxY * ySize;
     }
 }
