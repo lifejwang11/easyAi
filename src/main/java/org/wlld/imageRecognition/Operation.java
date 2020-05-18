@@ -65,11 +65,12 @@ public class Operation {//进行计算
         map.put(tag, 1.0);
         List<Double> feature = convolution.getCenterColor(threeChannelMatrix, templeConfig.getPoolSize(),
                 templeConfig.getSensoryNerves().size());
+        System.out.println(feature);
         intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
     }
 
     public List<RegionBody> colorLook(ThreeChannelMatrix threeChannelMatrix, List<Specifications> specificationsList) throws Exception {
-        Watershed watershed = new Watershed(threeChannelMatrix.getH(), specificationsList);
+        Watershed watershed = new Watershed(threeChannelMatrix.getMatrixRGB(), specificationsList, templeConfig);
         List<RegionBody> regionList = watershed.rainfall();
         for (RegionBody regionBody : regionList) {
             MaxPoint maxPoint = new MaxPoint();
@@ -79,9 +80,10 @@ public class Operation {//进行计算
             int maxY = regionBody.getMaxY();
             int xSize = maxX - minX;
             int ySize = maxY - minY;
-            convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-            List<Double> feature = convolution.getCenterColor(threeChannelMatrix, templeConfig.getPoolSize(),
+            ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
+            List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
                     templeConfig.getSensoryNerves().size());
+            System.out.println(feature);
             intoDnnNetwork(IdCreator.get().nextId(), feature, templeConfig.getSensoryNerves(), false, null, maxPoint);
             regionBody.setType(maxPoint.getId());
         }

@@ -378,7 +378,7 @@ public class Matrix {
                 if (j == 0) {
                     builder.append(number);
                 } else {
-                    builder.append(",(j:" + j + ",i:" + i + ")" + number);
+                    builder.append("," + j + ":" + number);
                 }
             }
             builder.append("]\r\n");

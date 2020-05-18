@@ -3,6 +3,7 @@ package org.wlld.imageRecognition;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Classifier;
+import org.wlld.config.Kernel;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
@@ -59,6 +60,33 @@ public class TempleConfig {
     private int hiddenNerveNub = 9;//隐层神经元个数
     private boolean isSoftMax = false;//是否启用softMax层
     private int poolSize = 2;//池化尺寸
+    private double regionTh = 0.05;//绝对行数或者列数是否录入的阈值
+    private int regionNub = 60;//一张图行或列分多少个区块
+    private double hTh = 0.88;//灰度阈值
+
+    public double getRegionTh() {
+        return regionTh;
+    }
+
+    public void setRegionTh(double regionTh) {
+        this.regionTh = regionTh;
+    }
+
+    public int getRegionNub() {
+        return regionNub;
+    }
+
+    public void setRegionNub(int regionNub) {
+        this.regionNub = regionNub;
+    }
+
+    public double gethTh() {
+        return hTh;
+    }
+
+    public void sethTh(double hTh) {
+        this.hTh = hTh;
+    }
 
     public int getPoolSize() {
         return poolSize;

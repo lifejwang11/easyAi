@@ -23,19 +23,12 @@ import java.util.Map;
  */
 public class CoverTest {
     public static void main(String[] args) throws Exception {
-//        TempleConfig templeConfig = new TempleConfig();
-//        templeConfig.setClassifier(Classifier.DNN);
-//        templeConfig.setTh(0);
-//        templeConfig.setSoftMax(true);
-//        templeConfig.init(StudyPattern.Accuracy_Pattern, false, 640, 480, 2);
-//        ModelParameter modelParameter = JSON.parseObject(ModelData.DATA3, ModelParameter.class);
-//        templeConfig.insertModel(modelParameter);
-//        Operation operation = new Operation(templeConfig);
-//        for (int i = 1; i < 100; i++) {
-//            cover2(operation, "D:\\pic\\6\\a/a" + i + ".jpg");
-//        }
-        //test(null, 2, 3, 40, "c", 3);
-        cover();
+        double a = 220;
+        double b = 220;
+        double c = 220;
+        double d = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2) + Math.pow(c, 2));
+        System.out.println(d);
+        //cover();
     }
 
     public static void insertModel(String model) throws Exception {//注入模型

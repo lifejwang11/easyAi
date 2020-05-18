@@ -20,21 +20,50 @@ public class FoodTest {
 
     public static void main(String[] args) throws Exception {
         //food();
-        rain();
+        //rain();
+        test2();
     }
 
-    public static void rain() throws Exception {//降雨
-        Convolution convolution = new Convolution();
+    public static void test2() throws Exception {
+        //test();
+        TempleConfig templeConfig = new TempleConfig();
         Picture picture = new Picture();
-        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\share/c.png");
+        templeConfig.setSensoryNerveNub(4);
+        templeConfig.setStudyPoint(0.01);
+        templeConfig.setRegionTh(0.02);
+        templeConfig.sethTh(0.86);
+        templeConfig.setRegionNub(200);
+        templeConfig.setSoftMax(true);
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
         specifications.setWidth(400);
         specifications.setHeight(400);
         specificationsList.add(specifications);
-        Watershed watershed = new Watershed(threeChannelMatrix.getH(), specificationsList);
-        List<RegionBody> regionList = watershed.rainfall();
+        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
+        Operation operation = new Operation(templeConfig);
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\cai\\e/e3.jpg");
+        operation.colorLook(threeChannelMatrix, specificationsList);
+    }
 
+    public static void test() throws Exception {
+        TempleConfig templeConfig = new TempleConfig();
+        Picture picture = new Picture();
+        templeConfig.setSensoryNerveNub(4);
+        templeConfig.setStudyPoint(0.01);
+        templeConfig.setSoftMax(true);
+        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
+        Operation operation = new Operation(templeConfig);
+        for (int j = 0; j < 1; j++) {
+            for (int i = 1; i <= 10; i++) {
+                ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\cai/a/a" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\cai/b/b" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("D:\\cai/c/c" + i + ".jpg");
+                operation.colorStudy(threeChannelMatrix1, 1);
+                operation.colorStudy(threeChannelMatrix2, 2);
+                operation.colorStudy(threeChannelMatrix3, 3);
+                System.out.println("=======================================");
+            }
+        }
     }
 
     public static void study() throws Exception {

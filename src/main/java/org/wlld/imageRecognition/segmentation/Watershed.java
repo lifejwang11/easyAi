@@ -2,6 +2,7 @@ package org.wlld.imageRecognition.segmentation;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Kernel;
+import org.wlld.imageRecognition.TempleConfig;
 import org.wlld.tools.ArithUtil;
 
 import java.util.*;
@@ -18,21 +19,26 @@ public class Watershed {
     private int xSize;//单元高度
     private int ySize;//单元宽度
     private double th = Kernel.th;//灰度阈值
-    private double regionTh = Kernel.Region_Th;
+    private double regionTh = Kernel.Region_Th;//绝对行数或者列数是否录入的阈值
     private int regionSize = Kernel.Region_Dif;
-    private Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
     private int regionNub = Kernel.Region_Nub;//一张图分多少份
+    private Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
+    private double rainTh = 2;
     private int xMax;
     private int yMax;
     private int id = 1;
     private List<Specifications> specifications;
 
-    public Watershed(Matrix matrix, List<Specifications> specifications) throws Exception {
+    public Watershed(Matrix matrix, List<Specifications> specifications, TempleConfig templeConfig) throws Exception {
         if (matrix != null && specifications != null && specifications.size() > 0) {
+            th = templeConfig.gethTh();
+            regionTh = templeConfig.getRegionTh();
+            regionNub = templeConfig.getRegionNub();
             this.matrix = matrix;
             this.specifications = specifications;
             xSize = matrix.getX() / regionNub;
             ySize = matrix.getY() / regionNub;
+            System.out.println("xSize===" + xSize + ",ysize===" + ySize);
             rainfallMap = new Matrix(matrix.getX(), matrix.getY());
             regionMap = new Matrix(regionNub, regionNub);
             xMax = rainfallMap.getX() - 1;
@@ -53,24 +59,24 @@ public class Watershed {
         double top = -1;//上边
         double bottom = -1;//下边
         if (x == 0) {
-            top = 255;
-            leftTop = 255;
-            rightTop = 255;
+            top = Kernel.rgbN;
+            leftTop = Kernel.rgbN;
+            rightTop = Kernel.rgbN;
         }
         if (y == 0) {
-            leftTop = 255;
-            left = 255;
-            leftBottom = 255;
+            leftTop = Kernel.rgbN;
+            left = Kernel.rgbN;
+            leftBottom = Kernel.rgbN;
         }
         if (x == xMax) {
-            leftBottom = 255;
-            bottom = 255;
-            rightBottom = 255;
+            leftBottom = Kernel.rgbN;
+            bottom = Kernel.rgbN;
+            rightBottom = Kernel.rgbN;
         }
         if (y == yMax) {
-            rightTop = 255;
-            right = 255;
-            rightBottom = 255;
+            rightTop = Kernel.rgbN;
+            right = Kernel.rgbN;
+            rightBottom = Kernel.rgbN;
         }
         if (top == -1 && rainfallMap.getNumber(x - 1, y) == 0) {
             top = matrix.getNumber(x - 1, y);
@@ -216,8 +222,8 @@ public class Watershed {
     }
 
     private void setType(int type, int x, int y) throws Exception {
-        for (int i = x; i < x + 3; i++) {
-            for (int j = y; j < y + 3; j++) {
+        for (int i = x; i < x + regionSize; i++) {
+            for (int j = y; j < y + regionSize; j++) {
                 if (regionMap.getNumber(i, j) != 0) {
                     regionMap.setNub(i, j, type);
                 }
@@ -226,8 +232,8 @@ public class Watershed {
     }
 
     private void mergeRegion() throws Exception {//区域合并
-        int x = regionMap.getX() - 2;
-        int y = regionMap.getY() - 2;
+        int x = regionMap.getX() - regionSize + 1;
+        int y = regionMap.getY() - regionSize + 1;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 Matrix matrix = regionMap.getSonOfMatrix(i, j, regionSize, regionSize);
@@ -248,64 +254,90 @@ public class Watershed {
                     setType(type, i, j);
                 } else if ((state & 1) != 0) {//不存在大于1的数，但是存在1,生成新的ID
                     id++;
-                    regionBodyMap.put(id, new RegionBody());
+                    regionBodyMap.put(id, new RegionBody(regionMap, id, xSize, ySize));
                     setType(id, i, j);
+                }
+
+            }
+        }
+    }
+
+    private boolean compare(List<Integer> myList, List<Integer> otherList, int row) {
+        boolean isMerge = false;
+        List<Integer> list = new ArrayList<>();
+        for (int pixel : myList) {
+            int x = pixel >> 12;
+            if (x == row) {
+                list.add(pixel);
+            }
+        }
+        int nub = 0;
+        for (int pixel : list) {
+            int pix = (row + 1) << 12 | (pixel & 0xfff);
+            if (otherList.contains(pix)) {
+                nub++;
+            }
+        }
+        if (nub / list.size() > 0.3) {
+            isMerge = true;
+        }
+        return isMerge;
+    }
+
+    private void merge() throws Exception {
+        int xSize = regionMap.getX();
+        int ySize = regionMap.getY();
+        for (int i = 0; i < xSize - 1; i++) {//132
+            List<Integer> list = new ArrayList<>();
+            for (int j = 0; j < ySize; j++) {
+                int type = (int) regionMap.getNumber(i, j);
+                if (type > 1 && i + 1 < regionNub) {
+                    int otherType = (int) regionMap.getNumber(i + 1, j);
+                    if (otherType > 1 && otherType != type) {
+                        if (!list.contains(otherType)) {
+                            RegionBody myRegion = regionBodyMap.get(type);
+                            RegionBody otherRegion = regionBodyMap.get(otherType);
+                            myRegion.mergeRegion(otherRegion);
+                            regionBodyMap.remove(otherType);
+                            list.add(otherType);
+                        }
+                    }
+
                 }
             }
         }
     }
 
-    private void createRegion() throws Exception {
+    private void createMerge() throws Exception {
         int x = regionMap.getX();
         int y = regionMap.getY();
+        int t = 0;
+        boolean isZero = false;
         for (int i = 0; i < x; i++) {
-            Map<Integer, Integer> map = new HashMap<>();
+            if (!isZero) {
+                t++;
+            }
+            boolean isFirstOne = false;
             for (int j = 0; j < y; j++) {
                 int type = (int) regionMap.getNumber(i, j);
-                if (type > 1) {
-                    if (map.containsKey(type)) {
-                        map.put(type, map.get(type) + 1);
+                if (type == 1) {
+                    RegionBody regionBody;
+                    if (regionBodyMap.containsKey(t)) {
+                        regionBody = regionBodyMap.get(t);
                     } else {
-                        map.put(type, 1);
+                        regionBody = new RegionBody(regionMap, t, xSize, ySize);
+                        regionBodyMap.put(t, regionBody);
                     }
+                    regionBody.setPoint(i, j);
+                    isFirstOne = true;
+                    isZero = false;
+                } else if (isFirstOne) {
+                    if (!isZero) {
+                        t++;
+                    }
+                    isZero = true;
                 }
             }
-            for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
-                int type = entry.getKey();
-                RegionBody regionBody = entry.getValue();
-                if (map.containsKey(type)) {//如果这个类型存在
-                    int nub = map.get(type);
-                    double point = ArithUtil.div(nub, regionNub);
-                    if (point > regionTh) {
-                        regionBody.setX(i * xSize);
-                    }
-                }
-            }
-        }
-        for (int j = 0; j < y; j++) {
-            Map<Integer, Integer> map = new HashMap<>();
-            for (int i = 0; i < x; i++) {
-                int type = (int) regionMap.getNumber(i, j);
-                if (type > 1) {
-                    if (map.containsKey(type)) {
-                        map.put(type, map.get(type) + 1);
-                    } else {
-                        map.put(type, 1);
-                    }
-                }
-            }
-            for (Map.Entry<Integer, RegionBody> entry : regionBodyMap.entrySet()) {
-                int type = entry.getKey();
-                RegionBody regionBody = entry.getValue();
-                if (map.containsKey(type)) {//如果这个类型存在
-                    int nub = map.get(type);
-                    double point = ArithUtil.div(nub, regionNub);
-                    if (point > regionTh) {
-                        regionBody.setY(j * ySize);
-                    }
-                }
-            }
-
         }
     }
 
@@ -313,8 +345,8 @@ public class Watershed {
         int x = matrix.getX();
         int y = matrix.getY();
         int size = xSize * ySize;
-        for (int i = 0; i <= x - xSize; i += xSize) {
-            for (int j = 0; j <= y - ySize; j += ySize) {
+        for (int i = 0; i < xSize * regionNub; i += xSize) {
+            for (int j = 0; j < ySize * regionNub; j += ySize) {
                 Matrix myMatrix = rainfallMap.getSonOfMatrix(i, j, xSize, ySize);
                 int sigma = 0;
                 for (int t = 0; t < xSize; t++) {
@@ -325,21 +357,29 @@ public class Watershed {
                     }
                 }
                 double cover = (double) sigma / (double) size;//降雨率产生剧烈波动时则出现坐标
+//                if (i == 648 && j > 700) {
+//                    System.out.println("x==" + i + ",y==" + j + ",cover==" + cover);
+//                    System.out.println("=========");
+//                }
                 if (cover > th) {//降雨密度图
                     regionMap.setNub(i / xSize, j / ySize, 1);
                 }
             }
         }
-        mergeRegion();
-        // System.out.println(regionMap.getString());
-        createRegion();
+        //mergeRegion();
+        createMerge();
+        merge();
+        System.out.println(regionMap.getString());
+        System.out.println("=============");
+        //createRegion();
+        // mergeRegions();
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值
         int minIdx = 0;
         for (int i = 0; i < array.length; i++) {
             double nub = array[i];
-            if (nub > -1 && nub < mySelf) {
+            if (nub > -1 && nub < mySelf - rainTh && nub < Kernel.maxRain) {
                 minIdx = minIdx | (1 << i);
             }
         }
