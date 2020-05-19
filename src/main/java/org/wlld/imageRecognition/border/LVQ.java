@@ -49,9 +49,10 @@ public class LVQ {
         return length;
     }
 
-    public LVQ(int typeNub, int lvqNub) {
+    public LVQ(int typeNub, int lvqNub, double studyPoint) {
         this.typeNub = typeNub;
         this.lvqNub = lvqNub;
+        this.studyPoint = studyPoint;
         model = new MatrixBody[typeNub];
     }
 
