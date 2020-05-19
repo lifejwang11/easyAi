@@ -60,16 +60,16 @@ public class TempleConfig {
     private int hiddenNerveNub = 9;//隐层神经元个数
     private boolean isSoftMax = false;//是否启用softMax层
     private int poolSize = 2;//池化尺寸
-    private double regionTh = 0.05;//绝对行数或者列数是否录入的阈值
-    private int regionNub = 60;//一张图行或列分多少个区块
+    private int regionNub = 100;//一张图行或列分多少个区块
     private double hTh = 0.88;//灰度阈值
+    private double maxRain = 340;//不降雨RGB阈值
 
-    public double getRegionTh() {
-        return regionTh;
+    public double getMaxRain() {
+        return maxRain;
     }
 
-    public void setRegionTh(double regionTh) {
-        this.regionTh = regionTh;
+    public void setMaxRain(double maxRain) {
+        this.maxRain = maxRain;
     }
 
     public int getRegionNub() {
@@ -287,7 +287,17 @@ public class TempleConfig {
                 initConvolutionVision(initPower, width, height);
                 break;
             case StudyPattern.Cover_Pattern://覆盖学习模式
-                initNerveManager(initPower, sensoryNerveNub, deep, studyPoint);
+                switch (classifier) {
+                    case Classifier.DNN:
+                        initNerveManager(initPower, sensoryNerveNub, deep, studyPoint);
+                        break;
+                    case Classifier.LVQ:
+                        lvq = new LVQ(classificationNub, lvqNub, studyPoint);
+                        break;
+                    case Classifier.VAvg:
+                        vectorK = new VectorK(sensoryNerveNub);
+                        break;
+                }
                 break;
         }
     }
@@ -356,7 +366,7 @@ public class TempleConfig {
                 initNerveManager(true, nub, this.deep, studyPoint);
                 break;
             case Classifier.LVQ:
-                lvq = new LVQ(classificationNub, lvqNub);
+                lvq = new LVQ(classificationNub, lvqNub, studyPoint);
                 break;
             case Classifier.VAvg:
                 sensoryNerveNub = height * width;
@@ -476,9 +486,29 @@ public class TempleConfig {
             }
 
         } else if (studyPattern == StudyPattern.Cover_Pattern) {
-            ModelParameter modelParameter1 = nerveManager.getModelParameter();
-            modelParameter.setDepthNerves(modelParameter1.getDepthNerves());
-            modelParameter.setOutNerves(modelParameter1.getOutNerves());
+            switch (classifier) {
+                case Classifier.DNN:
+                    ModelParameter modelParameter1 = nerveManager.getModelParameter();
+                    modelParameter.setDepthNerves(modelParameter1.getDepthNerves());
+                    modelParameter.setOutNerves(modelParameter1.getOutNerves());
+                    break;
+                case Classifier.LVQ:
+                    if (lvq.isReady()) {
+                        LvqModel lvqModel = new LvqModel();
+                        lvqModel.setLength(lvq.getLength());
+                        lvqModel.setTypeNub(lvq.getTypeNub());
+                        lvqModel.setMatrixModelList(getLvqModel(lvq.getModel()));
+                        modelParameter.setLvqModel(lvqModel);
+                    }
+                    break;
+                case Classifier.VAvg:
+                    if (vectorK != null) {
+                        Map<Integer, List<Double>> map = vectorK.getKMatrix();
+                        modelParameter.setMatrixK(map);
+                    }
+                    break;
+            }
+
         }
         if (isHavePosition && kClusteringMap != null && kClusteringMap.size() > 0) {//存在边框学习模型参数
             Map<Integer, KBorder> kBorderMap = kToBody();
@@ -555,7 +585,38 @@ public class TempleConfig {
         } else if (studyPattern == StudyPattern.Speed_Pattern) {
             nerveManager.insertModelParameter(modelParameter);
         } else if (studyPattern == StudyPattern.Cover_Pattern) {
-            nerveManager.insertModelParameter(modelParameter);
+            switch (classifier) {
+                case Classifier.LVQ:
+                    LvqModel lvqModel = modelParameter.getLvqModel();
+                    if (lvqModel != null) {
+                        int length = lvqModel.getLength();
+                        int typeNub = lvqModel.getTypeNub();
+                        List<MatrixModel> matrixModels = lvqModel.getMatrixModelList();
+                        if (length > 0 && typeNub > 0 && matrixModels != null &&
+                                matrixModels.size() > 0) {
+                            MatrixBody[] model = new MatrixBody[matrixModels.size()];
+                            for (int i = 0; i < model.length; i++) {
+                                MatrixModel matrixModel = matrixModels.get(i);
+                                MatrixBody matrixBody = new MatrixBody();
+                                matrixBody.setId(matrixModel.getId());
+                                matrixBody.setMatrix(MatrixOperation.listToRowVector(matrixModel.getRowVector()));
+                                model[i] = matrixBody;
+                            }
+                            lvq.setLength(length);
+                            lvq.setTypeNub(typeNub);
+                            lvq.setReady(true);
+                            lvq.setModel(model);
+                        }
+                    }
+                    break;
+                case Classifier.VAvg:
+                    vectorK = new VectorK(sensoryNerveNub);
+                    vectorK.insertKMatrix(modelParameter.getMatrixK());
+                    break;
+                case Classifier.DNN:
+                    nerveManager.insertModelParameter(modelParameter);
+                    break;
+            }
         }
         if (modelParameter.getFrame() != null) {
             frame = modelParameter.getFrame();

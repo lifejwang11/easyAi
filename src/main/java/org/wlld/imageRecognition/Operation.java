@@ -60,13 +60,50 @@ public class Operation {//进行计算
         return sub(matrix1);
     }
 
-    public void colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag) throws Exception {
-        Map<Integer, Double> map = new HashMap<>();
-        map.put(tag, 1.0);
-        List<Double> feature = convolution.getCenterColor(threeChannelMatrix, templeConfig.getPoolSize(),
+    public void colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList) throws Exception {
+        Watershed watershed = new Watershed(threeChannelMatrix.getMatrixRGB(), specificationsList, templeConfig);
+        RegionBody regionBody = watershed.rainfall().get(0);
+        int minX = regionBody.getMinX();
+        int minY = regionBody.getMinY();
+        int maxX = regionBody.getMaxX();
+        int maxY = regionBody.getMaxY();
+        int xSize = maxX - minX;
+        int ySize = maxY - minY;
+        ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
+        List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
                 templeConfig.getSensoryNerves().size());
-        System.out.println(feature);
-        intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
+        if (templeConfig.isShowLog()) {
+            System.out.println(feature);
+        }
+        int classifier = templeConfig.getClassifier();
+        switch (classifier) {
+            case Classifier.DNN:
+                Map<Integer, Double> map = new HashMap<>();
+                map.put(tag, 1.0);
+                intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
+                break;
+            case Classifier.LVQ:
+                Matrix vector = MatrixOperation.listToRowVector(feature);
+                lvqStudy(tag, vector);
+                break;
+            case Classifier.VAvg:
+                Matrix vec = MatrixOperation.listToRowVector(feature);
+                avgStudy(tag, vec);
+                break;
+        }
+    }
+
+    private void avgStudy(int tagging, Matrix myMatrix) throws Exception {//特征矩阵均值学习
+        VectorK vectorK = templeConfig.getVectorK();
+        vectorK.insertMatrix(tagging, myMatrix);
+    }
+
+    private void lvqStudy(int tagging, Matrix myMatrix) throws Exception {//LVQ学习
+        LVQ lvq = templeConfig.getLvq();
+        MatrixBody matrixBody = new MatrixBody();
+        matrixBody.setMatrix(myMatrix);
+        matrixBody.setId(tagging);
+        lvq.insertMatrixBody(matrixBody);
     }
 
     public List<RegionBody> colorLook(ThreeChannelMatrix threeChannelMatrix, List<Specifications> specificationsList) throws Exception {
@@ -83,11 +120,61 @@ public class Operation {//进行计算
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
             List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
                     templeConfig.getSensoryNerves().size());
-            System.out.println(feature);
-            intoDnnNetwork(IdCreator.get().nextId(), feature, templeConfig.getSensoryNerves(), false, null, maxPoint);
-            regionBody.setType(maxPoint.getId());
+            if (templeConfig.isShowLog()) {
+                System.out.println(feature);
+            }
+            int classifier = templeConfig.getClassifier();
+            int id = 0;
+            switch (classifier) {
+                case Classifier.LVQ:
+                    Matrix myMatrix = MatrixOperation.listToRowVector(feature);
+                    id = getIdByLVQ(myMatrix);
+                    break;
+                case Classifier.DNN:
+                    intoDnnNetwork(IdCreator.get().nextId(), feature, templeConfig.getSensoryNerves(), false, null, maxPoint);
+                    id = maxPoint.getId();
+                    break;
+                case Classifier.VAvg:
+                    Matrix myMatrix1 = MatrixOperation.listToRowVector(feature);
+                    id = getIdByVag(myMatrix1);
+                    break;
+            }
+            regionBody.setType(id);
         }
         return regionList;
+    }
+
+    private int getIdByVag(Matrix myVector) throws Exception {//VAG获取分类
+        Map<Integer, Matrix> matrixK = templeConfig.getVectorK().getMatrixK();
+        double minDist = 0;
+        int id = 0;
+        for (Map.Entry<Integer, Matrix> entry : matrixK.entrySet()) {
+            Matrix matrix = entry.getValue();
+            double dist = MatrixOperation.getEDist(matrix, myVector);
+            //System.out.println("距离===" + dist + ",类别==" + entry.getKey());
+            if (minDist == 0 || dist < minDist) {
+                minDist = dist;
+                id = entry.getKey();
+            }
+        }
+        return id;
+    }
+
+    private int getIdByLVQ(Matrix myVector) throws Exception {//LVQ获取分类
+        int id = 0;
+        double distEnd = 0;
+        LVQ lvq = templeConfig.getLvq();
+        MatrixBody[] matrixBodies = lvq.getModel();
+        for (int i = 0; i < matrixBodies.length; i++) {
+            MatrixBody matrixBody = matrixBodies[i];
+            Matrix vector = matrixBody.getMatrix();
+            double dist = lvq.vectorEqual(myVector, vector);
+            if (distEnd == 0 || dist < distEnd) {
+                id = matrixBody.getId();
+                distEnd = dist;
+            }
+        }
+        return id;
     }
 
     public void coverStudy(Map<Integer, ThreeChannelMatrix> matrixMap, int poolSize, int sqNub, int regionSize,
@@ -657,7 +744,7 @@ public class Operation {//进行计算
         for (Map.Entry<Integer, Matrix> entry : matrixK.entrySet()) {
             Matrix matrix = entry.getValue();
             double dist = MatrixOperation.getEDist(matrix, myVector);
-            System.out.println("距离===" + dist + ",类别==" + entry.getKey());
+            //System.out.println("距离===" + dist + ",类别==" + entry.getKey());
             if (minDist == 0 || dist < minDist) {
                 minDist = dist;
                 id = entry.getKey();
