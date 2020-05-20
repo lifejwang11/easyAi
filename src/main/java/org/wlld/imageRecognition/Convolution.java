@@ -106,7 +106,7 @@ public class Convolution extends Frequency {
         return features;
     }
 
-    public List<Double> getCenterColor(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub) throws Exception {
+    public List<double[]> getCenterColor(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub) throws Exception {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
@@ -126,9 +126,9 @@ public class Convolution extends Frequency {
         meanClustering.start();
         List<RGBNorm> rgbNorms = meanClustering.getMatrices();
         Collections.sort(rgbNorms, rgbSort);
-        List<Double> feature = new ArrayList<>();
+        List<double[]> feature = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {
-            feature.add(rgbNorms.get(i).getNorm());
+            feature.add(rgbNorms.get(i).getRgb());
         }
         //System.out.println("feature==" + feature);
         return feature;

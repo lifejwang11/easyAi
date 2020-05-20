@@ -8,8 +8,6 @@ import org.wlld.config.StudyPattern;
 import org.wlld.imageRecognition.*;
 import org.wlld.imageRecognition.segmentation.RegionBody;
 import org.wlld.imageRecognition.segmentation.Specifications;
-import org.wlld.imageRecognition.segmentation.Watershed;
-import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.tools.ArithUtil;
 
@@ -19,42 +17,51 @@ import java.util.List;
 public class FoodTest {
 
     public static void main(String[] args) throws Exception {
-        //food();
-        //rain();
-        test2();
+        //test2();
+        test();
     }
 
-    public static void test2() throws Exception {
+    public static void test2(TempleConfig templeConfig) throws Exception {
         //test();
-        TempleConfig templeConfig = new TempleConfig();
         Picture picture = new Picture();
-        templeConfig.setSensoryNerveNub(4);
-        templeConfig.setStudyPoint(0.01);
-        templeConfig.sethTh(0.86);
-        templeConfig.setRegionNub(200);
-        templeConfig.setMaxRain(360);
-        templeConfig.setSoftMax(true);
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
         specifications.setWidth(400);
         specifications.setHeight(400);
         specificationsList.add(specifications);
-        templeConfig.setClassifier(Classifier.LVQ);
-        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         Operation operation = new Operation(templeConfig);
-        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("D:\\cai\\e/e1.jpg");
-        operation.colorLook(threeChannelMatrix, specificationsList);
+        for (int i = 1; i <= 10; i++) {
+            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\pic/a" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\pic/b" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("D:\\pic/c" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix("D:\\pic/d" + i + ".jpg");
+            RegionBody regionBody1 = operation.colorLook(threeChannelMatrix1, specificationsList).get(0);
+            RegionBody regionBody2 = operation.colorLook(threeChannelMatrix2, specificationsList).get(0);
+            RegionBody regionBody3 = operation.colorLook(threeChannelMatrix3, specificationsList).get(0);
+            RegionBody regionBody4 = operation.colorLook(threeChannelMatrix4, specificationsList).get(0);
+            System.out.println("type1==" + regionBody1.getType());
+            System.out.println("type2==" + regionBody2.getType());
+            System.out.println("type3==" + regionBody3.getType());
+            System.out.println("type4==" + regionBody4.getType());
+            System.out.println("==========================================" + i);
+        }
     }
 
     public static void test() throws Exception {
         TempleConfig templeConfig = new TempleConfig();
         Picture picture = new Picture();
-        templeConfig.setSensoryNerveNub(4);
         templeConfig.setStudyPoint(0.01);
+        templeConfig.isShowLog(true);
+        templeConfig.setMaxRain(320);
+        templeConfig.setSensoryNerveNub(3);
         templeConfig.setSoftMax(true);
-
-        templeConfig.setClassifier(Classifier.LVQ);
-        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
+        templeConfig.setFeatureNub(3);
+        templeConfig.sethTh(0.88);
+        templeConfig.setPoolSize(2);
+        templeConfig.setRzType(RZ.L1);
+        templeConfig.setlParam(0.015);
+        templeConfig.setClassifier(Classifier.VAvg);
+        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 4);
         Operation operation = new Operation(templeConfig);
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
@@ -63,15 +70,19 @@ public class FoodTest {
         specificationsList.add(specifications);
         for (int j = 0; j < 1; j++) {
             for (int i = 1; i <= 10; i++) {
-                ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\cai/a/a" + i + ".jpg");
-                ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\cai/b/b" + i + ".jpg");
-                ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("D:\\cai/c/c" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\pic/a" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\pic/b" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("D:\\pic/c" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix("D:\\pic/d" + i + ".jpg");
                 operation.colorStudy(threeChannelMatrix1, 1, specificationsList);
                 operation.colorStudy(threeChannelMatrix2, 2, specificationsList);
                 operation.colorStudy(threeChannelMatrix3, 3, specificationsList);
-                System.out.println("=======================================");
+                operation.colorStudy(threeChannelMatrix4, 4, specificationsList);
+                System.out.println("=======================================" + i);
             }
         }
+        //templeConfig.finishStudy();
+        //test2(templeConfig);
     }
 
     public static void study() throws Exception {
@@ -89,8 +100,7 @@ public class FoodTest {
         Picture picture = new Picture();
         Convolution convolution = new Convolution();
         ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("");
-        List<Double> feature = convolution.getCenterColor(threeChannelMatrix, 2, 4);
-
+       // List<Double> feature = convolution.getCenterColor(threeChannelMatrix, 2, 4);
     }
 
     public static void food() throws Exception {

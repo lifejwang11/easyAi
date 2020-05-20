@@ -20,7 +20,7 @@ public class Watershed {
     private double th = Kernel.th;//灰度阈值
     private int regionNub = Kernel.Region_Nub;//一张图分多少份
     private Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
-    private double rainTh = 2;
+    private double rainTh = 0;
     private int xMax;
     private int yMax;
     private double maxRain;

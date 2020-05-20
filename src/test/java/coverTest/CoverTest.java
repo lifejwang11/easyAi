@@ -23,12 +23,12 @@ import java.util.Map;
  */
 public class CoverTest {
     public static void main(String[] args) throws Exception {
-        double a = 220;
-        double b = 220;
-        double c = 220;
-        double d = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2) + Math.pow(c, 2));
-        System.out.println(d);
-        //cover();
+//        double a = 220;
+//        double b = 220;
+//        double c = 220;
+//        double d = Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2) + Math.pow(c, 2));
+//        System.out.println(d);
+        cover();
     }
 
     public static void insertModel(String model) throws Exception {//注入模型
@@ -64,7 +64,7 @@ public class CoverTest {
             operation = getModel();
         }
         for (int i = 1; i < 100; i++) {
-            String na = "D:\\pic\\test/" + name + i + ".jpg";
+            String na = "D:\\share\\cai/" + name + i + ".jpg";
             //System.out.println("name======================" + na);
             ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix(na);
             Map<Integer, Double> map1 = operation.coverPoint(threeChannelMatrix, poolSize, sqlNub, regionSize);
@@ -108,19 +108,28 @@ public class CoverTest {
         templeConfig.setSensoryNerveNub(3);//多出来的
         templeConfig.setRzType(RZ.L1);//不动//3 18
         templeConfig.setlParam(0.015);//不动
-        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 2);
+        templeConfig.setClassifier(Classifier.DNN);
+        templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 4);
         Operation operation = new Operation(templeConfig);
         for (int i = 1; i < 100; i++) {
             Map<Integer, ThreeChannelMatrix> matrixMap = new HashMap<>();
-            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\pic\\test/b" + i + ".jpg");
-            ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\pic\\test/d" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\share\\cai/a" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\share\\cai/b" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("D:\\share\\cai/c" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix("D:\\share\\cai/d" + i + ".jpg");
             matrixMap.put(1, threeChannelMatrix1);//桔梗覆盖
             matrixMap.put(2, threeChannelMatrix2);//土地
+            matrixMap.put(3, threeChannelMatrix3);//桔梗覆盖
+            matrixMap.put(4, threeChannelMatrix4);//土地
             operation.coverStudy(matrixMap, 2, 3, 18, 2);
         }
         ModelParameter modelParameter = templeConfig.getModel();
         String model = JSON.toJSONString(modelParameter);
         System.out.println(model);
-        test(operation, 2, 3, 18, "d", 2);
+        test(operation, 2, 3, 18, "a", 1);
+        test(operation, 2, 3, 18, "b", 2);
+        test(operation, 2, 3, 18, "c", 3);
+        test(operation, 2, 3, 18, "d", 4);
+
     }
 }

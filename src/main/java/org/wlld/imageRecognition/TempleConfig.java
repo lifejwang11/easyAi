@@ -45,7 +45,7 @@ public class TempleConfig {
     private double th = -1;//标准阈值
     private boolean boxReady = false;//边框已经学习完毕
     private double iouTh = 0.5;//IOU阈值
-    private int lvqNub = 10;//lvq循环次数，默认30
+    private int lvqNub = 100;//lvq循环次数，默认30
     private VectorK vectorK;//特征向量均值类
     private boolean isThreeChannel = false;//是否启用三通道
     private int classifier = Classifier.VAvg;//默认分类类别使用的是向量均值分类
@@ -53,7 +53,7 @@ public class TempleConfig {
     private int sensoryNerveNub = 9;//输入神经元个数
     private boolean isShowLog = false;
     private ActiveFunction activeFunction = new Tanh();
-    private double studyPoint = 0;
+    private double studyPoint = 0.1;
     private double matrixWidth = 5;//期望矩阵间隔
     private int rzType = RZ.NOT_RZ;//正则化类型，默认不进行正则化
     private double lParam = 0;//正则参数
@@ -64,6 +64,20 @@ public class TempleConfig {
     private double hTh = 0.88;//灰度阈值
     private double maxRain = 340;//不降雨RGB阈值
     private int featureNub = 4;//聚类特征数量
+    private Knn knn;//KNN分类器
+    private int knnNub = 5;//KNN投票人数
+
+    public Knn getKnn() {
+        return knn;
+    }
+
+    public int getKnnNub() {
+        return knnNub;
+    }
+
+    public void setKnnNub(int knnNub) {
+        this.knnNub = knnNub;
+    }
 
     public int getFeatureNub() {
         return featureNub;
@@ -304,7 +318,10 @@ public class TempleConfig {
                         lvq = new LVQ(classificationNub, lvqNub, studyPoint);
                         break;
                     case Classifier.VAvg:
-                        vectorK = new VectorK(sensoryNerveNub);
+                        vectorK = new VectorK(featureNub);
+                        break;
+                    case Classifier.KNN:
+                        knn = new Knn(knnNub);
                         break;
                 }
                 break;
