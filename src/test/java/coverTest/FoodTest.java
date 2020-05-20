@@ -32,7 +32,7 @@ public class FoodTest {
         templeConfig.setStudyPoint(0.01);
         templeConfig.sethTh(0.86);
         templeConfig.setRegionNub(200);
-        templeConfig.setMaxRain(340);
+        templeConfig.setMaxRain(360);
         templeConfig.setSoftMax(true);
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
