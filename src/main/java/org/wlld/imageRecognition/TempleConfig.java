@@ -312,13 +312,13 @@ public class TempleConfig {
             case StudyPattern.Cover_Pattern://覆盖学习模式
                 switch (classifier) {
                     case Classifier.DNN:
-                        initNerveManager(initPower, sensoryNerveNub, deep, studyPoint);
+                        initNerveManager(initPower, sensoryNerveNub * 3, deep, studyPoint);
                         break;
                     case Classifier.LVQ:
                         lvq = new LVQ(classificationNub, lvqNub, studyPoint);
                         break;
                     case Classifier.VAvg:
-                        vectorK = new VectorK(featureNub);
+                        vectorK = new VectorK(featureNub * 3);
                         break;
                     case Classifier.KNN:
                         knn = new Knn(knnNub);

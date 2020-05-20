@@ -67,38 +67,36 @@ public class Operation {//进行计算
         int xSize = maxX - minX;
         int ySize = maxY - minY;
         ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-        List<double[]> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
+        List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
                 templeConfig.getFeatureNub());
         if (templeConfig.isShowLog()) {
-            for (double[] f : feature) {
-                System.out.println(Arrays.toString(f));
-            }
+            System.out.println(feature);
         }
         System.out.println("=====================================");
         int classifier = templeConfig.getClassifier();
-//        switch (classifier) {
-//            case Classifier.DNN:
-//                Map<Integer, Double> map = new HashMap<>();
-//                map.put(tag, 1.0);
-//                if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub()) {
-//                    intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
-//                } else {
-//                    throw new Exception("nerves number is not equal featureNub");
-//                }
-//                break;
-//            case Classifier.LVQ:
-//                Matrix vector = MatrixOperation.listToRowVector(feature);
-//                lvqStudy(tag, vector);
-//                break;
-//            case Classifier.VAvg:
-//                Matrix vec = MatrixOperation.listToRowVector(feature);
-//                avgStudy(tag, vec);
-//                break;
-//            case Classifier.KNN:
-//                Matrix veck = MatrixOperation.listToRowVector(feature);
-//                knnStudy(tag, veck);
-//                break;
-//        }
+        switch (classifier) {
+            case Classifier.DNN:
+                Map<Integer, Double> map = new HashMap<>();
+                map.put(tag, 1.0);
+                if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub()) {
+                    intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
+                } else {
+                    throw new Exception("nerves number is not equal featureNub");
+                }
+                break;
+            case Classifier.LVQ:
+                Matrix vector = MatrixOperation.listToRowVector(feature);
+                lvqStudy(tag, vector);
+                break;
+            case Classifier.VAvg:
+                Matrix vec = MatrixOperation.listToRowVector(feature);
+                avgStudy(tag, vec);
+                break;
+            case Classifier.KNN:
+                Matrix veck = MatrixOperation.listToRowVector(feature);
+                knnStudy(tag, veck);
+                break;
+        }
     }
 
     private void knnStudy(int tagging, Matrix vector) throws Exception {
@@ -131,37 +129,37 @@ public class Operation {//进行计算
             int xSize = maxX - minX;
             int ySize = maxY - minY;
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-            List<double[]> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
+            List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
                     templeConfig.getFeatureNub());
             if (templeConfig.isShowLog()) {
                 System.out.println(feature);
             }
-//            int classifier = templeConfig.getClassifier();
-//            int id = 0;
-//            switch (classifier) {
-//                case Classifier.LVQ:
-//                    Matrix myMatrix = MatrixOperation.listToRowVector(feature);
-//                    id = getIdByLVQ(myMatrix);
-//                    break;
-//                case Classifier.DNN:
-//                    if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub()) {
-//                        intoDnnNetwork(IdCreator.get().nextId(), feature, templeConfig.getSensoryNerves(), false, null, maxPoint);
-//                        id = maxPoint.getId();
-//                    } else {
-//                        throw new Exception("nerves number is not equal featureNub");
-//                    }
-//                    break;
-//                case Classifier.VAvg:
-//                    Matrix myMatrix1 = MatrixOperation.listToRowVector(feature);
-//                    id = getIdByVag(myMatrix1);
-//                    break;
-//                case Classifier.KNN:
-//                    Matrix myMatrix2 = MatrixOperation.listToRowVector(feature);
-//                    Knn knn = templeConfig.getKnn();
-//                    id = knn.getType(myMatrix2);
-//                    break;
-//            }
-//            regionBody.setType(id);
+            int classifier = templeConfig.getClassifier();
+            int id = 0;
+            switch (classifier) {
+                case Classifier.LVQ:
+                    Matrix myMatrix = MatrixOperation.listToRowVector(feature);
+                    id = getIdByLVQ(myMatrix);
+                    break;
+                case Classifier.DNN:
+                    if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub()) {
+                        intoDnnNetwork(IdCreator.get().nextId(), feature, templeConfig.getSensoryNerves(), false, null, maxPoint);
+                        id = maxPoint.getId();
+                    } else {
+                        throw new Exception("nerves number is not equal featureNub");
+                    }
+                    break;
+                case Classifier.VAvg:
+                    Matrix myMatrix1 = MatrixOperation.listToRowVector(feature);
+                    id = getIdByVag(myMatrix1);
+                    break;
+                case Classifier.KNN:
+                    Matrix myMatrix2 = MatrixOperation.listToRowVector(feature);
+                    Knn knn = templeConfig.getKnn();
+                    id = knn.getType(myMatrix2);
+                    break;
+            }
+            regionBody.setType(id);
             //System.out.println("类别" + id);
         }
         return regionList;
