@@ -63,6 +63,15 @@ public class TempleConfig {
     private int regionNub = 100;//一张图行或列分多少个区块
     private double hTh = 0.88;//灰度阈值
     private double maxRain = 340;//不降雨RGB阈值
+    private int featureNub = 4;//聚类特征数量
+
+    public int getFeatureNub() {
+        return featureNub;
+    }
+
+    public void setFeatureNub(int featureNub) {
+        this.featureNub = featureNub;
+    }
 
     public double getMaxRain() {
         return maxRain;
