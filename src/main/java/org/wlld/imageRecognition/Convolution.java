@@ -126,12 +126,15 @@ public class Convolution extends Frequency {
         meanClustering.start();
         List<RGBNorm> rgbNorms = meanClustering.getMatrices();
         Collections.sort(rgbNorms, rgbSort);
-        List<Double> feature = new ArrayList<>();
+        List<Double> features = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {
-            feature.add(rgbNorms.get(i).getNorm());
+            double[] rgb = rgbNorms.get(i).getRgb();
+            for (int j = 0; j < 3; j++) {
+                features.add(rgb[j]);
+            }
         }
         //System.out.println("feature==" + feature);
-        return feature;
+        return features;
     }
 
     private void regression(XYBody xyBody) {

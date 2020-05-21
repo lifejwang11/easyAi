@@ -137,6 +137,7 @@ public class LVQ {
         }
         //初始化完成
         for (int i = 0; i < lvqNub; i++) {
+            //System.out.println("================================");
             study();
         }
         isReady = true;

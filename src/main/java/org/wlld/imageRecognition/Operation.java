@@ -18,10 +18,7 @@ import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.IdCreator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Operation {//进行计算
     private TempleConfig templeConfig;//配置初始化参数模板
@@ -75,12 +72,13 @@ public class Operation {//进行计算
         if (templeConfig.isShowLog()) {
             System.out.println(feature);
         }
+        //System.out.println("=====================================");
         int classifier = templeConfig.getClassifier();
         switch (classifier) {
             case Classifier.DNN:
                 Map<Integer, Double> map = new HashMap<>();
                 map.put(tag, 1.0);
-                if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub()) {
+                if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub() * 3) {
                     intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
                 } else {
                     throw new Exception("nerves number is not equal featureNub");
@@ -94,7 +92,16 @@ public class Operation {//进行计算
                 Matrix vec = MatrixOperation.listToRowVector(feature);
                 avgStudy(tag, vec);
                 break;
+            case Classifier.KNN:
+                Matrix veck = MatrixOperation.listToRowVector(feature);
+                knnStudy(tag, veck);
+                break;
         }
+    }
+
+    private void knnStudy(int tagging, Matrix vector) throws Exception {
+        Knn knn = templeConfig.getKnn();
+        knn.insertMatrix(vector, tagging);
     }
 
     private void avgStudy(int tagging, Matrix myMatrix) throws Exception {//特征矩阵均值学习
@@ -135,7 +142,7 @@ public class Operation {//进行计算
                     id = getIdByLVQ(myMatrix);
                     break;
                 case Classifier.DNN:
-                    if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub()) {
+                    if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub() * 3) {
                         intoDnnNetwork(IdCreator.get().nextId(), feature, templeConfig.getSensoryNerves(), false, null, maxPoint);
                         id = maxPoint.getId();
                     } else {
@@ -146,8 +153,14 @@ public class Operation {//进行计算
                     Matrix myMatrix1 = MatrixOperation.listToRowVector(feature);
                     id = getIdByVag(myMatrix1);
                     break;
+                case Classifier.KNN:
+                    Matrix myMatrix2 = MatrixOperation.listToRowVector(feature);
+                    Knn knn = templeConfig.getKnn();
+                    id = knn.getType(myMatrix2);
+                    break;
             }
             regionBody.setType(id);
+            //System.out.println("类别" + id);
         }
         return regionList;
     }
@@ -159,12 +172,13 @@ public class Operation {//进行计算
         for (Map.Entry<Integer, Matrix> entry : matrixK.entrySet()) {
             Matrix matrix = entry.getValue();
             double dist = MatrixOperation.getEDist(matrix, myVector);
-            //System.out.println("距离===" + dist + ",类别==" + entry.getKey());
+            //System.out.println("距离===" + dist + ",类别==" + entry.getKey()+",核心:"+matrix.getString());
             if (minDist == 0 || dist < minDist) {
                 minDist = dist;
                 id = entry.getKey();
             }
         }
+        //System.out.println("=======================");
         return id;
     }
 
