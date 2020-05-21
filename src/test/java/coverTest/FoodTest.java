@@ -43,13 +43,12 @@ public class FoodTest {
     public static void test() throws Exception {
         TempleConfig templeConfig = new TempleConfig();
         Picture picture = new Picture();
-        templeConfig.isShowLog(true);
-        templeConfig.setMaxRain(320);
+        templeConfig.isShowLog(true);//是否打印日志
+        templeConfig.setMaxRain(320);//切割阈值
         templeConfig.setFeatureNub(3);
         templeConfig.sethTh(0.88);
         templeConfig.setPoolSize(2);
-        templeConfig.setSensoryNerveNub(3);
-        templeConfig.setStudyPoint(0.01);
+        //templeConfig.setRegionNub(100);
         templeConfig.setClassifier(Classifier.VAvg);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         Operation operation = new Operation(templeConfig);
