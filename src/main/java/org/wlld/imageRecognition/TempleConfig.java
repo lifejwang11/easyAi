@@ -66,6 +66,15 @@ public class TempleConfig {
     private int featureNub = 4;//聚类特征数量
     private Knn knn;//KNN分类器
     private int knnNub = 3;//KNN投票人数
+    private Matrix backGround;//背景
+
+    public Matrix getBackGround() {
+        return backGround;
+    }
+
+    public void setBackGround(Matrix backGround) {
+        this.backGround = backGround;
+    }
 
     public Knn getKnn() {
         return knn;

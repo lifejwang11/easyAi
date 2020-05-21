@@ -19,6 +19,10 @@ public class VectorK {
         return matrixK;
     }
 
+    public void removeType(int typeId) {
+        matrixK.remove(typeId);
+    }
+
     public void insertMatrix(int type, Matrix matrix) throws Exception {
         if (matrix.isRowVector() && matrix.getY() == length) {
             if (matrixMap.containsKey(type)) {
