@@ -45,7 +45,7 @@ public class TempleConfig {
     private double th = -1;//标准阈值
     private boolean boxReady = false;//边框已经学习完毕
     private double iouTh = 0.5;//IOU阈值
-    private int lvqNub = 100;//lvq循环次数，默认30
+    private int lvqNub = 200;//lvq循环次数，默认30
     private VectorK vectorK;//特征向量均值类
     private boolean isThreeChannel = false;//是否启用三通道
     private int classifier = Classifier.VAvg;//默认分类类别使用的是向量均值分类
@@ -65,7 +65,7 @@ public class TempleConfig {
     private double maxRain = 340;//不降雨RGB阈值
     private int featureNub = 4;//聚类特征数量
     private Knn knn;//KNN分类器
-    private int knnNub = 5;//KNN投票人数
+    private int knnNub = 3;//KNN投票人数
 
     public Knn getKnn() {
         return knn;

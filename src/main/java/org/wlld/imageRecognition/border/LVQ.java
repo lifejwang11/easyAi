@@ -87,35 +87,16 @@ public class LVQ {
             long type = matrixBody.getId();//类别
             double distEnd = 0;
             int id = 0;
-            double dis0 = 0;
-            double dis1 = 0;
-            double dis2 = 0;
-            double dis3 = 0;
             for (int i = 0; i < typeNub; i++) {
                 MatrixBody modelBody = model[i];
                 Matrix modelMatrix = modelBody.getMatrix();
                 //修正矩阵与原矩阵的范数差
                 double dist = vectorEqual(modelMatrix, matrix);
-                switch (i) {
-                    case 0:
-                        dis0 = dist;
-                        break;
-                    case 1:
-                        dis1 = dist;
-                        break;
-                    case 2:
-                        dis2 = dist;
-                        break;
-                    case 3:
-                        dis3 = dist;
-                        break;
-                }
                 if (distEnd == 0 || dist < distEnd) {
                     id = modelBody.getId();
                     distEnd = dist;
                 }
             }
-            System.out.println("type==" + type + ",dist0==" + dis0 + ",dist1==" + dis1 + ",dist2==" + dis2 + ",dist3==" + dis3);
             MatrixBody modelBody = model[id];
             Matrix modelMatrix = modelBody.getMatrix();
             boolean isRight = id == type;
@@ -156,7 +137,7 @@ public class LVQ {
         }
         //初始化完成
         for (int i = 0; i < lvqNub; i++) {
-            System.out.println("================================");
+            //System.out.println("================================");
             study();
         }
         isReady = true;

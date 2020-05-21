@@ -72,13 +72,13 @@ public class Operation {//进行计算
         if (templeConfig.isShowLog()) {
             System.out.println(feature);
         }
-        System.out.println("=====================================");
+        //System.out.println("=====================================");
         int classifier = templeConfig.getClassifier();
         switch (classifier) {
             case Classifier.DNN:
                 Map<Integer, Double> map = new HashMap<>();
                 map.put(tag, 1.0);
-                if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub()) {
+                if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub() * 3) {
                     intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
                 } else {
                     throw new Exception("nerves number is not equal featureNub");
@@ -142,7 +142,7 @@ public class Operation {//进行计算
                     id = getIdByLVQ(myMatrix);
                     break;
                 case Classifier.DNN:
-                    if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub()) {
+                    if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub() * 3) {
                         intoDnnNetwork(IdCreator.get().nextId(), feature, templeConfig.getSensoryNerves(), false, null, maxPoint);
                         id = maxPoint.getId();
                     } else {
