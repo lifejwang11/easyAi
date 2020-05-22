@@ -299,7 +299,7 @@ public class Watershed {
         }
         createMerge();
         merge();
-        //System.out.println(regionMap.getString());
+       // System.out.println(regionMap.getString());
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值

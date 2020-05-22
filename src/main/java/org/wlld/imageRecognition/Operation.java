@@ -188,7 +188,7 @@ public class Operation {//进行计算
         for (Map.Entry<Integer, Matrix> entry : matrixK.entrySet()) {
             Matrix matrix = entry.getValue();
             double dist = MatrixOperation.getEDist(matrix, myVector);
-            //System.out.println("距离===" + dist + ",类别==" + entry.getKey()+",核心:"+matrix.getString());
+            System.out.println("距离===" + dist + ",类别==" + entry.getKey()+",核心:"+matrix.getString());
             if (minDist == 0 || dist < minDist) {
                 minDist = dist;
                 id = entry.getKey();

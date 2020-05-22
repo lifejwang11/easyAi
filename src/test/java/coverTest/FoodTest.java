@@ -17,42 +17,47 @@ import java.util.List;
 public class FoodTest {
 
     public static void main(String[] args) throws Exception {
-        //test2();
-        test2();
+        //test2(null);
+        test();
     }
 
-    public static void test2() throws Exception {
+    public static void test2(TempleConfig templeConfig) throws Exception {
         //test();
-        TempleConfig templeConfig = getTemple();
+        System.out.println("开始测试");
+        if (templeConfig == null) {
+            templeConfig = getTemple();
+        }
         Picture picture = new Picture();
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
-        specifications.setMinWidth(300);
-        specifications.setMinHeight(300);
+        specifications.setMinWidth(250);
+        specifications.setMinHeight(250);
         specifications.setMaxWidth(700);
         specifications.setMaxHeight(700);
         specificationsList.add(specifications);
         Operation operation = new Operation(templeConfig);
-        for (int i = 1; i <= 1; i++) {
+        for (int i = 1; i <= 28; i++) {
             ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\share\\cai\\g/g" + i + ".jpg");
             List<RegionBody> regionBody = operation.colorLook(threeChannelMatrix1, specificationsList);
-//            for (int j = 0; j < regionBody.size(); j++) {
-//                System.out.println(regionBody.get(j).getType());
-//            }
-            System.out.println("=============================" + i);
+            for (int j = 0; j < regionBody.size(); j++) {
+                RegionBody regionBody1 = regionBody.get(j);
+                System.out.println("minX==" + regionBody1.getMinX() + ",minY==" + regionBody1.getMinY()
+                        + ",maxX==" + regionBody1.getMaxX() + ",maxY==" + regionBody1.getMaxY());
+                System.out.println(regionBody.get(j).getType());
+            }
+            System.out.println("===================================" + i);
         }
     }
 
     public static TempleConfig getTemple() throws Exception {
         TempleConfig templeConfig = new TempleConfig();
-        Picture picture = new Picture();
         templeConfig.isShowLog(true);//是否打印日志
-        templeConfig.setMaxRain(340);//切割阈值
-        templeConfig.setFeatureNub(3);
+        templeConfig.setMaxRain(320);//切割阈值
+        templeConfig.setFeatureNub(4);
         templeConfig.sethTh(0.88);
         templeConfig.setPoolSize(2);
         templeConfig.setRegionNub(200);
-        templeConfig.setClassifier(Classifier.VAvg);
+        templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         return templeConfig;
     }
@@ -63,24 +68,30 @@ public class FoodTest {
         Operation operation = new Operation(templeConfig);
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
-        specifications.setMinWidth(300);
-        specifications.setMinHeight(300);
+        specifications.setMinWidth(250);
+        specifications.setMinHeight(250);
         specifications.setMaxWidth(700);
         specifications.setMaxHeight(700);
         specificationsList.add(specifications);
-        for (int j = 0; j < 1; j++) {
+        for (int j = 0; j < 10; j++) {
             for (int i = 1; i <= 10; i++) {
-                ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("E:\\food\\train/a.jpg");
-                ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\pic/b" + i + ".jpg");
-                ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("D:\\pic/c" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\share\\cai\\a/a" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\share\\cai\\b/b" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("D:\\share\\cai\\c/c" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix("D:\\share\\cai\\d/d" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix5 = picture.getThreeMatrix("D:\\share\\cai\\e/e" + i + ".jpg");
+                ThreeChannelMatrix threeChannelMatrix6 = picture.getThreeMatrix("D:\\share\\cai\\f/f" + i + ".jpg");
                 operation.colorStudy(threeChannelMatrix1, 1, specificationsList);
                 operation.colorStudy(threeChannelMatrix2, 2, specificationsList);
                 operation.colorStudy(threeChannelMatrix3, 3, specificationsList);
+                operation.colorStudy(threeChannelMatrix4, 4, specificationsList);
+                operation.colorStudy(threeChannelMatrix5, 5, specificationsList);
+                operation.colorStudy(threeChannelMatrix6, 6, specificationsList);
                 System.out.println("=======================================" + i);
             }
         }
         templeConfig.finishStudy();
-        test2();
+        test2(templeConfig);
     }
 
     public static void study() throws Exception {
