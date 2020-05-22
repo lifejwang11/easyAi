@@ -1,22 +1,40 @@
 package org.wlld.imageRecognition.segmentation;
 
 public class Specifications {
-    private double width;
-    private double height;
+    private double minWidth;
+    private double minHeight;
+    private double maxWidth;
+    private double maxHeight;
 
-    public double getWidth() {
-        return width;
+    public double getMinWidth() {
+        return minWidth;
     }
 
-    public void setWidth(double width) {
-        this.width = width;
+    public void setMinWidth(double minWidth) {
+        this.minWidth = minWidth;
     }
 
-    public double getHeight() {
-        return height;
+    public double getMinHeight() {
+        return minHeight;
     }
 
-    public void setHeight(double height) {
-        this.height = height;
+    public void setMinHeight(double minHeight) {
+        this.minHeight = minHeight;
+    }
+
+    public double getMaxWidth() {
+        return maxWidth;
+    }
+
+    public void setMaxWidth(double maxWidth) {
+        this.maxWidth = maxWidth;
+    }
+
+    public double getMaxHeight() {
+        return maxHeight;
+    }
+
+    public void setMaxHeight(double maxHeight) {
+        this.maxHeight = maxHeight;
     }
 }

@@ -165,6 +165,22 @@ public class Operation {//进行计算
         return regionList;
     }
 
+    private int getIdByCos(Matrix myVector) throws Exception {//VAG获取分类
+        Map<Integer, Matrix> matrixK = templeConfig.getVectorK().getMatrixK();
+        double maxCos = 0;
+        int id = 0;
+        for (Map.Entry<Integer, Matrix> entry : matrixK.entrySet()) {
+            Matrix matrix = entry.getValue();
+            double cos = MatrixOperation.getNormCos(matrix, myVector);
+            //System.out.println("距离===" + dist + ",类别==" + entry.getKey()+",核心:"+matrix.getString());
+            if (cos > maxCos) {
+                maxCos = cos;
+                id = entry.getKey();
+            }
+        }
+        return id;
+    }
+
     private int getIdByVag(Matrix myVector) throws Exception {//VAG获取分类
         Map<Integer, Matrix> matrixK = templeConfig.getVectorK().getMatrixK();
         double minDist = 0;
@@ -172,7 +188,7 @@ public class Operation {//进行计算
         for (Map.Entry<Integer, Matrix> entry : matrixK.entrySet()) {
             Matrix matrix = entry.getValue();
             double dist = MatrixOperation.getEDist(matrix, myVector);
-            //System.out.println("距离===" + dist + ",类别==" + entry.getKey()+",核心:"+matrix.getString());
+            System.out.println("距离===" + dist + ",类别==" + entry.getKey()+",核心:"+matrix.getString());
             if (minDist == 0 || dist < minDist) {
                 minDist = dist;
                 id = entry.getKey();

@@ -65,7 +65,7 @@ public class TempleConfig {
     private double maxRain = 340;//不降雨RGB阈值
     private int featureNub = 4;//聚类特征数量
     private Knn knn;//KNN分类器
-    private int knnNub = 3;//KNN投票人数
+    private int knnNub = 7;//KNN投票人数
     private Matrix backGround;//背景
 
     public Matrix getBackGround() {

@@ -210,7 +210,8 @@ public class Watershed {
         for (Specifications specification : specifications) {
             int width = maxY - minY;
             int height = maxX - minX;
-            if (width >= specification.getWidth() && height >= specification.getHeight()) {
+            if (width >= specification.getMinWidth() && height >= specification.getMinHeight()
+                    && width <= specification.getMaxWidth() && height <= specification.getMaxHeight()) {
                 isRight = true;
                 break;
             }
@@ -298,7 +299,7 @@ public class Watershed {
         }
         createMerge();
         merge();
-        //System.out.println(regionMap.getString());
+       // System.out.println(regionMap.getString());
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值
