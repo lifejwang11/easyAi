@@ -55,6 +55,7 @@ public class FoodTest {
         templeConfig.setMaxRain(320);//切割阈值
         templeConfig.setFeatureNub(4);
         templeConfig.sethTh(0.88);
+        templeConfig.setKnnNub(7);
         templeConfig.setPoolSize(2);
         templeConfig.setRegionNub(200);
         templeConfig.setClassifier(Classifier.KNN);

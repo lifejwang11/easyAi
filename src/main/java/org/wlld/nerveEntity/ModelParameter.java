@@ -23,8 +23,17 @@ public class ModelParameter {
     private Map<Integer, KBorder> borderMap = new HashMap<>();//边框距离模型
     private LvqModel lvqModel;//LVQ模型
     private Map<Integer, List<Double>> matrixK = new HashMap<>();//均值特征向量
+    private Map<Integer, List<List<Double>>> knnVector;//Knn模型
     private Frame frame;//先验边框
     private double dnnAvg;//
+
+    public Map<Integer, List<List<Double>>> getKnnVector() {
+        return knnVector;
+    }
+
+    public void setKnnVector(Map<Integer, List<List<Double>>> knnVector) {
+        this.knnVector = knnVector;
+    }
 
     public double getDnnAvg() {
         return dnnAvg;
