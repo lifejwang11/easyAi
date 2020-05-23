@@ -542,6 +542,22 @@ public class TempleConfig {
                         modelParameter.setMatrixK(map);
                     }
                     break;
+                case Classifier.KNN:
+                    if (knn != null) {
+                        Map<Integer, List<Matrix>> listMap = knn.getFeatureMap();
+                        Map<Integer, List<List<Double>>> knnVector = new HashMap<>();
+                        for (Map.Entry<Integer, List<Matrix>> entry : listMap.entrySet()) {
+                            List<Matrix> list = entry.getValue();
+                            List<List<Double>> listFeature = new ArrayList<>();
+                            for (Matrix matrix : list) {
+                                List<Double> list1 = MatrixOperation.rowVectorToList(matrix);
+                                listFeature.add(list1);
+                            }
+                            knnVector.put(entry.getKey(), listFeature);
+                        }
+                        modelParameter.setKnnVector(knnVector);
+                    }
+                    break;
             }
 
         }
@@ -650,6 +666,19 @@ public class TempleConfig {
                     break;
                 case Classifier.DNN:
                     nerveManager.insertModelParameter(modelParameter);
+                    break;
+                case Classifier.KNN:
+                    Map<Integer, List<List<Double>>> knnVector = modelParameter.getKnnVector();
+                    if (knn != null && knnVector != null) {
+                        for (Map.Entry<Integer, List<List<Double>>> entry : knnVector.entrySet()) {
+                            List<List<Double>> featureList = entry.getValue();
+                            int type = entry.getKey();
+                            for (List<Double> list : featureList) {
+                                Matrix matrix = MatrixOperation.listToRowVector(list);
+                                knn.insertMatrix(matrix, type);
+                            }
+                        }
+                    }
                     break;
             }
         }

@@ -17,6 +17,14 @@ public class Knn {//KNN分类器
         this.nub = nub;
     }
 
+    public Map<Integer, List<Matrix>> getFeatureMap() {
+        return featureMap;
+    }
+
+    public void removeType(int type) {
+        featureMap.remove(type);
+    }
+
     public void insertMatrix(Matrix vector, int tag) throws Exception {
         if (vector.isVector() && vector.isRowVector()) {
             if (featureMap.size() == 0) {
