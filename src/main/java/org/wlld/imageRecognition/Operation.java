@@ -67,35 +67,38 @@ public class Operation {//进行计算
         int xSize = maxX - minX;
         int ySize = maxY - minY;
         ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-        List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
-                templeConfig.getFeatureNub());
-        if (templeConfig.isShowLog()) {
-            System.out.println(feature);
-        }
-        //System.out.println("=====================================");
-        int classifier = templeConfig.getClassifier();
-        switch (classifier) {
-            case Classifier.DNN:
-                Map<Integer, Double> map = new HashMap<>();
-                map.put(tag, 1.0);
-                if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub() * 3) {
-                    intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
-                } else {
-                    throw new Exception("nerves number is not equal featureNub");
-                }
-                break;
-            case Classifier.LVQ:
-                Matrix vector = MatrixOperation.listToRowVector(feature);
-                lvqStudy(tag, vector);
-                break;
-            case Classifier.VAvg:
-                Matrix vec = MatrixOperation.listToRowVector(feature);
-                avgStudy(tag, vec);
-                break;
-            case Classifier.KNN:
-                Matrix veck = MatrixOperation.listToRowVector(feature);
-                knnStudy(tag, veck);
-                break;
+        int times = templeConfig.getTimes();
+        for (int i = 0; i < times; i++) {
+            List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
+                    templeConfig.getFeatureNub());
+            if (templeConfig.isShowLog()) {
+                System.out.println(feature);
+            }
+            //System.out.println("=====================================");
+            int classifier = templeConfig.getClassifier();
+            switch (classifier) {
+                case Classifier.DNN:
+                    Map<Integer, Double> map = new HashMap<>();
+                    map.put(tag, 1.0);
+                    if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub() * 3) {
+                        intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
+                    } else {
+                        throw new Exception("nerves number is not equal featureNub");
+                    }
+                    break;
+                case Classifier.LVQ:
+                    Matrix vector = MatrixOperation.listToRowVector(feature);
+                    lvqStudy(tag, vector);
+                    break;
+                case Classifier.VAvg:
+                    Matrix vec = MatrixOperation.listToRowVector(feature);
+                    avgStudy(tag, vec);
+                    break;
+                case Classifier.KNN:
+                    Matrix veck = MatrixOperation.listToRowVector(feature);
+                    knnStudy(tag, veck);
+                    break;
+            }
         }
     }
 

@@ -58,6 +58,7 @@ public class FoodTest {
         templeConfig.setKnnNub(7);
         templeConfig.setPoolSize(2);
         templeConfig.setRegionNub(200);
+        templeConfig.setTimes(10);//聚类数据增强
         templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         return templeConfig;
@@ -74,23 +75,22 @@ public class FoodTest {
         specifications.setMaxWidth(700);
         specifications.setMaxHeight(700);
         specificationsList.add(specifications);
-        for (int j = 0; j < 10; j++) {
-            for (int i = 1; i <= 10; i++) {
-                ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\share\\cai\\a/a" + i + ".jpg");
-                ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\share\\cai\\b/b" + i + ".jpg");
-                ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("D:\\share\\cai\\c/c" + i + ".jpg");
-                ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix("D:\\share\\cai\\d/d" + i + ".jpg");
-                ThreeChannelMatrix threeChannelMatrix5 = picture.getThreeMatrix("D:\\share\\cai\\e/e" + i + ".jpg");
-                ThreeChannelMatrix threeChannelMatrix6 = picture.getThreeMatrix("D:\\share\\cai\\f/f" + i + ".jpg");
-                operation.colorStudy(threeChannelMatrix1, 1, specificationsList);
-                operation.colorStudy(threeChannelMatrix2, 2, specificationsList);
-                operation.colorStudy(threeChannelMatrix3, 3, specificationsList);
-                operation.colorStudy(threeChannelMatrix4, 4, specificationsList);
-                operation.colorStudy(threeChannelMatrix5, 5, specificationsList);
-                operation.colorStudy(threeChannelMatrix6, 6, specificationsList);
-                System.out.println("=======================================" + i);
-            }
+        for (int i = 1; i <= 10; i++) {
+            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\share\\cai\\a/a" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("D:\\share\\cai\\b/b" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("D:\\share\\cai\\c/c" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix("D:\\share\\cai\\d/d" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix5 = picture.getThreeMatrix("D:\\share\\cai\\e/e" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix6 = picture.getThreeMatrix("D:\\share\\cai\\f/f" + i + ".jpg");
+            operation.colorStudy(threeChannelMatrix1, 1, specificationsList);
+            operation.colorStudy(threeChannelMatrix2, 2, specificationsList);
+            operation.colorStudy(threeChannelMatrix3, 3, specificationsList);
+            operation.colorStudy(threeChannelMatrix4, 4, specificationsList);
+            operation.colorStudy(threeChannelMatrix5, 5, specificationsList);
+            operation.colorStudy(threeChannelMatrix6, 6, specificationsList);
+            System.out.println("=======================================" + i);
         }
+
         templeConfig.finishStudy();
         test2(templeConfig);
     }
