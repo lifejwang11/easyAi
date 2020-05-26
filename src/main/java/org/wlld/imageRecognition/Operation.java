@@ -26,14 +26,17 @@ public class Operation {//进行计算
     private MatrixBack matrixBack = new MatrixBack();
     private ImageBack imageBack = new ImageBack();
     private OutBack outBack;
+    private int dif;
 
     public Operation(TempleConfig templeConfig) {
         this.templeConfig = templeConfig;
+        dif = templeConfig.getShrink();
     }
 
     public Operation(TempleConfig templeConfig, OutBack outBack) {
         this.templeConfig = templeConfig;
         this.outBack = outBack;
+        dif = templeConfig.getShrink();
     }
 
     public List<Double> convolution(Matrix matrix, Map<Integer, Double> tagging) throws Exception {
@@ -59,20 +62,22 @@ public class Operation {//进行计算
 
     public void colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList) throws Exception {
         Watershed watershed = new Watershed(threeChannelMatrix.getMatrixRGB(), specificationsList, templeConfig);
-        RegionBody regionBody = watershed.rainfall().get(0);
-        int minX = regionBody.getMinX();
-        int minY = regionBody.getMinY();
-        int maxX = regionBody.getMaxX();
-        int maxY = regionBody.getMaxY();
+        List<RegionBody> regionBodies = watershed.rainfall();
+        RegionBody regionBody = regionBodies.get(0);
+        int minX = regionBody.getMinX() + dif;
+        int minY = regionBody.getMinY() + dif;
+        int maxX = regionBody.getMaxX() - dif;
+        int maxY = regionBody.getMaxY() - dif;
         int xSize = maxX - minX;
         int ySize = maxY - minY;
         ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
+        // convolution.filtering(threeChannelMatrix1);//光照过滤
         int times = templeConfig.getTimes();
         for (int i = 0; i < times; i++) {
             List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
                     templeConfig.getFeatureNub());
             if (templeConfig.isShowLog()) {
-                System.out.println(feature);
+                System.out.println(tag + ":" + feature);
             }
             //System.out.println("=====================================");
             int classifier = templeConfig.getClassifier();
@@ -125,13 +130,14 @@ public class Operation {//进行计算
         List<RegionBody> regionList = watershed.rainfall();
         for (RegionBody regionBody : regionList) {
             MaxPoint maxPoint = new MaxPoint();
-            int minX = regionBody.getMinX();
-            int minY = regionBody.getMinY();
-            int maxX = regionBody.getMaxX();
-            int maxY = regionBody.getMaxY();
+            int minX = regionBody.getMinX() + dif;
+            int minY = regionBody.getMinY() + dif;
+            int maxX = regionBody.getMaxX() - dif;
+            int maxY = regionBody.getMaxY() - dif;
             int xSize = maxX - minX;
             int ySize = maxY - minY;
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
+            //convolution.filtering(threeChannelMatrix1);//光照过滤
             List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
                     templeConfig.getFeatureNub());
             if (templeConfig.isShowLog()) {

@@ -21,6 +21,21 @@ public class FoodTest {
         test();
     }
 
+    public static void one(double[] test, double[] right, double[] wrong) {
+        int nub = 0;
+        for (int i = 0; i < test.length; i++) {
+            double test1 = test[i];
+            double right1 = right[i];
+            double wrong1 = wrong[i];
+            double sub1 = Math.abs(ArithUtil.sub(test1, right1));
+            double sub2 = Math.abs(ArithUtil.sub(test1, wrong1));
+            if (sub1 > sub2) {
+                nub++;
+            }
+        }
+        System.out.println(nub);
+    }
+
     public static void test2(TempleConfig templeConfig) throws Exception {
         //test();
         System.out.println("开始测试");
@@ -32,8 +47,8 @@ public class FoodTest {
         Specifications specifications = new Specifications();
         specifications.setMinWidth(250);
         specifications.setMinHeight(250);
-        specifications.setMaxWidth(700);
-        specifications.setMaxHeight(700);
+        specifications.setMaxWidth(750);
+        specifications.setMaxHeight(750);
         specificationsList.add(specifications);
         Operation operation = new Operation(templeConfig);
         for (int i = 1; i <= 28; i++) {
@@ -53,17 +68,19 @@ public class FoodTest {
         TempleConfig templeConfig = new TempleConfig();
         templeConfig.isShowLog(true);//是否打印日志
         templeConfig.setMaxRain(320);//切割阈值
-        templeConfig.setFeatureNub(4);
+        templeConfig.setFeatureNub(3);
         templeConfig.sethTh(0.88);
-        templeConfig.setKnnNub(7);
+        templeConfig.setKnnNub(3);
         templeConfig.setPoolSize(2);
         templeConfig.setRegionNub(200);
-        templeConfig.setTimes(10);//聚类数据增强
+        templeConfig.setShrink(60);
+        templeConfig.setTimes(2);//聚类数据增强
         templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         return templeConfig;
     }
 
+    //[111.9524500835, 96.2916434651, 72.3613475459, 158.2808372317, 151.0848410842, 127.5929760594, 190.9981899048, 205.9760033099, 204.0868156116]
     public static void test() throws Exception {
         Picture picture = new Picture();
         TempleConfig templeConfig = getTemple();
@@ -72,8 +89,8 @@ public class FoodTest {
         Specifications specifications = new Specifications();
         specifications.setMinWidth(250);
         specifications.setMinHeight(250);
-        specifications.setMaxWidth(700);
-        specifications.setMaxHeight(700);
+        specifications.setMaxWidth(750);
+        specifications.setMaxHeight(750);
         specificationsList.add(specifications);
         for (int i = 1; i <= 10; i++) {
             ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\share\\cai\\a/a" + i + ".jpg");
@@ -82,12 +99,20 @@ public class FoodTest {
             ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix("D:\\share\\cai\\d/d" + i + ".jpg");
             ThreeChannelMatrix threeChannelMatrix5 = picture.getThreeMatrix("D:\\share\\cai\\e/e" + i + ".jpg");
             ThreeChannelMatrix threeChannelMatrix6 = picture.getThreeMatrix("D:\\share\\cai\\f/f" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix7 = picture.getThreeMatrix("D:\\share\\cai\\h/h" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix8 = picture.getThreeMatrix("D:\\share\\cai\\i/i" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix9 = picture.getThreeMatrix("D:\\share\\cai\\j/j" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix10 = picture.getThreeMatrix("D:\\share\\cai\\k/k" + i + ".jpg");
             operation.colorStudy(threeChannelMatrix1, 1, specificationsList);
             operation.colorStudy(threeChannelMatrix2, 2, specificationsList);
             operation.colorStudy(threeChannelMatrix3, 3, specificationsList);
             operation.colorStudy(threeChannelMatrix4, 4, specificationsList);
             operation.colorStudy(threeChannelMatrix5, 5, specificationsList);
             operation.colorStudy(threeChannelMatrix6, 6, specificationsList);
+            operation.colorStudy(threeChannelMatrix7, 7, specificationsList);
+            operation.colorStudy(threeChannelMatrix8, 8, specificationsList);
+            operation.colorStudy(threeChannelMatrix9, 9, specificationsList);
+            operation.colorStudy(threeChannelMatrix10, 10, specificationsList);
             System.out.println("=======================================" + i);
         }
 

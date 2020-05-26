@@ -3,6 +3,7 @@ package org.wlld.MatrixTools;
 import org.wlld.tools.ArithUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MatrixOperation {
@@ -62,6 +63,27 @@ public class MatrixOperation {
         if (matrix1.isRowVector() && matrix2.isRowVector() && matrix1.getY() == matrix2.getY()) {
             Matrix matrix = sub(matrix1, matrix2);
             return getNorm(matrix);
+        } else {
+            throw new Exception("this matrix is not  rowVector or length different");
+        }
+    }
+
+    public static double errorNub(Matrix matrix, Matrix avgMatrix, int excNub) throws Exception {//求均方误差
+        int y = matrix.getY();
+        if (matrix.isRowVector() && avgMatrix.isRowVector() && y == avgMatrix.getY()) {
+            double[] subAll = new double[y];
+            for (int j = 0; j < y; j++) {
+                double mySelf = matrix.getNumber(0, j);
+                double avg = avgMatrix.getNumber(0, j);
+                double sub = Math.pow(avg - mySelf, 2);
+                subAll[j] = sub;
+            }
+            Arrays.sort(subAll);
+            double sigma = 0;
+            for (int i = 0; i < y - excNub; i++) {
+                sigma = sigma + subAll[i];
+            }
+            return sigma / (y - excNub);
         } else {
             throw new Exception("this matrix is not  rowVector or length different");
         }
@@ -353,6 +375,22 @@ public class MatrixOperation {
         }
     }
 
+    public static Matrix matrixPointDiv(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵点除
+        int x = matrix1.getX();
+        int y = matrix1.getY();
+        Matrix matrix = new Matrix(x, y);
+        if (matrix2.getX() == x && matrix2.getY() == y) {
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    matrix.setNub(i, j, matrix1.getNumber(i, j) / matrix2.getNumber(i, j));
+                }
+            }
+        } else {
+            throw new Exception("two matrix is not equals");
+        }
+        return matrix;
+    }
+
     public static Matrix mulMatrix(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘
         if (matrix1.getY() == matrix2.getX()) {
             Matrix matrix = new Matrix(matrix1.getX(), matrix2.getY());
@@ -380,6 +418,14 @@ public class MatrixOperation {
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 matrix.setNub(i, j, ArithUtil.mul(matrix.getNumber(i, j), nub));
+            }
+        }
+    }
+
+    public static void mathDiv(Matrix matrix, double nub) throws Exception {//矩阵数除
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                matrix.setNub(i, j, matrix.getNumber(i, j) / nub);
             }
         }
     }

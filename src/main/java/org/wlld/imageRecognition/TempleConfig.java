@@ -67,6 +67,15 @@ public class TempleConfig {
     private Knn knn;//KNN分类器
     private int knnNub = 7;//KNN投票人数
     private int times = 10;//聚类循环次数
+    private int shrink = 60;//收缩参数
+
+    public int getShrink() {
+        return shrink;
+    }
+
+    public void setShrink(int shrink) {
+        this.shrink = shrink;
+    }
 
     public int getTimes() {
         return times;
