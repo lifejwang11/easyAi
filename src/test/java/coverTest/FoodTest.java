@@ -80,7 +80,6 @@ public class FoodTest {
         return templeConfig;
     }
 
-    //[111.9524500835, 96.2916434651, 72.3613475459, 158.2808372317, 151.0848410842, 127.5929760594, 190.9981899048, 205.9760033099, 204.0868156116]
     public static void test() throws Exception {
         Picture picture = new Picture();
         TempleConfig templeConfig = getTemple();
