@@ -820,10 +820,8 @@ public class Operation {//进行计算
 
     public double isCover(ThreeChannelMatrix threeChannelMatrix) throws Exception {//固定背景覆盖率计算
         ThreeChannelMatrix backGround = templeConfig.getBackGround();
-        double minCover = templeConfig.getMinCover();
-        double maxCover = templeConfig.getMaxCover();
         double errorBack = templeConfig.getBackGroundError();
-        if (backGround != null && maxCover > minCover && errorBack >= 0 && errorBack <= 255) {
+        if (backGround != null && errorBack >= 0 && errorBack <= 255) {
             Matrix matrixR = threeChannelMatrix.getMatrixR();
             Matrix matrixG = threeChannelMatrix.getMatrixG();
             Matrix matrixB = threeChannelMatrix.getMatrixB();

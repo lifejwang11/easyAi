@@ -69,8 +69,6 @@ public class TempleConfig {
     private int times = 10;//聚类循环次数
     private int shrink = 60;//收缩参数
     private ThreeChannelMatrix backGround;//背景面板
-    private double minCover;//覆盖下限
-    private double maxCover;//覆盖上限
     private double backGroundError;//背景误差偏移量，0-255
 
     public double getBackGroundError() {
@@ -79,22 +77,6 @@ public class TempleConfig {
 
     public void setBackGroundError(double backGroundError) {
         this.backGroundError = backGroundError;
-    }
-
-    public double getMinCover() {
-        return minCover;
-    }
-
-    public void setMinCover(double minCover) {
-        this.minCover = minCover;
-    }
-
-    public double getMaxCover() {
-        return maxCover;
-    }
-
-    public void setMaxCover(double maxCover) {
-        this.maxCover = maxCover;
     }
 
     public ThreeChannelMatrix getBackGround() {
