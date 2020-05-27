@@ -345,7 +345,7 @@ public class Convolution extends Frequency {
         return myMatrix;
     }
 
-    protected Matrix late(Matrix matrix, int size) throws Exception {//迟化处理
+    protected Matrix late(Matrix matrix, int size) throws Exception {//池化处理
         int xn = matrix.getX();
         int yn = matrix.getY();
         int x = xn / size;//求导后矩阵的行数

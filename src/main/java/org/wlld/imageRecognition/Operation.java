@@ -818,6 +818,49 @@ public class Operation {//进行计算
         return id;
     }
 
+    public double isCover(ThreeChannelMatrix threeChannelMatrix) throws Exception {//固定背景覆盖率计算
+        ThreeChannelMatrix backGround = templeConfig.getBackGround();
+        double minCover = templeConfig.getMinCover();
+        double maxCover = templeConfig.getMaxCover();
+        double errorBack = templeConfig.getBackGroundError();
+        if (backGround != null && maxCover > minCover && errorBack >= 0 && errorBack <= 255) {
+            Matrix matrixR = threeChannelMatrix.getMatrixR();
+            Matrix matrixG = threeChannelMatrix.getMatrixG();
+            Matrix matrixB = threeChannelMatrix.getMatrixB();
+            Matrix matrixRBg = backGround.getMatrixR();
+            Matrix matrixGBg = backGround.getMatrixG();
+            Matrix matrixBBg = backGround.getMatrixB();
+            int x = matrixR.getX();
+            int y = matrixR.getY();
+            double size = x * y;
+            double cover = 0;
+            if (x == matrixRBg.getX() && y == matrixRBg.getY()) {
+                for (int i = 0; i < x; i++) {
+                    for (int j = 0; j < y; j++) {
+                        double rB = matrixRBg.getNumber(i, j);
+                        double gB = matrixGBg.getNumber(i, j);
+                        double bB = matrixBBg.getNumber(i, j);
+                        double r = matrixR.getNumber(i, j);
+                        double g = matrixG.getNumber(i, j);
+                        double b = matrixB.getNumber(i, j);
+                        double subR = Math.abs(r - rB);
+                        double subG = Math.abs(g - gB);
+                        double subB = Math.abs(b - bB);
+                        double error = (subR + subB + subG) / 3;
+                        if (error > errorBack) {
+                            cover++;
+                        }
+                    }
+                }
+                return cover / size;
+            } else {
+                throw new Exception("Temple matrix is different");
+            }
+        } else {
+            throw new Exception("value is null");
+        }
+    }
+
     private List<Double> sub(Matrix matrix) throws Exception {//
         List<Double> list = new ArrayList<>();
         int x = matrix.getX() - 1;
