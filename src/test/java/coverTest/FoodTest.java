@@ -9,6 +9,8 @@ import org.wlld.imageRecognition.*;
 import org.wlld.imageRecognition.segmentation.RegionBody;
 import org.wlld.imageRecognition.segmentation.Specifications;
 import org.wlld.nerveEntity.ModelParameter;
+import org.wlld.param.Cutting;
+import org.wlld.param.Food;
 import org.wlld.tools.ArithUtil;
 
 import java.util.ArrayList;
@@ -18,7 +20,7 @@ public class FoodTest {
 
     public static void main(String[] args) throws Exception {
         //test2(null);
-        test();
+        //test();
     }
 
     public static void one(double[] test, double[] right, double[] wrong) {
@@ -67,14 +69,21 @@ public class FoodTest {
     public static TempleConfig getTemple() throws Exception {
         TempleConfig templeConfig = new TempleConfig();
         templeConfig.isShowLog(true);//是否打印日志
-        templeConfig.setMaxRain(320);//切割阈值
-        templeConfig.setFeatureNub(3);
-        templeConfig.sethTh(0.88);
+        Cutting cutting = templeConfig.getCutting();
+        Food food =templeConfig.getFood();
+        //切割
+        cutting.setMaxRain(320);//切割阈值
+        cutting.setTh(0.88);
+        cutting.setRegionNub(200);
+        //knn参数
         templeConfig.setKnnNub(3);
-        templeConfig.setPoolSize(2);
-        templeConfig.setRegionNub(200);
-        templeConfig.setShrink(60);
-        templeConfig.setTimes(2);//聚类数据增强
+        //池化比例
+        templeConfig.setPoolSize(2);//缩小比例
+        //聚类
+        templeConfig.setFeatureNub(3);//聚类特征数量
+        //菜品识别实体类
+        food.setShrink(60);//缩紧像素
+        food.setTimes(2);//聚类数据增强
         templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         return templeConfig;
