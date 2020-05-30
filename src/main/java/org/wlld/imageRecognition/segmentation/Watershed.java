@@ -3,6 +3,7 @@ package org.wlld.imageRecognition.segmentation;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Kernel;
 import org.wlld.imageRecognition.TempleConfig;
+import org.wlld.param.Cutting;
 
 import java.util.*;
 
@@ -28,9 +29,10 @@ public class Watershed {
 
     public Watershed(Matrix matrix, List<Specifications> specifications, TempleConfig templeConfig) throws Exception {
         if (matrix != null && specifications != null && specifications.size() > 0) {
-            th = templeConfig.gethTh();
-            regionNub = templeConfig.getRegionNub();
-            maxRain = templeConfig.getMaxRain();
+            Cutting cutting = templeConfig.getCutting();
+            th = cutting.getTh();
+            regionNub = cutting.getRegionNub();
+            maxRain = cutting.getMaxRain();
             this.matrix = matrix;
             this.specifications = specifications;
             xSize = matrix.getX() / regionNub;

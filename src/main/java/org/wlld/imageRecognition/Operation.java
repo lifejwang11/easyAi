@@ -30,13 +30,13 @@ public class Operation {//进行计算
 
     public Operation(TempleConfig templeConfig) {
         this.templeConfig = templeConfig;
-        dif = templeConfig.getShrink();
+        dif = templeConfig.getFood().getShrink();
     }
 
     public Operation(TempleConfig templeConfig, OutBack outBack) {
         this.templeConfig = templeConfig;
         this.outBack = outBack;
-        dif = templeConfig.getShrink();
+        dif = templeConfig.getFood().getShrink();
     }
 
     public List<Double> convolution(Matrix matrix, Map<Integer, Double> tagging) throws Exception {
@@ -72,7 +72,7 @@ public class Operation {//进行计算
         int ySize = maxY - minY;
         ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
         // convolution.filtering(threeChannelMatrix1);//光照过滤
-        int times = templeConfig.getTimes();
+        int times = templeConfig.getFood().getTimes();
         for (int i = 0; i < times; i++) {
             List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
                     templeConfig.getFeatureNub());

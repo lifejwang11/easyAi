@@ -19,6 +19,8 @@ import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveCenter.Normalization;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
+import org.wlld.param.Cutting;
+import org.wlld.param.Food;
 import org.wlld.tools.ArithUtil;
 
 import java.util.ArrayList;
@@ -60,16 +62,17 @@ public class TempleConfig {
     private int hiddenNerveNub = 9;//隐层神经元个数
     private boolean isSoftMax = false;//是否启用softMax层
     private int poolSize = 2;//池化尺寸
-    private int regionNub = 100;//一张图行或列分多少个区块
-    private double hTh = 0.88;//灰度阈值
-    private double maxRain = 340;//不降雨RGB阈值
     private int featureNub = 4;//聚类特征数量
+    private Food food = new Food();
     private Knn knn;//KNN分类器
     private int knnNub = 7;//KNN投票人数
-    private int times = 10;//聚类循环次数
-    private int shrink = 60;//收缩参数
     private ThreeChannelMatrix backGround;//背景面板
     private double backGroundError;//背景误差偏移量，0-255
+    private Cutting cutting = new Cutting();
+
+    public Cutting getCutting() {
+        return cutting;
+    }
 
     public double getBackGroundError() {
         return backGroundError;
@@ -87,20 +90,8 @@ public class TempleConfig {
         this.backGround = backGround;
     }
 
-    public int getShrink() {
-        return shrink;
-    }
-
-    public void setShrink(int shrink) {
-        this.shrink = shrink;
-    }
-
-    public int getTimes() {
-        return times;
-    }
-
-    public void setTimes(int times) {
-        this.times = times;
+    public Food getFood() {
+        return food;
     }
 
     public Knn getKnn() {
@@ -121,30 +112,6 @@ public class TempleConfig {
 
     public void setFeatureNub(int featureNub) {
         this.featureNub = featureNub;
-    }
-
-    public double getMaxRain() {
-        return maxRain;
-    }
-
-    public void setMaxRain(double maxRain) {
-        this.maxRain = maxRain;
-    }
-
-    public int getRegionNub() {
-        return regionNub;
-    }
-
-    public void setRegionNub(int regionNub) {
-        this.regionNub = regionNub;
-    }
-
-    public double gethTh() {
-        return hTh;
-    }
-
-    public void sethTh(double hTh) {
-        this.hTh = hTh;
     }
 
     public int getPoolSize() {
