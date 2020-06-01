@@ -43,7 +43,7 @@ public class HelloWorld {
         //easyAI 包持续更新，现阶段一直在优化
         Picture picture = new Picture();
         //使用精度计算
-        TempleConfig templeConfig = new TempleConfig(false, true);
+        TempleConfig templeConfig = new TempleConfig();
         //使用DNN分类器
         templeConfig.setClassifier(Classifier.DNN);
         //打印学习过程中产生的参数
@@ -80,7 +80,7 @@ public class HelloWorld {
         }
         templeConfig.getNormalization().avg();
         //三阶段学习
-        for (int i = 1; i < 1000; i++) {
+        for (int i = 1; i < 1900; i++) {
             System.out.println("study2==================" + i);
             //读取本地URL地址图片,并转化成矩阵
             Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");

@@ -255,6 +255,8 @@ public class NerveManager {
      *
      * @param initPower 是否是第一次注入
      * @param isMatrix  参数是否是一个矩阵
+     * @param isShowLog 是否打印学习参数
+     * @param isSoftMax 最后一层是否用softMax激活
      * @throws Exception
      */
     public void init(boolean initPower, boolean isMatrix, boolean isShowLog, boolean isSoftMax) throws Exception {//进行神经网络的初始化构建
