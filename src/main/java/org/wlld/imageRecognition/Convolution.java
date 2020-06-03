@@ -112,74 +112,24 @@ public class Convolution extends Frequency {
         Matrix matrixB = threeChannelMatrix.getMatrixB();
         int x = matrixR.getX();
         int y = matrixR.getY();
-        Matrix matrixRFilter = new Matrix(x, y);//滤波后的R通道
-        Matrix matrixGFilter = new Matrix(x, y);//滤波后的G通道
-        Matrix matrixBFilter = new Matrix(x, y);//滤波后的B通道
-        int row = 0;
-        int column = 0;
+        double nub = x * y;
+        double sigmaR = 0;
+        double sigmaG = 0;
+        double sigmaB = 0;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                double sigmaR = 0;
-                double sigmaG = 0;
-                double sigmaB = 0;
-                double nub = 0;
-                for (int t = 0; t < 8; t++) {
-                    row = 0;
-                    column = 0;
-                    switch (t) {
-                        case 0://上
-                            row = i - 1;
-                            break;
-                        case 1://左
-                            column = j - 1;
-                            break;
-                        case 2://下
-                            row = i + 1;
-                            break;
-                        case 3://右
-                            column = j + 1;
-                            break;
-                        case 4://左上
-                            column = j - 1;
-                            row = i - 1;
-                            break;
-                        case 5://左下
-                            column = j - 1;
-                            row = i + 1;
-                            break;
-                        case 6://右下
-                            column = j + 1;
-                            row = i + 1;
-                            break;
-                        case 7://右上
-                            column = j + 1;
-                            row = i - 1;
-                            break;
-                    }
-                    if (row >= 0 && column >= 0 && row < x && column < y) {
-                        double r = matrixR.getNumber(row, column);
-                        double g = matrixG.getNumber(row, column);
-                        double b = matrixB.getNumber(row, column);
-                        sigmaR = sigmaR + r;
-                        sigmaG = sigmaG + g;
-                        sigmaB = sigmaB + b;
-                        nub++;
-                    }
-                }
-                double pixelR = sigmaR / nub;
-                double pixelG = sigmaG / nub;
-                double pixelB = sigmaB / nub;
-                matrixRFilter.setNub(i, j, pixelR);
-                matrixGFilter.setNub(i, j, pixelG);
-                matrixBFilter.setNub(i, j, pixelB);
+                sigmaR = matrixR.getNumber(i, j) + sigmaR;
+                sigmaG = matrixG.getNumber(i, j) + sigmaG;
+                sigmaB = matrixB.getNumber(i, j) + sigmaB;
             }
         }
-        Matrix rPic = MatrixOperation.matrixPointDiv(matrixR, matrixRFilter);
-        Matrix gPic = MatrixOperation.matrixPointDiv(matrixG, matrixGFilter);
-        Matrix bPic = MatrixOperation.matrixPointDiv(matrixB, matrixBFilter);
-        threeChannelMatrix.setMatrixR(rPic);
-        threeChannelMatrix.setMatrixG(gPic);
-        threeChannelMatrix.setMatrixB(bPic);
+        double r = sigmaR / nub;
+        double g = sigmaG / nub;
+        double b = sigmaB / nub;
+        MatrixOperation.mathDiv(matrixR, r);
+        MatrixOperation.mathDiv(matrixG, g);
+        MatrixOperation.mathDiv(matrixB, b);
+
     }
 
     public List<Double> getCenterColor(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub) throws Exception {

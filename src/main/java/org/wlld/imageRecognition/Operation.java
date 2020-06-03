@@ -69,7 +69,7 @@ public class Operation {//进行计算
         int xSize = maxX - minX;
         int ySize = maxY - minY;
         ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-        // convolution.filtering(threeChannelMatrix1);//光照过滤
+         //convolution.filtering(threeChannelMatrix1);//光照过滤
         int times = templeConfig.getFood().getTimes();
         for (int i = 0; i < times; i++) {
             List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
