@@ -19,7 +19,6 @@ import java.util.List;
 public class FoodTest {
 
     public static void main(String[] args) throws Exception {
-        //test2(null);
         //test();
     }
 
