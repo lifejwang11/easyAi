@@ -28,7 +28,7 @@ public class MatrixOperation {
     }
 
     //矩阵相减
-    public static Matrix sub(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相加
+    public static Matrix sub(Matrix matrix1, Matrix matrix2) throws Exception {//
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
             Matrix matrix = new Matrix(matrix1.getX(), matrix1.getY());
             int x = matrix1.getX();
@@ -418,6 +418,14 @@ public class MatrixOperation {
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 matrix.setNub(i, j, ArithUtil.mul(matrix.getNumber(i, j), nub));
+            }
+        }
+    }
+
+    public static void mathSub(Matrix matrix, double nub) throws Exception {//矩阵数减
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                matrix.setNub(i, j, matrix.getNumber(i, j) - nub);
             }
         }
     }
