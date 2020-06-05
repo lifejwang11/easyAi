@@ -39,8 +39,6 @@ public class FoodTest {
     }
 
     public static void test2(TempleConfig templeConfig) throws Exception {
-        //test();
-        System.out.println("开始测试");
         if (templeConfig == null) {
             templeConfig = getTemple();
         }
