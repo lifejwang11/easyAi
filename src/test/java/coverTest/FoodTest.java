@@ -1,6 +1,7 @@
 package coverTest;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Classifier;
 import org.wlld.config.RZ;
@@ -19,7 +20,7 @@ import java.util.List;
 public class FoodTest {
 
     public static void main(String[] args) throws Exception {
-        //test();
+        test();
     }
 
     public static void one(double[] test, double[] right, double[] wrong) {
@@ -39,7 +40,7 @@ public class FoodTest {
 
     public static void test2(TempleConfig templeConfig) throws Exception {
         if (templeConfig == null) {
-            templeConfig = getTemple();
+            templeConfig = getTemple(null);
         }
         Picture picture = new Picture();
         List<Specifications> specificationsList = new ArrayList<>();
@@ -63,11 +64,11 @@ public class FoodTest {
         }
     }
 
-    public static TempleConfig getTemple() throws Exception {
+    public static TempleConfig getTemple(ModelParameter modelParameter) throws Exception {
         TempleConfig templeConfig = new TempleConfig();
-        templeConfig.isShowLog(true);//是否打印日志
+        //templeConfig.isShowLog(true);//是否打印日志
         Cutting cutting = templeConfig.getCutting();
-        Food food =templeConfig.getFood();
+        Food food = templeConfig.getFood();
         //切割
         cutting.setMaxRain(320);//切割阈值
         cutting.setTh(0.88);
@@ -83,12 +84,15 @@ public class FoodTest {
         food.setTimes(2);//聚类数据增强
         templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
+        if (modelParameter != null) {
+            templeConfig.insertModel(modelParameter);
+        }
         return templeConfig;
     }
 
     public static void test() throws Exception {
         Picture picture = new Picture();
-        TempleConfig templeConfig = getTemple();
+        TempleConfig templeConfig = getTemple(null);
         Operation operation = new Operation(templeConfig);
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
@@ -120,9 +124,12 @@ public class FoodTest {
             operation.colorStudy(threeChannelMatrix10, 10, specificationsList);
             System.out.println("=======================================" + i);
         }
-
-        templeConfig.finishStudy();
-        test2(templeConfig);
+        ModelParameter modelParameter = templeConfig.getModel();
+        String model = JSON.toJSONString(modelParameter);
+        System.out.println(model);
+        ModelParameter modelParameter1 = JSONObject.parseObject(model, ModelParameter.class);
+        //templeConfig.finishStudy();
+        test2(getTemple(modelParameter1));
     }
 
     public static void study() throws Exception {

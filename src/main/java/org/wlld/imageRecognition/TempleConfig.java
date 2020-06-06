@@ -17,6 +17,7 @@ import org.wlld.imageRecognition.modelEntity.LvqModel;
 import org.wlld.imageRecognition.modelEntity.MatrixModel;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveCenter.Normalization;
+import org.wlld.nerveEntity.BodyList;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.param.Cutting;
@@ -539,15 +540,18 @@ public class TempleConfig {
                 case Classifier.KNN:
                     if (knn != null) {
                         Map<Integer, List<Matrix>> listMap = knn.getFeatureMap();
-                        Map<Integer, List<List<Double>>> knnVector = new HashMap<>();
+                        List<BodyList> knnVector = new ArrayList<>();
                         for (Map.Entry<Integer, List<Matrix>> entry : listMap.entrySet()) {
                             List<Matrix> list = entry.getValue();
                             List<List<Double>> listFeature = new ArrayList<>();
+                            BodyList bodyList = new BodyList();
+                            bodyList.setLists(listFeature);
+                            bodyList.setType(entry.getKey());
                             for (Matrix matrix : list) {
                                 List<Double> list1 = MatrixOperation.rowVectorToList(matrix);
                                 listFeature.add(list1);
                             }
-                            knnVector.put(entry.getKey(), listFeature);
+                            knnVector.add(bodyList);
                         }
                         modelParameter.setKnnVector(knnVector);
                     }
@@ -662,11 +666,11 @@ public class TempleConfig {
                     nerveManager.insertModelParameter(modelParameter);
                     break;
                 case Classifier.KNN:
-                    Map<Integer, List<List<Double>>> knnVector = modelParameter.getKnnVector();
+                    List<BodyList> knnVector = modelParameter.getKnnVector();
                     if (knn != null && knnVector != null) {
-                        for (Map.Entry<Integer, List<List<Double>>> entry : knnVector.entrySet()) {
-                            List<List<Double>> featureList = entry.getValue();
-                            int type = entry.getKey();
+                        for (BodyList bodyList : knnVector) {
+                            int type = bodyList.getType();
+                            List<List<Double>> featureList = bodyList.getLists();
                             for (List<Double> list : featureList) {
                                 Matrix matrix = MatrixOperation.listToRowVector(list);
                                 knn.insertMatrix(matrix, type);
