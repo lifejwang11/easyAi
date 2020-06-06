@@ -1,8 +1,11 @@
 package coverTest;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.wlld.Ma;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.ModelData;
 import org.wlld.config.Classifier;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
@@ -13,6 +16,7 @@ import org.wlld.imageRecognition.Operation;
 import org.wlld.imageRecognition.Picture;
 import org.wlld.imageRecognition.TempleConfig;
 import org.wlld.nerveCenter.NerveManager;
+import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.nerveEntity.SensoryNerve;
 import org.wlld.tools.ArithUtil;
 
@@ -32,6 +36,13 @@ public class PicTest {
 
         //testImage(right, wrong, a, b);
         //test();
+        tm();
+    }
+
+    public static void tm() {
+        String model = ModelData.DATA4;
+        int index = model.indexOf("knnVector");
+
     }
 
     public static void test() throws Exception {//对图像进行识别测试
