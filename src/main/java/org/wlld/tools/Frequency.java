@@ -59,7 +59,7 @@ public abstract class Frequency {//统计频数
         return var;
     }
 
-    public double varianceByAve(double[] m, double ave) {//计算方差 计算方差，依赖平均值
+    public double varianceByAve(double[] m, double ave) {// 计算方差，依赖平均值
         double allNub = 0;
         for (int i = 0; i < m.length; i++) {
             allNub = allNub + Math.pow(m[i] - ave, 2);

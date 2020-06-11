@@ -90,15 +90,6 @@ public class MeanClustering {
                     break;
                 }
             }
-//            boolean isNext;
-//            do {
-//                averageMatrix();
-//                isNext = isNext();
-//                if (isNext) {
-//                    clear();
-//                }
-//            }
-//            while (isNext);
 
         } else {
             throw new Exception("matrixList number less than 2");
