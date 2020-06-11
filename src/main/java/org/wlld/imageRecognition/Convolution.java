@@ -132,6 +132,49 @@ public class Convolution extends Frequency {
 
     }
 
+    private double[] compareDis(double[] rgbTest, List<RGBNorm> rgbNorms) {
+        double[] feature = null;
+        double minDis = -1;
+        for (int i = 0; i < 3; i++) {
+            double[] rgb = rgbNorms.get(i).getRgb();
+            double sigma = 0;
+            for (int j = 0; j < 3; j++) {
+                sigma = sigma + Math.pow(rgbTest[j] - rgb[j], 2);
+            }
+            if (sigma < minDis || minDis == -1) {
+                minDis = sigma;
+                feature = rgb;
+            }
+        }
+        return feature;
+    }
+
+    private void dispersed(Matrix matrixR, Matrix matrixG, Matrix matrixB, List<RGBNorm> rgbNorms) throws Exception {//图像离散化
+        ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
+        int x = matrixR.getX();
+        int y = matrixR.getY();
+        Matrix matrixRD = new Matrix(x, y);
+        Matrix matrixGD = new Matrix(x, y);
+        Matrix matrixBD = new Matrix(x, y);
+        threeChannelMatrix.setMatrixR(matrixRD);
+        threeChannelMatrix.setMatrixG(matrixGD);
+        threeChannelMatrix.setMatrixB(matrixBD);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double r = matrixR.getNumber(i, j);
+                double g = matrixG.getNumber(i, j);
+                double b = matrixB.getNumber(i, j);
+                double[] rgb = new double[]{r, g, b};
+                double[] rgbNow = compareDis(rgb, rgbNorms);
+                matrixRD.setNub(i, j, rgbNow[0]);
+                matrixGD.setNub(i, j, rgbNow[1]);
+                matrixBD.setNub(i, j, rgbNow[2]);
+            }
+        }
+        //输入结束进行卷积
+        //System.out.println(matrixBD.getString());
+    }
+
     public List<Double> getCenterColor(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub) throws Exception {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
@@ -159,6 +202,8 @@ public class Convolution extends Frequency {
                 features.add(rgb[j]);
             }
         }
+        //测试卷积
+        //dispersed(matrixR, matrixG, matrixB, rgbNorms);
         //System.out.println("feature==" + feature);
         return features;
     }
@@ -250,6 +295,33 @@ public class Convolution extends Frequency {
             }
         }
         return frameBodies;
+    }
+
+    private void convolutionByThree(ThreeChannelMatrix threeChannelMatrix, Matrix kernel) throws Exception {
+        Matrix matrixR = threeChannelMatrix.getMatrixR();
+        Matrix matrixG = threeChannelMatrix.getMatrixG();
+        Matrix matrixB = threeChannelMatrix.getMatrixB();
+        int x = matrixR.getX() - 2;//求导后矩阵的行数
+        int y = matrixR.getY() - 2;//求导后矩阵的列数
+        Matrix myMatrixR = new Matrix(x, y);
+        Matrix myMatrixG = new Matrix(x, y);
+        Matrix myMatrixB = new Matrix(x, y);
+        for (int i = 0; i < x; i++) {//遍历行
+            for (int j = 0; j < y; j++) {//遍历每行的列
+                double rm = MatrixOperation.convolution(matrixR, kernel, i, j, false);
+                double gm = MatrixOperation.convolution(matrixG, kernel, i, j, false);
+                double bm = MatrixOperation.convolution(matrixB, kernel, i, j, false);
+                myMatrixR.setNub(i, j, rm);
+                myMatrixG.setNub(i, j, gm);
+                myMatrixB.setNub(i, j, bm);
+            }
+        }
+        myMatrixR = late(myMatrixR, 2);
+        myMatrixG = late(myMatrixG, 2);
+        myMatrixB = late(myMatrixB, 2);
+        threeChannelMatrix.setMatrixR(myMatrixR);
+        threeChannelMatrix.setMatrixG(myMatrixG);
+        threeChannelMatrix.setMatrixB(myMatrixB);
     }
 
     private Matrix convolution(Matrix matrix, Matrix kernel, boolean isFirst

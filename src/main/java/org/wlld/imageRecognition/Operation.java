@@ -105,7 +105,7 @@ public class Operation {//进行计算
                 }
             }
         } else {
-            throw new Exception("Parameter exception");
+            throw new Exception("Parameter exception region size==" + regionBodies.size());
         }
     }
 

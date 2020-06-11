@@ -51,8 +51,8 @@ public class FoodTest {
         specifications.setMaxHeight(750);
         specificationsList.add(specifications);
         Operation operation = new Operation(templeConfig);
-        for (int i = 1; i <= 28; i++) {
-            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\share\\cai\\g/g" + i + ".jpg");
+        for (int i = 1; i <= 1; i++) {
+            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("D:\\share\\cai\\g/g2.jpg");
             List<RegionBody> regionBody = operation.colorLook(threeChannelMatrix1, specificationsList);
             for (int j = 0; j < regionBody.size(); j++) {
                 RegionBody regionBody1 = regionBody.get(j);
@@ -80,7 +80,7 @@ public class FoodTest {
         //聚类
         templeConfig.setFeatureNub(3);//聚类特征数量
         //菜品识别实体类
-        food.setShrink(60);//缩紧像素
+        food.setShrink(50);//缩紧像素
         food.setTimes(2);//聚类数据增强
         templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
@@ -124,12 +124,7 @@ public class FoodTest {
             operation.colorStudy(threeChannelMatrix10, 10, specificationsList);
             System.out.println("=======================================" + i);
         }
-        ModelParameter modelParameter = templeConfig.getModel();
-        String model = JSON.toJSONString(modelParameter);
-        System.out.println(model);
-        ModelParameter modelParameter1 = JSONObject.parseObject(model, ModelParameter.class);
-        //templeConfig.finishStudy();
-        test2(getTemple(modelParameter1));
+        test2(templeConfig);
     }
 
     public static void study() throws Exception {

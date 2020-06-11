@@ -2,8 +2,6 @@ package org.wlld.imageRecognition;
 
 import org.wlld.tools.ArithUtil;
 
-import java.util.Arrays;
-
 public class RGBNorm {
     private double[] rgbAll = new double[3];
     private double norm;
