@@ -66,15 +66,10 @@ public class TempleConfig {
     private int featureNub = 4;//聚类特征数量
     private Food food = new Food();
     private Knn knn;//KNN分类器
-    private Knn[] knns;//集成knn分类
     private int knnNub = 7;//KNN投票人数
     private ThreeChannelMatrix backGround;//背景面板
     private double backGroundError;//背景误差偏移量，0-255
     private Cutting cutting = new Cutting();
-
-    public Knn[] getKnns() {
-        return knns;
-    }
 
     public Cutting getCutting() {
         return cutting;
@@ -330,12 +325,7 @@ public class TempleConfig {
                         vectorK = new VectorK(featureNub * 3);
                         break;
                     case Classifier.KNN:
-                        int integrate = food.getIntegrate();//集成分类次数
-                        knns = new Knn[integrate];
-                        for (int i = 0; i < integrate; i++) {
-                            knns[i] = new Knn(knnNub);
-                        }
-                        //knn = new Knn(knnNub);
+                        knn = new Knn(knnNub);
                         break;
                 }
                 break;
