@@ -80,7 +80,7 @@ public class FoodTest {
         //聚类
         templeConfig.setFeatureNub(3);//聚类特征数量
         //菜品识别实体类
-        food.setShrink(50);//缩紧像素
+        //food.setShrink(50);//缩紧像素
         food.setTimes(2);//聚类数据增强
         templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
