@@ -231,6 +231,8 @@ public class Operation {//进行计算
             int size = 0;
             List<CoverBody> coverBodies = new ArrayList<>();
             for (Map.Entry<Integer, ThreeChannelMatrix> entry : matrixMap.entrySet()) {
+                //先进行切图
+
                 CoverBody coverBody = new CoverBody();
                 Map<Integer, Double> tag = new HashMap<>();
                 tag.put(entry.getKey(), 1.0);
