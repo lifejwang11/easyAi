@@ -24,7 +24,7 @@ import java.util.Map;
 public class CoverTest {
     public static void main(String[] args) throws Exception {
 
-        //cover();
+        cover();
     }
 
     public static void insertModel(String model) throws Exception {//注入模型
@@ -63,7 +63,7 @@ public class CoverTest {
             String na = "D:\\share\\cai/" + name + i + ".jpg";
             //System.out.println("name======================" + na);
             ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix(na);
-            Map<Integer, Double> map1 = operation.coverPoint(threeChannelMatrix, poolSize, sqlNub, regionSize);
+            Map<Integer, Double> map1 = operation.coverPoint(threeChannelMatrix, sqlNub, regionSize);
             int id = 0;
             double point = 0;
             for (Map.Entry<Integer, Double> entry : map1.entrySet()) {
@@ -117,7 +117,7 @@ public class CoverTest {
             matrixMap.put(2, threeChannelMatrix2);//土地
             matrixMap.put(3, threeChannelMatrix3);//桔梗覆盖
             matrixMap.put(4, threeChannelMatrix4);//土地
-            operation.coverStudy(matrixMap, 2, 3, 18, 2);
+            operation.coverStudy(matrixMap, 2, 18);
         }
         ModelParameter modelParameter = templeConfig.getModel();
         String model = JSON.toJSONString(modelParameter);
