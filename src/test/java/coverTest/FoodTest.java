@@ -3,6 +3,7 @@ package coverTest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.ModelData;
 import org.wlld.config.Classifier;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
@@ -20,7 +21,13 @@ import java.util.List;
 public class FoodTest {
 
     public static void main(String[] args) throws Exception {
-        test();
+        ModelParameter parameter = JSON.parseObject(ModelData.DATA, ModelParameter.class);
+        if (parameter.getKnnVector() != null) {
+            System.out.println("空的");
+        } else {
+            System.out.println("不是空===");
+        }
+        //test();
     }
 
     public static void one(double[] test, double[] right, double[] wrong) {
@@ -40,6 +47,7 @@ public class FoodTest {
 
     public static void test2(TempleConfig templeConfig) throws Exception {
         if (templeConfig == null) {
+            ModelParameter parameter = JSON.parseObject(ModelData.DATA, ModelParameter.class);
             templeConfig = getTemple(null);
         }
         Picture picture = new Picture();

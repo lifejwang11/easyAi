@@ -36,14 +36,8 @@ public class PicTest {
 
         //testImage(right, wrong, a, b);
         //test();
-        tm();
     }
 
-    public static void tm() {
-        String model = ModelData.DATA4;
-        int index = model.indexOf("knnVector");
-
-    }
 
     public static void test() throws Exception {//对图像进行识别测试
         Picture picture = new Picture();
