@@ -216,12 +216,11 @@ public class Watershed {
         for (Specifications specification : specifications) {
             int width = maxY - minY;
             int height = maxX - minX;
-            double h = this.height / 8;
-            double w = this.width / 8;
-            boolean isCenter = true;// minX > h && minY > w && minX < (h * 4.5) && minY < (w * 4.5);
+//            double h = this.height / 8;
+//            double w = this.width / 8;
+            // boolean isCenter = minX > h && minY > w && minX < (h * 4.5) && minY < (w * 4.5);
             if (width >= specification.getMinWidth() && height >= specification.getMinHeight()
-                    && width <= specification.getMaxWidth() && height <= specification.getMaxHeight()
-                    && isCenter) {
+                    && width <= specification.getMaxWidth() && height <= specification.getMaxHeight()) {
                 isRight = true;
                 break;
             }

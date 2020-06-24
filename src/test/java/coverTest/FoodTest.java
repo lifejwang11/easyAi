@@ -21,13 +21,13 @@ import java.util.List;
 public class FoodTest {
 
     public static void main(String[] args) throws Exception {
-        ModelParameter parameter = JSON.parseObject(ModelData.DATA, ModelParameter.class);
-        if (parameter.getKnnVector() != null) {
-            System.out.println("空的");
-        } else {
-            System.out.println("不是空===");
-        }
-        //test();
+//        ModelParameter parameter = JSON.parseObject(ModelData.DATA, ModelParameter.class);
+//        if (parameter.getKnnVector() != null) {
+//            System.out.println("空的");
+//        } else {
+//            System.out.println("不是空===");
+//        }
+        test();
     }
 
     public static void one(double[] test, double[] right, double[] wrong) {
@@ -112,12 +112,22 @@ public class FoodTest {
         for (int i = 1; i <= 1; i++) {
             ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("/Users/lidapeng/Documents/paramterTest/a" + i + ".jpg");
             ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("/Users/lidapeng/Documents/paramterTest/b" + i + ".jpg");
-            operation.colorStudy(threeChannelMatrix1, 1, specificationsList);
+            operation.colorStudy(threeChannelMatrix1, 83, specificationsList);
             System.out.println("=======================================");
-            operation.colorStudy(threeChannelMatrix2, 2, specificationsList);
+            operation.colorStudy(threeChannelMatrix2, 86, specificationsList);
             System.out.println("=======================================" + i);
         }
-        test2(templeConfig);
+        ModelParameter modelParameter = templeConfig.getModel();
+        if (modelParameter.getKnnVector() != null) {
+            System.out.println("not null 1");
+        }
+        String tr = JSON.toJSONString(modelParameter);
+        System.out.println(tr);
+        ModelParameter modelParameter1 = JSON.parseObject(tr, ModelParameter.class);
+        if (modelParameter1.getKnnVector() != null) {
+            System.out.println("not null 2");
+        }
+        //test2(templeConfig);
     }
 
     public static void study() throws Exception {
