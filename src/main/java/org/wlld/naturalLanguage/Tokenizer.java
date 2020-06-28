@@ -13,10 +13,18 @@ import java.util.*;
  * @date 7:42 上午 2020/2/23
  */
 public class Tokenizer extends Frequency {
-    private List<Sentence> sentences = WordTemple.get().getSentences();//所有断句
-    private List<WorldBody> allWorld = WordTemple.get().getAllWorld();//所有词集合
-    private List<List<String>> wordTimes = WordTemple.get().getWordTimes();//所有词编号
+    private List<Sentence> sentences;//所有断句
+    private List<WorldBody> allWorld;//所有词集合
+    private List<List<String>> wordTimes;//所有词编号
     private Word nowWord;//上一次出现的关键字
+    private WordTemple wordTemple;
+
+    public Tokenizer(WordTemple wordTemple) {
+        this.wordTemple = wordTemple;
+        sentences = wordTemple.getSentences();//所有断句
+        allWorld = wordTemple.getAllWorld();//所有词集合
+        wordTimes = wordTemple.getWordTimes();//所有词编号
+    }
 
     public void start(Map<Integer, List<String>> model) throws Exception {
         //model的主键是类别，值是该类别语句的集合
@@ -59,7 +67,7 @@ public class Tokenizer extends Frequency {
     }
 
     private void number() {//分词编号
-        System.out.println("开始编码:" + sentences.size());
+        System.out.println("开始编码:" + (sentences.size() + 1));
         for (Sentence sentence : sentences) {
             List<Integer> features = sentence.getFeatures();
             List<String> sentenceList = sentence.getKeyWords();
@@ -85,10 +93,12 @@ public class Tokenizer extends Frequency {
         }
         column.add("key");
         DataTable dataTable = new DataTable(column);
-        dataTable.setKey("key");
+        dataTable.setKey("key");//确认结果集主键
         //初始化随机森林
-        RandomForest randomForest = new RandomForest(11);
-        WordTemple.get().setRandomForest(randomForest);//保存随机森林到模版
+        RandomForest randomForest = new RandomForest(wordTemple.getTreeNub());
+        randomForest.setTrustTh(wordTemple.getTrustTh());
+        randomForest.setTrustPunishment(wordTemple.getTrustPunishment());
+        wordTemple.setRandomForest(randomForest);//保存随机森林到模版
         randomForest.init(dataTable);
         for (Sentence sentence : sentences) {
             LangBody langBody = new LangBody();

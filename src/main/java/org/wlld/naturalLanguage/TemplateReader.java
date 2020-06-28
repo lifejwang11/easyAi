@@ -20,7 +20,7 @@ public class TemplateReader {//模板读取类
      * @param charsetName 文字编码(一般使用UTF-8)
      * @throws Exception 找不到文字抛出异常
      */
-    public void read(String url, String charsetName) throws Exception {
+    public void read(String url, String charsetName, WordTemple wordTemple) throws Exception {
         this.charsetName = charsetName;
         File file = new File(url);
         InputStream is = new FileInputStream(file);
@@ -68,11 +68,12 @@ public class TemplateReader {//模板读取类
                 }
             }
         }
-        word();
+        word(wordTemple);
     }
 
-    public void word() throws Exception {
-        Tokenizer tokenizer = new Tokenizer();
+    public void word(WordTemple wordTemple) throws Exception {
+        //将模版注入分词器进行分词
+        Tokenizer tokenizer = new Tokenizer(wordTemple);
         tokenizer.start(model);
     }
 

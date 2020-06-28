@@ -11,33 +11,30 @@ import java.util.List;
  * @date 4:15 下午 2020/2/23
  */
 public class WordTemple {
-    private static WordTemple Word_Temple = new WordTemple();
     private List<Sentence> sentences = new ArrayList<>();//所有断句
     private List<WorldBody> allWorld = new ArrayList<>();//所有词集合
     private List<List<String>> wordTimes = new ArrayList<>();//词编号
     private RandomForest randomForest;//保存的随机森林模型
+    //四大参数
     private double garbageTh = 0.5;//垃圾分类的阈值默认0.5
     private double trustPunishment = 0.1;//信任惩罚
+    private double trustTh = 0.1;//信任阈值,相当于一次信任惩罚的数值
+    private int treeNub = 11;//丛林里面树的数量
 
-    public WordModel getModel() {//获取模型
-        WordModel wordModel = new WordModel();
-        wordModel.setAllWorld(allWorld);
-        wordModel.setWordTimes(wordTimes);
-        wordModel.setGarbageTh(garbageTh);
-        wordModel.setTrustPunishment(trustPunishment);
-        wordModel.setTrustTh(randomForest.getTrustTh());
-        wordModel.setRfModel(randomForest.getModel());
-        return wordModel;
+    public int getTreeNub() {
+        return treeNub;
     }
 
-    public void insertModel(WordModel wordModel) throws Exception {//注入模型
-        allWorld = wordModel.getAllWorld();
-        wordTimes = wordModel.getWordTimes();
-        garbageTh = wordModel.getGarbageTh();
-        trustPunishment = wordModel.getTrustPunishment();
-        randomForest = new RandomForest();
-        randomForest.setTrustTh(wordModel.getTrustTh());
-        randomForest.insertModel(wordModel.getRfModel());
+    public void setTreeNub(int treeNub) {
+        this.treeNub = treeNub;
+    }
+
+    public double getTrustTh() {
+        return trustTh;
+    }
+
+    public void setTrustTh(double trustTh) {
+        this.trustTh = trustTh;
     }
 
     public double getTrustPunishment() {
@@ -64,19 +61,12 @@ public class WordTemple {
         this.randomForest = randomForest;
     }
 
-    private WordTemple() {
-    }
-
     public List<List<String>> getWordTimes() {
         return wordTimes;
     }
 
     public void setWordTimes(List<List<String>> wordTimes) {
         this.wordTimes = wordTimes;
-    }
-
-    public static WordTemple get() {
-        return Word_Temple;
     }
 
     public List<Sentence> getSentences() {
