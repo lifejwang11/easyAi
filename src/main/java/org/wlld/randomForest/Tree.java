@@ -18,6 +18,7 @@ public class Tree {//决策树
     private List<Integer> endList;//最终结果分类
     private List<Node> lastNodes = new ArrayList<>();//最后一层节点集合
     private Random random = new Random();
+    private double trustPunishment;//信任惩罚
 
     public Node getRootNode() {
         return rootNode;
@@ -36,11 +37,13 @@ public class Tree {//决策树
         private double gainRatio;//信息增益率
     }
 
-    public Tree() {
+    public Tree(double trustPunishment) {
+        this.trustPunishment = trustPunishment;
     }
 
-    public Tree(DataTable dataTable) throws Exception {
+    public Tree(DataTable dataTable, double trustPunishment) throws Exception {
         if (dataTable != null && dataTable.getKey() != null) {
+            this.trustPunishment = trustPunishment;
             this.dataTable = dataTable;
         } else {
             throw new Exception("dataTable is empty");
@@ -221,7 +224,7 @@ public class Tree {//决策树
     private void punishment(TreeWithTrust treeWithTrust) {//信任惩罚
         //System.out.println("惩罚");
         double trust = treeWithTrust.getTrust();//获取当前信任值
-        trust = ArithUtil.mul(trust, WordTemple.get().getTrustPunishment());
+        trust = ArithUtil.mul(trust, trustPunishment);
         treeWithTrust.setTrust(trust);
     }
 

@@ -58,6 +58,17 @@ public class Operation {//进行计算
         return sub(matrix1);
     }
 
+    private void cutPic(ThreeChannelMatrix threeChannelMatrix, int x, int y, int xSize, int ySize) {
+        Matrix matrixR = threeChannelMatrix.getMatrixR();
+        Matrix matrixG = threeChannelMatrix.getMatrixG();
+        Matrix matrixB = threeChannelMatrix.getMatrixB();
+        Matrix matrixRGB = threeChannelMatrix.getMatrixRGB();
+        threeChannelMatrix.setMatrixR(matrixR.getSonOfMatrix(x, y, xSize, ySize));
+        threeChannelMatrix.setMatrixG(matrixG.getSonOfMatrix(x, y, xSize, ySize));
+        threeChannelMatrix.setMatrixB(matrixB.getSonOfMatrix(x, y, xSize, ySize));
+        threeChannelMatrix.setMatrixRGB(matrixRGB.getSonOfMatrix(x, y, xSize, ySize));
+    }
+
     public void colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList) throws Exception {
         Watershed watershed = new Watershed(threeChannelMatrix.getMatrixRGB(), specificationsList, templeConfig);
         List<RegionBody> regionBodies = watershed.rainfall();
@@ -226,41 +237,40 @@ public class Operation {//进行计算
         return id;
     }
 
-    public void coverStudy(Map<Integer, ThreeChannelMatrix> matrixMap, int poolSize, int sqNub, int regionSize,
-                           int times) throws Exception {
+    public void coverStudy(Map<Integer, ThreeChannelMatrix> matrixMap, int sqNub, int regionSize) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
             int size = 0;
             List<CoverBody> coverBodies = new ArrayList<>();
             for (Map.Entry<Integer, ThreeChannelMatrix> entry : matrixMap.entrySet()) {
+                //先进行切图
                 CoverBody coverBody = new CoverBody();
                 Map<Integer, Double> tag = new HashMap<>();
                 tag.put(entry.getKey(), 1.0);
-                List<List<Double>> lists = convolution.kAvg(entry.getValue(), poolSize, sqNub, regionSize);
+                List<List<Double>> lists = convolution.kAvg(entry.getValue(), sqNub, regionSize);
                 size = lists.size();
                 coverBody.setFeature(lists);
                 coverBody.setTag(tag);
                 coverBodies.add(coverBody);
             }
             //特征塞入容器完毕
-            for (int j = 0; j < times; j++) {
-                for (int i = 0; i < size; i++) {
-                    for (CoverBody coverBody : coverBodies) {
-                        List<Double> list = coverBody.getFeature().get(i);
-                        if (templeConfig.isShowLog()) {
-                            System.out.println("feature:" + list);
-                        }
-                        intoDnnNetwork(1, list, templeConfig.getSensoryNerves(), true, coverBody.getTag(), null);
+            for (int i = 0; i < size; i++) {
+                for (CoverBody coverBody : coverBodies) {
+                    List<Double> list = coverBody.getFeature().get(i);
+                    if (templeConfig.isShowLog()) {
+                        System.out.println("feature:" + list);
                     }
+                    intoDnnNetwork(1, list, templeConfig.getSensoryNerves(), true, coverBody.getTag(), null);
                 }
             }
+
         }
     }
 
-    public Map<Integer, Double> coverPoint(ThreeChannelMatrix matrix, int poolSize, int sqNub, int regionSize) throws Exception {
+    public Map<Integer, Double> coverPoint(ThreeChannelMatrix matrix, int sqNub, int regionSize) throws Exception {
         if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
             Map<Integer, Double> coverMap = new HashMap<>();
             Map<Integer, Integer> typeNub = new HashMap<>();
-            List<List<Double>> lists = convolution.kAvg(matrix, poolSize, sqNub, regionSize);
+            List<List<Double>> lists = convolution.kAvg(matrix, sqNub, regionSize);
             //特征塞入容器完毕
             int size = lists.size();
             int all = 0;

@@ -25,6 +25,8 @@ public class Watershed {
     private int xMax;
     private int yMax;
     private double maxRain;
+    private double width;
+    private double height;
     private List<Specifications> specifications;
 
     public Watershed(Matrix matrix, List<Specifications> specifications, TempleConfig templeConfig) throws Exception {
@@ -35,6 +37,8 @@ public class Watershed {
             maxRain = cutting.getMaxRain();
             this.matrix = matrix;
             this.specifications = specifications;
+            width = matrix.getY();
+            height = matrix.getX();
             xSize = matrix.getX() / regionNub;
             ySize = matrix.getY() / regionNub;
             // System.out.println("xSize===" + xSize + ",ysize===" + ySize);
@@ -212,6 +216,9 @@ public class Watershed {
         for (Specifications specification : specifications) {
             int width = maxY - minY;
             int height = maxX - minX;
+//            double h = this.height / 8;
+//            double w = this.width / 8;
+            // boolean isCenter = minX > h && minY > w && minX < (h * 4.5) && minY < (w * 4.5);
             if (width >= specification.getMinWidth() && height >= specification.getMinHeight()
                     && width <= specification.getMaxWidth() && height <= specification.getMaxHeight()) {
                 isRight = true;
@@ -301,7 +308,7 @@ public class Watershed {
         }
         createMerge();
         merge();
-       // System.out.println(regionMap.getString());
+        // System.out.println(regionMap.getString());
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值

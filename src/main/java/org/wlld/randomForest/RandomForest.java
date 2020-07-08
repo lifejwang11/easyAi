@@ -13,6 +13,15 @@ public class RandomForest {
     private Random random = new Random();
     private Tree[] forest;
     private double trustTh = 0.1;//信任阈值
+    private double trustPunishment = 0.1;//信任惩罚
+
+    public double getTrustPunishment() {
+        return trustPunishment;
+    }
+
+    public void setTrustPunishment(double trustPunishment) {
+        this.trustPunishment = trustPunishment;
+    }
 
     public double getTrustTh() {
         return trustTh;
@@ -30,21 +39,6 @@ public class RandomForest {
             forest = new Tree[treeNub];
         } else {
             throw new Exception("Number of trees must be greater than 0");
-        }
-    }
-
-    public void insertModel(RfModel rfModel) throws Exception {//注入模型
-        if (rfModel != null) {
-            Map<Integer, Node> nodeMap = rfModel.getNodeMap();
-            forest = new Tree[nodeMap.size()];
-            for (Map.Entry<Integer, Node> entry : nodeMap.entrySet()) {
-                int key = entry.getKey();
-                Tree tree = new Tree();
-                forest[key] = tree;
-                tree.setRootNode(entry.getValue());
-            }
-        } else {
-            throw new Exception("model is null");
         }
     }
 
@@ -89,6 +83,7 @@ public class RandomForest {
         return type;
     }
 
+    //rf初始化
     public void init(DataTable dataTable) throws Exception {
         //一棵树属性的数量
         if (dataTable.getSize() > 4) {
@@ -96,7 +91,7 @@ public class RandomForest {
             //int kNub = dataTable.getSize() - 1;
             // System.out.println("knNub==" + kNub);
             for (int i = 0; i < forest.length; i++) {
-                Tree tree = new Tree(getRandomData(dataTable, kNub));
+                Tree tree = new Tree(getRandomData(dataTable, kNub), trustPunishment);
                 forest[i] = tree;
             }
         } else {
@@ -119,6 +114,7 @@ public class RandomForest {
         }
     }
 
+    //从总属性列表中随机挑选属性kNub个属性数量
     private DataTable getRandomData(DataTable dataTable, int kNub) throws Exception {
         Set<String> attr = dataTable.getKeyType();
         Set<String> myName = new HashSet<>();

@@ -13,9 +13,17 @@ import java.util.List;
  * @date 4:14 下午 2020/2/23
  */
 public class Talk {
-    private List<WorldBody> allWorld = WordTemple.get().getAllWorld();//所有词集合
-    private RandomForest randomForest = WordTemple.get().getRandomForest();//获取随机森林模型
-    private List<List<String>> wordTimes = WordTemple.get().getWordTimes();
+    private List<WorldBody> allWorld;//所有词集合
+    private RandomForest randomForest;//获取随机森林模型
+    private List<List<String>> wordTimes;
+    private WordTemple wordTemple;
+
+    public Talk(WordTemple wordTemple) {
+        this.wordTemple = wordTemple;
+        allWorld = wordTemple.getAllWorld();//所有词集合
+        randomForest = wordTemple.getRandomForest();//获取随机森林模型
+        wordTimes = wordTemple.getWordTimes();
+    }
 
     public List<Integer> talk(String sentence) throws Exception {
         List<Integer> typeList = new ArrayList<>();
@@ -69,7 +77,7 @@ public class Talk {
                     features.add(nub);
                 }
                 int type = 0;
-                if (ArithUtil.div(wrong, wordNumber) < WordTemple.get().getGarbageTh()) {
+                if (ArithUtil.div(wrong, wordNumber) < wordTemple.getGarbageTh()) {
                     LangBody langBody = new LangBody();
                     langBody.setA1(features.get(0));
                     langBody.setA2(features.get(1));
@@ -135,7 +143,7 @@ public class Talk {
             listWord = body.getWorldBodies();//这个body报了一次空指针
             word.setWordFrequency(body.getWordFrequency());
         }
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = new Tokenizer(wordTemple);
         tokenizer.radiation(words);
 
     }

@@ -70,17 +70,15 @@ public class LangTest {
     public static void test() throws Exception {
         //创建模板读取累
         TemplateReader templateReader = new TemplateReader();
+        WordTemple wordTemple = new WordTemple();//初始化语言模版
+        wordTemple.setTreeNub(9);
         //读取语言模版，第一个参数是模版地址，第二个参数是编码方式 (教程里的第三个参数已经省略)
         //同时也是学习过程
-        templateReader.read("D:\\b/a.txt", "UTF-8");
-        //学习结束获取模型参数
-       // WordModel wordModel = WordTemple.get().getModel();
-        //不用学习注入模型参数
-       // WordTemple.get().insertModel(wordModel);
-        Talk talk = new Talk();
+        templateReader.read("/Users/lidapeng/Desktop/myDocument/model.txt", "UTF-8", wordTemple);
+        Talk talk = new Talk(wordTemple);
         //输入语句进行识别，若有标点符号会形成LIST中的每个元素
         //返回的集合中每个值代表了输入语句，每个标点符号前语句的分类
-        List<Integer> list = talk.talk("有个快递尽快代我邮寄出去");
+        List<Integer> list = talk.talk("空调坏了");
         System.out.println(list);
     }
 }

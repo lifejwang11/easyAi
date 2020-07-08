@@ -62,26 +62,17 @@ public class Convolution extends Frequency {
         return threeChannelMatrixList;
     }
 
-    public List<List<Double>> kAvg(ThreeChannelMatrix threeMatrix, int poolSize, int sqNub
+    public List<List<Double>> kAvg(ThreeChannelMatrix threeMatrix, int sqNub
             , int regionSize) throws Exception {
         RGBSort rgbSort = new RGBSort();
         List<List<Double>> features = new ArrayList<>();
-        Matrix matrixR = threeMatrix.getMatrixR();
-        Matrix matrixG = threeMatrix.getMatrixG();
-        Matrix matrixB = threeMatrix.getMatrixB();
-        matrixR = late(matrixR, poolSize);
-        matrixG = late(matrixG, poolSize);
-        matrixB = late(matrixB, poolSize);
-        threeMatrix.setMatrixR(matrixR);
-        threeMatrix.setMatrixG(matrixG);
-        threeMatrix.setMatrixB(matrixB);
         List<ThreeChannelMatrix> threeChannelMatrixList = regionThreeChannelMatrix(threeMatrix, regionSize);
         for (ThreeChannelMatrix threeChannelMatrix : threeChannelMatrixList) {
             List<Double> feature = new ArrayList<>();
             MeanClustering meanClustering = new MeanClustering(sqNub);
-            matrixR = threeChannelMatrix.getMatrixR();
-            matrixG = threeChannelMatrix.getMatrixG();
-            matrixB = threeChannelMatrix.getMatrixB();
+            Matrix matrixR = threeChannelMatrix.getMatrixR();
+            Matrix matrixG = threeChannelMatrix.getMatrixG();
+            Matrix matrixB = threeChannelMatrix.getMatrixB();
             int x = matrixR.getX();
             int y = matrixR.getY();
             for (int i = 0; i < x; i++) {
@@ -93,14 +84,12 @@ public class Convolution extends Frequency {
             meanClustering.start();
             List<RGBNorm> rgbNorms = meanClustering.getMatrices();
             Collections.sort(rgbNorms, rgbSort);
-            double[] dm = new double[sqNub];
             for (RGBNorm rgbNorm : rgbNorms) {
-                feature.add(rgbNorm.getNorm());
+                double[] rgb = rgbNorm.getRgb();
+                for (int i = 0; i < rgb.length; i++) {
+                    feature.add(rgb[i]);
+                }
             }
-            for (int t = 0; t < dm.length; t++) {
-                dm[t] = rgbNorms.get(t).getNorm();
-            }
-            //System.out.println(Arrays.toString(dm));
             features.add(feature);
         }
         return features;
