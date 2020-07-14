@@ -72,13 +72,18 @@ public class LangTest {
         TemplateReader templateReader = new TemplateReader();
         WordTemple wordTemple = new WordTemple();//初始化语言模版
         wordTemple.setTreeNub(9);
+        // wordTemple.setSplitWord(true);
         //读取语言模版，第一个参数是模版地址，第二个参数是编码方式 (教程里的第三个参数已经省略)
         //同时也是学习过程
         templateReader.read("/Users/lidapeng/Desktop/myDocument/model.txt", "UTF-8", wordTemple);
         Talk talk = new Talk(wordTemple);
         //输入语句进行识别，若有标点符号会形成LIST中的每个元素
         //返回的集合中每个值代表了输入语句，每个标点符号前语句的分类
-        List<Integer> list = talk.talk("空调坏了");
+//        List<List<String>> lists = talk.getSplitWord("空调坏了，帮我修一修");
+//        for (List<String> list : lists) {
+//            System.out.println(list);
+//        }
+        List<Integer> list = talk.talk("空调坏了，帮我修一修");
         System.out.println(list);
     }
 }

@@ -44,9 +44,11 @@ public class Tokenizer extends Frequency {
         }
         restructure();//对集合中的词进行词频统计
         //这里分词已经结束,对词进行编号
-        number();
-        //进入随机森林进行学习
-        study();
+        if (!wordTemple.isSplitWord()) {
+            number();
+            //进入随机森林进行学习
+            study();
+        }
     }
 
     private int getKey(List<String> words, String testWord) {
