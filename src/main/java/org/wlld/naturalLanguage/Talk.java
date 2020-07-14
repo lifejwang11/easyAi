@@ -25,8 +25,16 @@ public class Talk {
         wordTimes = wordTemple.getWordTimes();
     }
 
-    public List<Integer> talk(String sentence) throws Exception {
-        List<Integer> typeList = new ArrayList<>();
+    public List<List<String>> getSplitWord(String sentence) {//单纯进行拆词
+        List<Sentence> sentences = splitSentence(sentence);
+        List<List<String>> words = new ArrayList<>();
+        for (Sentence sentence1 : sentences) {
+            words.add(sentence1.getKeyWords());
+        }
+        return words;
+    }
+
+    private List<Sentence> splitSentence(String sentence) {
         String rgm = null;
         if (sentence.indexOf(",") > -1) {
             rgm = ",";
@@ -42,7 +50,8 @@ public class Talk {
         //拆词
         List<Sentence> sentences = new ArrayList<>();
         for (int i = 0; i < sens.length; i++) {
-            List<Sentence> sentenceList = catchSentence(sentence);
+            String mySentence = sens[i];
+            List<Sentence> sentenceList = catchSentence(mySentence);
             int key = 0;
             int nub = 0;
             for (int j = 0; j < sentenceList.size(); j++) {
@@ -57,43 +66,52 @@ public class Talk {
             //System.out.println(sentenceList.get(key).getKeyWords());
             sentences.add(sentenceList.get(key));
         }
+        return sentences;
+    }
 
-        //进行识别
-        if (randomForest != null) {
-            for (Sentence sentence1 : sentences) {
-                List<Integer> features = sentence1.getFeatures();
-                List<String> keyWords = sentence1.getKeyWords();//拆分的关键词
-                int wrong = 0;
-                int wordNumber = keyWords.size();
-                for (int i = 0; i < 8; i++) {
-                    int nub = 0;
-                    if (keyWords.size() > i) {
-                        List<String> words = wordTimes.get(i);
-                        nub = getNub(words, keyWords.get(i));
-                        if (nub == 0) {//出现了不认识的词
-                            wrong++;
+    public List<Integer> talk(String sentence) throws Exception {
+        if (!wordTemple.isSplitWord()) {
+            List<Integer> typeList = new ArrayList<>();
+            List<Sentence> sentences = splitSentence(sentence);
+            //进行识别
+            if (randomForest != null) {
+                for (Sentence sentence1 : sentences) {
+                    List<Integer> features = sentence1.getFeatures();
+                    List<String> keyWords = sentence1.getKeyWords();//拆分的关键词
+                    int wrong = 0;
+                    int wordNumber = keyWords.size();
+                    for (int i = 0; i < 8; i++) {
+                        int nub = 0;
+                        if (keyWords.size() > i) {
+                            List<String> words = wordTimes.get(i);
+                            nub = getNub(words, keyWords.get(i));
+                            if (nub == 0) {//出现了不认识的词
+                                wrong++;
+                            }
                         }
+                        features.add(nub);
                     }
-                    features.add(nub);
+                    int type = 0;
+                    if (ArithUtil.div(wrong, wordNumber) < wordTemple.getGarbageTh()) {
+                        LangBody langBody = new LangBody();
+                        langBody.setA1(features.get(0));
+                        langBody.setA2(features.get(1));
+                        langBody.setA3(features.get(2));
+                        langBody.setA4(features.get(3));
+                        langBody.setA5(features.get(4));
+                        langBody.setA6(features.get(5));
+                        langBody.setA7(features.get(6));
+                        langBody.setA8(features.get(7));
+                        type = randomForest.forest(langBody);
+                    }
+                    typeList.add(type);
                 }
-                int type = 0;
-                if (ArithUtil.div(wrong, wordNumber) < wordTemple.getGarbageTh()) {
-                    LangBody langBody = new LangBody();
-                    langBody.setA1(features.get(0));
-                    langBody.setA2(features.get(1));
-                    langBody.setA3(features.get(2));
-                    langBody.setA4(features.get(3));
-                    langBody.setA5(features.get(4));
-                    langBody.setA6(features.get(5));
-                    langBody.setA7(features.get(6));
-                    langBody.setA8(features.get(7));
-                    type = randomForest.forest(langBody);
-                }
-                typeList.add(type);
+                return typeList;
+            } else {
+                throw new Exception("forest is not study");
             }
-            return typeList;
         } else {
-            throw new Exception("forest is not study");
+            throw new Exception("isSplitWord is true");
         }
     }
 

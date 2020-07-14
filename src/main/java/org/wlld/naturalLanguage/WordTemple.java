@@ -20,6 +20,15 @@ public class WordTemple {
     private double trustPunishment = 0.1;//信任惩罚
     private double trustTh = 0.1;//信任阈值,相当于一次信任惩罚的数值
     private int treeNub = 11;//丛林里面树的数量
+    private boolean isSplitWord = false;//是否使用拆分词模式,默认是不使用
+
+    public boolean isSplitWord() {
+        return isSplitWord;
+    }
+
+    public void setSplitWord(boolean splitWord) {
+        isSplitWord = splitWord;
+    }
 
     public int getTreeNub() {
         return treeNub;

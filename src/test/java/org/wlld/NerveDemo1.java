@@ -31,64 +31,57 @@ public class NerveDemo1 {
          * @param hiddenNerverNub 隐层神经元个数
          * @param outNerveNub 输出神经元个数
          * @param hiddenDepth 隐层深度
+         * @param isAccurate 是否保留精度
          * @param activeFunction 激活函数
          * @param isDynamic 是否是动态神经元
          */
-//        NerveManager nerveManager = new NerveManager(2, 6, 1, 4, new Sigmod(),
-//                false, true, 0, RZ.NOT_RZ, 0);
-//        nerveManager.init(true, false, false, false);
-//
-//
-//        //创建训练
-//        List<Map<Integer, Double>> list_right = new LinkedList<>();//存放正确的值
-//        List<Map<Integer, Double>> list_wrong = new LinkedList<>();//存放错误的值
-//        Random random = new Random();
-//        for (int i = 0; i < 10000; i++) {
-//            Map<Integer, Double> mp1 = new HashMap<>();
-//            Map<Integer, Double> mp2 = new HashMap<>();
-//            mp1.put(0, random.nextDouble());
-//            mp1.put(1, random.nextDouble());
-//            mp2.put(0, -random.nextDouble());//负样本:负数永远小于0
-//            mp2.put(1, -random.nextDouble());
-//            list_right.add(mp1);
-//            list_wrong.add(mp2);
-//        }
+        NerveManager nerveManager = new NerveManager(2, 6, 1, 2, new Tanh(),
+                false, true, 0, RZ.NOT_RZ, 0);
+        nerveManager.init(true, false, false, false);
+        //创建训练
+        List<Map<Integer, Double>> list_right = new LinkedList<>();//存放正确的值
+        List<Map<Integer, Double>> list_wrong = new LinkedList<>();//存放错误的值
+        Random random = new Random();
+        for (int i = 0; i < 1000; i++) {
+            Map<Integer, Double> mp1 = new HashMap<>();
+            Map<Integer, Double> mp2 = new HashMap<>();
+            mp1.put(0, random.nextDouble());
+            mp1.put(1, random.nextDouble());
+            mp2.put(0, -random.nextDouble());//负样本:负数永远小于0
+            mp2.put(1, -random.nextDouble());
+            list_right.add(mp1);
+            list_wrong.add(mp2);
+        }
 //
 //        //做一个正标注和负标注
-//        Map<Integer, Double> right = new HashMap<>();
-//        Map<Integer, Double> wrong = new HashMap<>();
-//        right.put(1, 1.0);
-//        wrong.put(1, 0.0);
-//
-//        //开始训练
-//        for (int i = 0; i < list_right.size(); i++) {
-//            Map<Integer, Double> mp1 = list_right.get(i);
-//            Map<Integer, Double> mp2 = list_wrong.get(i);
-//            //这里的post的训练
-//            post(nerveManager.getSensoryNerves(), mp1, right, null, true);
-//            post(nerveManager.getSensoryNerves(), mp2, wrong, null, true);
-//        }
+        Map<Integer, Double> right = new HashMap<>();
+        Map<Integer, Double> wrong = new HashMap<>();
+        right.put(1, 1.0);
+        wrong.put(1, 0.0);
+
+        //开始训练
+        for (int i = 0; i < list_right.size(); i++) {
+            Map<Integer, Double> mp1 = list_right.get(i);
+            Map<Integer, Double> mp2 = list_wrong.get(i);
+            //这里的post的训练
+            post(nerveManager.getSensoryNerves(), mp1, right, null, true);
+            post(nerveManager.getSensoryNerves(), mp2, wrong, null, true);
+        }
 //
 //        //测试 这里测试10个数据
-//        List<Map<Integer, Double>> test1 = new LinkedList<>();
-//        for (int i = 0; i < 10; i++) {
-//            Map<Integer, Double> mp1 = new HashMap<>();
-//            if (i == 4) {//在第五次的时候给一个错误的值//看看能否正确识别
-//                mp1.put(0, -random.nextDouble());
-//                mp1.put(1, -random.nextDouble());
-//                test1.add(mp1);
-//                continue;
-//            }
-//            mp1.put(0, random.nextDouble());
-//            mp1.put(1, random.nextDouble());
-//            test1.add(mp1);
-//        }
+        List<Map<Integer, Double>> test1 = new LinkedList<>();
+        for (int i = 0; i < 10; i++) {
+            Map<Integer, Double> mp1 = new HashMap<>();
+            mp1.put(0, -random.nextDouble());
+            mp1.put(1, -random.nextDouble());
+            test1.add(mp1);
+        }
 //        //查看结果
-//        Back back = new Back();
-//        for (Map<Integer, Double> test_data : test1) {
-//            //这里的post是进行学习
-//            post(nerveManager.getSensoryNerves(), test_data, null, back, false);
-//        }
+        Back back = new Back();
+        for (Map<Integer, Double> test_data : test1) {
+            //这里的post是进行学习
+            post(nerveManager.getSensoryNerves(), test_data, null, back, false);
+        }
         /*
          * 输出结果:
          *
@@ -105,65 +98,6 @@ public class NerveDemo1 {
          *
          * 很显然第五个数值非常小,意味着不是我们想要的结果
          */
-
-        test3();
-    }
-
-    public static void test3() throws Exception {
-        NerveManager nerveManager = new NerveManager(2, 6, 2
-                , 2, new Tanh(),
-                false, true, 0.01, RZ.NOT_RZ, 0);
-        nerveManager.init(true, false, true, false);//初始化
-        List<Map<Integer, Double>> data = new ArrayList<>();//正样本
-        List<Map<Integer, Double>> dataB = new ArrayList<>();//负样本
-        double a1 = 0.5463803496429489;
-        double a2 = 1.0917521555875922;
-        double b1 = 1.0012872347982982;
-        double b2 = 0.6597094176788427;
-        Random random = new Random();
-        for (int i = 0; i < 3000; i++) {
-            Map<Integer, Double> map1 = new HashMap<>();
-            Map<Integer, Double> map2 = new HashMap<>();
-            map1.put(0, a1);
-            map1.put(1, a2);
-            //产生鲜明区分
-            map2.put(0, b1);
-            map2.put(1, b2);
-
-            data.add(map1);
-            dataB.add(map2);
-        }
-        Map<Integer, Double> right = new HashMap<>();
-        Map<Integer, Double> wrong = new HashMap<>();
-        right.put(1, 1.0);
-
-        wrong.put(2, 1.0);
-        for (int i = 0; i < data.size(); i++) {
-            Map<Integer, Double> map1 = data.get(i);
-            Map<Integer, Double> map2 = dataB.get(i);
-            post(nerveManager.getSensoryNerves(), map1, right, null, true);
-            System.out.println("================");
-            post(nerveManager.getSensoryNerves(), map2, wrong, null, true);
-        }
-
-        List<Map<Integer, Double>> data2 = new ArrayList<>();
-        List<Map<Integer, Double>> data2B = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
-            Map<Integer, Double> map1 = new HashMap<>();
-            Map<Integer, Double> map2 = new HashMap<>();
-            map1.put(0, a1);
-            map1.put(1, a2);
-
-            map2.put(0, b1);
-            map2.put(1, b2);
-            data2.add(map1);
-            data2B.add(map2);
-        }
-        Back back = new Back();
-        for (Map<Integer, Double> map : data2B) {
-            post(nerveManager.getSensoryNerves(), map, null, back, false);
-            System.out.println("=====================");
-        }
     }
 
     /**
