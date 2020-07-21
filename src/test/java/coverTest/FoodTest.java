@@ -112,22 +112,12 @@ public class FoodTest {
         for (int i = 1; i <= 1; i++) {
             ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("/Users/lidapeng/Documents/paramterTest/a" + i + ".jpg");
             ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("/Users/lidapeng/Documents/paramterTest/b" + i + ".jpg");
-            operation.colorStudy(threeChannelMatrix1, 83, specificationsList);
+            operation.colorStudy(threeChannelMatrix1, 1, specificationsList);
             System.out.println("=======================================");
-            operation.colorStudy(threeChannelMatrix2, 86, specificationsList);
+            operation.colorStudy(threeChannelMatrix2, 2, specificationsList);
             System.out.println("=======================================" + i);
         }
-        ModelParameter modelParameter = templeConfig.getModel();
-        if (modelParameter.getKnnVector() != null) {
-            System.out.println("not null 1");
-        }
-        String tr = JSON.toJSONString(modelParameter);
-        System.out.println(tr);
-        ModelParameter modelParameter1 = JSON.parseObject(tr, ModelParameter.class);
-        if (modelParameter1.getKnnVector() != null) {
-            System.out.println("not null 2");
-        }
-        //test2(templeConfig);
+        test2(templeConfig);
     }
 
     public static void study() throws Exception {
