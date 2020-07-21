@@ -70,6 +70,15 @@ public class TempleConfig {
     private ThreeChannelMatrix backGround;//背景面板
     private double backGroundError;//背景误差偏移量，0-255
     private Cutting cutting = new Cutting();
+    private double edge = 0;//边缘剪掉多少份
+
+    public double getEdge() {
+        return edge;
+    }
+
+    public void setEdge(double edge) {
+        this.edge = edge;
+    }
 
     public Cutting getCutting() {
         return cutting;

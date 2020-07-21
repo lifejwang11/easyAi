@@ -18,8 +18,8 @@ public class Watershed {
     private Matrix regionMap;//分区图
     private int xSize;//单元高度
     private int ySize;//单元宽度
-    private double th = Kernel.th;//灰度阈值
-    private int regionNub = Kernel.Region_Nub;//一张图分多少份
+    private double th;//灰度阈值
+    private int regionNub;//一张图分多少份
     private Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
     private double rainTh = 0;
     private int xMax;
@@ -27,6 +27,7 @@ public class Watershed {
     private double maxRain;
     private double width;
     private double height;
+    private double edgeSize = 0;//边缘提取多少份
     private List<Specifications> specifications;
 
     public Watershed(Matrix matrix, List<Specifications> specifications, TempleConfig templeConfig) throws Exception {
@@ -37,6 +38,9 @@ public class Watershed {
             maxRain = cutting.getMaxRain();
             this.matrix = matrix;
             this.specifications = specifications;
+            if (templeConfig.getEdge() > 0) {
+                edgeSize = templeConfig.getEdge();
+            }
             width = matrix.getY();
             height = matrix.getX();
             xSize = matrix.getX() / regionNub;
@@ -216,11 +220,15 @@ public class Watershed {
         for (Specifications specification : specifications) {
             int width = maxY - minY;
             int height = maxX - minX;
-//            double h = this.height / 8;
-//            double w = this.width / 8;
-            // boolean isCenter = minX > h && minY > w && minX < (h * 4.5) && minY < (w * 4.5);
+            boolean isCenter = true;
+            if (edgeSize > 0) {
+                double h = this.height / edgeSize;
+                double w = this.width / edgeSize;
+                isCenter = maxX > h && maxY > w && maxX < (h * (edgeSize - 1)) && maxY < (w * (edgeSize - 1));
+            }
             if (width >= specification.getMinWidth() && height >= specification.getMinHeight()
-                    && width <= specification.getMaxWidth() && height <= specification.getMaxHeight()) {
+                    && width <= specification.getMaxWidth() && height <= specification.getMaxHeight()
+                    && isCenter) {
                 isRight = true;
                 break;
             }
