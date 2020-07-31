@@ -4,6 +4,7 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Kernel;
 import org.wlld.imageRecognition.TempleConfig;
 import org.wlld.param.Cutting;
+import org.wlld.tools.ArithUtil;
 
 import java.util.*;
 
@@ -28,6 +29,9 @@ public class Watershed {
     private double width;
     private double height;
     private double edgeSize = 0;//边缘提取多少份
+    private double maxIou;//最大iou
+    private double rowMark;//行过滤
+    private double columnMark;//列过滤
     private List<Specifications> specifications;
 
     public Watershed(Matrix matrix, List<Specifications> specifications, TempleConfig templeConfig) throws Exception {
@@ -41,10 +45,14 @@ public class Watershed {
             if (templeConfig.getEdge() > 0) {
                 edgeSize = templeConfig.getEdge();
             }
+            rowMark = templeConfig.getFood().getRowMark();
+            columnMark = templeConfig.getFood().getColumnMark();
             width = matrix.getY();
             height = matrix.getX();
             xSize = matrix.getX() / regionNub;
             ySize = matrix.getY() / regionNub;
+            maxIou = templeConfig.getCutting().getMaxIou();
+            System.out.println("设置最大iou阈值：" + maxIou);
             // System.out.println("xSize===" + xSize + ",ysize===" + ySize);
             rainfallMap = new Matrix(matrix.getX(), matrix.getY());
             regionMap = new Matrix(regionNub, regionNub);
@@ -212,7 +220,89 @@ public class Watershed {
                 regionBodies.add(regionBody);
             }
         }
-        return regionBodies;
+//        for (RegionBody regionBody : regionBodies) {
+//            int minX = regionBody.getMinX();
+//            int maxX = regionBody.getMaxX();
+//            int minY = regionBody.getMinY();
+//            int maxY = regionBody.getMaxY();
+//            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
+//        }
+        return iou(regionBodies);
+
+        // return regionBodies;
+    }
+
+    private List<RegionBody> iou(List<RegionBody> regionBodies) {
+        List<Integer> list = new ArrayList<>();
+        double maxMinX, minMaxX, maxMinY, minMaxY;
+        for (int i = 0; i < regionBodies.size(); i++) {
+            if (!list.contains(i)) {
+                RegionBody regionBody = regionBodies.get(i);
+                int minX1 = regionBody.getMinX();
+                int minY1 = regionBody.getMinY();
+                int maxX1 = regionBody.getMaxX();
+                int maxY1 = regionBody.getMaxY();
+                double s1 = (maxX1 - minX1) * (maxY1 - minY1);
+                for (int j = 0; j < regionBodies.size(); j++) {
+                    if (j != i && !list.contains(j)) {
+                        RegionBody body = regionBodies.get(j);
+                        int minX2 = body.getMinX();
+                        int minY2 = body.getMinY();
+                        int maxX2 = body.getMaxX();
+                        int maxY2 = body.getMaxY();
+                        double s2 = (maxX2 - minX2) * (maxY2 - minY2);
+                        double s = s1 + s2;
+                        if (maxX2 > maxX1) {
+                            maxMinX = maxX1;
+                        } else {
+                            maxMinX = maxX2;
+                        }
+                        if (minX2 > minX1) {
+                            minMaxX = minX2;
+                        } else {
+                            minMaxX = minX1;
+                        }
+                        if (maxY2 > maxY1) {
+                            maxMinY = maxY1;
+                        } else {
+                            maxMinY = maxY2;
+                        }
+                        if (minY2 > minY1) {
+                            minMaxY = minY2;
+                        } else {
+                            minMaxY = minY1;
+                        }
+                        double intersectX = ArithUtil.sub(maxMinX, minMaxX);//相交X
+                        double intersectY = ArithUtil.sub(maxMinY, minMaxY);//相交Y
+                        if (intersectX < 0) {
+                            intersectX = 0;
+                        }
+                        if (intersectY < 0) {
+                            intersectY = 0;
+                        }
+                        double intersectS = ArithUtil.mul(intersectX, intersectY);//相交面积
+                        double mergeS = ArithUtil.sub(s, intersectS);//相并面积
+                        double iou = ArithUtil.div(intersectS, mergeS);
+                        System.out.println("当前iou==" + iou);
+                        if (iou > maxIou) {
+                            if (s1 < s2) {//s1 是i ,大的
+                                list.add(j);
+                            } else {
+                                list.add(i);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println("要删除的下标：" + list);
+        List<RegionBody> regionBodies2 = new ArrayList<>();
+        for (int i = 0; i < regionBodies.size(); i++) {
+            if (!list.contains(i)) {
+                regionBodies2.add(regionBodies.get(i));
+            }
+        }
+        return regionBodies2;
     }
 
     private boolean check(int minX, int minY, int maxX, int maxY) {
@@ -293,6 +383,41 @@ public class Watershed {
         }
     }
 
+    private void pixFilter() throws Exception {//进行像素过滤
+        int x = regionMap.getX();
+        int y = regionMap.getY();
+        for (int j = 0; j < y; j++) {
+            double sigma = 0.0;
+            for (int i = 0; i < x; i++) {
+                if (regionMap.getNumber(i, j) > 0.1) {
+                    sigma++;
+                }
+            }
+            double cover = sigma / x;
+            if (cover < columnMark) {
+                for (int k = 0; k < x; k++) {
+                    regionMap.setNub(k, j, 0.0);
+                }
+            }
+        }
+        for (int i = 0; i < x; i++) {//从行读
+            double sigma = 0.0;
+            for (int j = 0; j < y; j++) {
+                if (regionMap.getNumber(i, j) > 0.1) {
+                    sigma++;
+                }
+            }
+            double cover = sigma / y;
+            // System.out.println(cover);
+            if (cover < rowMark) {
+                for (int k = 0; k < y; k++) {
+                    regionMap.setNub(i, k, 0.0);
+                }
+            }
+            //System.out.println("ma==" + ma);
+        }
+    }
+
     private void sigmaPixel() throws Exception {//生成降雨密度图
         int x = matrix.getX();
         int y = matrix.getY();
@@ -314,9 +439,10 @@ public class Watershed {
                 }
             }
         }
+        pixFilter();
         createMerge();
         merge();
-        // System.out.println(regionMap.getString());
+        //System.out.println(regionMap.getString());
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值

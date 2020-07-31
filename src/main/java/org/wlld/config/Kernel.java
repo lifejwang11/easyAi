@@ -10,7 +10,7 @@ public class Kernel {
     private static final String All_Number2 = "[-1,0,-1]#[0,4,0]#[-1,0,-1]#";
     public static final int Region_Nub = 60;//一张图有多少份
     public static final double th = 0.88;//分水岭灰度阈值
-    public static final double rgbN = 441.6729559300637;//RGB范数归一化最大值
+    public static final double rgbN = 442.0;//RGB范数归一化最大值
     public static Matrix Vertical;
     public static Matrix Horizontal;
     public static Matrix All;
