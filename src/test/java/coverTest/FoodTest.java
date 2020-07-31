@@ -77,10 +77,11 @@ public class FoodTest {
         //templeConfig.isShowLog(true);//是否打印日志
         Cutting cutting = templeConfig.getCutting();
         Food food = templeConfig.getFood();
-        //切割
-        cutting.setMaxRain(310);//切割阈值
+        //
+        cutting.setMaxRain(340);//切割阈值
         cutting.setTh(0.8);
         cutting.setRegionNub(200);
+        cutting.setMaxIou(1.0);
         //knn参数
         templeConfig.setKnnNub(1);
         //池化比例
@@ -90,6 +91,7 @@ public class FoodTest {
         //菜品识别实体类
         food.setShrink(5);//缩紧像素
         food.setTimes(2);//聚类数据增强
+        // food.setTrayTh(50);
         templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         if (modelParameter != null) {
@@ -106,18 +108,15 @@ public class FoodTest {
         Specifications specifications = new Specifications();
         specifications.setMinWidth(400);
         specifications.setMinHeight(400);
-        specifications.setMaxWidth(950);
-        specifications.setMaxHeight(950);
+        specifications.setMaxWidth(900);
+        specifications.setMaxHeight(900);
         specificationsList.add(specifications);
         for (int i = 1; i <= 1; i++) {
-            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("/Users/lidapeng/Documents/paramterTest/a" + i + ".jpg");
-            ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("/Users/lidapeng/Documents/paramterTest/b" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/c.jpg");
             operation.colorStudy(threeChannelMatrix1, 1, specificationsList);
             System.out.println("=======================================");
-            operation.colorStudy(threeChannelMatrix2, 2, specificationsList);
-            System.out.println("=======================================" + i);
         }
-        test2(templeConfig);
+        //test2(templeConfig);
     }
 
     public static void study() throws Exception {
