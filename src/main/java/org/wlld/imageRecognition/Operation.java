@@ -68,7 +68,7 @@ public class Operation {//进行计算
         Random random = new Random();
         int x = matrixRGB.getX();
         int y = matrixRGB.getY();
-        int size = 70;
+        int size = templeConfig.getFood().getRegressionNub();
         RgbRegression rgbRegression = new RgbRegression(size);
         for (int i = 0; i < size; i++) {
             int xr = random.nextInt(x);
