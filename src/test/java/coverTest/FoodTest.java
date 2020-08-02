@@ -78,7 +78,7 @@ public class FoodTest {
         Cutting cutting = templeConfig.getCutting();
         Food food = templeConfig.getFood();
         //
-        cutting.setMaxRain(340);//切割阈值
+        cutting.setMaxRain(360);//切割阈值
         cutting.setTh(0.8);
         cutting.setRegionNub(200);
         cutting.setMaxIou(1.0);
@@ -91,7 +91,8 @@ public class FoodTest {
         //菜品识别实体类
         food.setShrink(5);//缩紧像素
         food.setTimes(2);//聚类数据增强
-        // food.setTrayTh(50);
+        food.setRowMark(0.1);//0.12
+        food.setColumnMark(0.1);//0.25
         templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         if (modelParameter != null) {
@@ -106,16 +107,20 @@ public class FoodTest {
         Operation operation = new Operation(templeConfig);
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
-        specifications.setMinWidth(400);
-        specifications.setMinHeight(400);
+        specifications.setMinWidth(300);
+        specifications.setMinHeight(300);
         specifications.setMaxWidth(900);
         specifications.setMaxHeight(900);
         specificationsList.add(specifications);
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/d.jpg");
+        operation.setTray(threeChannelMatrix);
         for (int i = 1; i <= 1; i++) {
-            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/c.jpg");
+            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("/Users/lidapeng/Desktop/test/e1.jpg");
             operation.colorStudy(threeChannelMatrix1, 1, specificationsList);
             System.out.println("=======================================");
         }
+//        minX==301,minY==430,maxX==854,maxY==920
+//        minX==497,minY==1090,maxX==994,maxY==1520
         //test2(templeConfig);
     }
 

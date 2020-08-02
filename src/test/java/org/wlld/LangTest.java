@@ -1,5 +1,7 @@
 package org.wlld;
 
+import org.wlld.MatrixTools.Matrix;
+import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.naturalLanguage.Talk;
 import org.wlld.naturalLanguage.TemplateReader;
 import org.wlld.naturalLanguage.WordModel;
@@ -16,7 +18,74 @@ import java.util.*;
  */
 public class LangTest {
     public static void main(String[] args) throws Exception {
-        test();
+        reTest();
+    }
+
+    public static void reTest() throws Exception {
+        Matrix parameter = new Matrix(29, 3, "[173,198,1]#" +
+                "[174,199,1]#" +
+                "[170,195,1]#" +
+                "[169,194,1]#" +
+                "[159,181,1]#" +
+                "[154,175,1]#" +
+                "[151,175,1]#" +
+                "[152,177,1]#" +
+                "[175,200,1]#" +
+                "[169,194,1]#" +
+                "[172,200,1]#" +
+                "[170,195,1]#" +
+                "[172,197,1]#" +
+                "[173,198,1]#" +
+                "[157,177,1]#" +
+                "[158,178,1]#" +
+                "[156,176,1]#" +
+                "[156,177,1]#" +
+                "[157,177,1]#" +
+                "[162,187,1]#" +
+                "[165,188,1]#" +
+                "[166,189,1]#" +
+                "[163,188,1]#" +
+                "[162,187,1]#" +
+                "[163,186,1]#" +
+                "[164,184,1]#" +
+                "[163,186,1]#" +
+                "[179,202,1]#" +
+                "[182,207,1]#");
+        Matrix out = new Matrix(29, 1, "[203]#" +
+                "[204]#" +
+                "[200]#" +
+                "[199]#" +
+                "[185]#" +
+                "[180]#" +
+                "[179]#" +
+                "[181]#" +
+                "[205]#" +
+                "[198]#" +
+                "[204]#" +
+                "[199]#" +
+                "[202]#" +
+                "[203]#" +
+                "[184]#" +
+                "[185]#" +
+                "[183]#" +
+                "[182]#" +
+                "[184]#" +
+                "[194]#" +
+                "[194]#" +
+                "[195]#" +
+                "[195]#" +
+                "[194]#" +
+                "[192]#" +
+                "[191]#" +
+                "[192]#" +
+                "[210]#" +
+                "[214]#");
+        Matrix w = MatrixOperation.getLinearRegression(parameter, out);
+        System.out.println(w.getString());
+        double r = 162;
+        double g = 187;
+        double b = r * w.getNumber(0, 0) + g * w.getNumber(1, 0) + w.getNumber(2, 0);
+        System.out.println("r:" + r + ",g:" + g + ",b:" + b);
     }
 
     public static void test1() throws Exception {

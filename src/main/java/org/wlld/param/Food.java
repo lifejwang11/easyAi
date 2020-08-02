@@ -1,5 +1,7 @@
 package org.wlld.param;
 
+import org.wlld.imageRecognition.segmentation.RgbRegression;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +14,17 @@ import java.util.List;
 public class Food {
     private int shrink = 60;//收缩参数
     private int times = 10;//聚类增强次数
-    private double rowMark = 0.12;//行痕迹
-    private double columnMark = 0.25;//列过滤
+    private double rowMark = 0.12;//行痕迹过滤
+    private double columnMark = 0.25;//列痕迹过滤
+    private List<RgbRegression> trayBody = new ArrayList<>();//托盘实体参数
+
+    public List<RgbRegression> getTrayBody() {
+        return trayBody;
+    }
+
+    public void setTrayBody(List<RgbRegression> trayBody) {
+        this.trayBody = trayBody;
+    }
 
     public double getRowMark() {
         return rowMark;
