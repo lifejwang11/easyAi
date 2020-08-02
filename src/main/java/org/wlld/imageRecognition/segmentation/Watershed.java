@@ -3,6 +3,7 @@ package org.wlld.imageRecognition.segmentation;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Kernel;
 import org.wlld.imageRecognition.TempleConfig;
+import org.wlld.imageRecognition.ThreeChannelMatrix;
 import org.wlld.param.Cutting;
 import org.wlld.tools.ArithUtil;
 
@@ -15,6 +16,9 @@ import java.util.*;
  */
 public class Watershed {
     private Matrix matrix;//RGB范数图像
+    private Matrix matrixR;//r通道
+    private Matrix matrixG;//g通道
+    private Matrix matrixB;//b通道
     private Matrix rainfallMap;//降雨图
     private Matrix regionMap;//分区图
     private int xSize;//单元高度
@@ -32,35 +36,53 @@ public class Watershed {
     private double maxIou;//最大iou
     private double rowMark;//行过滤
     private double columnMark;//列过滤
-    private List<Specifications> specifications;
+    private List<Specifications> specifications;//过滤候选区参数
+    private List<RgbRegression> trayBody;//托盘参数
 
-    public Watershed(Matrix matrix, List<Specifications> specifications, TempleConfig templeConfig) throws Exception {
+    public Watershed(ThreeChannelMatrix matrix, List<Specifications> specifications, TempleConfig templeConfig) throws Exception {
         if (matrix != null && specifications != null && specifications.size() > 0) {
             Cutting cutting = templeConfig.getCutting();
             th = cutting.getTh();
             regionNub = cutting.getRegionNub();
             maxRain = cutting.getMaxRain();
-            this.matrix = matrix;
+            this.matrix = matrix.getMatrixRGB();
+            matrixR = matrix.getMatrixR();
+            matrixG = matrix.getMatrixG();
+            matrixB = matrix.getMatrixB();
             this.specifications = specifications;
+            this.trayBody = templeConfig.getFood().getTrayBody();
             if (templeConfig.getEdge() > 0) {
                 edgeSize = templeConfig.getEdge();
             }
             rowMark = templeConfig.getFood().getRowMark();
             columnMark = templeConfig.getFood().getColumnMark();
-            width = matrix.getY();
-            height = matrix.getX();
-            xSize = matrix.getX() / regionNub;
-            ySize = matrix.getY() / regionNub;
+            width = this.matrix.getY();
+            height = this.matrix.getX();
+            xSize = this.matrix.getX() / regionNub;
+            ySize = this.matrix.getY() / regionNub;
             maxIou = templeConfig.getCutting().getMaxIou();
-            System.out.println("设置最大iou阈值：" + maxIou);
             // System.out.println("xSize===" + xSize + ",ysize===" + ySize);
-            rainfallMap = new Matrix(matrix.getX(), matrix.getY());
+            rainfallMap = new Matrix(this.matrix.getX(), this.matrix.getY());
             regionMap = new Matrix(regionNub, regionNub);
             xMax = rainfallMap.getX() - 1;
             yMax = rainfallMap.getY() - 1;
         } else {
             throw new Exception("matrix is null");
         }
+    }
+
+    private boolean isTray(int x, int y) throws Exception {
+        boolean isTray = false;
+        double[] rgb = new double[]{matrixR.getNumber(x, y), matrixG.getNumber(x, y),
+                matrixB.getNumber(x, y)};
+        for (RgbRegression rgbRegression : trayBody) {
+            double dist = rgbRegression.getDisError(rgb);
+            if (dist < 10) {
+                isTray = true;
+                break;
+            }
+        }
+        return isTray;
     }
 
     private double[] getPixels(int x, int y) throws Exception {
@@ -94,28 +116,60 @@ public class Watershed {
             rightBottom = Kernel.rgbN;
         }
         if (top == -1 && rainfallMap.getNumber(x - 1, y) == 0) {
-            top = matrix.getNumber(x - 1, y);
+            if (isTray(x - 1, y)) {
+                top = Kernel.rgbN;
+            } else {
+                top = matrix.getNumber(x - 1, y);
+            }
         }
         if (left == -1 && rainfallMap.getNumber(x, y - 1) == 0) {
-            left = matrix.getNumber(x, y - 1);
+            if (isTray(x, y - 1)) {
+                left = Kernel.rgbN;
+            } else {
+                left = matrix.getNumber(x, y - 1);
+            }
         }
         if (bottom == -1 && rainfallMap.getNumber(x + 1, y) == 0) {
-            bottom = matrix.getNumber(x + 1, y);
+            if (isTray(x + 1, y)) {
+                bottom = Kernel.rgbN;
+            } else {
+                bottom = matrix.getNumber(x + 1, y);
+            }
         }
         if (right == -1 && rainfallMap.getNumber(x, y + 1) == 0) {
-            right = matrix.getNumber(x, y + 1);
+            if (isTray(x, y + 1)) {
+                right = Kernel.rgbN;
+            } else {
+                right = matrix.getNumber(x, y + 1);
+            }
         }
         if (leftTop == -1 && rainfallMap.getNumber(x - 1, y - 1) == 0) {
-            leftTop = matrix.getNumber(x - 1, y - 1);
+            if (isTray(x - 1, y - 1)) {
+                leftTop = Kernel.rgbN;
+            } else {
+                leftTop = matrix.getNumber(x - 1, y - 1);
+            }
         }
         if (leftBottom == -1 && rainfallMap.getNumber(x + 1, y - 1) == 0) {
-            leftBottom = matrix.getNumber(x + 1, y - 1);
+            if (isTray(x + 1, y - 1)) {
+                leftBottom = Kernel.rgbN;
+            } else {
+                leftBottom = matrix.getNumber(x + 1, y - 1);
+            }
         }
         if (rightTop == -1 && rainfallMap.getNumber(x - 1, y + 1) == 0) {
-            rightTop = matrix.getNumber(x - 1, y + 1);
+            if (isTray(x - 1, y + 1)) {
+                rightTop = Kernel.rgbN;
+            } else {
+                rightTop = matrix.getNumber(x - 1, y + 1);
+            }
         }
         if (rightBottom == -1 && rainfallMap.getNumber(x + 1, y + 1) == 0) {
-            rightBottom = matrix.getNumber(x + 1, y + 1);
+            if (isTray(x + 1, y + 1)) {
+                rightBottom = Kernel.rgbN;
+            } else {
+                rightBottom = matrix.getNumber(x + 1, y + 1);
+            }
         }
         return new double[]{top, left, bottom, right, leftTop, leftBottom, rightBottom, rightTop};
     }
@@ -220,16 +274,15 @@ public class Watershed {
                 regionBodies.add(regionBody);
             }
         }
-//        for (RegionBody regionBody : regionBodies) {
-//            int minX = regionBody.getMinX();
-//            int maxX = regionBody.getMaxX();
-//            int minY = regionBody.getMinY();
-//            int maxY = regionBody.getMaxY();
-//            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
-//        }
-        return iou(regionBodies);
-
-        // return regionBodies;
+        for (RegionBody regionBody : regionBodies) {
+            int minX = regionBody.getMinX();
+            int maxX = regionBody.getMaxX();
+            int minY = regionBody.getMinY();
+            int maxY = regionBody.getMaxY();
+            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
+        }
+        //return iou(regionBodies);
+        return regionBodies;
     }
 
     private List<RegionBody> iou(List<RegionBody> regionBodies) {
@@ -283,7 +336,6 @@ public class Watershed {
                         double intersectS = ArithUtil.mul(intersectX, intersectY);//相交面积
                         double mergeS = ArithUtil.sub(s, intersectS);//相并面积
                         double iou = ArithUtil.div(intersectS, mergeS);
-                        System.out.println("当前iou==" + iou);
                         if (iou > maxIou) {
                             if (s1 < s2) {//s1 是i ,大的
                                 list.add(j);
@@ -295,7 +347,6 @@ public class Watershed {
                 }
             }
         }
-        System.out.println("要删除的下标：" + list);
         List<RegionBody> regionBodies2 = new ArrayList<>();
         for (int i = 0; i < regionBodies.size(); i++) {
             if (!list.contains(i)) {
@@ -408,13 +459,11 @@ public class Watershed {
                 }
             }
             double cover = sigma / y;
-            // System.out.println(cover);
             if (cover < rowMark) {
                 for (int k = 0; k < y; k++) {
                     regionMap.setNub(i, k, 0.0);
                 }
             }
-            //System.out.println("ma==" + ma);
         }
     }
 
@@ -439,9 +488,9 @@ public class Watershed {
                 }
             }
         }
-        pixFilter();
-        createMerge();
-        merge();
+        pixFilter();//痕迹过滤
+        createMerge();//提取候选区
+        merge();//合并候选区
         //System.out.println(regionMap.getString());
     }
 

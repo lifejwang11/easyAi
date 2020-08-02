@@ -7,7 +7,9 @@ import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
+import org.wlld.imageRecognition.modelEntity.TrayBody;
 import org.wlld.imageRecognition.segmentation.RegionBody;
+import org.wlld.imageRecognition.segmentation.RgbRegression;
 import org.wlld.imageRecognition.segmentation.Specifications;
 import org.wlld.imageRecognition.segmentation.Watershed;
 import org.wlld.nerveCenter.NerveManager;
@@ -58,6 +60,30 @@ public class Operation {//进行计算
         return sub(matrix1);
     }
 
+    public void setTray(ThreeChannelMatrix threeChannelMatrix) throws Exception {//设置托盘
+        Matrix matrixR = threeChannelMatrix.getMatrixR();
+        Matrix matrixG = threeChannelMatrix.getMatrixG();
+        Matrix matrixB = threeChannelMatrix.getMatrixB();
+        Matrix matrixRGB = threeChannelMatrix.getMatrixRGB();
+        Random random = new Random();
+        int x = matrixRGB.getX();
+        int y = matrixRGB.getY();
+        int size = 70;
+        RgbRegression rgbRegression = new RgbRegression(size);
+        for (int i = 0; i < size; i++) {
+            int xr = random.nextInt(x);
+            int yr = random.nextInt(y);
+            double[] rgb = new double[]{matrixR.getNumber(xr, yr), matrixG.getNumber(xr, yr),
+                    matrixB.getNumber(xr, yr)};
+            rgbRegression.insertRGB(rgb);
+        }
+        rgbRegression.regression();
+//        double[] rgb = new double[]{164, 189, 193};
+//        double dis = rgbRegression.getDisError(rgb);
+//        System.out.println("dis==" + dis);
+        templeConfig.getFood().getTrayBody().add(rgbRegression);
+    }
+
     private void cutPic(ThreeChannelMatrix threeChannelMatrix, int x, int y, int xSize, int ySize) {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
@@ -70,7 +96,7 @@ public class Operation {//进行计算
     }
 
     public void colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList) throws Exception {
-        Watershed watershed = new Watershed(threeChannelMatrix.getMatrixRGB(), specificationsList, templeConfig);
+        Watershed watershed = new Watershed(threeChannelMatrix, specificationsList, templeConfig);
         List<RegionBody> regionBodies = watershed.rainfall();
         if (regionBodies.size() == 1) {
             RegionBody regionBody = regionBodies.get(0);
@@ -139,7 +165,7 @@ public class Operation {//进行计算
     }
 
     public List<RegionBody> colorLook(ThreeChannelMatrix threeChannelMatrix, List<Specifications> specificationsList) throws Exception {
-        Watershed watershed = new Watershed(threeChannelMatrix.getMatrixRGB(), specificationsList, templeConfig);
+        Watershed watershed = new Watershed(threeChannelMatrix, specificationsList, templeConfig);
         List<RegionBody> regionList = watershed.rainfall();
         for (RegionBody regionBody : regionList) {
             MaxPoint maxPoint = new MaxPoint();

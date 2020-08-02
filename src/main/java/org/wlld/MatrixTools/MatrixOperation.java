@@ -45,17 +45,21 @@ public class MatrixOperation {
     }
 
     //多元线性回归
-    public static Matrix getLinearRegression(Matrix parameter, Matrix Out) throws Exception {
-        //将参数矩阵转置
-        Matrix matrix1 = transPosition(parameter);
-        //转置的参数矩阵乘以参数矩阵
-        Matrix matrix2 = mulMatrix(matrix1, parameter);
-        //求上一步的逆矩阵
-        Matrix matrix3 = getInverseMatrixs(matrix2);
-        //逆矩阵乘以转置矩阵
-        Matrix matrix4 = mulMatrix(matrix3, matrix1);
-        //最后乘以输出矩阵,生成权重矩阵并返回
-        return mulMatrix(matrix4, Out);
+    public static Matrix getLinearRegression(Matrix parameter, Matrix out) throws Exception {
+        if (parameter.getX() == out.getX() && out.isVector() && !out.isRowVector()) {
+            //将参数矩阵转置
+            Matrix matrix1 = transPosition(parameter);
+            //转置的参数矩阵乘以参数矩阵
+            Matrix matrix2 = mulMatrix(matrix1, parameter);
+            //求上一步的逆矩阵
+            Matrix matrix3 = getInverseMatrixs(matrix2);
+            //逆矩阵乘以转置矩阵
+            Matrix matrix4 = mulMatrix(matrix3, matrix1);
+            //最后乘以输出矩阵,生成权重矩阵并返回
+            return mulMatrix(matrix4, out);
+        } else {
+            throw new Exception("invalid regression matrix");
+        }
     }
 
     //返回两个向量之间的欧氏距离的平方
@@ -402,8 +406,10 @@ public class MatrixOperation {
                     for (int h = 0; h < matrixColumn.getX(); h++) {
                         double columnNumber = matrixColumn.getNumber(h, 0);
                         double rowNumber = matrixRow.getNumber(0, h);
-                        double nowNumber = ArithUtil.mul(columnNumber, rowNumber);
-                        columnAllNumber = ArithUtil.add(columnAllNumber, nowNumber);
+                        //double nowNumber = ArithUtil.mul(columnNumber, rowNumber);
+                        //columnAllNumber = ArithUtil.add(columnAllNumber, nowNumber);
+                        double nowNumber = columnNumber * rowNumber;
+                        columnAllNumber = columnAllNumber + nowNumber;
                     }
                     matrix.setNub(i, j, columnAllNumber);
                 }
@@ -417,7 +423,7 @@ public class MatrixOperation {
     public static void mathMul(Matrix matrix, double nub) throws Exception {//矩阵数乘
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
-                matrix.setNub(i, j, ArithUtil.mul(matrix.getNumber(i, j), nub));
+                matrix.setNub(i, j, matrix.getNumber(i, j) * nub);
             }
         }
     }

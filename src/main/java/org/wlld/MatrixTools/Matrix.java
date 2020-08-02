@@ -44,6 +44,16 @@ public class Matrix {
         matrix = new double[x][y];
         this.x = x;
         this.y = y;
+        setState(x, y);
+    }
+
+    /**
+     * 设置矩阵属性
+     *
+     * @param x 行数
+     * @param y 列数
+     */
+    private void setState(int x, int y) {
         if (x == 1 && y == 1) {
             isZero = true;
         } else if (x == 1 || y == 1) {
@@ -103,6 +113,7 @@ public class Matrix {
         matrix = new double[x][y];
         this.x = x;
         this.y = y;
+        setState(x, y);
         setAll(matr);
     }
 
