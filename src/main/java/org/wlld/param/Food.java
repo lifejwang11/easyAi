@@ -17,7 +17,7 @@ public class Food {
     private double rowMark = 0.12;//行痕迹过滤
     private double columnMark = 0.25;//列痕迹过滤
     private List<RgbRegression> trayBody = new ArrayList<>();//托盘实体参数
-    private int regressionNub = 70;//回归数据量
+    private int regressionNub = 10000;//回归次数
 
     public int getRegressionNub() {
         return regressionNub;

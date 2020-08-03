@@ -1,5 +1,7 @@
 package org.wlld.imageRecognition;
 
+import org.wlld.imageRecognition.segmentation.RgbRegression;
+
 import java.util.*;
 
 //K均值聚类
@@ -8,6 +10,7 @@ public class MeanClustering {
     private int length;//向量长度(模型需要返回)
     private int speciesQuantity;//种类数量(模型需要返回)
     private List<RGBNorm> matrices = new ArrayList<>();//均值K模型(模型需要返回)
+    private int size = 10000;
 
     public List<RGBNorm> getMatrices() {
         return matrices;
@@ -69,6 +72,23 @@ public class MeanClustering {
         }
     }
 
+    private void startRegression() throws Exception {//开始聚类回归
+        Random random = new Random();
+        for (RGBNorm rgbNorm : matrices) {
+            RgbRegression rgbRegression = new RgbRegression(size);
+            List<double[]> list = rgbNorm.getRgbs();
+            for (int i = 0; i < size; i++) {
+                double[] rgb = list.get(random.nextInt(list.size()));
+                rgb[0] = rgb[0] / 255;
+                rgb[1] = rgb[1] / 255;
+                rgb[2] = rgb[2] / 255;
+                rgbRegression.insertRGB(rgb);
+            }
+            rgbRegression.regression();
+            rgbNorm.setRgbRegression(rgbRegression);
+        }
+    }
+
     public void start() throws Exception {//开始聚类
         if (matrixList.size() > 1) {
             Random random = new Random();
@@ -81,16 +101,16 @@ public class MeanClustering {
             }
             //进行两者的比较
             boolean isNext;
-            for (int i = 0; i < 50; i++) {
+            for (int i = 0; i < 30; i++) {
                 averageMatrix();
                 isNext = isNext();
-                if (isNext) {
+                if (isNext && i < 29) {
                     clear();
                 } else {
                     break;
                 }
             }
-
+            startRegression();//开始进行回归
         } else {
             throw new Exception("matrixList number less than 2");
         }

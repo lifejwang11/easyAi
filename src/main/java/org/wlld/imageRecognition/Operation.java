@@ -73,12 +73,12 @@ public class Operation {//进行计算
         for (int i = 0; i < size; i++) {
             int xr = random.nextInt(x);
             int yr = random.nextInt(y);
-            double[] rgb = new double[]{matrixR.getNumber(xr, yr), matrixG.getNumber(xr, yr),
-                    matrixB.getNumber(xr, yr)};
+            double[] rgb = new double[]{matrixR.getNumber(xr, yr) / 255, matrixG.getNumber(xr, yr) / 255,
+                    matrixB.getNumber(xr, yr) / 255};
             rgbRegression.insertRGB(rgb);
         }
         rgbRegression.regression();
-//        double[] rgb = new double[]{164, 189, 193};
+//        double[] rgb = new double[]{164 / 255, 189 / 255, 193 / 255};
 //        double dis = rgbRegression.getDisError(rgb);
 //        System.out.println("dis==" + dis);
         templeConfig.getFood().getTrayBody().add(rgbRegression);
