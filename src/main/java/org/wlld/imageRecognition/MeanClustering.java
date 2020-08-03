@@ -16,8 +16,9 @@ public class MeanClustering {
         return matrices;
     }
 
-    public MeanClustering(int speciesQuantity) {
+    public MeanClustering(int speciesQuantity, TempleConfig templeConfig) {
         this.speciesQuantity = speciesQuantity;//聚类的数量
+        size = templeConfig.getFood().getRegressionNub();
     }
 
     public void setColor(double[] color) throws Exception {
