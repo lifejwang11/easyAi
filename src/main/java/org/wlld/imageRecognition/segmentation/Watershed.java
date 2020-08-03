@@ -38,6 +38,7 @@ public class Watershed {
     private double columnMark;//列过滤
     private List<Specifications> specifications;//过滤候选区参数
     private List<RgbRegression> trayBody;//托盘参数
+    private double trayTh;
 
     public Watershed(ThreeChannelMatrix matrix, List<Specifications> specifications, TempleConfig templeConfig) throws Exception {
         if (matrix != null && specifications != null && specifications.size() > 0) {
@@ -61,6 +62,7 @@ public class Watershed {
             xSize = this.matrix.getX() / regionNub;
             ySize = this.matrix.getY() / regionNub;
             maxIou = templeConfig.getCutting().getMaxIou();
+            trayTh = templeConfig.getFood().getTrayTh();
             // System.out.println("xSize===" + xSize + ",ysize===" + ySize);
             rainfallMap = new Matrix(this.matrix.getX(), this.matrix.getY());
             regionMap = new Matrix(regionNub, regionNub);
@@ -77,7 +79,7 @@ public class Watershed {
                 matrixB.getNumber(x, y) / 255};
         for (RgbRegression rgbRegression : trayBody) {
             double dist = rgbRegression.getDisError(rgb);
-            if (dist < 0) {
+            if (dist < trayTh) {
                 isTray = true;
                 break;
             }
@@ -274,15 +276,15 @@ public class Watershed {
                 regionBodies.add(regionBody);
             }
         }
-        for (RegionBody regionBody : regionBodies) {
-            int minX = regionBody.getMinX();
-            int maxX = regionBody.getMaxX();
-            int minY = regionBody.getMinY();
-            int maxY = regionBody.getMaxY();
-            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
-        }
-        //return iou(regionBodies);
-        return regionBodies;
+//        for (RegionBody regionBody : regionBodies) {
+//            int minX = regionBody.getMinX();
+//            int maxX = regionBody.getMaxX();
+//            int minY = regionBody.getMinY();
+//            int maxY = regionBody.getMaxY();
+//            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
+//        }
+        return iou(regionBodies);
+        //return regionBodies;
     }
 
     private List<RegionBody> iou(List<RegionBody> regionBodies) {

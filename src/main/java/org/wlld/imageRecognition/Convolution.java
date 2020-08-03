@@ -64,13 +64,13 @@ public class Convolution extends Frequency {
     }
 
     public List<List<Double>> kAvg(ThreeChannelMatrix threeMatrix, int sqNub
-            , int regionSize) throws Exception {
+            , int regionSize, TempleConfig templeConfig) throws Exception {
         RGBSort rgbSort = new RGBSort();
         List<List<Double>> features = new ArrayList<>();
         List<ThreeChannelMatrix> threeChannelMatrixList = regionThreeChannelMatrix(threeMatrix, regionSize);
         for (ThreeChannelMatrix threeChannelMatrix : threeChannelMatrixList) {
             List<Double> feature = new ArrayList<>();
-            MeanClustering meanClustering = new MeanClustering(sqNub);
+            MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
             Matrix matrixR = threeChannelMatrix.getMatrixR();
             Matrix matrixG = threeChannelMatrix.getMatrixG();
             Matrix matrixB = threeChannelMatrix.getMatrixB();
@@ -165,7 +165,7 @@ public class Convolution extends Frequency {
         //System.out.println(matrixBD.getString());
     }
 
-    public List<Double> getCenterColor(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub) throws Exception {
+    public List<Double> getCenterColor(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub, TempleConfig templeConfig) throws Exception {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
@@ -175,7 +175,7 @@ public class Convolution extends Frequency {
         RGBSort rgbSort = new RGBSort();
         int x = matrixR.getX();
         int y = matrixR.getY();
-        MeanClustering meanClustering = new MeanClustering(sqNub);
+        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 double[] color = new double[]{matrixR.getNumber(i, j), matrixG.getNumber(i, j), matrixB.getNumber(i, j)};

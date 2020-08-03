@@ -111,7 +111,7 @@ public class Operation {//进行计算
             int times = templeConfig.getFood().getTimes();
             for (int i = 0; i < times; i++) {
                 List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
-                        templeConfig.getFeatureNub());
+                        templeConfig.getFeatureNub(), templeConfig);
                 if (templeConfig.isShowLog()) {
                     System.out.println(tag + ":" + feature);
                 }
@@ -178,7 +178,7 @@ public class Operation {//进行计算
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
             //convolution.filtering(threeChannelMatrix1);//光照过滤
             List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
-                    templeConfig.getFeatureNub());
+                    templeConfig.getFeatureNub(), templeConfig);
             if (templeConfig.isShowLog()) {
                 System.out.println(feature);
             }
@@ -272,7 +272,7 @@ public class Operation {//进行计算
                 CoverBody coverBody = new CoverBody();
                 Map<Integer, Double> tag = new HashMap<>();
                 tag.put(entry.getKey(), 1.0);
-                List<List<Double>> lists = convolution.kAvg(entry.getValue(), sqNub, regionSize);
+                List<List<Double>> lists = convolution.kAvg(entry.getValue(), sqNub, regionSize, templeConfig);
                 size = lists.size();
                 coverBody.setFeature(lists);
                 coverBody.setTag(tag);
@@ -296,7 +296,7 @@ public class Operation {//进行计算
         if (templeConfig.getStudyPattern() == StudyPattern.Cover_Pattern) {
             Map<Integer, Double> coverMap = new HashMap<>();
             Map<Integer, Integer> typeNub = new HashMap<>();
-            List<List<Double>> lists = convolution.kAvg(matrix, sqNub, regionSize);
+            List<List<Double>> lists = convolution.kAvg(matrix, sqNub, regionSize, templeConfig);
             //特征塞入容器完毕
             int size = lists.size();
             int all = 0;

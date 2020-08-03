@@ -18,6 +18,15 @@ public class Food {
     private double columnMark = 0.25;//列痕迹过滤
     private List<RgbRegression> trayBody = new ArrayList<>();//托盘实体参数
     private int regressionNub = 10000;//回归次数
+    private double trayTh = 0.1;//托盘回归阈值
+
+    public double getTrayTh() {
+        return trayTh;
+    }
+
+    public void setTrayTh(double trayTh) {
+        this.trayTh = trayTh;
+    }
 
     public int getRegressionNub() {
         return regressionNub;
