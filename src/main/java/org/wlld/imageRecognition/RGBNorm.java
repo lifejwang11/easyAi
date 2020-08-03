@@ -1,6 +1,10 @@
 package org.wlld.imageRecognition;
 
+import org.wlld.imageRecognition.segmentation.RgbRegression;
 import org.wlld.tools.ArithUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RGBNorm {
     private double[] rgbAll = new double[3];
@@ -8,6 +12,16 @@ public class RGBNorm {
     private int nub;
     private double[] rgb = new double[3];
     private double[] rgbUp;
+    private List<double[]> rgbs = new ArrayList<>();
+    private RgbRegression rgbRegression;
+
+    public RgbRegression getRgbRegression() {
+        return rgbRegression;
+    }
+
+    public void setRgbRegression(RgbRegression rgbRegression) {
+        this.rgbRegression = rgbRegression;
+    }
 
     RGBNorm(double[] rgb) {
         this.rgbUp = rgb;
@@ -17,12 +31,17 @@ public class RGBNorm {
         rgbUp = rgb;
     }
 
+    public List<double[]> getRgbs() {
+        return rgbs;
+    }
+
     public void clear() {
         rgbAll = new double[3];
         nub = 0;
         for (int i = 0; i < rgb.length; i++) {
             rgbUp[i] = rgb[i];
         }
+        rgbs.clear();
         //System.out.println("clear==" + Arrays.toString(rgbUp));
     }
 
@@ -57,6 +76,7 @@ public class RGBNorm {
         for (int i = 0; i < rgb.length; i++) {
             rgbAll[i] = rgbAll[i] + rgb[i];
         }
+        rgbs.add(rgb);
         nub++;
     }
 

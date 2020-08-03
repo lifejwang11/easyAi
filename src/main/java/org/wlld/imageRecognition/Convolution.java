@@ -7,6 +7,7 @@ import org.wlld.imageRecognition.border.Border;
 import org.wlld.imageRecognition.border.Frame;
 import org.wlld.imageRecognition.border.FrameBody;
 import org.wlld.imageRecognition.modelEntity.RegressionBody;
+import org.wlld.imageRecognition.segmentation.RgbRegression;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.Frequency;
 
@@ -186,7 +187,9 @@ public class Convolution extends Frequency {
         Collections.sort(rgbNorms, rgbSort);
         List<Double> features = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {
-            double[] rgb = rgbNorms.get(i).getRgb();
+            //double[] rgb = rgbNorms.get(i).getRgb();
+            RgbRegression rgbRegression = rgbNorms.get(i).getRgbRegression();
+            double[] rgb = new double[]{rgbRegression.getWr(), rgbRegression.getWg(), rgbRegression.getB()};
             for (int j = 0; j < 3; j++) {
                 features.add(rgb[j]);
             }

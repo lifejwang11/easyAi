@@ -73,11 +73,11 @@ public class Watershed {
 
     private boolean isTray(int x, int y) throws Exception {
         boolean isTray = false;
-        double[] rgb = new double[]{matrixR.getNumber(x, y), matrixG.getNumber(x, y),
-                matrixB.getNumber(x, y)};
+        double[] rgb = new double[]{matrixR.getNumber(x, y) / 255, matrixG.getNumber(x, y) / 255,
+                matrixB.getNumber(x, y) / 255};
         for (RgbRegression rgbRegression : trayBody) {
             double dist = rgbRegression.getDisError(rgb);
-            if (dist < 10) {
+            if (dist < 0) {
                 isTray = true;
                 break;
             }

@@ -54,7 +54,7 @@ public class RgbRegression {
             wg = ws.getNumber(1, 0);
             b = ws.getNumber(2, 0);
             isRegression = true;
-            System.out.println("wr==" + wr + ",wg==" + wg + ",b==" + b);
+            // System.out.println("wr==" + wr + ",wg==" + wg + ",b==" + b);
         } else {
             throw new Exception("regression matrix size is zero");
         }
