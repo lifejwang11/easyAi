@@ -15,6 +15,10 @@ public class RGBNorm {
     private List<double[]> rgbs = new ArrayList<>();
     private RgbRegression rgbRegression;
 
+    public List<double[]> getRgbs() {
+        return rgbs;
+    }
+
     public RgbRegression getRgbRegression() {
         return rgbRegression;
     }
@@ -29,10 +33,6 @@ public class RGBNorm {
 
     public void syn() {
         rgbUp = rgb;
-    }
-
-    public List<double[]> getRgbs() {
-        return rgbs;
     }
 
     public void clear() {
