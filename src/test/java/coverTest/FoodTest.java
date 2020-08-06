@@ -79,9 +79,9 @@ public class FoodTest {
         Food food = templeConfig.getFood();
         //
         cutting.setMaxRain(360);//切割阈值
-        cutting.setTh(0.8);
+        cutting.setTh(0.3);
         cutting.setRegionNub(200);
-        cutting.setMaxIou(1.0);
+        cutting.setMaxIou(2.0);
         //knn参数
         templeConfig.setKnnNub(1);
         //池化比例
@@ -90,9 +90,11 @@ public class FoodTest {
         templeConfig.setFeatureNub(3);//聚类特征数量
         //菜品识别实体类
         food.setShrink(20);//缩紧像素
-        food.setTimes(2);//聚类数据增强
+        food.setTimes(1);//聚类数据增强
         food.setRowMark(0.1);//0.12
         food.setColumnMark(0.1);//0.25
+        food.setRegressionNub(20000);
+        food.setTrayTh(0.08);
         templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         if (modelParameter != null) {
@@ -109,29 +111,19 @@ public class FoodTest {
         Specifications specifications = new Specifications();
         specifications.setMinWidth(300);
         specifications.setMinHeight(300);
-        specifications.setMaxWidth(900);
-        specifications.setMaxHeight(900);
+        specifications.setMaxWidth(1000);
+        specifications.setMaxHeight(1000);
         specificationsList.add(specifications);
         ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/d.jpg");
         operation.setTray(threeChannelMatrix);
-        for (int i = 1; i <= 10; i++) {
-            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("/Users/lidapeng/Desktop/foodModel/a/a" + i + ".jpg");
-            ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix("/Users/lidapeng/Desktop/foodModel/b/b" + i + ".jpg");
-            ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix("/Users/lidapeng/Desktop/foodModel/c/c" + i + ".jpg");
-            ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix("/Users/lidapeng/Desktop/foodModel/d/d" + i + ".jpg");
-            ThreeChannelMatrix threeChannelMatrix5 = picture.getThreeMatrix("/Users/lidapeng/Desktop/foodModel/e/e" + i + ".jpg");
-            ThreeChannelMatrix threeChannelMatrix6 = picture.getThreeMatrix("/Users/lidapeng/Desktop/foodModel/f/f" + i + ".jpg");
+        for (int i = 1; i <= 1; i++) {
+            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/m.jpg");
             operation.colorStudy(threeChannelMatrix1, 1, specificationsList);
-            operation.colorStudy(threeChannelMatrix2, 2, specificationsList);
-            operation.colorStudy(threeChannelMatrix3, 3, specificationsList);
-            operation.colorStudy(threeChannelMatrix4, 4, specificationsList);
-            operation.colorStudy(threeChannelMatrix5, 5, specificationsList);
-            operation.colorStudy(threeChannelMatrix6, 6, specificationsList);
-            System.out.println("=======================================" + i);
+            // System.out.println("=======================================" + i);
         }
 //        minX==301,minY==430,maxX==854,maxY==920
 //        minX==497,minY==1090,maxX==994,maxY==1520
-        test2(templeConfig);
+        // test2(templeConfig);
     }
 
     public static void study() throws Exception {

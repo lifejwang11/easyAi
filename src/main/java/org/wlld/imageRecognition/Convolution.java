@@ -365,11 +365,11 @@ public class Convolution extends Frequency {
         int x = xn / size;//求导后矩阵的行数
         int y = yn / size;//求导后矩阵的列数
         Matrix myMatrix = new Matrix(x, y);//迟化后的矩阵
-        for (int i = 0; i < xn - size; i += size) {
-            for (int j = 0; j < yn - size; j += size) {
+        for (int i = 0; i <= xn - size; i += size) {
+            for (int j = 0; j <= yn - size; j += size) {
                 Matrix matrix1 = matrix.getSonOfMatrix(i, j, size, size);
-                double maxNub = 0;
-                int n = size * size;
+                double maxNub = 0.0;
+                double n = size * size;
                 double sigma = 0;
                 for (int t = 0; t < matrix1.getX(); t++) {
                     for (int k = 0; k < matrix1.getY(); k++) {

@@ -262,6 +262,7 @@ public class Watershed {
         int y = matrix.getY();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
+
                 if (rainfallMap.getNumber(i, j) == 0) {//进行降雨
                     fall(i, j);
                 }
@@ -276,86 +277,14 @@ public class Watershed {
                 regionBodies.add(regionBody);
             }
         }
-//        for (RegionBody regionBody : regionBodies) {
-//            int minX = regionBody.getMinX();
-//            int maxX = regionBody.getMaxX();
-//            int minY = regionBody.getMinY();
-//            int maxY = regionBody.getMaxY();
-//            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
-//        }
-        return iou(regionBodies);
-        //return regionBodies;
-    }
-
-    private List<RegionBody> iou(List<RegionBody> regionBodies) {
-        List<Integer> list = new ArrayList<>();
-        double maxMinX, minMaxX, maxMinY, minMaxY;
-        for (int i = 0; i < regionBodies.size(); i++) {
-            if (!list.contains(i)) {
-                RegionBody regionBody = regionBodies.get(i);
-                int minX1 = regionBody.getMinX();
-                int minY1 = regionBody.getMinY();
-                int maxX1 = regionBody.getMaxX();
-                int maxY1 = regionBody.getMaxY();
-                double s1 = (maxX1 - minX1) * (maxY1 - minY1);
-                for (int j = 0; j < regionBodies.size(); j++) {
-                    if (j != i && !list.contains(j)) {
-                        RegionBody body = regionBodies.get(j);
-                        int minX2 = body.getMinX();
-                        int minY2 = body.getMinY();
-                        int maxX2 = body.getMaxX();
-                        int maxY2 = body.getMaxY();
-                        double s2 = (maxX2 - minX2) * (maxY2 - minY2);
-                        double s = s1 + s2;
-                        if (maxX2 > maxX1) {
-                            maxMinX = maxX1;
-                        } else {
-                            maxMinX = maxX2;
-                        }
-                        if (minX2 > minX1) {
-                            minMaxX = minX2;
-                        } else {
-                            minMaxX = minX1;
-                        }
-                        if (maxY2 > maxY1) {
-                            maxMinY = maxY1;
-                        } else {
-                            maxMinY = maxY2;
-                        }
-                        if (minY2 > minY1) {
-                            minMaxY = minY2;
-                        } else {
-                            minMaxY = minY1;
-                        }
-                        double intersectX = ArithUtil.sub(maxMinX, minMaxX);//相交X
-                        double intersectY = ArithUtil.sub(maxMinY, minMaxY);//相交Y
-                        if (intersectX < 0) {
-                            intersectX = 0;
-                        }
-                        if (intersectY < 0) {
-                            intersectY = 0;
-                        }
-                        double intersectS = ArithUtil.mul(intersectX, intersectY);//相交面积
-                        double mergeS = ArithUtil.sub(s, intersectS);//相并面积
-                        double iou = ArithUtil.div(intersectS, mergeS);
-                        if (iou > maxIou) {
-                            if (s1 < s2) {//s1 是i ,大的
-                                list.add(j);
-                            } else {
-                                list.add(i);
-                            }
-                        }
-                    }
-                }
-            }
+        for (RegionBody regionBody : regionBodies) {
+            int minX = regionBody.getMinX();
+            int maxX = regionBody.getMaxX();
+            int minY = regionBody.getMinY();
+            int maxY = regionBody.getMaxY();
+            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
         }
-        List<RegionBody> regionBodies2 = new ArrayList<>();
-        for (int i = 0; i < regionBodies.size(); i++) {
-            if (!list.contains(i)) {
-                regionBodies2.add(regionBodies.get(i));
-            }
-        }
-        return regionBodies2;
+        return regionBodies;
     }
 
     private boolean check(int minX, int minY, int maxX, int maxY) {
@@ -490,10 +419,10 @@ public class Watershed {
                 }
             }
         }
+        //System.out.println(regionMap.getString());
         pixFilter();//痕迹过滤
         createMerge();//提取候选区
         merge();//合并候选区
-        //System.out.println(regionMap.getString());
     }
 
     private int getMinIndex(double[] array, double mySelf) {//获取最小值
