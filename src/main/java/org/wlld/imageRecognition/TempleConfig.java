@@ -70,6 +70,10 @@ public class TempleConfig {
     private Cutting cutting = new Cutting();
     private double edge = 0;//边缘剪掉多少份
 
+    public void clearTray() {//清除托盘
+        food.getTrayBody().clear();
+    }
+
     public double getEdge() {
         return edge;
     }
