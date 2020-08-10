@@ -95,7 +95,7 @@ public class Operation {//进行计算
         threeChannelMatrix.setMatrixRGB(matrixRGB.getSonOfMatrix(x, y, xSize, ySize));
     }
 
-    public void colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList) throws Exception {
+    public RegionBody colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList) throws Exception {
         Watershed watershed = new Watershed(threeChannelMatrix, specificationsList, templeConfig);
         List<RegionBody> regionBodies = watershed.rainfall();
         if (regionBodies.size() == 1) {
@@ -141,6 +141,7 @@ public class Operation {//进行计算
                         break;
                 }
             }
+            return regionBody;
         } else {
             throw new Exception("Parameter exception region size==" + regionBodies.size());
         }
