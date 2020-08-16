@@ -330,6 +330,7 @@ public class MatrixOperation {
             mathMul(myMatrix, def);
             return myMatrix;
         } else {
+            System.out.println(matrixs.getString());
             throw new Exception("this matrixs do not have InverseMatrixs");
         }
     }

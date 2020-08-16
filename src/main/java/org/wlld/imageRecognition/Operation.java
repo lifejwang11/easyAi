@@ -7,7 +7,6 @@ import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
-import org.wlld.imageRecognition.modelEntity.TrayBody;
 import org.wlld.imageRecognition.segmentation.RegionBody;
 import org.wlld.imageRecognition.segmentation.RgbRegression;
 import org.wlld.imageRecognition.segmentation.Specifications;
@@ -64,10 +63,10 @@ public class Operation {//进行计算
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
-        Matrix matrixRGB = threeChannelMatrix.getMatrixRGB();
+        //Matrix matrixRGB = threeChannelMatrix.getMatrixRGB();
         Random random = new Random();
-        int x = matrixRGB.getX();
-        int y = matrixRGB.getY();
+        int x = matrixR.getX();
+        int y = matrixR.getY();
         int size = templeConfig.getFood().getRegressionNub();
         RgbRegression rgbRegression = new RgbRegression(size);
         for (int i = 0; i < size; i++) {
@@ -88,11 +87,9 @@ public class Operation {//进行计算
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
-        Matrix matrixRGB = threeChannelMatrix.getMatrixRGB();
         threeChannelMatrix.setMatrixR(matrixR.getSonOfMatrix(x, y, xSize, ySize));
         threeChannelMatrix.setMatrixG(matrixG.getSonOfMatrix(x, y, xSize, ySize));
         threeChannelMatrix.setMatrixB(matrixB.getSonOfMatrix(x, y, xSize, ySize));
-        threeChannelMatrix.setMatrixRGB(matrixRGB.getSonOfMatrix(x, y, xSize, ySize));
     }
 
     public RegionBody colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList) throws Exception {
@@ -107,15 +104,15 @@ public class Operation {//进行计算
             int xSize = maxX - minX;
             int ySize = maxY - minY;
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-            //convolution.filtering(threeChannelMatrix1);//光照过滤
             int times = templeConfig.getFood().getTimes();
             for (int i = 0; i < times; i++) {
-                List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
-                        templeConfig.getFeatureNub(), templeConfig);
+//                List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
+//                        templeConfig.getFeatureNub(), templeConfig);
+                List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(),
+                        templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub());
                 if (templeConfig.isShowLog()) {
                     System.out.println(tag + ":" + feature);
                 }
-                //System.out.println("=====================================");
                 int classifier = templeConfig.getClassifier();
                 switch (classifier) {
                     case Classifier.DNN:
@@ -177,9 +174,10 @@ public class Operation {//进行计算
             int xSize = maxX - minX;
             int ySize = maxY - minY;
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-            //convolution.filtering(threeChannelMatrix1);//光照过滤
-            List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
-                    templeConfig.getFeatureNub(), templeConfig);
+//            List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
+//                    templeConfig.getFeatureNub(), templeConfig);
+            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(),
+                    templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub());
             if (templeConfig.isShowLog()) {
                 System.out.println(feature);
             }

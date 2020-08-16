@@ -169,9 +169,9 @@ public class Convolution extends Frequency {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
-        matrixR = late(matrixR, poolSize);
-        matrixG = late(matrixG, poolSize);
-        matrixB = late(matrixB, poolSize);
+//        matrixR = late(matrixR, poolSize);
+//        matrixG = late(matrixG, poolSize);
+//        matrixB = late(matrixB, poolSize);
         RGBSort rgbSort = new RGBSort();
         int x = matrixR.getX();
         int y = matrixR.getY();
@@ -187,9 +187,9 @@ public class Convolution extends Frequency {
         Collections.sort(rgbNorms, rgbSort);
         List<Double> features = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {
-            //double[] rgb = rgbNorms.get(i).getRgb();
-            RgbRegression rgbRegression = rgbNorms.get(i).getRgbRegression();
-            double[] rgb = new double[]{rgbRegression.getWr(), rgbRegression.getWg(), rgbRegression.getB()};
+            double[] rgb = rgbNorms.get(i).getRgb();
+            // RgbRegression rgbRegression = rgbNorms.get(i).getRgbRegression();
+            //double[] rgb = new double[]{rgbRegression.getWr(), rgbRegression.getWg(), rgbRegression.getB()};
             for (int j = 0; j < 3; j++) {
                 features.add(rgb[j]);
             }
@@ -200,44 +200,45 @@ public class Convolution extends Frequency {
         return features;
     }
 
-    private void regression(XYBody xyBody) {
-        //计算当前图形的线性回归
-        RegressionBody regressionBody = new RegressionBody();
-        regressionBody.lineRegression(xyBody.getY(), xyBody.getX(), this);
-        xyBody.setRegressionBody(regressionBody);
-    }
-
-    public XYBody imageTrance(Matrix matrix, int size) throws Exception {//矩阵和卷积核大小
-        int xn = matrix.getX();
-        int yn = matrix.getY();
-        int xSize = xn / size;//求导后矩阵的行数
-        int ySize = yn / size;//求导后矩阵的列数
-        double[] Y = new double[xSize * ySize];
-        double[] X = new double[xSize * ySize];
-        double rgbN = Kernel.rgbN;
-        for (int i = 0; i < xn - size; i += size) {
-            for (int j = 0; j < yn - size; j += size) {
-                Matrix matrix1 = matrix.getSonOfMatrix(i, j, size, size);
-                double[] nubs = new double[size * size];//平均值数组
-                for (int t = 0; t < size; t++) {
-                    for (int k = 0; k < size; k++) {
-                        double nub = matrix1.getNumber(t, k) / rgbN;
-                        nubs[t * size + k] = nub;
+    public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, int poolSize, TempleConfig templeConfig
+            , int sqNub) throws Exception {
+        RGBSort rgbSort = new RGBSort();
+        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
+        Matrix matrixR = threeChannelMatrix.getMatrixR();
+        Matrix matrixG = threeChannelMatrix.getMatrixG();
+        Matrix matrixB = threeChannelMatrix.getMatrixB();
+        int xn = matrixR.getX();
+        int yn = matrixR.getY();
+        for (int i = 0; i <= xn - size; i += size) {
+            for (int j = 0; j <= yn - size; j += size) {
+                Matrix sonR = late(matrixR.getSonOfMatrix(i, j, size, size), poolSize);
+                Matrix sonG = late(matrixG.getSonOfMatrix(i, j, size, size), poolSize);
+                Matrix sonB = late(matrixB.getSonOfMatrix(i, j, size, size), poolSize);
+                int tSize = sonR.getX();
+                int kSize = sonR.getY();
+                double[] rgb = new double[tSize * kSize * 3];
+                for (int t = 0; t < tSize; t++) {
+                    for (int k = 0; k < kSize; k++) {
+                        int index = t * kSize + k;
+                        rgb[index] = sonR.getNumber(t, k);
+                        rgb[tSize * kSize + index] = sonG.getNumber(t, k);
+                        rgb[tSize * kSize * 2 + index] = sonB.getNumber(t, k);
                     }
                 }
-                double avg = average(nubs);//平均值
-                //double dc = frequency.dcByAvg(nubs, avg);//当前离散系数
-                double va = varianceByAve(nubs, avg);//方差
-                //离散系数作为X，AVG作为Y
-                int t = i / size * ySize + j / size;
-                Y[t] = avg;
-                X[t] = va;
+                meanClustering.setColor(rgb);
             }
         }
-        XYBody xyBody = new XYBody();
-        xyBody.setX(X);
-        xyBody.setY(Y);
-        return xyBody;
+        meanClustering.start();//开始聚类
+        List<RGBNorm> rgbNorms = meanClustering.getMatrices();
+        Collections.sort(rgbNorms, rgbSort);
+        List<Double> features = new ArrayList<>();
+        for (int i = 0; i < sqNub; i++) {
+            double[] rgb = rgbNorms.get(i).getRgb();
+            for (int j = 0; j < rgb.length; j++) {
+                features.add(rgb[j]);
+            }
+        }
+        return features;
     }
 
 
@@ -260,11 +261,13 @@ public class Convolution extends Frequency {
         Matrix matrixR = threeChannelMatrix.getMatrixR().getSonOfMatrix(x, y, xSize, ySize);
         Matrix matrixG = threeChannelMatrix.getMatrixG().getSonOfMatrix(x, y, xSize, ySize);
         Matrix matrixB = threeChannelMatrix.getMatrixB().getSonOfMatrix(x, y, xSize, ySize);
+        Matrix matrixH = threeChannelMatrix.getH().getSonOfMatrix(x, y, xSize, ySize);
+        Matrix matrixRGB = threeChannelMatrix.getMatrixRGB().getSonOfMatrix(x, y, xSize, ySize);
         threeChannelMatrix1.setMatrixR(matrixR);
         threeChannelMatrix1.setMatrixG(matrixG);
         threeChannelMatrix1.setMatrixB(matrixB);
-        threeChannelMatrix1.setH(threeChannelMatrix.getH());
-        threeChannelMatrix1.setMatrixRGB(threeChannelMatrix.getMatrixRGB());
+        threeChannelMatrix1.setH(matrixH);
+        threeChannelMatrix1.setMatrixRGB(matrixRGB);
         return threeChannelMatrix1;
     }
 
@@ -359,7 +362,7 @@ public class Convolution extends Frequency {
         return myMatrix;
     }
 
-    protected Matrix late(Matrix matrix, int size) throws Exception {//池化处理
+    public Matrix late(Matrix matrix, int size) throws Exception {//池化处理
         int xn = matrix.getX();
         int yn = matrix.getY();
         int x = xn / size;//求导后矩阵的行数
@@ -380,7 +383,7 @@ public class Convolution extends Frequency {
                         }
                     }
                 }
-                maxNub = ArithUtil.div(sigma, n);
+                maxNub = sigma / n;
                 //迟化的最大值是 MAXNUB
                 myMatrix.setNub(i / size, j / size, maxNub);
             }
