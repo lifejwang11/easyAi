@@ -19,6 +19,15 @@ public class Food {
     private List<RgbRegression> trayBody = new ArrayList<>();//托盘实体参数
     private int regressionNub = 10000;//回归次数
     private double trayTh = 0.1;//托盘回归阈值
+    private int regionSize = 10;//纹理区域大小
+
+    public int getRegionSize() {
+        return regionSize;
+    }
+
+    public void setRegionSize(int regionSize) {
+        this.regionSize = regionSize;
+    }
 
     public double getTrayTh() {
         return trayTh;

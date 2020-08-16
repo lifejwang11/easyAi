@@ -96,7 +96,7 @@ public class MeanClustering {
             for (int i = 0; i < speciesQuantity; i++) {//初始化均值向量
                 int index = random.nextInt(matrixList.size());
                 double[] rgb = matrixList.get(index);
-                RGBNorm rgbNorm = new RGBNorm(rgb);
+                RGBNorm rgbNorm = new RGBNorm(rgb, length);
                 //要进行深度克隆
                 matrices.add(rgbNorm);
             }
@@ -111,7 +111,7 @@ public class MeanClustering {
                     break;
                 }
             }
-            startRegression();//开始进行回归
+            // startRegression();//开始进行回归
         } else {
             throw new Exception("matrixList number less than 2");
         }

@@ -277,13 +277,13 @@ public class Watershed {
                 regionBodies.add(regionBody);
             }
         }
-        for (RegionBody regionBody : regionBodies) {
-            int minX = regionBody.getMinX();
-            int maxX = regionBody.getMaxX();
-            int minY = regionBody.getMinY();
-            int maxY = regionBody.getMaxY();
-            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
-        }
+//        for (RegionBody regionBody : regionBodies) {
+//            int minX = regionBody.getMinX();
+//            int maxX = regionBody.getMaxX();
+//            int minY = regionBody.getMinY();
+//            int maxY = regionBody.getMaxY();
+//            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
+//        }
         return regionBodies;
     }
 
@@ -399,8 +399,8 @@ public class Watershed {
     }
 
     private void sigmaPixel() throws Exception {//生成降雨密度图
-        int x = matrix.getX();
-        int y = matrix.getY();
+//        int x = matrix.getX();
+//        int y = matrix.getY();
         int size = xSize * ySize;
         for (int i = 0; i < xSize * regionNub; i += xSize) {
             for (int j = 0; j < ySize * regionNub; j += ySize) {
@@ -429,7 +429,7 @@ public class Watershed {
         int minIdx = 0;
         for (int i = 0; i < array.length; i++) {
             double nub = array[i];
-            if (nub > -1 && nub < mySelf - rainTh && nub < maxRain) {
+            if (nub > -1 && nub < mySelf) {
                 minIdx = minIdx | (1 << i);
             }
         }

@@ -7,13 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RGBNorm {
-    private double[] rgbAll = new double[3];
+    private double[] rgbAll;
     private double norm;
     private int nub;
-    private double[] rgb = new double[3];
+    private double[] rgb;
     private double[] rgbUp;
     private List<double[]> rgbs = new ArrayList<>();
     private RgbRegression rgbRegression;
+    private int len;
 
     public List<double[]> getRgbs() {
         return rgbs;
@@ -27,7 +28,10 @@ public class RGBNorm {
         this.rgbRegression = rgbRegression;
     }
 
-    RGBNorm(double[] rgb) {
+    RGBNorm(double[] rgb, int len) {
+        this.len = len;
+        rgbAll = new double[len];
+        this.rgb = new double[len];
         this.rgbUp = rgb;
     }
 
@@ -36,12 +40,11 @@ public class RGBNorm {
     }
 
     public void clear() {
-        rgbAll = new double[3];
+        rgbAll = new double[len];
         nub = 0;
         for (int i = 0; i < rgb.length; i++) {
             rgbUp[i] = rgb[i];
         }
-        rgbs.clear();
         //System.out.println("clear==" + Arrays.toString(rgbUp));
     }
 
@@ -76,7 +79,6 @@ public class RGBNorm {
         for (int i = 0; i < rgb.length; i++) {
             rgbAll[i] = rgbAll[i] + rgb[i];
         }
-        rgbs.add(rgb);
         nub++;
     }
 
