@@ -284,7 +284,68 @@ public class Watershed {
 //            int maxY = regionBody.getMaxY();
 //            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
 //        }
-        return regionBodies;
+        return iou(regionBodies);
+    }
+
+    private List<RegionBody> iou(List<RegionBody> regionBodies) {
+        List<Integer> list = new ArrayList<>();
+        double maxMinX, minMaxX, maxMinY, minMaxY;
+        for (int i = 0; i < regionBodies.size(); i++) {
+            if (!list.contains(i)) {
+                RegionBody regionBody = regionBodies.get(i);
+                int minX1 = regionBody.getMinX();
+                int minY1 = regionBody.getMinY();
+                int maxX1 = regionBody.getMaxX();
+                int maxY1 = regionBody.getMaxY();
+                int width1 = maxY1 - minY1;
+                int height1 = maxX1 - minX1;
+                double s1 = width1 * height1;
+                for (int j = 0; j < regionBodies.size(); j++) {
+                    if (j != i && !list.contains(j)) {
+                        RegionBody body = regionBodies.get(j);
+                        int minX2 = body.getMinX();
+                        int minY2 = body.getMinY();
+                        int maxX2 = body.getMaxX();
+                        int maxY2 = body.getMaxY();
+                        int width2 = maxY2 - minY2;
+                        int height2 = maxX2 - minX2;
+                        double s2 = width2 * height2;
+                        double[] row = new double[]{minX1, maxX1, minX2, maxX2};
+                        double[] col = new double[]{minY1, maxY1, minY2, maxY2};
+                        Arrays.sort(row);
+                        Arrays.sort(col);
+                        double rowSub = row[3] - row[0];
+                        double colSub = col[3] - col[0];
+                        double width = width1 + width2;
+                        double height = height1 + height2;
+                        double widthSub = width - colSub;
+                        double heightSub = height - rowSub;
+                        if (widthSub < 0) {
+                            widthSub = 0;
+                        }
+                        if (heightSub < 0) {
+                            heightSub = 0;
+                        }
+                        double intersectS = widthSub * heightSub;//相交面积
+                        double s1Point = intersectS / s1;
+                        double s2Point = intersectS / s2;
+                        if (s1Point > maxIou) {
+                            list.add(i);
+                        }
+                        if (s2Point > maxIou) {
+                            list.add(j);
+                        }
+                    }
+                }
+            }
+        }
+        List<RegionBody> regionBodies2 = new ArrayList<>();
+        for (int i = 0; i < regionBodies.size(); i++) {
+            if (!list.contains(i)) {
+                regionBodies2.add(regionBodies.get(i));
+            }
+        }
+        return regionBodies2;
     }
 
     private boolean check(int minX, int minY, int maxX, int maxY) {
