@@ -17,7 +17,7 @@ public class Forest extends Frequency {
     private Matrix resultMatrix;//结果矩阵
     private Forest forestLeft;//左森林
     private Forest forestRight;//右森林
-    private int size;
+    private int featureSize;
     private double min;//下限
     private double max;//上限
     private double resultVariance;//结果矩阵方差
@@ -25,9 +25,10 @@ public class Forest extends Frequency {
     private double shrinkParameter;//方差收缩参数
     private double[] w;
 
-    public Forest(int size, double shrinkParameter) {
-        this.size = size;
+    public Forest(int featureSize, double shrinkParameter) {
+        this.featureSize = featureSize;
         this.shrinkParameter = shrinkParameter;
+        w = new double[featureSize];
     }
 
     public double getResultVariance() {
@@ -48,10 +49,10 @@ public class Forest extends Frequency {
             Arrays.sort(dm);//排序
             int z = y / 2;
             median = dm[z];
-            forestLeft = new Forest(size, shrinkParameter);
-            forestRight = new Forest(size, shrinkParameter);
-            Matrix conditionMatrixLeft = new Matrix(z, size);//条件矩阵左
-            Matrix conditionMatrixRight = new Matrix(y - z, size);//条件矩阵右
+            forestLeft = new Forest(featureSize, shrinkParameter);
+            forestRight = new Forest(featureSize, shrinkParameter);
+            Matrix conditionMatrixLeft = new Matrix(z, featureSize);//条件矩阵左
+            Matrix conditionMatrixRight = new Matrix(y - z, featureSize);//条件矩阵右
             Matrix resultMatrixLeft = new Matrix(z, 1);//结果矩阵左
             Matrix resultMatrixRight = new Matrix(y - z, 1);//结果矩阵右
             forestLeft.setConditionMatrix(conditionMatrixLeft);
@@ -65,14 +66,14 @@ public class Forest extends Frequency {
             for (int i = 0; i < y; i++) {
                 double nub = resultMatrix.getNumber(i, 0);//结果矩阵
                 if (nub > median) {//进入右森林并计算右森林结果矩阵方差
-                    for (int j = 0; j < size; j++) {//进入右森林的条件矩阵
+                    for (int j = 0; j < featureSize; j++) {//进入右森林的条件矩阵
                         conditionMatrixRight.setNub(rightIndex, j, conditionMatrix.getNumber(i, j));
                     }
                     resultRight[rightIndex] = nub;
                     resultMatrixRight.setNub(rightIndex, 0, nub);
                     rightIndex++;
                 } else {//进入左森林并计算左森林结果矩阵方差
-                    for (int j = 0; j < size; j++) {//进入右森林的条件矩阵
+                    for (int j = 0; j < featureSize; j++) {//进入右森林的条件矩阵
                         conditionMatrixLeft.setNub(leftIndex, j, conditionMatrix.getNumber(i, j));
                     }
                     resultLeft[leftIndex] = nub;
@@ -136,5 +137,13 @@ public class Forest extends Frequency {
 
     public void setW(double[] w) {
         this.w = w;
+    }
+
+    public Forest getForestLeft() {
+        return forestLeft;
+    }
+
+    public Forest getForestRight() {
+        return forestRight;
     }
 }
