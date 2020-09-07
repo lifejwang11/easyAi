@@ -277,13 +277,13 @@ public class Watershed {
                 regionBodies.add(regionBody);
             }
         }
-//        for (RegionBody regionBody : regionBodies) {
-//            int minX = regionBody.getMinX();
-//            int maxX = regionBody.getMaxX();
-//            int minY = regionBody.getMinY();
-//            int maxY = regionBody.getMaxY();
-//            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
-//        }
+        for (RegionBody regionBody : regionBodies) {
+            int minX = regionBody.getMinX();
+            int maxX = regionBody.getMaxX();
+            int minY = regionBody.getMinY();
+            int maxY = regionBody.getMaxY();
+            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
+        }
         return iou(regionBodies);
     }
 
