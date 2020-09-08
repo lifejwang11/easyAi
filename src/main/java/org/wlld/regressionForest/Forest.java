@@ -18,8 +18,6 @@ public class Forest extends Frequency {
     private Forest forestLeft;//左森林
     private Forest forestRight;//右森林
     private int featureSize;
-    private double min;//下限
-    private double max;//上限
     private double resultVariance;//结果矩阵方差
     private double median;//结果矩阵中位数
     private double shrinkParameter;//方差收缩参数
@@ -29,6 +27,10 @@ public class Forest extends Frequency {
         this.featureSize = featureSize;
         this.shrinkParameter = shrinkParameter;
         w = new double[featureSize];
+    }
+
+    public double getMedian() {
+        return median;
     }
 
     public double getResultVariance() {
@@ -85,34 +87,12 @@ public class Forest extends Frequency {
             double leftVar = variance(resultLeft);
             double rightVar = variance(resultRight);
             double variance = resultVariance * shrinkParameter;
-            if (leftVar < variance || rightVar < variance) {//继续拆分
-                double[] left = getLimit(resultLeft);
-                double[] right = getLimit(resultRight);
-                forestLeft.setMin(left[0]);
-                forestLeft.setMax(left[1]);
-                forestRight.setMin(right[0]);
-                forestRight.setMax(right[1]);
-            } else {//不继续拆分
+            if (leftVar > variance && rightVar > variance) {//不进行拆分，回退
                 forestLeft = null;
                 forestRight = null;
+                median = 0;
             }
         }
-    }
-
-    public double getMin() {
-        return min;
-    }
-
-    public void setMin(double min) {
-        this.min = min;
-    }
-
-    public double getMax() {
-        return max;
-    }
-
-    public void setMax(double max) {
-        this.max = max;
     }
 
     public Matrix getConditionMatrix() {
