@@ -29,6 +29,15 @@ public class Knn {//KNN分类器
         }
     }
 
+    public int getNub(int type) {//获取该分类模型的数量
+        int nub = 0;
+        List<Matrix> list = featureMap.get(type);
+        if (list != null) {
+            nub = list.size();
+        }
+        return nub;
+    }
+
     public void insertMatrix(Matrix vector, int tag) throws Exception {
         if (vector.isVector() && vector.isRowVector()) {
             if (featureMap.size() == 0) {
