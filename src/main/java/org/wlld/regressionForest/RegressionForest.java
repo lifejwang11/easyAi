@@ -4,6 +4,8 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.tools.Frequency;
 
+import java.util.Arrays;
+
 /**
  * @param
  * @DATA
@@ -21,14 +23,14 @@ public class RegressionForest extends Frequency {
     private double min;//结果最小值
     private double max;//结果最大值
 
-    public RegressionForest(int size, int featureNub) throws Exception {//初始化
+    public RegressionForest(int size, int featureNub, double shrinkParameter) throws Exception {//初始化
         if (size > 0 && featureNub > 0) {
             this.featureNub = featureNub;
             w = new double[featureNub];
             results = new double[size];
             conditionMatrix = new Matrix(size, featureNub);
             resultMatrix = new Matrix(size, 1);
-            forest = new Forest(featureNub, 0.9);
+            forest = new Forest(featureNub, shrinkParameter);
             forest.setW(w);
             forest.setConditionMatrix(conditionMatrix);
             forest.setResultMatrix(resultMatrix);
@@ -90,7 +92,7 @@ public class RegressionForest extends Frequency {
     }
 
     public void insertFeature(double[] feature, double result) throws Exception {//插入数据
-        if (feature.length == featureNub) {
+        if (feature.length == featureNub - 1) {
             for (int i = 0; i < featureNub; i++) {
                 if (i < featureNub - 1) {
                     conditionMatrix.setNub(xIndex, i, feature[i]);
@@ -106,8 +108,10 @@ public class RegressionForest extends Frequency {
         }
     }
 
-    public void start() throws Exception {//开始进行分段
+    public void startStudy() throws Exception {//开始进行分段
         if (forest != null) {
+            //计算方差
+            forest.setResultVariance(variance(results));
             double[] limit = getLimit(results);
             min = limit[0];
             max = limit[1];
@@ -150,10 +154,12 @@ public class RegressionForest extends Frequency {
     private void regression(Forest forest) throws Exception {//对分段进行线性回归
         Matrix conditionMatrix = forest.getConditionMatrix();
         Matrix resultMatrix = forest.getResultMatrix();
-        double[] w = forest.getW();
         Matrix ws = MatrixOperation.getLinearRegression(conditionMatrix, resultMatrix);
+        double[] w = forest.getW();
         for (int i = 0; i < ws.getX(); i++) {
             w[i] = ws.getNumber(i, 0);
         }
+        System.out.println(Arrays.toString(w));
+        System.out.println("==========================");
     }
 }
