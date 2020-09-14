@@ -5,6 +5,9 @@ import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.tools.Frequency;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * @param
@@ -22,6 +25,16 @@ public class RegressionForest extends Frequency {
     private double[] results;//结果数组
     private double min;//结果最小值
     private double max;//结果最大值
+    private Matrix pc;//需要映射的基
+    private int cosSize = 10;//cos 分成几份
+
+    public int getCosSize() {
+        return cosSize;
+    }
+
+    public void setCosSize(int cosSize) {
+        this.cosSize = cosSize;
+    }
 
     public RegressionForest(int size, int featureNub, double shrinkParameter) throws Exception {//初始化
         if (size > 0 && featureNub > 0) {
@@ -30,7 +43,8 @@ public class RegressionForest extends Frequency {
             results = new double[size];
             conditionMatrix = new Matrix(size, featureNub);
             resultMatrix = new Matrix(size, 1);
-            forest = new Forest(featureNub, shrinkParameter);
+            createG();
+            forest = new Forest(featureNub, shrinkParameter, pc);
             forest.setW(w);
             forest.setConditionMatrix(conditionMatrix);
             forest.setResultMatrix(resultMatrix);
@@ -88,6 +102,62 @@ public class RegressionForest extends Frequency {
             return getLimitRegion(forestSon, isMax);
         } else {
             return forest;
+        }
+    }
+
+    private void createG() throws Exception {//生成新基
+        double[] cg = new double[featureNub - 1];
+        Random random = new Random();
+        double sigma = 0;
+        for (int i = 0; i < featureNub - 1; i++) {
+            double rm = random.nextDouble();
+            cg[i] = rm;
+            sigma = sigma + Math.pow(rm, 2);
+        }
+        double cosOne = 1.0D / cosSize;
+        double[] ag = new double[cosSize - 1];//装一个维度内所有角度的余弦值
+        for (int i = 1; i < cosSize; i++) {
+            double cos = cosOne * i;
+            ag[i] = Math.sqrt(sigma / (1 / Math.pow(cos, 2) - 1));
+        }
+        int x = (cosSize - 1) * featureNub;
+        pc = new Matrix(x, featureNub);
+        for (int i = 0; i < featureNub; i++) {//遍历所有的固定基
+            //以某个固定基摆动的所有新基集合的矩阵
+            Matrix matrix = new Matrix(ag.length, featureNub);
+            for (int j = 0; j < ag.length; j++) {
+                for (int k = 0; k < featureNub; k++) {
+                    if (k != i) {
+                        if (k < i) {
+                            matrix.setNub(j, k, cg[k]);
+                        } else {
+                            matrix.setNub(j, k, cg[k - 1]);
+                        }
+                    } else {
+                        matrix.setNub(j, k, ag[j]);
+                    }
+                }
+            }
+            //将一个固定基内摆动的新基都装到最大的集合内
+            int index = (cosSize - 1) * i;
+            push(pc, matrix, index);
+        }
+    }
+
+    //将两个矩阵从上到下进行合并
+    private void push(Matrix mother, Matrix son, int index) throws Exception {
+        if (mother.getY() == son.getY()) {
+            int x = index + son.getX();
+            int y = mother.getY();
+            int start = 0;
+            for (int i = index; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    mother.setNub(i, j, son.getNumber(start, j));
+                }
+                start++;
+            }
+        } else {
+            throw new Exception("matrix Y is not equals");
         }
     }
 

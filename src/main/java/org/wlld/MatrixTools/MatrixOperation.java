@@ -243,7 +243,7 @@ public class MatrixOperation {
             double nub = 0;
             for (int i = 0; i < matrix.getX(); i++) {
                 for (int j = 0; j < matrix.getY(); j++) {
-                    nub = ArithUtil.add(Math.pow(matrix.getNumber(i, j), 2), nub);
+                    nub = Math.pow(matrix.getNumber(i, j), 2) + nub;
                 }
             }
             return Math.sqrt(nub);

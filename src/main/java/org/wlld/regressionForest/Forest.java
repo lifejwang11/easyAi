@@ -1,12 +1,10 @@
 package org.wlld.regressionForest;
 
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.tools.Frequency;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 
 /**
@@ -24,13 +22,16 @@ public class Forest extends Frequency {
     private double resultVariance;//结果矩阵方差
     private double median;//结果矩阵中位数
     private double shrinkParameter;//方差收缩参数
-    private Matrix pc;//需要映射的基
+    private Matrix pc;//需要映射的基的集合
+    private Matrix pc1;//需要映射的基
     private double[] w;
-    private int cosSize = 10;//cos 分成几份
+    private boolean isOldG = true;//是否使用老基
+    private int oldGId = 0;//老基的id
 
-    public Forest(int featureSize, double shrinkParameter) {
+    public Forest(int featureSize, double shrinkParameter, Matrix pc) {
         this.featureSize = featureSize;
         this.shrinkParameter = shrinkParameter;
+        this.pc = pc;
         w = new double[featureSize];
     }
 
@@ -57,44 +58,22 @@ public class Forest extends Frequency {
         return equalNub;
     }
 
-    private void createG() throws Exception {//生成新基
-        double[] cg = new double[featureSize - 1];
-        Random random = new Random();
-        double sigma = 0;
-        for (int i = 0; i < featureSize - 1; i++) {
-            double rm = random.nextDouble();
-            cg[i] = rm;
-            sigma = sigma + Math.pow(rm, 2);
-        }
-        double cosOne = 1.0D / cosSize;
-        double[] ag = new double[cosSize - 1];
-        for (int i = 1; i < cosSize; i++) {
-            double cos = cosOne * i;
-            ag[i] = Math.sqrt(sigma / (1 / Math.pow(cos, 2) - 1));
-        }
-        int x = (cosSize - 1) * featureSize;
-        pc = new Matrix(x, featureSize);
-        for (int i = 0; i < featureSize; i++) {
-            Matrix matrix = new Matrix(ag.length, featureSize);
-            for (int j = 0; j < ag.length; j++) {
-                for (int k = 0; k < featureSize; k++) {
-                    if (k != i) {
-                        if (k < i) {
-                            matrix.setNub(j, k, cg[k]);
-                        } else {
-                            matrix.setNub(j, k, cg[k - 1]);
-                        }
-                    } else {
-                        matrix.setNub(j, k, ag[j]);
-                    }
+    private void findG() throws Exception {//寻找新的切入维度
+        // 先尝试从原有维度切入
+        int xSize = conditionMatrix.getX();
+        int ySize = conditionMatrix.getY();
+        Matrix matrix = new Matrix(xSize, ySize);
+        for (int i = 0; i < xSize; i++) {
+            for (int j = 0; j < ySize; j++) {
+                if (j < ySize - 1) {
+                    matrix.setNub(i, j, conditionMatrix.getNumber(i, j));
+                } else {
+                    matrix.setNub(i, j, resultMatrix.getNumber(i, 0));
                 }
             }
         }
-    }
-
-    private void findG() throws Exception {//寻找新的切入维度
-        // 先尝试从原有维度切入
-        Map<Integer, Double> varMap = new HashMap<>();//保存原有维度方差
+        double maxOld = 0;
+        int type = 0;
         for (int i = 0; i < featureSize; i++) {
             double[] g = new double[conditionMatrix.getX()];
             for (int j = 0; j < g.length; j++) {
@@ -105,9 +84,41 @@ public class Forest extends Frequency {
                 }
             }
             double var = variance(g);//计算方差
-            varMap.put(i, var);
+            if (var > maxOld) {
+                maxOld = var;
+                type = i;
+            }
         }
+        int x = pc.getX();
+        double max = 0;
+        for (int i = 0; i < x; i++) {
+            Matrix g = pc.getRow(i);
+            double gNorm = MatrixOperation.getNorm(g);
+            double[] var = new double[xSize];
+            for (int j = 0; j < xSize; j++) {
+                Matrix parameter = matrix.getRow(j);
+                double dist = transG(g, parameter, gNorm);
+                var[j] = dist;
+            }
+            double variance = variance(var);
+            if (variance > max) {
+                max = variance;
+                pc1 = g;
+            }
+        }
+        //找到非原始基最离散的新基
+        if (max > maxOld) {//使用新基
+            isOldG = false;
+        } else {//使用原有基
+            isOldG = true;
+            oldGId = type;
+        }
+    }
 
+    private double transG(Matrix g, Matrix parameter, double gNorm) throws Exception {//将数据映射到新基
+        //先求内积
+        double innerProduct = MatrixOperation.innerProduct(g, parameter);
+        return innerProduct / gNorm;
     }
 
     public void cut() throws Exception {
@@ -123,8 +134,8 @@ public class Forest extends Frequency {
             //检测中位数median有多少个一样的值
             int equalNub = getEqualNub(median, dm);
             //System.out.println("equalNub==" + equalNub + ",y==" + y);
-            forestLeft = new Forest(featureSize, shrinkParameter);
-            forestRight = new Forest(featureSize, shrinkParameter);
+            forestLeft = new Forest(featureSize, shrinkParameter, pc);
+            forestRight = new Forest(featureSize, shrinkParameter, pc);
             Matrix conditionMatrixLeft = new Matrix(z + equalNub, featureSize);//条件矩阵左
             Matrix conditionMatrixRight = new Matrix(y - z - equalNub, featureSize);//条件矩阵右
             Matrix resultMatrixLeft = new Matrix(z + equalNub, 1);//结果矩阵左
