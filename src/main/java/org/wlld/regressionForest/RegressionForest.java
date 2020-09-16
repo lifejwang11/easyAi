@@ -26,7 +26,7 @@ public class RegressionForest extends Frequency {
     private double min;//结果最小值
     private double max;//结果最大值
     private Matrix pc;//需要映射的基
-    private int cosSize = 10;//cos 分成几份
+    private int cosSize = 20;//cos 分成几份
 
     public int getCosSize() {
         return cosSize;
@@ -116,8 +116,8 @@ public class RegressionForest extends Frequency {
         }
         double cosOne = 1.0D / cosSize;
         double[] ag = new double[cosSize - 1];//装一个维度内所有角度的余弦值
-        for (int i = 1; i < cosSize; i++) {
-            double cos = cosOne * i;
+        for (int i = 0; i < cosSize - 1; i++) {
+            double cos = cosOne * (i + 1);
             ag[i] = Math.sqrt(sigma / (1 / Math.pow(cos, 2) - 1));
         }
         int x = (cosSize - 1) * featureNub;

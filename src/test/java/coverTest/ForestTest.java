@@ -20,8 +20,9 @@ public class ForestTest {
     public static void test() throws Exception {//对分段回归进行测试
         int size = 2000;
         RegressionForest regressionForest = new RegressionForest(size, 3, 0.2);
-        List<double[]> a = fun(0.1, 0.2, 0.3, size);
-        List<double[]> b = fun(0.3, 0.2, 0.1, size);
+        regressionForest.setCosSize(40);
+        List<double[]> a = fun(0.1, 0.2, 0.3, size, 2, 1);
+        List<double[]> b = fun(0.3, 0.2, 0.1, size, 2, 2);
         for (int i = 0; i < 1000; i++) {
             double[] featureA = a.get(i);
             double[] featureB = b.get(i);
@@ -54,12 +55,14 @@ public class ForestTest {
 
     }
 
-    public static List<double[]> fun(double w1, double w2, double w3, int size) {//生成假数据
+    public static List<double[]> fun(double w1, double w2, double w3, int size, int region, int index) {//生成假数据
         List<double[]> list = new ArrayList<>();
         Random random = new Random();
+        int nub = (index - 1) * 100;
+        double max = region * 100;
         for (int i = 0; i < size; i++) {
+            double b = (double) (random.nextInt(100) + nub) / max;
             double a = random.nextDouble();
-            double b = random.nextDouble();
             double c = w1 * a + w2 * b + w3;
             double[] data = new double[]{a, b, c};
             list.add(data);
