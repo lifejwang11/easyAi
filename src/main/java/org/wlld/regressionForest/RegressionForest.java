@@ -188,6 +188,8 @@ public class RegressionForest extends Frequency {
             start(forest);
             //进行回归
             regression();
+            //进行剪枝
+            pruning();
         } else {
             throw new Exception("rootForest is null");
         }
@@ -200,6 +202,24 @@ public class RegressionForest extends Frequency {
         if (forestLeft != null && forestRight != null) {
             start(forestLeft);
             start(forestRight);
+        }
+    }
+
+    private void pruning() throws Exception {
+        if (forest != null) {
+            pruningTree(forest);
+        } else {
+            throw new Exception("rootForest is null");
+        }
+    }
+
+    private void pruningTree(Forest forest) {
+        if (forest != null) {
+            forest.pruning();
+            Forest forestRight = forest.getForestRight();
+            pruningTree(forestRight);
+            Forest forestLeft = forest.getForestLeft();
+            pruningTree(forestLeft);
         }
     }
 

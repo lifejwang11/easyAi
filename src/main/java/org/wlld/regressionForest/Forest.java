@@ -150,7 +150,29 @@ public class Forest extends Frequency {
         return data;
     }
 
-    public void pruning() {//进行剪枝
+    private double getDist(double[] data) {
+        int len = data.length;
+        double sigma = 0;
+        for (int i = 0; i < len; i++) {
+            double sub = data[i] - w[i];
+            sigma = sigma + Math.pow(sub, 2);
+        }
+        return sigma / len;
+    }
+
+    public void pruning() {//进行后剪枝
+        if (forestLeft != null) {
+            double leftDist = getDist(forestLeft.getW());
+            if (leftDist < shrinkParameter) {//剪枝
+                forestLeft = null;
+            }
+        }
+        if (forestRight != null) {
+            double rightDist = getDist(forestRight.getW());
+            if (rightDist < shrinkParameter) {
+                forestRight = null;
+            }
+        }
 
     }
 
