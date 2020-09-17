@@ -150,6 +150,10 @@ public class Forest extends Frequency {
         return data;
     }
 
+    public void pruning() {//进行剪枝
+
+    }
+
     public void cut() throws Exception {
         int y = resultMatrix.getX();
         if (y > 8) {
@@ -159,7 +163,6 @@ public class Forest extends Frequency {
             median = dm[z];
             //检测中位数median有多少个一样的值
             int equalNub = getEqualNub(median, dm);
-            ////////////
             forestLeft = new Forest(featureSize, shrinkParameter, pc);
             forestRight = new Forest(featureSize, shrinkParameter, pc);
             Matrix conditionMatrixLeft = new Matrix(z + equalNub, featureSize);//条件矩阵左
@@ -172,51 +175,29 @@ public class Forest extends Frequency {
             forestRight.setResultMatrix(resultMatrixRight);
             int leftIndex = 0;//左矩阵添加行数
             int rightIndex = 0;//右矩阵添加行数
-            double[] resultLeft = new double[z + equalNub];
-            double[] resultRight = new double[y - z - equalNub];
-            //////
             for (int i = 0; i < y; i++) {
                 double nub;
                 if (isOldG) {//使用原有基
-                    if (oldGId == featureSize - 1) {//从结果矩阵提取数据
-                        nub = resultMatrix.getNumber(i, 0);
-                    } else {//从条件矩阵中提取数据
-                        nub = conditionMatrix.getNumber(i, oldGId);
-                    }
+                    nub = matrixAll.getNumber(i, oldGId);
                 } else {//使用新基
                     Matrix parameter = matrixAll.getRow(i);
                     nub = transG(pc1, parameter, gNorm);
                 }
-                //double nub = resultMatrix.getNumber(i, 0);//结果矩阵
                 if (nub > median) {//进入右森林并计算右森林结果矩阵方差
                     for (int j = 0; j < featureSize; j++) {//进入右森林的条件矩阵
                         conditionMatrixRight.setNub(rightIndex, j, conditionMatrix.getNumber(i, j));
                     }
-                    resultRight[rightIndex] = nub;
-                    resultMatrixRight.setNub(rightIndex, 0, nub);
+                    resultMatrixRight.setNub(rightIndex, 0, resultMatrix.getNumber(i, 0));
                     rightIndex++;
                 } else {//进入左森林并计算左森林结果矩阵方差
                     for (int j = 0; j < featureSize; j++) {//进入右森林的条件矩阵
                         conditionMatrixLeft.setNub(leftIndex, j, conditionMatrix.getNumber(i, j));
                     }
-                    resultLeft[leftIndex] = nub;
-                    resultMatrixLeft.setNub(leftIndex, 0, nub);
+                    resultMatrixLeft.setNub(leftIndex, 0, resultMatrix.getNumber(i, 0));
                     leftIndex++;
                 }
             }
-            //分区完成，计算两棵树结果矩阵的方差
-            double leftVar = variance(resultLeft);
-            double rightVar = variance(resultRight);
-            double variance = resultVariance * shrinkParameter;
-            System.out.println("var==" + variance + ",leftVar==" + leftVar + ",rightVar==" + rightVar);
-            if (leftVar > variance && rightVar > variance) {//不进行拆分，回退
-                forestLeft = null;
-                forestRight = null;
-                median = 0;
-            } else {
-                forestLeft.setResultVariance(leftVar);
-                forestRight.setResultVariance(rightVar);
-            }
+            //分区完成
         }
     }
 

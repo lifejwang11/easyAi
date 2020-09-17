@@ -32,8 +32,6 @@ public class ForestTest {
             regressionForest.insertFeature(testB, featureB[2]);
         }
         regressionForest.startStudy();
-        regressionForest.regression();//这里进行回归
-
         double sigma = 0;
         for (int i = 0; i < 1000; i++) {
             double[] feature = a.get(i);

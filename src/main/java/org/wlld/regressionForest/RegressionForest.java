@@ -186,6 +186,8 @@ public class RegressionForest extends Frequency {
             min = limit[0];
             max = limit[1];
             start(forest);
+            //进行回归
+            regression();
         } else {
             throw new Exception("rootForest is null");
         }
@@ -199,10 +201,9 @@ public class RegressionForest extends Frequency {
             start(forestLeft);
             start(forestRight);
         }
-
     }
 
-    public void regression() throws Exception {//开始进行回归
+    private void regression() throws Exception {//开始进行回归
         if (forest != null) {
             regressionTree(forest);
         } else {
