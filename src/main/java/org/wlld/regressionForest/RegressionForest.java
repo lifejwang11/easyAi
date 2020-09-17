@@ -250,7 +250,6 @@ public class RegressionForest extends Frequency {
         for (int i = 0; i < ws.getX(); i++) {
             w[i] = ws.getNumber(i, 0);
         }
-        System.out.println(Arrays.toString(w));
-        System.out.println("==========================");
+
     }
 }
