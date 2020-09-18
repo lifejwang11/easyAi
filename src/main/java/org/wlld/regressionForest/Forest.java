@@ -97,7 +97,7 @@ public class Forest extends Frequency {
                 pc1 = g;
             }
         }
-        //找到非原始基最离散的新基
+        //找到非原始基最离散的新基:
         if (max > maxOld) {//使用新基
             isOldG = false;
         } else {//使用原有基
@@ -150,17 +150,18 @@ public class Forest extends Frequency {
     }
 
     public void pruning() {//进行后剪枝
+        System.out.println("执行了剪枝====");
         if (forestLeft != null) {
             double leftDist = getDist(forestLeft.getW());
-            System.out.println("左剪枝阈值：" + leftDist);
             if (leftDist < shrinkParameter) {//剪枝
+                System.out.println("成功左剪枝阈值：" + leftDist + ",阈值:" + shrinkParameter);
                 forestLeft = null;
             }
         }
         if (forestRight != null) {
             double rightDist = getDist(forestRight.getW());
-            System.out.println("右剪枝阈值：" + rightDist);
             if (rightDist < shrinkParameter) {
+                System.out.println("成功右剪枝阈值：" + rightDist + ",阈值:" + shrinkParameter);
                 forestRight = null;
             }
         }
@@ -170,6 +171,7 @@ public class Forest extends Frequency {
     public void cut() throws Exception {
         int y = resultMatrix.getX();
         if (y > 200) {
+            System.out.println("-======================");
             double[] dm = findG();
             int z = y / 2;
             median = dm[z];

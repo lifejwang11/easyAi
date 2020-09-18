@@ -19,10 +19,10 @@ public class ForestTest {
 
     public static void test() throws Exception {//对分段回归进行测试
         int size = 2000;
-        RegressionForest regressionForest = new RegressionForest(size, 3, 0.02);
+        RegressionForest regressionForest = new RegressionForest(size, 3, 0.01);
         regressionForest.setCosSize(40);
         List<double[]> a = fun(0.1, 0.2, 0.3, size, 2, 1);
-        List<double[]> b = fun(0.3, 0.2, 0.1, size, 2, 2);
+        List<double[]> b = fun(0.7, 0.3, 0.1, size, 2, 2);
         for (int i = 0; i < 1000; i++) {
             double[] featureA = a.get(i);
             double[] featureB = b.get(i);
@@ -32,21 +32,24 @@ public class ForestTest {
             regressionForest.insertFeature(testB, featureB[2]);
         }
         regressionForest.startStudy();
+        ///
+        List<double[]> a1 = fun(0.1, 0.2, 0.3, size, 2, 1);
+        List<double[]> b1 = fun(0.3, 0.2, 0.6, size, 2, 2);
         double sigma = 0;
         for (int i = 0; i < 1000; i++) {
-            double[] feature = a.get(i);
+            double[] feature = a1.get(i);
             double[] test = new double[]{feature[0], feature[1]};
             double dist = regressionForest.getDist(test, feature[2]);
-            sigma = sigma + Math.pow(dist, 2);
+            sigma = sigma + dist;
         }
         double avs = sigma / size;
         System.out.println("a误差：" + avs);
         sigma = 0;
         for (int i = 0; i < 1000; i++) {
-            double[] feature = b.get(i);
+            double[] feature = b1.get(i);
             double[] test = new double[]{feature[0], feature[1]};
             double dist = regressionForest.getDist(test, feature[2]);
-            sigma = sigma + Math.pow(dist, 2);
+            sigma = sigma + dist;
         }
         double avs2 = sigma / size;
         System.out.println("b误差：" + avs2);

@@ -215,8 +215,8 @@ public class RegressionForest extends Frequency {
         if (forest != null) {
             forest.pruning();
             Forest forestRight = forest.getForestRight();
-            pruningTree(forestRight);
             Forest forestLeft = forest.getForestLeft();
+            pruningTree(forestRight);
             pruningTree(forestLeft);
         }
     }
