@@ -19,7 +19,7 @@ public class ForestTest {
 
     public static void test() throws Exception {//对分段回归进行测试
         int size = 2000;
-        RegressionForest regressionForest = new RegressionForest(size, 3, 0.2);
+        RegressionForest regressionForest = new RegressionForest(size, 3, 0.02);
         regressionForest.setCosSize(40);
         List<double[]> a = fun(0.1, 0.2, 0.3, size, 2, 1);
         List<double[]> b = fun(0.3, 0.2, 0.1, size, 2, 2);

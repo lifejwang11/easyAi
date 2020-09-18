@@ -79,16 +79,14 @@ public class RegressionForest extends Frequency {
 
     private Forest getRegion(Forest forest, double result) {
         double median = forest.getMedian();
-        if (median > 0) {//进行了拆分
-            if (result > median) {//向右走
-                forest = forest.getForestRight();
-            } else {//向左走
-                forest = forest.getForestLeft();
-            }
-            return getRegion(forest, result);
-        } else {//没有拆分
+        if (result > median && forest.getForestRight() != null) {//向右走
+            forest = forest.getForestRight();
+        } else if (result <= median && forest.getForestLeft() != null) {//向左走
+            forest = forest.getForestLeft();
+        } else {
             return forest;
         }
+        return getRegion(forest, result);
     }
 
     private Forest getLimitRegion(Forest forest, boolean isMax) {

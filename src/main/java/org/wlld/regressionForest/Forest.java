@@ -49,17 +49,6 @@ public class Forest extends Frequency {
         this.resultVariance = resultVariance;
     }
 
-    //检测中位数median有多少个一样的值
-    private int getEqualNub(double median, double[] dm) {
-        int equalNub = 0;
-        for (int i = 0; i < dm.length; i++) {
-            if (median == dm[i]) {
-                equalNub++;
-            }
-        }
-        return equalNub;
-    }
-
     private double[] findG() throws Exception {//寻找新的切入维度
         // 先尝试从原有维度切入
         int xSize = conditionMatrix.getX();
@@ -163,12 +152,14 @@ public class Forest extends Frequency {
     public void pruning() {//进行后剪枝
         if (forestLeft != null) {
             double leftDist = getDist(forestLeft.getW());
+            System.out.println("左剪枝阈值：" + leftDist);
             if (leftDist < shrinkParameter) {//剪枝
                 forestLeft = null;
             }
         }
         if (forestRight != null) {
             double rightDist = getDist(forestRight.getW());
+            System.out.println("右剪枝阈值：" + rightDist);
             if (rightDist < shrinkParameter) {
                 forestRight = null;
             }
@@ -178,19 +169,25 @@ public class Forest extends Frequency {
 
     public void cut() throws Exception {
         int y = resultMatrix.getX();
-        if (y > 8) {
+        if (y > 200) {
             double[] dm = findG();
-            Arrays.sort(dm);//排序
             int z = y / 2;
             median = dm[z];
-            //检测中位数median有多少个一样的值
-            int equalNub = getEqualNub(median, dm);
+            int rightNub = 0;
+            int leftNub = 0;
+            for (int i = 0; i < dm.length; i++) {
+                if (dm[i] > median) {
+                    rightNub++;
+                } else {
+                    leftNub++;
+                }
+            }
             forestLeft = new Forest(featureSize, shrinkParameter, pc);
             forestRight = new Forest(featureSize, shrinkParameter, pc);
-            Matrix conditionMatrixLeft = new Matrix(z + equalNub, featureSize);//条件矩阵左
-            Matrix conditionMatrixRight = new Matrix(y - z - equalNub, featureSize);//条件矩阵右
-            Matrix resultMatrixLeft = new Matrix(z + equalNub, 1);//结果矩阵左
-            Matrix resultMatrixRight = new Matrix(y - z - equalNub, 1);//结果矩阵右
+            Matrix conditionMatrixLeft = new Matrix(leftNub, featureSize);//条件矩阵左
+            Matrix conditionMatrixRight = new Matrix(rightNub, featureSize);//条件矩阵右
+            Matrix resultMatrixLeft = new Matrix(leftNub, 1);//结果矩阵左
+            Matrix resultMatrixRight = new Matrix(rightNub, 1);//结果矩阵右
             forestLeft.setConditionMatrix(conditionMatrixLeft);
             forestLeft.setResultMatrix(resultMatrixLeft);
             forestRight.setConditionMatrix(conditionMatrixRight);
