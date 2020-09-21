@@ -29,12 +29,20 @@ public class Forest extends Frequency {
     private int oldGId = 0;//老基的id
     private Matrix matrixAll;//全矩阵
     private double gNorm;//新维度的摸
+    private Forest father;//父级
+    private Map<Integer, Forest> forestMap;//尽头列表
+    private int id;//本节点的id
+    private boolean isRemove = false;//是否已经被移除了
+    private boolean notRemovable = false;//不可移除
 
-    public Forest(int featureSize, double shrinkParameter, Matrix pc) {
+    public Forest(int featureSize, double shrinkParameter, Matrix pc, Map<Integer, Forest> forestMap
+            , int id) {
         this.featureSize = featureSize;
         this.shrinkParameter = shrinkParameter;
         this.pc = pc;
         w = new double[featureSize];
+        this.forestMap = forestMap;
+        this.id = id;
     }
 
     public double getMedian() {
@@ -139,7 +147,7 @@ public class Forest extends Frequency {
         return data;
     }
 
-    private double getDist(double[] data) {
+    private double getDist(double[] data, double[] w) {
         int len = data.length;
         double sigma = 0;
         for (int i = 0; i < len; i++) {
@@ -149,23 +157,30 @@ public class Forest extends Frequency {
         return sigma / len;
     }
 
-    public void pruning() {//进行后剪枝
+    public void pruning() {//进行后剪枝，跟父级进行比较
         System.out.println("执行了剪枝====");
-        if (forestLeft != null) {
-            double leftDist = getDist(forestLeft.getW());
-            if (leftDist < shrinkParameter) {//剪枝
-                System.out.println("成功左剪枝阈值：" + leftDist + ",阈值:" + shrinkParameter);
-                forestLeft = null;
+        if (!notRemovable) {
+            Forest fatherForest = this.getFather();
+            double[] fatherW = fatherForest.getW();
+            double sub = getDist(w, fatherW);
+            if (sub < shrinkParameter) {//需要剪枝,通知父级
+
+            } else {//通知父级，不需要剪枝,并将父级改为不可移除
+
             }
         }
-        if (forestRight != null) {
-            double rightDist = getDist(forestRight.getW());
-            if (rightDist < shrinkParameter) {
-                System.out.println("成功右剪枝阈值：" + rightDist + ",阈值:" + shrinkParameter);
+    }
+
+    public void getSonMessage(boolean isPruning, int myId) {//进行剪枝
+        if (isPruning) {//剪枝
+            if (myId == id * 2) {//左节点
+                forestLeft = null;
+            } else {//右节点
                 forestRight = null;
             }
+        } else {//不剪枝,将自己变为不可剪枝状态
+            notRemovable = true;
         }
-
     }
 
     public void cut() throws Exception {
@@ -184,8 +199,14 @@ public class Forest extends Frequency {
                     leftNub++;
                 }
             }
-            forestLeft = new Forest(featureSize, shrinkParameter, pc);
-            forestRight = new Forest(featureSize, shrinkParameter, pc);
+            int leftId = 2 * id;
+            int rightId = leftId + 1;
+            forestLeft = new Forest(featureSize, shrinkParameter, pc, forestMap, leftId);
+            forestRight = new Forest(featureSize, shrinkParameter, pc, forestMap, rightId);
+            forestMap.put(leftId, forestLeft);
+            forestMap.put(rightId, forestRight);
+            forestRight.setFather(this);
+            forestLeft.setFather(this);
             Matrix conditionMatrixLeft = new Matrix(leftNub, featureSize);//条件矩阵左
             Matrix conditionMatrixRight = new Matrix(rightNub, featureSize);//条件矩阵右
             Matrix resultMatrixLeft = new Matrix(leftNub, 1);//结果矩阵左
@@ -252,5 +273,29 @@ public class Forest extends Frequency {
 
     public Forest getForestRight() {
         return forestRight;
+    }
+
+    public Forest getFather() {
+        return father;
+    }
+
+    public void setFather(Forest father) {
+        this.father = father;
+    }
+
+    public boolean isRemove() {
+        return isRemove;
+    }
+
+    public void setRemove(boolean remove) {
+        isRemove = remove;
+    }
+
+    public boolean isNotRemovable() {
+        return notRemovable;
+    }
+
+    public void setNotRemovable(boolean notRemovable) {
+        this.notRemovable = notRemovable;
     }
 }

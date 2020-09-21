@@ -4,10 +4,7 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.tools.Frequency;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * @param
@@ -27,6 +24,7 @@ public class RegressionForest extends Frequency {
     private double max;//结果最大值
     private Matrix pc;//需要映射的基
     private int cosSize = 20;//cos 分成几份
+    private TreeMap<Integer, Forest> forestMap = new TreeMap<>();//节点列表
 
     public int getCosSize() {
         return cosSize;
@@ -44,7 +42,8 @@ public class RegressionForest extends Frequency {
             conditionMatrix = new Matrix(size, featureNub);
             resultMatrix = new Matrix(size, 1);
             createG();
-            forest = new Forest(featureNub, shrinkParameter, pc);
+            forest = new Forest(featureNub, shrinkParameter, pc, forestMap, 1);
+            forestMap.put(1, forest);
             forest.setW(w);
             forest.setConditionMatrix(conditionMatrix);
             forest.setResultMatrix(resultMatrix);
@@ -203,21 +202,26 @@ public class RegressionForest extends Frequency {
         }
     }
 
-    private void pruning() throws Exception {
-        if (forest != null) {
-            pruningTree(forest);
-        } else {
-            throw new Exception("rootForest is null");
+    private void pruning() throws Exception {//剪枝
+        //先获取当前最大id
+        int max = forestMap.lastKey();
+        int layersNub = (int) (Math.log(max) / Math.log(2)) + 1;//当前的层数
+        int lastMin = (int) Math.pow(2, layersNub - 1);//最后一层最小的id
+        if (layersNub > 1) {//先遍历最后一层
+            for (Map.Entry<Integer, Forest> entry : forestMap.entrySet()) {
+                if (entry.getKey() >= lastMin) {
+                    Forest forest = entry.getValue();
+
+                }
+            }
         }
     }
 
     private void pruningTree(Forest forest) {
         if (forest != null) {
             forest.pruning();
-            Forest forestRight = forest.getForestRight();
-            Forest forestLeft = forest.getForestLeft();
-            pruningTree(forestRight);
-            pruningTree(forestLeft);
+            Forest father = forest.getFather();
+            pruningTree(father);
         }
     }
 

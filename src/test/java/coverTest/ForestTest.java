@@ -1,10 +1,9 @@
 package coverTest;
 
+import org.wlld.randomForest.Tree;
 import org.wlld.regressionForest.RegressionForest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * @param
@@ -14,7 +13,16 @@ import java.util.Random;
  */
 public class ForestTest {
     public static void main(String[] args) throws Exception {
-        test();
+        //test();
+        //int a = (int) (Math.log(4) / Math.log(2));//id22是第几层
+        //double a = Math.pow(2, 5) - 1; 第五层的第一个数
+        // System.out.println("a==" + a);
+        TreeMap<Integer, String> map = new TreeMap<>();
+        map.put(5, "a");
+        map.put(3, "b");
+        map.put(4, "c");
+        map.put(6, "d");
+        map.put(7, "e");
     }
 
     public static void test() throws Exception {//对分段回归进行测试
@@ -34,7 +42,7 @@ public class ForestTest {
         regressionForest.startStudy();
         ///
         List<double[]> a1 = fun(0.1, 0.2, 0.3, size, 2, 1);
-        List<double[]> b1 = fun(0.3, 0.2, 0.6, size, 2, 2);
+        List<double[]> b1 = fun(0.7, 0.3, 0.1, size, 2, 2);
         double sigma = 0;
         for (int i = 0; i < 1000; i++) {
             double[] feature = a1.get(i);
