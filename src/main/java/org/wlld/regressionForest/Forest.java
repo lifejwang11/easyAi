@@ -165,6 +165,7 @@ public class Forest extends Frequency {
             if (sub < shrinkParameter) {//需要剪枝,通知父级
                 fatherForest.getSonMessage(true, id);
                 isRemove = true;
+                //System.out.println("剪枝id==" + id + ",sub==" + sub + ",th==" + shrinkParameter);
             } else {//通知父级，不需要剪枝,并将父级改为不可移除
                 fatherForest.getSonMessage(false, id);
             }
@@ -186,7 +187,6 @@ public class Forest extends Frequency {
     public void cut() throws Exception {
         int y = resultMatrix.getX();
         if (y > 200) {
-            System.out.println("-======================");
             double[] dm = findG();
             int z = y / 2;
             median = dm[z];
@@ -201,10 +201,10 @@ public class Forest extends Frequency {
             }
             int leftId = 2 * id;
             int rightId = leftId + 1;
+            //System.out.println("id:" + id + ",size:" + dm.length);
+            forestMap.put(id, this);
             forestLeft = new Forest(featureSize, shrinkParameter, pc, forestMap, leftId);
             forestRight = new Forest(featureSize, shrinkParameter, pc, forestMap, rightId);
-            forestMap.put(leftId, forestLeft);
-            forestMap.put(rightId, forestRight);
             forestRight.setFather(this);
             forestLeft.setFather(this);
             Matrix conditionMatrixLeft = new Matrix(leftNub, featureSize);//条件矩阵左

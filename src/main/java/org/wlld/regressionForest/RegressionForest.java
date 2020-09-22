@@ -216,7 +216,7 @@ public class RegressionForest extends Frequency {
             }
         }
         //每一层从下到上进行剪枝
-        for (int i = layersNub - 1; i > 0; i++) {
+        for (int i = layersNub - 1; i > 0; i--) {
             int min = (int) Math.pow(2, i);//最后一层最小的id
             int maxNub = (int) Math.pow(2, i + 1);
             for (Map.Entry<Integer, Forest> entry : forestMap.entrySet()) {

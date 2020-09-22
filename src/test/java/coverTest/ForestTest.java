@@ -13,16 +13,11 @@ import java.util.*;
  */
 public class ForestTest {
     public static void main(String[] args) throws Exception {
-        //test();
+        test();
         //int a = (int) (Math.log(4) / Math.log(2));//id22是第几层
         //double a = Math.pow(2, 5) - 1; 第五层的第一个数
         // System.out.println("a==" + a);
-        TreeMap<Integer, String> map = new TreeMap<>();
-        map.put(5, "a");
-        map.put(3, "b");
-        map.put(4, "c");
-        map.put(6, "d");
-        map.put(7, "e");
+
     }
 
     public static void test() throws Exception {//对分段回归进行测试
@@ -52,6 +47,8 @@ public class ForestTest {
         }
         double avs = sigma / size;
         System.out.println("a误差：" + avs);
+//        a误差：0.0017585065712555645
+//        b误差：0.00761733737464547
         sigma = 0;
         for (int i = 0; i < 1000; i++) {
             double[] feature = b1.get(i);
