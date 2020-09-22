@@ -34,15 +34,17 @@ public class Forest extends Frequency {
     private int id;//本节点的id
     private boolean isRemove = false;//是否已经被移除了
     private boolean notRemovable = false;//不可移除
+    private int minGrain;//最小粒度
 
     public Forest(int featureSize, double shrinkParameter, Matrix pc, Map<Integer, Forest> forestMap
-            , int id) {
+            , int id, int minGrain) {
         this.featureSize = featureSize;
         this.shrinkParameter = shrinkParameter;
         this.pc = pc;
         w = new double[featureSize];
         this.forestMap = forestMap;
         this.id = id;
+        this.minGrain = minGrain;
     }
 
     public double getMedian() {
@@ -186,7 +188,7 @@ public class Forest extends Frequency {
 
     public void cut() throws Exception {
         int y = resultMatrix.getX();
-        if (y > 200) {
+        if (y > minGrain) {
             double[] dm = findG();
             int z = y / 2;
             median = dm[z];
@@ -203,8 +205,8 @@ public class Forest extends Frequency {
             int rightId = leftId + 1;
             //System.out.println("id:" + id + ",size:" + dm.length);
             forestMap.put(id, this);
-            forestLeft = new Forest(featureSize, shrinkParameter, pc, forestMap, leftId);
-            forestRight = new Forest(featureSize, shrinkParameter, pc, forestMap, rightId);
+            forestLeft = new Forest(featureSize, shrinkParameter, pc, forestMap, leftId, minGrain);
+            forestRight = new Forest(featureSize, shrinkParameter, pc, forestMap, rightId, minGrain);
             forestRight.setFather(this);
             forestLeft.setFather(this);
             Matrix conditionMatrixLeft = new Matrix(leftNub, featureSize);//条件矩阵左

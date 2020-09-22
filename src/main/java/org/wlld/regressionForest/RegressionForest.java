@@ -34,7 +34,7 @@ public class RegressionForest extends Frequency {
         this.cosSize = cosSize;
     }
 
-    public RegressionForest(int size, int featureNub, double shrinkParameter) throws Exception {//初始化
+    public RegressionForest(int size, int featureNub, double shrinkParameter, int minGrain) throws Exception {//初始化
         if (size > 0 && featureNub > 0) {
             this.featureNub = featureNub;
             w = new double[featureNub];
@@ -42,7 +42,7 @@ public class RegressionForest extends Frequency {
             conditionMatrix = new Matrix(size, featureNub);
             resultMatrix = new Matrix(size, 1);
             createG();
-            forest = new Forest(featureNub, shrinkParameter, pc, forestMap, 1);
+            forest = new Forest(featureNub, shrinkParameter, pc, forestMap, 1, minGrain);
             forestMap.put(1, forest);
             forest.setW(w);
             forest.setConditionMatrix(conditionMatrix);
