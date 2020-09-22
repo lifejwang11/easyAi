@@ -158,15 +158,15 @@ public class Forest extends Frequency {
     }
 
     public void pruning() {//进行后剪枝，跟父级进行比较
-        System.out.println("执行了剪枝====");
         if (!notRemovable) {
             Forest fatherForest = this.getFather();
             double[] fatherW = fatherForest.getW();
             double sub = getDist(w, fatherW);
             if (sub < shrinkParameter) {//需要剪枝,通知父级
-
+                fatherForest.getSonMessage(true, id);
+                isRemove = true;
             } else {//通知父级，不需要剪枝,并将父级改为不可移除
-
+                fatherForest.getSonMessage(false, id);
             }
         }
     }

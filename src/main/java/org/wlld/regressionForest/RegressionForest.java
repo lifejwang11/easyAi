@@ -205,23 +205,40 @@ public class RegressionForest extends Frequency {
     private void pruning() throws Exception {//剪枝
         //先获取当前最大id
         int max = forestMap.lastKey();
-        int layersNub = (int) (Math.log(max) / Math.log(2)) + 1;//当前的层数
-        int lastMin = (int) Math.pow(2, layersNub - 1);//最后一层最小的id
+        int layersNub = (int) (Math.log(max) / Math.log(2));//当前的层数
+        int lastMin = (int) Math.pow(2, layersNub);//最后一层最小的id
         if (layersNub > 1) {//先遍历最后一层
             for (Map.Entry<Integer, Forest> entry : forestMap.entrySet()) {
                 if (entry.getKey() >= lastMin) {
                     Forest forest = entry.getValue();
-
+                    forest.pruning();
                 }
             }
         }
-    }
-
-    private void pruningTree(Forest forest) {
-        if (forest != null) {
-            forest.pruning();
-            Forest father = forest.getFather();
-            pruningTree(father);
+        //每一层从下到上进行剪枝
+        for (int i = layersNub - 1; i > 0; i++) {
+            int min = (int) Math.pow(2, i);//最后一层最小的id
+            int maxNub = (int) Math.pow(2, i + 1);
+            for (Map.Entry<Integer, Forest> entry : forestMap.entrySet()) {
+                int key = entry.getKey();
+                if (key >= min && key < maxNub) {//在范围内，进行剪枝
+                    entry.getValue().pruning();
+                } else if (key >= maxNub) {
+                    break;
+                }
+            }
+        }
+        //遍历所有节点，将删除的节点移除
+        List<Integer> list = new ArrayList<>();
+        for (Map.Entry<Integer, Forest> entry : forestMap.entrySet()) {
+            int key = entry.getKey();
+            Forest forest = entry.getValue();
+            if (forest.isRemove()) {
+                list.add(key);
+            }
+        }
+        for (int key : list) {
+            forestMap.remove(key);
         }
     }
 
