@@ -22,6 +22,22 @@ public class Knn {//KNN分类器
         featureMap.remove(type);
     }
 
+    public void revoke(int type, int nub) {//撤销一个类别最新的
+        List<Matrix> list = featureMap.get(type);
+        for (int i = 0; i < nub; i++) {
+            list.remove(list.size() - 1);
+        }
+    }
+
+    public int getNub(int type) {//获取该分类模型的数量
+        int nub = 0;
+        List<Matrix> list = featureMap.get(type);
+        if (list != null) {
+            nub = list.size();
+        }
+        return nub;
+    }
+
     public void insertMatrix(Matrix vector, int tag) throws Exception {
         if (vector.isVector() && vector.isRowVector()) {
             if (featureMap.size() == 0) {

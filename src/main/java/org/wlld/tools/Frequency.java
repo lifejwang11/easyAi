@@ -99,4 +99,23 @@ public abstract class Frequency {//统计频数
         }
         return ArithUtil.div(my, all);
     }
+
+    public double[] getLimit(double[] m) {//获取数组中的最大值和最小值，最小值在前，最大值在后
+        double[] limit = new double[2];
+        double max = 0;
+        double min = -1;
+        int l = m.length;
+        for (int i = 0; i < l; i++) {
+            double nub = m[i];
+            if (min == -1 || nub < min) {
+                min = nub;
+            }
+            if (nub > max) {
+                max = nub;
+            }
+        }
+        limit[0] = min;
+        limit[1] = max;
+        return limit;
+    }
 }
