@@ -1,18 +1,14 @@
 package coverTest;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.ModelData;
 import org.wlld.config.Classifier;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
-import org.wlld.function.Sigmod;
 import org.wlld.imageRecognition.*;
 import org.wlld.nerveEntity.ModelParameter;
-import org.wlld.tools.ArithUtil;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
