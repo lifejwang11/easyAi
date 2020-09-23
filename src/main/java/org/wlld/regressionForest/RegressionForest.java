@@ -52,22 +52,15 @@ public class RegressionForest extends Frequency {
         }
     }
 
-    public double getDist(double[] feature, double result) {//获取特征误差结果
-        Forest forestFinish;
-        if (result <= min) {//直接找下边界区域
-            forestFinish = getLimitRegion(forest, false);
-        } else if (result >= max) {//直接找到上边界区域
-            forestFinish = getLimitRegion(forest, true);
-        } else {
-            forestFinish = getRegion(forest, result);
-        }
+    public double getDist(Matrix featureMatrix, double result) throws Exception {//获取特征误差结果
+        Forest forestFinish = getRegion(forest, featureMatrix);
         //计算误差
         double[] w = forestFinish.getW();
         double sigma = 0;
         for (int i = 0; i < w.length; i++) {
             double nub;
             if (i < w.length - 1) {
-                nub = w[i] * feature[i];
+                nub = w[i] * featureMatrix.getNumber(0, i);
             } else {
                 nub = w[i];
             }
@@ -76,8 +69,9 @@ public class RegressionForest extends Frequency {
         return Math.abs(result - sigma);
     }
 
-    private Forest getRegion(Forest forest, double result) {
+    private Forest getRegion(Forest forest, Matrix matrix) throws Exception {
         double median = forest.getMedian();
+        double result = forest.getMappingFeature(matrix);
         if (result > median && forest.getForestRight() != null) {//向右走
             forest = forest.getForestRight();
         } else if (result <= median && forest.getForestLeft() != null) {//向左走
@@ -85,7 +79,7 @@ public class RegressionForest extends Frequency {
         } else {
             return forest;
         }
-        return getRegion(forest, result);
+        return getRegion(forest, matrix);
     }
 
     private Forest getLimitRegion(Forest forest, boolean isMax) {
@@ -202,7 +196,7 @@ public class RegressionForest extends Frequency {
         }
     }
 
-    private void pruning() throws Exception {//剪枝
+    private void pruning() {//剪枝
         //先获取当前最大id
         int max = forestMap.lastKey();
         int layersNub = (int) (Math.log(max) / Math.log(2));//当前的层数

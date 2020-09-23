@@ -59,6 +59,20 @@ public class Forest extends Frequency {
         this.resultVariance = resultVariance;
     }
 
+    public double getMappingFeature(Matrix feature) throws Exception {//获取映射后的特征
+        double nub;
+        if (feature.isRowVector()) {
+            if (isOldG) {//使用原有基
+                nub = feature.getNumber(0, oldGId);
+            } else {
+                nub = transG(pc1, feature, gNorm);
+            }
+        } else {
+            throw new Exception("feature is not a rowVector");
+        }
+        return nub;
+    }
+
     private double[] findG() throws Exception {//寻找新的切入维度
         // 先尝试从原有维度切入
         int xSize = conditionMatrix.getX();
