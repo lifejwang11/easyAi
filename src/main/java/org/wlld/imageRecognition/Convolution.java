@@ -82,7 +82,7 @@ public class Convolution extends Frequency {
                     meanClustering.setColor(color);
                 }
             }
-            meanClustering.start();
+            meanClustering.start(false);
             List<RGBNorm> rgbNorms = meanClustering.getMatrices();
             Collections.sort(rgbNorms, rgbSort);
             for (RGBNorm rgbNorm : rgbNorms) {
@@ -182,7 +182,7 @@ public class Convolution extends Frequency {
                 meanClustering.setColor(color);
             }
         }
-        meanClustering.start();
+        meanClustering.start(false);
         List<RGBNorm> rgbNorms = meanClustering.getMatrices();
         Collections.sort(rgbNorms, rgbSort);
         List<Double> features = new ArrayList<>();
@@ -203,32 +203,64 @@ public class Convolution extends Frequency {
     public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, int poolSize, TempleConfig templeConfig
             , int sqNub) throws Exception {
         RGBSort rgbSort = new RGBSort();
+        double dispersedThNub = templeConfig.getFood().getDispersedTh();
+        int step = templeConfig.getFood().getStep();
         MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
+        Matrix matrixH = threeChannelMatrix.getH();
         int xn = matrixR.getX();
         int yn = matrixR.getY();
-        for (int i = 0; i <= xn - size; i += size) {
-            for (int j = 0; j <= yn - size; j += size) {
-                Matrix sonR = late(matrixR.getSonOfMatrix(i, j, size, size), poolSize);
-                Matrix sonG = late(matrixG.getSonOfMatrix(i, j, size, size), poolSize);
-                Matrix sonB = late(matrixB.getSonOfMatrix(i, j, size, size), poolSize);
-                int tSize = sonR.getX();
-                int kSize = sonR.getY();
-                double[] rgb = new double[tSize * kSize * 3];
-                for (int t = 0; t < tSize; t++) {
-                    for (int k = 0; k < kSize; k++) {
-                        int index = t * kSize + k;
-                        rgb[index] = sonR.getNumber(t, k);
-                        rgb[tSize * kSize + index] = sonG.getNumber(t, k);
-                        rgb[tSize * kSize * 2 + index] = sonB.getNumber(t, k);
+//        for (int i = 0; i < xn; i++) {
+//            for (int j = 0; j < yn; j++) {
+//                double[] rgb = new double[]{matrixR.getNumber(i, j), matrixG.getNumber(i, j)
+//                        , matrixB.getNumber(i, j)};
+//                meanClustering.setColor(rgb);
+//            }
+//        }
+        //局部特征选区筛选
+        double sigma = 0;
+        int nub = 0;
+        for (int i = 0; i <= xn - size; i += step) {
+            for (int j = 0; j <= yn - size; j += step) {
+                Matrix sonH = matrixH.getSonOfMatrix(i, j, size, size);
+                double[] h = new double[size * size];
+                nub++;
+                for (int t = 0; t < size; t++) {
+                    for (int k = 0; k < size; k++) {
+                        int index = t * size + k;
+                        h[index] = sonH.getNumber(t, k);
                     }
                 }
-                meanClustering.setColor(rgb);
+                sigma = dc(h) + sigma;
             }
         }
-        meanClustering.start();//开始聚类
+        double dispersedTh = (sigma / nub) * dispersedThNub;//离散阈值
+        for (int i = 0; i <= xn - size; i += step) {
+            for (int j = 0; j <= yn - size; j += step) {
+                Matrix sonR = matrixR.getSonOfMatrix(i, j, size, size);
+                Matrix sonG = matrixG.getSonOfMatrix(i, j, size, size);
+                Matrix sonB = matrixB.getSonOfMatrix(i, j, size, size);
+                Matrix sonH = matrixH.getSonOfMatrix(i, j, size, size);
+                double[] h = new double[size * size];
+                double[] rgb = new double[size * size * 3];
+                for (int t = 0; t < size; t++) {
+                    for (int k = 0; k < size; k++) {
+                        int index = t * size + k;
+                        h[index] = sonH.getNumber(t, k);
+                        rgb[index] = sonR.getNumber(t, k);
+                        rgb[size * size + index] = sonG.getNumber(t, k);
+                        rgb[size * size * 2 + index] = sonB.getNumber(t, k);
+                    }
+                }
+                double dispersed = dc(h);
+                if (dispersed < dispersedTh) {
+                    meanClustering.setColor(rgb);
+                }
+            }
+        }
+        meanClustering.start(false);//开始聚类
         List<RGBNorm> rgbNorms = meanClustering.getMatrices();
         Collections.sort(rgbNorms, rgbSort);
         List<Double> features = new ArrayList<>();
@@ -238,6 +270,7 @@ public class Convolution extends Frequency {
                 features.add(rgb[j]);
             }
         }
+        //System.out.println(features);
         return features;
     }
 
@@ -254,6 +287,24 @@ public class Convolution extends Frequency {
         Border border = new Border(templeConfig, matrix.getY() - 2, matrix.getX() - 2);
         convolution(matrix, Kernel.ALL_Two, true, border, true);
         return border;
+    }
+
+    public void imgNormalization(ThreeChannelMatrix threeChannelMatrix) throws Exception {
+        Matrix matrixR = threeChannelMatrix.getMatrixR();
+        Matrix matrixG = threeChannelMatrix.getMatrixG();
+        Matrix matrixB = threeChannelMatrix.getMatrixB();
+        int x = matrixR.getX();
+        int y = matrixR.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double colorR = matrixR.getNumber(i, j) / 255;
+                double colorG = matrixG.getNumber(i, j) / 255;
+                double colorB = matrixB.getNumber(i, j) / 255;
+                matrixR.setNub(i, j, colorR);
+                matrixG.setNub(i, j, colorG);
+                matrixB.setNub(i, j, colorB);
+            }
+        }
     }
 
     public ThreeChannelMatrix getRegionMatrix(ThreeChannelMatrix threeChannelMatrix, int x, int y, int xSize, int ySize) {

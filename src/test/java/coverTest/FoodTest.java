@@ -9,6 +9,7 @@ import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.imageRecognition.*;
 import org.wlld.imageRecognition.segmentation.RegionBody;
+import org.wlld.imageRecognition.segmentation.RegionMapping;
 import org.wlld.imageRecognition.segmentation.Specifications;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.param.Cutting;
@@ -56,25 +57,27 @@ public class FoodTest {
 
     public static TempleConfig getTemple(ModelParameter modelParameter) throws Exception {
         TempleConfig templeConfig = new TempleConfig();
+        templeConfig.setEdge(10);
         //templeConfig.isShowLog(true);//是否打印日志
         Cutting cutting = templeConfig.getCutting();
         Food food = templeConfig.getFood();
         //
         cutting.setMaxRain(360);//切割阈值
-        cutting.setTh(0.6);
-        cutting.setRegionNub(200);
-        cutting.setMaxIou(2.0);
+        cutting.setTh(0.8);
+        cutting.setRegionNub(100);
+        cutting.setMaxIou(2);
         //knn参数
         templeConfig.setKnnNub(1);
         //池化比例
         templeConfig.setPoolSize(2);//缩小比例
         //聚类
-        templeConfig.setFeatureNub(5);//聚类特征数量
+        templeConfig.setFeatureNub(3);//聚类特征数量
         //菜品识别实体类
-        food.setShrink(20);//缩紧像素
-        food.setTimes(2);//聚类数据增强
-        food.setRowMark(0.12);//0.12
-        food.setColumnMark(0.12);//0.25
+        food.setShrink(5);//缩紧像素
+        food.setTimes(1);//聚类数据增强
+        food.setRegionSize(5);
+        food.setRowMark(0.15);//0.12
+        food.setColumnMark(0.15);//0.25
         food.setRegressionNub(20000);
         food.setTrayTh(0.08);
         templeConfig.setClassifier(Classifier.KNN);
@@ -91,19 +94,121 @@ public class FoodTest {
         Operation operation = new Operation(templeConfig);
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
-        specifications.setMinWidth(100);
-        specifications.setMinHeight(100);
-        specifications.setMaxWidth(1000);
-        specifications.setMaxHeight(1000);
+        specifications.setMinWidth(150);//150
+        specifications.setMinHeight(150);//150
+        specifications.setMaxWidth(600);
+        specifications.setMaxHeight(600);
         specificationsList.add(specifications);
-        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/d.jpg");
-        operation.setTray(threeChannelMatrix);
-        for (int i = 1; i <= 1; i++) {
-            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("/Users/lidapeng/Desktop/test/test.jpg");
+//        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/d.jpg");
+//        operation.setTray(threeChannelMatrix);
+        String name = "/Users/lidapeng/Desktop/test/testOne/";
+        for (int i = 0; i < 5; i++) {
+            System.out.println("轮数============================" + i);
+            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix(name + "a" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix(name + "b" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix(name + "c" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix(name + "d" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix5 = picture.getThreeMatrix(name + "e" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix6 = picture.getThreeMatrix(name + "f" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix7 = picture.getThreeMatrix(name + "g" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix8 = picture.getThreeMatrix(name + "h" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix9 = picture.getThreeMatrix(name + "i" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix10 = picture.getThreeMatrix(name + "j" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix11 = picture.getThreeMatrix(name + "k" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix12 = picture.getThreeMatrix(name + "l" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix13 = picture.getThreeMatrix(name + "m" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix14 = picture.getThreeMatrix(name + "n" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix15 = picture.getThreeMatrix(name + "o" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix16 = picture.getThreeMatrix(name + "p" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix17 = picture.getThreeMatrix(name + "q" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix18 = picture.getThreeMatrix(name + "r" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix19 = picture.getThreeMatrix(name + "s" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix20 = picture.getThreeMatrix(name + "t" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix21 = picture.getThreeMatrix(name + "u" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix22 = picture.getThreeMatrix(name + "v" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix23 = picture.getThreeMatrix(name + "w" + i + ".jpg");
+            ThreeChannelMatrix threeChannelMatrix24 = picture.getThreeMatrix(name + "x" + i + ".jpg");
             operation.colorStudy(threeChannelMatrix1, 1, specificationsList);
-
+            operation.colorStudy(threeChannelMatrix2, 2, specificationsList);
+            operation.colorStudy(threeChannelMatrix3, 3, specificationsList);
+            operation.colorStudy(threeChannelMatrix4, 4, specificationsList);
+            operation.colorStudy(threeChannelMatrix5, 5, specificationsList);
+            operation.colorStudy(threeChannelMatrix6, 6, specificationsList);
+            operation.colorStudy(threeChannelMatrix7, 7, specificationsList);
+            operation.colorStudy(threeChannelMatrix8, 8, specificationsList);
+            operation.colorStudy(threeChannelMatrix9, 9, specificationsList);
+            operation.colorStudy(threeChannelMatrix10, 10, specificationsList);
+            operation.colorStudy(threeChannelMatrix11, 11, specificationsList);
+            operation.colorStudy(threeChannelMatrix12, 12, specificationsList);
+            operation.colorStudy(threeChannelMatrix13, 13, specificationsList);
+            operation.colorStudy(threeChannelMatrix14, 14, specificationsList);
+            operation.colorStudy(threeChannelMatrix15, 15, specificationsList);
+            operation.colorStudy(threeChannelMatrix16, 16, specificationsList);
+            operation.colorStudy(threeChannelMatrix17, 17, specificationsList);
+            operation.colorStudy(threeChannelMatrix18, 18, specificationsList);
+            operation.colorStudy(threeChannelMatrix19, 19, specificationsList);
+            operation.colorStudy(threeChannelMatrix20, 20, specificationsList);
+            operation.colorStudy(threeChannelMatrix21, 21, specificationsList);
+            operation.colorStudy(threeChannelMatrix22, 22, specificationsList);
+            operation.colorStudy(threeChannelMatrix23, 23, specificationsList);
+            operation.colorStudy(threeChannelMatrix24, 24, specificationsList);
         }
-        //    test2(templeConfig);
+        int i = 4;
+        ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix(name + "a" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix(name + "b" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix(name + "c" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix(name + "d" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix5 = picture.getThreeMatrix(name + "e" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix6 = picture.getThreeMatrix(name + "f" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix7 = picture.getThreeMatrix(name + "g" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix8 = picture.getThreeMatrix(name + "h" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix9 = picture.getThreeMatrix(name + "i" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix10 = picture.getThreeMatrix(name + "j" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix11 = picture.getThreeMatrix(name + "k" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix12 = picture.getThreeMatrix(name + "l" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix13 = picture.getThreeMatrix(name + "m" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix14 = picture.getThreeMatrix(name + "n" + i + ".jpg");
+
+        ThreeChannelMatrix threeChannelMatrix15 = picture.getThreeMatrix(name + "o" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix16 = picture.getThreeMatrix(name + "p" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix17 = picture.getThreeMatrix(name + "q" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix18 = picture.getThreeMatrix(name + "r" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix19 = picture.getThreeMatrix(name + "s" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix20 = picture.getThreeMatrix(name + "t" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix21 = picture.getThreeMatrix(name + "u" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix22 = picture.getThreeMatrix(name + "v" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix23 = picture.getThreeMatrix(name + "w" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix24 = picture.getThreeMatrix(name + "x" + i + ".jpg");
+        test3(threeChannelMatrix1, operation, specificationsList);
+        test3(threeChannelMatrix2, operation, specificationsList);
+        test3(threeChannelMatrix3, operation, specificationsList);
+        test3(threeChannelMatrix4, operation, specificationsList);
+        test3(threeChannelMatrix5, operation, specificationsList);
+        test3(threeChannelMatrix6, operation, specificationsList);
+        test3(threeChannelMatrix7, operation, specificationsList);
+        test3(threeChannelMatrix8, operation, specificationsList);
+        test3(threeChannelMatrix9, operation, specificationsList);
+        test3(threeChannelMatrix10, operation, specificationsList);
+        test3(threeChannelMatrix11, operation, specificationsList);
+        test3(threeChannelMatrix12, operation, specificationsList);
+        test3(threeChannelMatrix13, operation, specificationsList);
+        test3(threeChannelMatrix14, operation, specificationsList);
+        test3(threeChannelMatrix15, operation, specificationsList);
+        test3(threeChannelMatrix16, operation, specificationsList);
+        test3(threeChannelMatrix17, operation, specificationsList);
+        test3(threeChannelMatrix18, operation, specificationsList);
+        test3(threeChannelMatrix19, operation, specificationsList);
+        test3(threeChannelMatrix20, operation, specificationsList);
+        test3(threeChannelMatrix21, operation, specificationsList);
+        test3(threeChannelMatrix22, operation, specificationsList);
+        test3(threeChannelMatrix23, operation, specificationsList);
+        test3(threeChannelMatrix24, operation, specificationsList);
+
+    }
+
+    private static void test3(ThreeChannelMatrix threeChannelMatrix, Operation operation, List<Specifications> specifications) throws Exception {
+        int type = operation.colorLook(threeChannelMatrix, specifications).get(0).getType();
+        System.out.println(type);
     }
 
     public static void study() throws Exception {

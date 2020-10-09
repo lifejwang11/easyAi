@@ -3,10 +3,8 @@ package coverTest;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
-import org.wlld.imageRecognition.Convolution;
-import org.wlld.imageRecognition.Picture;
-import org.wlld.imageRecognition.TempleConfig;
-import org.wlld.imageRecognition.ThreeChannelMatrix;
+import org.wlld.imageRecognition.*;
+import org.wlld.imageRecognition.segmentation.FindMaxSimilar;
 import org.wlld.imageRecognition.segmentation.RegionBody;
 import org.wlld.imageRecognition.segmentation.Specifications;
 import org.wlld.imageRecognition.segmentation.Watershed;
@@ -27,7 +25,7 @@ public class ForestTest {
     private static Convolution convolution = new Convolution();
 
     public static void main(String[] args) throws Exception {
-        test();
+        testPic();
         //int a = (int) (Math.log(4) / Math.log(2));//id22是第几层
         //double a = Math.pow(2, 5) - 1; 第五层的第一个数
         // System.out.println("a==" + a);
@@ -37,24 +35,32 @@ public class ForestTest {
     public static void testPic() throws Exception {
         Picture picture = new Picture();
         TempleConfig templeConfig = getTemple(null);
+        Operation operation = new Operation(templeConfig);
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
         specifications.setMinWidth(100);
         specifications.setMinHeight(100);
-        specifications.setMaxWidth(1000);
-        specifications.setMaxHeight(1000);
+        specifications.setMaxWidth(600);
+        specifications.setMaxHeight(600);
         specificationsList.add(specifications);
-        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/d.jpg");
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/train/a2.jpg");
         Watershed watershed = new Watershed(threeChannelMatrix, specificationsList, templeConfig);
         List<RegionBody> regionBodies = watershed.rainfall();
-        RegionBody regionBody = regionBodies.get(0);
-        int minX = regionBody.getMinX();
-        int minY = regionBody.getMinY();
-        int maxX = regionBody.getMaxX();
-        int maxY = regionBody.getMaxY();
-        int xSize = maxX - minX;
-        int ySize = maxY - minY;
-        ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
+        if (regionBodies.size() == 1) {
+            RegionBody regionBody = regionBodies.get(0);
+            int minX = regionBody.getMinX();
+            int minY = regionBody.getMinY();
+            int maxX = regionBody.getMaxX();
+            int maxY = regionBody.getMaxY();
+            int xSize = maxX - minX;
+            int ySize = maxY - minY;
+            ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
+            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(),
+                    templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub());
+            System.out.println(feature);
+        } else {
+            System.out.println("size===" + regionBodies.size());
+        }
 
     }
 
@@ -70,9 +76,9 @@ public class ForestTest {
         Food food = templeConfig.getFood();
         //
         cutting.setMaxRain(360);//切割阈值
-        cutting.setTh(0.6);
-        cutting.setRegionNub(200);
-        cutting.setMaxIou(0.5);
+        cutting.setTh(0.8);
+        cutting.setRegionNub(100);
+        cutting.setMaxIou(0.2);
         //knn参数
         templeConfig.setKnnNub(1);
         //池化比例
@@ -80,10 +86,10 @@ public class ForestTest {
         //聚类
         templeConfig.setFeatureNub(3);//聚类特征数量
         //菜品识别实体类
-        food.setShrink(10);//缩紧像素
-        food.setTimes(2);//聚类数据增强
-        food.setRowMark(0.1);//0.12
-        food.setColumnMark(0.1);//0.25
+        food.setShrink(5);//缩紧像素
+        food.setTimes(1);//聚类数据增强
+        food.setRowMark(0.15);//0.12
+        food.setColumnMark(0.15);//0.25
         food.setRegressionNub(20000);
         food.setTrayTh(0.08);
         templeConfig.setClassifier(Classifier.KNN);

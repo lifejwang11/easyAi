@@ -90,7 +90,7 @@ public class MeanClustering {
         }
     }
 
-    public void start() throws Exception {//开始聚类
+    public void start(boolean isRegression) throws Exception {//开始聚类
         if (matrixList.size() > 1) {
             Random random = new Random();
             for (int i = 0; i < speciesQuantity; i++) {//初始化均值向量
@@ -111,7 +111,9 @@ public class MeanClustering {
                     break;
                 }
             }
-            // startRegression();//开始进行回归
+            if (isRegression) {
+                startRegression();//开始进行回归
+            }
         } else {
             throw new Exception("matrixList number less than 2");
         }

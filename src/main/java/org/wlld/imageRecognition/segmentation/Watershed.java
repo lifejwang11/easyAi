@@ -75,15 +75,15 @@ public class Watershed {
 
     private boolean isTray(int x, int y) throws Exception {
         boolean isTray = false;
-        double[] rgb = new double[]{matrixR.getNumber(x, y) / 255, matrixG.getNumber(x, y) / 255,
-                matrixB.getNumber(x, y) / 255};
-        for (RgbRegression rgbRegression : trayBody) {
-            double dist = rgbRegression.getDisError(rgb);
-            if (dist < trayTh) {
-                isTray = true;
-                break;
-            }
-        }
+//        double[] rgb = new double[]{matrixR.getNumber(x, y) / 255, matrixG.getNumber(x, y) / 255,
+//                matrixB.getNumber(x, y) / 255};
+//        for (RgbRegression rgbRegression : trayBody) {
+//            double dist = rgbRegression.getDisError(rgb);
+//            if (dist < trayTh) {
+//                isTray = true;
+//                break;
+//            }
+//        }
         return isTray;
     }
 
@@ -354,10 +354,12 @@ public class Watershed {
             int width = maxY - minY;
             int height = maxX - minX;
             boolean isCenter = true;
-            if (edgeSize > 0) {
-                double h = this.height / edgeSize;
-                double w = this.width / edgeSize;
-                isCenter = maxX > h && maxY > w && maxX < (h * (edgeSize - 1)) && maxY < (w * (edgeSize - 1));
+            if (edgeSize > 0) {//边缘过滤
+                double top = this.height / edgeSize;//上边缘界限
+                double left = this.width / edgeSize;//左边缘界限
+                double bottom = this.height - top;//下边缘界限
+                double right = this.width - left;//右边缘界限
+                isCenter = maxX > top && maxY > left && minX < bottom && minY < right;
             }
             if (width >= specification.getMinWidth() && height >= specification.getMinHeight()
                     && width <= specification.getMaxWidth() && height <= specification.getMaxHeight()

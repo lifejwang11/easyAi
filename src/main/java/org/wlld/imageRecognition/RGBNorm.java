@@ -45,6 +45,7 @@ public class RGBNorm {
         for (int i = 0; i < rgb.length; i++) {
             rgbUp[i] = rgb[i];
         }
+        rgbs.clear();
         //System.out.println("clear==" + Arrays.toString(rgbUp));
     }
 
@@ -79,6 +80,7 @@ public class RGBNorm {
         for (int i = 0; i < rgb.length; i++) {
             rgbAll[i] = rgbAll[i] + rgb[i];
         }
+        rgbs.add(rgb);
         nub++;
     }
 

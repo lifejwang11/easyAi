@@ -62,6 +62,23 @@ public class MatrixOperation {
         }
     }
 
+    public static double getEDistByMatrix(Matrix matrix1, Matrix matrix2) throws Exception {
+        if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
+            int x = matrix1.getX();
+            int y = matrix1.getY();
+            double sigma = 0;
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    double sub = matrix1.getNumber(i, j) - matrix2.getNumber(i, j);
+                    sigma = sigma + Math.pow(sub, 2);
+                }
+            }
+            return sigma / (x * y);
+        } else {
+            throw new Exception("two matrixes is not equals");
+        }
+    }
+
     //返回两个向量之间的欧氏距离的平方
     public static double getEDist(Matrix matrix1, Matrix matrix2) throws Exception {
         if (matrix1.isRowVector() && matrix2.isRowVector() && matrix1.getY() == matrix2.getY()) {
@@ -322,16 +339,16 @@ public class MatrixOperation {
         return inverserNumber;
     }
 
-    public static Matrix getInverseMatrixs(Matrix matrixs) throws Exception {//矩阵求逆
-        double def = matrixs.getDet();
+    public static Matrix getInverseMatrixs(Matrix matrix) throws Exception {//矩阵求逆
+        double def = matrix.getDet();
         if (def != 0) {
             def = ArithUtil.div(1, def);
-            Matrix myMatrix = adjointMatrix(matrixs);//伴随矩阵
+            Matrix myMatrix = adjointMatrix(matrix);//伴随矩阵
             mathMul(myMatrix, def);
             return myMatrix;
         } else {
-            System.out.println(matrixs.getString());
-            throw new Exception("this matrixs do not have InverseMatrixs");
+            System.out.println(matrix.getString());
+            throw new Exception("this matrix do not have InverseMatrixs");
         }
     }
 
