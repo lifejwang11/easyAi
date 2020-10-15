@@ -1,5 +1,6 @@
 package org.wlld.param;
 
+import org.wlld.imageRecognition.segmentation.KNerveManger;
 import org.wlld.imageRecognition.segmentation.RgbRegression;
 
 import java.util.ArrayList;
@@ -22,6 +23,24 @@ public class Food {
     private int regionSize = 5;//纹理区域大小
     private int step = 1;//特征取样步长
     private double dispersedTh = 0.3;//选区筛选离散阈值
+    private int speciesNub = 24;//种类数
+    private KNerveManger kNerveManger;
+
+    public KNerveManger getkNerveManger() {
+        return kNerveManger;
+    }
+
+    public void setkNerveManger(KNerveManger kNerveManger) {
+        this.kNerveManger = kNerveManger;
+    }
+
+    public int getSpeciesNub() {
+        return speciesNub;
+    }
+
+    public void setSpeciesNub(int speciesNub) {
+        this.speciesNub = speciesNub;
+    }
 
     public int getStep() {
         return step;

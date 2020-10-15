@@ -8,6 +8,8 @@ public class Kernel {
     private static final String Horizontal_Number = "[-1,-2,-1]#[0,0,0]#[1,2,1]#";//横卷积核
     private static final String All_Number = "[1,-2,1]#[-2,4,-2]#[1,-2,1]#";//角卷积
     private static final String All_Number2 = "[-1,0,-1]#[0,4,0]#[-1,0,-1]#";
+    private static final String All_Big = "[-1,0,0,0,-1]#[0,-1,0,-1,0]#[0,0,8,0,0]#" +
+            "[0,-1,0,-1,0]#[-1,0,0,0,-1]";
     public static final int Region_Nub = 60;//一张图有多少份
     public static final double th = 0.88;//分水岭灰度阈值
     public static final double rgbN = 442.0;//442.0;//RGB范数归一化最大值
@@ -15,6 +17,7 @@ public class Kernel {
     public static Matrix Horizontal;
     public static Matrix All;
     public static Matrix ALL_Two;
+    public static Matrix Big;
     public static final int Unit = 100;
     public static final double Pi = ArithUtil.div(ArithUtil.div(Math.PI, 2), Unit);
 
@@ -23,6 +26,7 @@ public class Kernel {
 
     static {
         try {
+            Big = new Matrix(5, 5, All_Big);
             ALL_Two = new Matrix(3, 3, All_Number2);
             All = new Matrix(3, 3, All_Number);
             Vertical = new Matrix(3, 3, Vertical_Number);

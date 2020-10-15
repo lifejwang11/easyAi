@@ -51,7 +51,8 @@ public class SoftMax extends Nerve {
     private double outGradient() {//生成输出层神经元梯度变化
         double g = outNub;
         if (E == 1) {
-            g = ArithUtil.sub(g, 1);
+            //g = ArithUtil.sub(g, 1);
+            g = g - 1;
         }
         return g;
     }
@@ -63,8 +64,9 @@ public class SoftMax extends Nerve {
         double eSelf = Math.exp(self);
         for (int i = 0; i < featuresList.size(); i++) {
             double value = featuresList.get(i);
-            sigma = ArithUtil.add(Math.exp(value), sigma);
+            // sigma = ArithUtil.add(Math.exp(value), sigma);
+            sigma = Math.exp(value) + sigma;
         }
-        return ArithUtil.div(eSelf, sigma);
+        return eSelf / sigma;//ArithUtil.div(eSelf, sigma);
     }
 }

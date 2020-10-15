@@ -186,10 +186,12 @@ public abstract class Nerve {
 
     private void backGetMessage(double parameter, long eventId) throws Exception {//反向传播
         backNub++;
-        sigmaW = ArithUtil.add(sigmaW, parameter);
+        //sigmaW = ArithUtil.add(sigmaW, parameter);
+        sigmaW = sigmaW + parameter;
         if (backNub == downNub) {//进行新的梯度计算
             backNub = 0;
-            gradient = ArithUtil.mul(activeFunction.functionG(outNub), sigmaW);
+            //gradient = ArithUtil.mul(activeFunction.functionG(outNub), sigmaW);
+            gradient = activeFunction.functionG(outNub) * sigmaW;
             updatePower(eventId);//修改阈值
         }
     }
@@ -218,8 +220,10 @@ public abstract class Nerve {
     }
 
     protected void updatePower(long eventId) throws Exception {//修改阈值
-        double h = ArithUtil.mul(gradient, studyPoint);//梯度下降
-        threshold = ArithUtil.add(threshold, -h);//更新阈值
+        //double h = ArithUtil.mul(gradient, studyPoint);//梯度下降
+        double h = gradient * studyPoint;
+        //threshold = ArithUtil.add(threshold, -h);//更新阈值
+        threshold = threshold - h;
         updateW(h, eventId);
         sigmaW = 0;//求和结果归零
         backSendMessage(eventId);
@@ -229,7 +233,8 @@ public abstract class Nerve {
         double re = 0.0;
         if (rzType != RZ.NOT_RZ) {
             if (rzType == RZ.L2) {
-                re = ArithUtil.mul(param, -w);
+                //re = ArithUtil.mul(param, -w);
+                re = param * -w;
             } else if (rzType == RZ.L1) {
                 if (w > 0) {
                     re = -param;
@@ -248,11 +253,15 @@ public abstract class Nerve {
             int key = entry.getKey();//上层隐层神经元的编号
             double w = entry.getValue();//接收到编号为KEY的上层隐层神经元的权重
             double bn = list.get(key - 1);//接收到编号为KEY的上层隐层神经元的输入
-            double wp = ArithUtil.mul(bn, h);//编号为KEY的上层隐层神经元权重的变化值
+            //double wp = ArithUtil.mul(bn, h);//编号为KEY的上层隐层神经元权重的变化值
+            double wp = bn * h;
             double regular = regularization(w, param);//正则化抑制权重s
-            w = ArithUtil.add(w, regular);
-            w = ArithUtil.add(w, wp);//修正后的编号为KEY的上层隐层神经元权重
-            double dm = ArithUtil.mul(w, gradient);//返回给相对应的神经元
+            //w = ArithUtil.add(w, regular);
+            w = w + regular;
+            //w = ArithUtil.add(w, wp);//修正后的编号为KEY的上层隐层神经元权重
+            w = w + wp;
+            // double dm = ArithUtil.mul(w, gradient);//返回给相对应的神经元
+            double dm = w * gradient;
             // System.out.println("allG==" + allG + ",dm==" + dm);
             wg.put(key, dm);//保存上一层权重与梯度的积
             dendrites.put(key, w);//保存修正结果
@@ -287,9 +296,10 @@ public abstract class Nerve {
             double value = featuresList.get(i);
             double w = dendrites.get(i + 1);
             //System.out.println("w==" + w + ",value==" + value);
-            sigma = ArithUtil.add(ArithUtil.mul(w, value), sigma);
+            //sigma = ArithUtil.add(ArithUtil.mul(w, value), sigma);
+            sigma = w * value + sigma;
         }
-        return ArithUtil.sub(sigma, threshold);
+        return sigma - threshold;//ArithUtil.sub(sigma, threshold);
     }
 
     private void initPower(boolean init, boolean isDynamic) throws Exception {//初始化权重及阈值

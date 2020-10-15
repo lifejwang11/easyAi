@@ -4,7 +4,6 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
 import org.wlld.imageRecognition.*;
-import org.wlld.imageRecognition.segmentation.FindMaxSimilar;
 import org.wlld.imageRecognition.segmentation.RegionBody;
 import org.wlld.imageRecognition.segmentation.Specifications;
 import org.wlld.imageRecognition.segmentation.Watershed;
@@ -55,9 +54,7 @@ public class ForestTest {
             int xSize = maxX - minX;
             int ySize = maxY - minY;
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(),
-                    templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub());
-            System.out.println(feature);
+
         } else {
             System.out.println("size===" + regionBodies.size());
         }

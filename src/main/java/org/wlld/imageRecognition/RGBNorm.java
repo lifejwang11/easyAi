@@ -4,6 +4,8 @@ import org.wlld.imageRecognition.segmentation.RgbRegression;
 import org.wlld.tools.ArithUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class RGBNorm {
@@ -12,7 +14,7 @@ public class RGBNorm {
     private int nub;
     private double[] rgb;
     private double[] rgbUp;
-    private List<double[]> rgbs = new ArrayList<>();
+    private List<double[]> rgbs = new ArrayList<>();//需要对它进行排序
     private RgbRegression rgbRegression;
     private int len;
 
@@ -96,11 +98,34 @@ public class RGBNorm {
         }
     }
 
+    public void finish() {//进行排序
+        RGBListSort rgbListSort = new RGBListSort();
+        Collections.sort(rgbs, rgbListSort);
+    }
+
     public double getNorm() {
         return norm;
     }
 
     public double[] getRgb() {
         return rgb;
+    }
+
+    class RGBListSort implements Comparator<double[]> {
+        @Override
+        public int compare(double[] o1, double[] o2) {
+            double o1Norm = 0;
+            double o2Norm = 0;
+            for (int i = 0; i < o1.length; i++) {
+                o1Norm = o1Norm + Math.pow(o1[i], 2);
+                o2Norm = o2Norm + Math.pow(o2[i], 2);
+            }
+            if (o1Norm > o2Norm) {
+                return -1;
+            } else if (o1Norm < o2Norm) {
+                return 1;
+            }
+            return 0;
+        }
     }
 }

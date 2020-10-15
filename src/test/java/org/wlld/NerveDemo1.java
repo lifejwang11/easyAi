@@ -36,13 +36,13 @@ public class NerveDemo1 {
          * @param isDynamic 是否是动态神经元
          */
         NerveManager nerveManager = new NerveManager(2, 6, 1, 2, new Tanh(),
-                false, true, 0, RZ.NOT_RZ, 0);
+                false, false, 0, RZ.NOT_RZ, 0);
         nerveManager.init(true, false, false, false);
         //创建训练
         List<Map<Integer, Double>> list_right = new LinkedList<>();//存放正确的值
         List<Map<Integer, Double>> list_wrong = new LinkedList<>();//存放错误的值
         Random random = new Random();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 3000; i++) {
             Map<Integer, Double> mp1 = new HashMap<>();
             Map<Integer, Double> mp2 = new HashMap<>();
             mp1.put(0, random.nextDouble());

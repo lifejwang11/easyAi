@@ -51,12 +51,16 @@ public class MatrixOperation {
             Matrix matrix1 = transPosition(parameter);
             //转置的参数矩阵乘以参数矩阵
             Matrix matrix2 = mulMatrix(matrix1, parameter);
-            //求上一步的逆矩阵
+            //求上一步的逆矩阵 这一步需要矩阵非奇异,若出现奇异矩阵，则返回0矩阵，意味失败
             Matrix matrix3 = getInverseMatrixs(matrix2);
-            //逆矩阵乘以转置矩阵
-            Matrix matrix4 = mulMatrix(matrix3, matrix1);
-            //最后乘以输出矩阵,生成权重矩阵并返回
-            return mulMatrix(matrix4, out);
+            if (matrix3.getX() == 1 && matrix3.getY() == 1) {
+                return matrix3;
+            } else {
+                //逆矩阵乘以转置矩阵
+                Matrix matrix4 = mulMatrix(matrix3, matrix1);
+                //最后乘以输出矩阵,生成权重矩阵并返回
+                return mulMatrix(matrix4, out);
+            }
         } else {
             throw new Exception("invalid regression matrix");
         }
@@ -347,8 +351,9 @@ public class MatrixOperation {
             mathMul(myMatrix, def);
             return myMatrix;
         } else {
-            System.out.println(matrix.getString());
-            throw new Exception("this matrix do not have InverseMatrixs");
+            //System.out.println("matrix def is zero error:");
+            //System.out.println(matrix.getString());
+            return new Matrix(1, 1);
         }
     }
 

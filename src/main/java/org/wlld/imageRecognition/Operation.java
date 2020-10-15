@@ -92,7 +92,8 @@ public class Operation {//进行计算
         threeChannelMatrix.setMatrixB(matrixB.getSonOfMatrix(x, y, xSize, ySize));
     }
 
-    public RegionBody colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList) throws Exception {
+    public RegionBody colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList
+            , String url) throws Exception {
         Watershed watershed = new Watershed(threeChannelMatrix, specificationsList, templeConfig);
         List<RegionBody> regionBodies = watershed.rainfall();
         if (regionBodies.size() == 1) {
@@ -108,7 +109,7 @@ public class Operation {//进行计算
 //                List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
 //                        templeConfig.getFeatureNub(), templeConfig);
             List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(),
-                    templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub());
+                    templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub(), tag);
             if (templeConfig.isShowLog()) {
                 System.out.println(tag + ":" + feature);
             }
@@ -144,7 +145,8 @@ public class Operation {//进行计算
                 int minY = regionBody.getMinY();
                 int maxX = regionBody.getMaxX();
                 int maxY = regionBody.getMaxY();
-                System.out.println("异常：minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
+                System.out.println("异常：minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY + ",tag==" + tag
+                        + "url==" + url);
             }
             throw new Exception("Parameter exception region size==" + regionBodies.size());
         }
@@ -183,7 +185,7 @@ public class Operation {//进行计算
 //            List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
 //                    templeConfig.getFeatureNub(), templeConfig);
             List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(),
-                    templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub());
+                    templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub(), 0);
             if (templeConfig.isShowLog()) {
                 System.out.println(feature);
             }

@@ -6,8 +6,6 @@ import org.wlld.config.Kernel;
 import org.wlld.imageRecognition.border.Border;
 import org.wlld.imageRecognition.border.Frame;
 import org.wlld.imageRecognition.border.FrameBody;
-import org.wlld.imageRecognition.modelEntity.RegressionBody;
-import org.wlld.imageRecognition.segmentation.RgbRegression;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.Frequency;
 
@@ -70,7 +68,7 @@ public class Convolution extends Frequency {
         List<ThreeChannelMatrix> threeChannelMatrixList = regionThreeChannelMatrix(threeMatrix, regionSize);
         for (ThreeChannelMatrix threeChannelMatrix : threeChannelMatrixList) {
             List<Double> feature = new ArrayList<>();
-            MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
+            MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig, true);
             Matrix matrixR = threeChannelMatrix.getMatrixR();
             Matrix matrixG = threeChannelMatrix.getMatrixG();
             Matrix matrixB = threeChannelMatrix.getMatrixB();
@@ -175,7 +173,7 @@ public class Convolution extends Frequency {
         RGBSort rgbSort = new RGBSort();
         int x = matrixR.getX();
         int y = matrixR.getY();
-        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
+        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig, true);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 double[] color = new double[]{matrixR.getNumber(i, j), matrixG.getNumber(i, j), matrixB.getNumber(i, j)};
@@ -201,15 +199,13 @@ public class Convolution extends Frequency {
     }
 
     public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, int poolSize, TempleConfig templeConfig
-            , int sqNub) throws Exception {
+            , int sqNub, int tag) throws Exception {
         RGBSort rgbSort = new RGBSort();
-        double dispersedThNub = templeConfig.getFood().getDispersedTh();
-        int step = templeConfig.getFood().getStep();
-        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
+        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig, true);
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
-        Matrix matrixH = threeChannelMatrix.getH();
+        Matrix matrixRGB = threeChannelMatrix.getMatrixRGB();
         int xn = matrixR.getX();
         int yn = matrixR.getY();
 //        for (int i = 0; i < xn; i++) {
@@ -220,47 +216,41 @@ public class Convolution extends Frequency {
 //            }
 //        }
         //局部特征选区筛选
-        double sigma = 0;
-        int nub = 0;
-        for (int i = 0; i <= xn - size; i += step) {
-            for (int j = 0; j <= yn - size; j += step) {
-                Matrix sonH = matrixH.getSonOfMatrix(i, j, size, size);
-                double[] h = new double[size * size];
-                nub++;
-                for (int t = 0; t < size; t++) {
-                    for (int k = 0; k < size; k++) {
-                        int index = t * size + k;
-                        h[index] = sonH.getNumber(t, k);
-                    }
-                }
-                sigma = dc(h) + sigma;
-            }
-        }
-        double dispersedTh = (sigma / nub) * dispersedThNub;//离散阈值
-        for (int i = 0; i <= xn - size; i += step) {
-            for (int j = 0; j <= yn - size; j += step) {
+        int nub = size * size;
+        int twoNub = nub * 2;
+        for (int i = 0; i <= xn - size; i++) {
+            for (int j = 0; j <= yn - size; j++) {
                 Matrix sonR = matrixR.getSonOfMatrix(i, j, size, size);
                 Matrix sonG = matrixG.getSonOfMatrix(i, j, size, size);
                 Matrix sonB = matrixB.getSonOfMatrix(i, j, size, size);
-                Matrix sonH = matrixH.getSonOfMatrix(i, j, size, size);
-                double[] h = new double[size * size];
-                double[] rgb = new double[size * size * 3];
+                Matrix sonRGB = matrixRGB.getSonOfMatrix(i, j, size, size);
+                double[] h = new double[nub];
+                double[] rgb = new double[nub * 3];
                 for (int t = 0; t < size; t++) {
                     for (int k = 0; k < size; k++) {
                         int index = t * size + k;
-                        h[index] = sonH.getNumber(t, k);
-                        rgb[index] = sonR.getNumber(t, k);
-                        rgb[size * size + index] = sonG.getNumber(t, k);
-                        rgb[size * size * 2 + index] = sonB.getNumber(t, k);
+                        h[index] = sonRGB.getNumber(t, k);
+                        rgb[index] = sonR.getNumber(t, k) / 255;
+                        rgb[nub + index] = sonG.getNumber(t, k) / 255;
+                        rgb[twoNub + index] = sonB.getNumber(t, k) / 255;
                     }
                 }
-                double dispersed = dc(h);
-                if (dispersed < dispersedTh) {
-                    meanClustering.setColor(rgb);
+                double dispersed = variance(h);
+                if (dispersed < 900 && dispersed > 200) {
+                    for (int m = 0; m < nub; m++) {
+                        double[] color = new double[]{rgb[m], rgb[m + nub], rgb[m + twoNub]};
+                        meanClustering.setColor(color);
+                    }
+                    // meanClustering.setColor(rgb);
                 }
             }
         }
-        meanClustering.start(false);//开始聚类
+        List<double[]> list = meanClustering.start(true);//开始聚类
+        if (tag == 0) {//识别
+            templeConfig.getFood().getkNerveManger().look(list);
+        } else {//训练
+            templeConfig.getFood().getkNerveManger().setFeature(tag, list);
+        }
         List<RGBNorm> rgbNorms = meanClustering.getMatrices();
         Collections.sort(rgbNorms, rgbSort);
         List<Double> features = new ArrayList<>();
@@ -270,7 +260,7 @@ public class Convolution extends Frequency {
                 features.add(rgb[j]);
             }
         }
-        //System.out.println(features);
+        // System.out.println(features);
         return features;
     }
 
