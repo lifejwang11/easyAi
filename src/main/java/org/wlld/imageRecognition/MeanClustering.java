@@ -85,14 +85,14 @@ public class MeanClustering {
     }
 
     private List<double[]> startBp() {
-        int times = 2000 + 1;
+        int times = 2000;
         List<double[]> features = new ArrayList<>();
         List<List<double[]>> lists = new ArrayList<>();
         for (int j = 0; j < matrices.size(); j++) {
-            List<double[]> list = matrices.get(j).getRgbs().subList(0, times);
+            List<double[]> list = matrices.get(j).getRgbs().subList(0, times + 1);
             lists.add(list);
         }
-        for (int j = 0; j < times - 1; j++) {
+        for (int j = 0; j < times; j++) {
             double[] feature = new double[sensoryNerveNub];
             for (int i = 0; i < lists.size(); i++) {
                 double[] data = lists.get(i).get(j);
