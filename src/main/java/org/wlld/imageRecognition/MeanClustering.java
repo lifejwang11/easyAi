@@ -92,7 +92,7 @@ public class MeanClustering {
             List<double[]> list = matrices.get(j).getRgbs().subList(0, times);
             lists.add(list);
         }
-        for (int j = 0; j < times; j++) {
+        for (int j = 0; j < times - 1; j++) {
             double[] feature = new double[sensoryNerveNub];
             for (int i = 0; i < lists.size(); i++) {
                 double[] data = lists.get(i).get(j);
