@@ -89,7 +89,7 @@ public class MeanClustering {
         List<double[]> features = new ArrayList<>();
         List<List<double[]>> lists = new ArrayList<>();
         for (int j = 0; j < matrices.size(); j++) {
-            List<double[]> list = matrices.get(j).getRgbs().subList(0, times + 1);
+            List<double[]> list = matrices.get(j).getRgbs().subList(0, times);
             lists.add(list);
         }
         for (int j = 0; j < times; j++) {
