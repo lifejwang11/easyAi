@@ -235,24 +235,24 @@ public class Convolution extends Frequency {
                         rgb[twoNub + index] = sonB.getNumber(t, k) / 255;
                     }
                 }
+                //900 200
                 double dispersed = variance(h);
                 if (dispersed < 900 && dispersed > 200) {
                     for (int m = 0; m < nub; m++) {
                         double[] color = new double[]{rgb[m], rgb[m + nub], rgb[m + twoNub]};
                         meanClustering.setColor(color);
                     }
-                    // meanClustering.setColor(rgb);
                 }
             }
         }
-        List<double[]> list = meanClustering.start(true);//开始聚类
-        if (tag == 0) {//识别
-            templeConfig.getFood().getkNerveManger().look(list);
-        } else {//训练
-            templeConfig.getFood().getkNerveManger().setFeature(tag, list);
-        }
+        //List<double[]> list = meanClustering.start(true);//开始聚类
+        meanClustering.start(true);
+//        if (tag == 0) {//识别
+//            templeConfig.getFood().getkNerveManger().look(list);
+//        } else {//训练
+//            templeConfig.getFood().getkNerveManger().setFeature(tag, list);
+//        }
         List<RGBNorm> rgbNorms = meanClustering.getMatrices();
-        Collections.sort(rgbNorms, rgbSort);
         List<Double> features = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {
             double[] rgb = rgbNorms.get(i).getRgb();

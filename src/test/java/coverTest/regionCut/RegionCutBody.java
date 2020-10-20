@@ -1,8 +1,5 @@
 package coverTest.regionCut;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @param
  * @DATA
@@ -10,6 +7,11 @@ import java.util.List;
  * @Description
  */
 public class RegionCutBody {
-    private List<Integer> pixels = new ArrayList<>();
+    private double feature;//特征值
+    private int x;
+    private int y;
+    private int id;
+    private int minId;//最近id
+    private int channel;//渠道
 
 }

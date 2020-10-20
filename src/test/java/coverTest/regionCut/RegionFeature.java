@@ -17,9 +17,6 @@ import java.util.Arrays;
  */
 public class RegionFeature extends Frequency {
     private Matrix matrix;
-    private Matrix matrixR;
-    private Matrix matrixG;
-    private Matrix matrixB;
     private Matrix kernel = Kernel.Big;
     private int fatherX;
     private int fatherY;
@@ -29,9 +26,6 @@ public class RegionFeature extends Frequency {
         this.matrix = threeChannelMatrix.getMatrixRGB();
         this.fatherX = fatherX;
         this.fatherY = fatherY;
-        matrixR = threeChannelMatrix.getMatrixR();
-        matrixG = threeChannelMatrix.getMatrixG();
-        matrixB = threeChannelMatrix.getMatrixB();
     }
 
     private double getMatrixVar(Matrix matrix) throws Exception {

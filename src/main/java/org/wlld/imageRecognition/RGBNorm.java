@@ -121,9 +121,9 @@ public class RGBNorm {
                 o2Norm = o2Norm + Math.pow(o2[i], 2);
             }
             if (o1Norm > o2Norm) {
-                return -1;
-            } else if (o1Norm < o2Norm) {
                 return 1;
+            } else if (o1Norm < o2Norm) {
+                return -1;
             }
             return 0;
         }

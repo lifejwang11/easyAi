@@ -33,20 +33,13 @@ public class KNerveManger {
         this.times = times;
         nerveManager = new NerveManager(sensoryNerveNub, 24, speciesNub,
                 1, new Tanh(),//0.008  l1 0.02
-                false, false, 0.008, RZ.L1, 0.01);
+                false, false, 0.008, RZ.L1, 0.02);
         nerveManager.init(true, false, true, true);
     }
 
     private Map<Integer, Double> createTag(int tag) {//创建一个标注
         Map<Integer, Double> tagging = new HashMap<>();
-        Set<Integer> set = featureMap.keySet();
-        for (int key : set) {
-            double value = 0.0;
-            if (key == tag) {
-                value = 1.0;
-            }
-            tagging.put(key, value);
-        }
+        tagging.put(tag, 1.0);
         return tagging;
     }
 
@@ -78,22 +71,24 @@ public class KNerveManger {
     }
 
     public void startStudy() throws Exception {
-        for (int i = 0; i < times; i++) {
-            for (Map.Entry<Integer, List<double[]>> entry : featureMap.entrySet()) {
-                int type = entry.getKey();
-                System.out.println("=============================" + type);
-                Map<Integer, Double> tag = createTag(type);//标注
-                double[] feature = entry.getValue().get(i);//数据
-                post(feature, tag, true);
+        for (int j = 0; j < 2; j++) {
+            for (int i = 0; i < times; i++) {
+                for (Map.Entry<Integer, List<double[]>> entry : featureMap.entrySet()) {
+                    int type = entry.getKey();
+                    System.out.println("=============================" + type);
+                    Map<Integer, Double> tag = createTag(type);//标注
+                    double[] feature = entry.getValue().get(i);//数据
+                    post(feature, tag, true);
+                }
             }
         }
 
-//        for (Map.Entry<Integer, List<double[]>> entry : featureMap.entrySet()) {
-//            int type = entry.getKey();
-//            System.out.println("=============================" + type);
-//            List<double[]> list = entry.getValue();
-//            look(list);
-//        }
+        for (Map.Entry<Integer, List<double[]>> entry : featureMap.entrySet()) {
+            int type = entry.getKey();
+            System.out.println("=============================" + type);
+            List<double[]> list = entry.getValue();
+            look(list);
+        }
     }
 
     private void post(double[] data, Map<Integer, Double> tagging, boolean isStudy) throws Exception {

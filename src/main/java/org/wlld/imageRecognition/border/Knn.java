@@ -101,7 +101,7 @@ public class Knn {//KNN分类器
                 compare(dists, types, dist, type);
             }
         }
-        //System.out.println(Arrays.toString(types));
+        System.out.println(Arrays.toString(types));
         Map<Integer, Integer> map = new HashMap<>();
         for (int i = 0; i < nub; i++) {
             int type = types[i];

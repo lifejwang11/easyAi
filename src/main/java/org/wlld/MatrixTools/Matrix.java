@@ -425,6 +425,7 @@ public class Matrix {
         if (this.x >= x && this.y >= y) {
             return matrix[x][y];
         } else {
+            //System.out.println("x==" + x + ",y==" + y);
             throw new Exception("matrix length too little");
         }
     }

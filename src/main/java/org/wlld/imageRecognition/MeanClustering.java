@@ -84,12 +84,43 @@ public class MeanClustering {
         }
     }
 
+    private double[] getListAvg(List<double[]> list) {
+        int len = list.get(0).length;
+        double[] sigma = new double[len];
+        for (double[] rgb : list) {
+            for (int i = 0; i < len; i++) {
+                sigma[i] = sigma[i] + rgb[i];
+            }
+        }
+        int size = list.size();
+        for (int i = 0; i < len; i++) {
+            sigma[i] = sigma[i] / size;
+        }
+        return sigma;
+    }
+
+    private List<double[]> listK(List<double[]> listOne, int nub) {
+        int size = listOne.size();
+        int oneSize = size / nub;//几份取一份平均值
+        //System.out.println("oneSize==" + oneSize);
+        List<double[]> allList = new ArrayList<>();
+        for (int i = 0; i <= size - oneSize; i += oneSize) {
+            double[] avg = getListAvg(listOne.subList(i, i + oneSize));
+            allList.add(avg);
+        }
+        return allList;
+    }
+
     private List<double[]> startBp() {
         int times = 2000;
+        int index = 0;
         List<double[]> features = new ArrayList<>();
         List<List<double[]>> lists = new ArrayList<>();
         for (int j = 0; j < matrices.size(); j++) {
-            List<double[]> list = matrices.get(j).getRgbs().subList(0, times);
+            List<double[]> listOne = matrices.get(j).getRgbs();
+            // List<double[]> list = listK(listOne, times);
+            //System.out.println(listOne.size());
+            List<double[]> list = listOne.subList(index, times + index);
             lists.add(list);
         }
         for (int j = 0; j < times; j++) {
@@ -137,7 +168,7 @@ public class MeanClustering {
         return features;
     }
 
-    public List<double[]> start(boolean isRegression) throws Exception {//开始聚类
+    public void start(boolean isRegression) throws Exception {//开始聚类
         if (matrixList.size() > 1) {
             Random random = new Random();
             for (int i = 0; i < speciesQuantity; i++) {//初始化均值向量
@@ -149,10 +180,10 @@ public class MeanClustering {
             }
             //进行两者的比较
             boolean isNext;
-            for (int i = 0; i < 40; i++) {
+            for (int i = 0; i < 50; i++) {
                 averageMatrix();
                 isNext = isNext();
-                if (isNext && i < 39) {
+                if (isNext && i < 49) {
                     clear();
                 } else {
                     break;
@@ -160,15 +191,10 @@ public class MeanClustering {
             }
             RGBSort rgbSort = new RGBSort();
             Collections.sort(matrices, rgbSort);
-            for (RGBNorm rgbNorm : matrices) {
-                rgbNorm.finish();
-            }
-//            if (isRegression) {
-//                return startRegression();
-//            } else {
-//                return null;
+//            for (RGBNorm rgbNorm : matrices) {
+//                rgbNorm.finish();
 //            }
-            return startBp();
+            // return startBp();
         } else {
             throw new Exception("matrixList number less than 2");
         }

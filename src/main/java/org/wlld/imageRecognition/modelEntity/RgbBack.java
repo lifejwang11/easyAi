@@ -11,10 +11,10 @@ import org.wlld.i.OutBack;
  */
 public class RgbBack implements OutBack {
     private int id = 0;
-    private double out = 0;
+    private double out = -2;
 
     public void clear() {
-        out = 0;
+        out = -2;
         id = 0;
     }
 

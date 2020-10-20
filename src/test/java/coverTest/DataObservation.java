@@ -24,17 +24,17 @@ public class DataObservation {
     public static void main(String[] args) throws Exception {
         //372,330,右 最大值 147.44
         //377 ,330右 最大值 69.6
-        int xp = 123;
-        int yp = 165;//290
-        observation2("/Users/lidapeng/Desktop/test/testOne/a0.jpg", xp, yp);
+        int xp = 100;
+        int yp = 720;//290
+        observation2("/Users/lidapeng/Desktop/test/testOne/e2.jpg", xp, yp);
     }
 
     public static void observation2(String url, int xp, int yp) throws Exception {
         Picture picture = new Picture();
         ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix(url);
-        ThreeChannelMatrix myThreeChannelMatrix = convolution.getRegionMatrix(threeChannelMatrix, xp, yp, 270, 274);
-        RegionFeature regionFeature = new RegionFeature(myThreeChannelMatrix, xp, yp);
-        regionFeature.start();
+        ThreeChannelMatrix myThreeChannelMatrix = convolution.getRegionMatrix(threeChannelMatrix, xp, yp, 300, 300);
+        RegionCut regionCut = new RegionCut(myThreeChannelMatrix, xp, yp, 30);
+        regionCut.start();
     }
 
     public static void observation(String url, int xp, int yp, int size) throws Exception {

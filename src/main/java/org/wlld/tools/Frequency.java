@@ -82,11 +82,14 @@ public abstract class Frequency {//统计频数
 
     public double dc(double... m) {//计算离散系数
         double ave = average(m);//先计算出平均值
-        double allNub = 0;
-        for (int i = 0; i < m.length; i++) {
-            allNub = allNub + Math.pow(m[i] - ave, 2);
+        double dc = 0;
+        if (ave > 0) {
+            double allNub = 0;
+            for (int i = 0; i < m.length; i++) {
+                allNub = allNub + Math.pow(m[i] - ave, 2);
+            }
+            dc = ArithUtil.div(Math.sqrt(ArithUtil.div(allNub, m.length)), ave);//离散系数
         }
-        double dc = ArithUtil.div(Math.sqrt(ArithUtil.div(allNub, m.length)), ave);//离散系数
         return dc;
     }
 
