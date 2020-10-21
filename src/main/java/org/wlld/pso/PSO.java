@@ -32,11 +32,13 @@ public class PSO {
     private Random random = new Random();
     private int[] minBorder, maxBorder;
     private double maxSpeed;
+    private double initSpeed;//初始速度
 
     public PSO(int dimensionNub, int[] minBorder, int[] maxBorder,
                int times, int particleNub, PsoFunction psoFunction,
                double inertialFactor, double selfStudyFactor, double socialStudyFactor
-            , boolean isMax, double maxSpeed) {
+            , boolean isMax, double maxSpeed, double initSpeed) {
+        this.initSpeed = initSpeed;
         this.times = times;
         this.psoFunction = psoFunction;
         this.isMax = isMax;
@@ -64,17 +66,23 @@ public class PSO {
         this.allPar = allPar;
     }
 
-    public void start(int fatherX, int fatherY) throws Exception {//开始进行迭代
+    public List<double[]> start(int fatherX, int fatherY) throws Exception {//开始进行迭代
         int size = allPar.size();
         for (int i = 0; i < times; i++) {
             for (int j = 0; j < size; j++) {
                 move(allPar.get(j), j);
             }
         }
+        List<double[]> feature = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            feature.add(allPar.get(i).getParameter());
+        }
+        return feature;
         //粒子群移动结束
-        draw("/Users/lidapeng/Desktop/test/testOne/e2.jpg", fatherX, fatherY);
+        // draw("/Users/lidapeng/Desktop/test/testOne/e2.jpg", fatherX, fatherY);
     }
 
+    //绘图测试
     private void draw(String path, int fatherX, int fatherY) throws Exception {
         File file = new File(path);
         FileInputStream fileInputStream = new FileInputStream(file);
@@ -94,7 +102,7 @@ public class PSO {
             Rectangle2D rect = new Rectangle2D.Double(y, x, 1, 1);//声明并创建矩形对象，矩形的左上角是(20，30)，宽是300，高是40
             g2.draw(rect);
         }
-        String savePath = "/Users/lidapeng/Desktop/test/testTwo/a.jpg";
+        String savePath = "/Users/lidapeng/Desktop/test/testTwo/d.jpg";
         ImageIO.write(bi, "JPEG", new FileOutputStream(savePath));
     }
 
@@ -153,11 +161,13 @@ public class PSO {
             bestData[i].speed = speed;
             //更新该粒子该维度新的位置
             double position = selfPosition + speed;
-            if (position < minBorder[i]) {
-                position = minBorder[i];
-            }
-            if (position > maxBorder[i]) {
-                position = maxBorder[i];
+            if (minBorder != null) {
+                if (position < minBorder[i]) {
+                    position = minBorder[i];
+                }
+                if (position > maxBorder[i]) {
+                    position = maxBorder[i];
+                }
             }
             bestData[i].selfPosition = position;
         }
@@ -178,23 +188,29 @@ public class PSO {
         protected Particle(int dimensionNub) {//初始化随机位置
             bestDataArray = new BestData[dimensionNub];
             for (int i = 0; i < dimensionNub; i++) {
-                int min = minBorder[i];
-                int max = maxBorder[i];
-                int region = max - min + 1;
-                int position = random.nextInt(region) + min;//初始化该维度的位置
-                bestDataArray[i] = new BestData(position);
+                double position;
+                if (minBorder != null && maxBorder != null) {
+                    int min = minBorder[i];
+                    int max = maxBorder[i];
+                    int region = max - min + 1;
+                    position = random.nextInt(region) + min;//初始化该维度的位置
+                } else {
+                    position = random.nextDouble();
+                }
+                bestDataArray[i] = new BestData(position, initSpeed);
             }
         }
     }
 
     class BestData {//数据保存
 
-        private BestData(double selfPosition) {
+        private BestData(double selfPosition, double initSpeed) {
             this.selfBestPosition = selfPosition;
             this.selfPosition = selfPosition;
+            speed = initSpeed;
         }
 
-        private double speed = 1;//该粒子当前维度的速度
+        private double speed;//该粒子当前维度的速度
         private double selfBestPosition;//当前维度自身最优的历史位置/自己最优位置的值
         private double selfPosition;//当前维度自己现在的位置/也就是当前维度自己的值
     }

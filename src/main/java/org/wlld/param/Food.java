@@ -5,6 +5,7 @@ import org.wlld.imageRecognition.segmentation.RgbRegression;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @param
@@ -14,7 +15,6 @@ import java.util.List;
  */
 public class Food {
     private int shrink = 60;//收缩参数
-    private int times = 10;//聚类增强次数
     private double rowMark = 0.12;//行痕迹过滤
     private double columnMark = 0.25;//列痕迹过滤
     private List<RgbRegression> trayBody = new ArrayList<>();//托盘实体参数
@@ -22,9 +22,17 @@ public class Food {
     private double trayTh = 0.1;//托盘回归阈值
     private int regionSize = 5;//纹理区域大小
     private int step = 1;//特征取样步长
-    private double dispersedTh = 0.3;//选区筛选离散阈值
     private int speciesNub = 24;//种类数
     private KNerveManger kNerveManger;
+    private Map<Integer, double[]> mappings;//类别映射集合
+
+    public Map<Integer, double[]> getMappings() {
+        return mappings;
+    }
+
+    public void setMappings(Map<Integer, double[]> mappings) {
+        this.mappings = mappings;
+    }
 
     public KNerveManger getkNerveManger() {
         return kNerveManger;
@@ -50,13 +58,6 @@ public class Food {
         this.step = step;
     }
 
-    public double getDispersedTh() {
-        return dispersedTh;
-    }
-
-    public void setDispersedTh(double dispersedTh) {
-        this.dispersedTh = dispersedTh;
-    }
 
     public int getRegionSize() {
         return regionSize;
@@ -112,13 +113,5 @@ public class Food {
 
     public void setShrink(int shrink) {
         this.shrink = shrink;
-    }
-
-    public int getTimes() {
-        return times;
-    }
-
-    public void setTimes(int times) {
-        this.times = times;
     }
 }

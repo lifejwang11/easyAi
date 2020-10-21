@@ -6,6 +6,10 @@ import org.wlld.config.Kernel;
 import org.wlld.imageRecognition.border.Border;
 import org.wlld.imageRecognition.border.Frame;
 import org.wlld.imageRecognition.border.FrameBody;
+import org.wlld.imageRecognition.segmentation.ColorFunction;
+import org.wlld.imageRecognition.segmentation.DimensionMapping;
+import org.wlld.param.Food;
+import org.wlld.pso.PSO;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.Frequency;
 
@@ -94,113 +98,64 @@ public class Convolution extends Frequency {
         return features;
     }
 
-    public void filtering(ThreeChannelMatrix threeChannelMatrix) throws Exception {//平滑滤波
+
+    public List<Double> getCenterColor(ThreeChannelMatrix threeChannelMatrix, TempleConfig templeConfig,
+                                       boolean isStudy, int tag) throws Exception {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
-        int x = matrixR.getX();
-        int y = matrixR.getY();
-        double nub = x * y;
-        double sigmaR = 0;
-        double sigmaG = 0;
-        double sigmaB = 0;
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                sigmaR = matrixR.getNumber(i, j) + sigmaR;
-                sigmaG = matrixG.getNumber(i, j) + sigmaG;
-                sigmaB = matrixB.getNumber(i, j) + sigmaB;
-            }
+        int maxX = matrixR.getX();
+        int maxY = matrixR.getY();
+        ColorFunction colorFunction = new ColorFunction(threeChannelMatrix);
+        int[] minBorder = new int[]{0, 0};
+        int[] maxBorder = new int[]{maxX, maxY};
+        //创建粒子群
+        PSO pso = new PSO(2, minBorder, maxBorder, 100, 100,
+                colorFunction, 0.2, 1, 0.5, true, 10, 1);
+        List<double[]> positions = pso.start(0, 0);
+        List<double[]> feature = new ArrayList<>();//像素特征
+        for (int i = 0; i < positions.size(); i++) {
+            double[] parameter = positions.get(i);
+            //获取取样坐标
+            int x = (int) parameter[0];
+            int y = (int) parameter[1];
+            double[] rgb = new double[]{matrixR.getNumber(x, y) / 255, matrixG.getNumber(x, y) / 255,
+                    matrixB.getNumber(x, y) / 255};
+            feature.add(rgb);
         }
-        double r = sigmaR / nub;
-        double g = sigmaG / nub;
-        double b = sigmaB / nub;
-        MatrixOperation.mathDiv(matrixR, r);
-        MatrixOperation.mathDiv(matrixG, g);
-        MatrixOperation.mathDiv(matrixB, b);
+        if (isStudy) {//进行新维度映射排序
+            pso = new PSO(3, null, null, 200, 50,
+                    new DimensionMapping(feature), 0.5, 2, 2, true, 0.5, 0.001);
+            List<double[]> mappings = pso.start(0, 0);//最小映射集合
+            double[] sigmaMapping = new double[3];//最小映射
+            for (int i = 0; i < mappings.size(); i++) {
+                double[] mapping = mappings.get(i);
+                for (int j = 0; j < sigmaMapping.length; j++) {
+                    sigmaMapping[j] = sigmaMapping[j] + mapping[j];
+                }
+            }
+            for (int j = 0; j < sigmaMapping.length; j++) {
+                sigmaMapping[j] = sigmaMapping[j] / mappings.size();
+            }
+            //保存类别及映射
+            Food food = templeConfig.getFood();
+            Map<Integer, double[]> allMappings = food.getMappings();
+            if (allMappings == null) {
+                allMappings = new HashMap<>();
+                food.setMappings(allMappings);
+            }
+            allMappings.put(tag, sigmaMapping);
+            //根据映射值进行排序
 
-    }
+        } else {
 
-    private double[] compareDis(double[] rgbTest, List<RGBNorm> rgbNorms) {
-        double[] feature = null;
-        double minDis = -1;
-        for (int i = 0; i < 3; i++) {
-            double[] rgb = rgbNorms.get(i).getRgb();
-            double sigma = 0;
-            for (int j = 0; j < 3; j++) {
-                sigma = sigma + Math.pow(rgbTest[j] - rgb[j], 2);
-            }
-            if (sigma < minDis || minDis == -1) {
-                minDis = sigma;
-                feature = rgb;
-            }
         }
-        return feature;
-    }
 
-    private void dispersed(Matrix matrixR, Matrix matrixG, Matrix matrixB, List<RGBNorm> rgbNorms) throws Exception {//图像离散化
-        ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
-        int x = matrixR.getX();
-        int y = matrixR.getY();
-        Matrix matrixRD = new Matrix(x, y);
-        Matrix matrixGD = new Matrix(x, y);
-        Matrix matrixBD = new Matrix(x, y);
-        threeChannelMatrix.setMatrixR(matrixRD);
-        threeChannelMatrix.setMatrixG(matrixGD);
-        threeChannelMatrix.setMatrixB(matrixBD);
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                double r = matrixR.getNumber(i, j);
-                double g = matrixG.getNumber(i, j);
-                double b = matrixB.getNumber(i, j);
-                double[] rgb = new double[]{r, g, b};
-                double[] rgbNow = compareDis(rgb, rgbNorms);
-                matrixRD.setNub(i, j, rgbNow[0]);
-                matrixGD.setNub(i, j, rgbNow[1]);
-                matrixBD.setNub(i, j, rgbNow[2]);
-            }
-        }
-        //输入结束进行卷积
-        //System.out.println(matrixBD.getString());
-    }
-
-    public List<Double> getCenterColor(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub, TempleConfig templeConfig) throws Exception {
-        Matrix matrixR = threeChannelMatrix.getMatrixR();
-        Matrix matrixG = threeChannelMatrix.getMatrixG();
-        Matrix matrixB = threeChannelMatrix.getMatrixB();
-//        matrixR = late(matrixR, poolSize);
-//        matrixG = late(matrixG, poolSize);
-//        matrixB = late(matrixB, poolSize);
-        RGBSort rgbSort = new RGBSort();
-        int x = matrixR.getX();
-        int y = matrixR.getY();
-        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig, true);
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                double[] color = new double[]{matrixR.getNumber(i, j), matrixG.getNumber(i, j), matrixB.getNumber(i, j)};
-                meanClustering.setColor(color);
-            }
-        }
-        meanClustering.start(false);
-        List<RGBNorm> rgbNorms = meanClustering.getMatrices();
-        Collections.sort(rgbNorms, rgbSort);
-        List<Double> features = new ArrayList<>();
-        for (int i = 0; i < sqNub; i++) {
-            double[] rgb = rgbNorms.get(i).getRgb();
-            // RgbRegression rgbRegression = rgbNorms.get(i).getRgbRegression();
-            //double[] rgb = new double[]{rgbRegression.getWr(), rgbRegression.getWg(), rgbRegression.getB()};
-            for (int j = 0; j < 3; j++) {
-                features.add(rgb[j]);
-            }
-        }
-        //测试卷积
-        //dispersed(matrixR, matrixG, matrixB, rgbNorms);
-        //System.out.println("feature==" + feature);
-        return features;
+        return null;
     }
 
     public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, int poolSize, TempleConfig templeConfig
             , int sqNub, int tag) throws Exception {
-        RGBSort rgbSort = new RGBSort();
         MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig, true);
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
@@ -208,13 +163,6 @@ public class Convolution extends Frequency {
         Matrix matrixRGB = threeChannelMatrix.getMatrixRGB();
         int xn = matrixR.getX();
         int yn = matrixR.getY();
-//        for (int i = 0; i < xn; i++) {
-//            for (int j = 0; j < yn; j++) {
-//                double[] rgb = new double[]{matrixR.getNumber(i, j), matrixG.getNumber(i, j)
-//                        , matrixB.getNumber(i, j)};
-//                meanClustering.setColor(rgb);
-//            }
-//        }
         //局部特征选区筛选
         int nub = size * size;
         int twoNub = nub * 2;

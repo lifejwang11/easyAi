@@ -63,7 +63,6 @@ public class Operation {//进行计算
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
-        //Matrix matrixRGB = threeChannelMatrix.getMatrixRGB();
         Random random = new Random();
         int x = matrixR.getX();
         int y = matrixR.getY();
@@ -77,19 +76,7 @@ public class Operation {//进行计算
             rgbRegression.insertRGB(rgb);
         }
         rgbRegression.regression();
-//        double[] rgb = new double[]{164 / 255, 189 / 255, 193 / 255};
-//        double dis = rgbRegression.getDisError(rgb);
-//        System.out.println("dis==" + dis);
         templeConfig.getFood().getTrayBody().add(rgbRegression);
-    }
-
-    private void cutPic(ThreeChannelMatrix threeChannelMatrix, int x, int y, int xSize, int ySize) {
-        Matrix matrixR = threeChannelMatrix.getMatrixR();
-        Matrix matrixG = threeChannelMatrix.getMatrixG();
-        Matrix matrixB = threeChannelMatrix.getMatrixB();
-        threeChannelMatrix.setMatrixR(matrixR.getSonOfMatrix(x, y, xSize, ySize));
-        threeChannelMatrix.setMatrixG(matrixG.getSonOfMatrix(x, y, xSize, ySize));
-        threeChannelMatrix.setMatrixB(matrixB.getSonOfMatrix(x, y, xSize, ySize));
     }
 
     public RegionBody colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList

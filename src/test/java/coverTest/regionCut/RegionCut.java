@@ -33,9 +33,12 @@ public class RegionCut {
         ColorFunction colorFunction = new ColorFunction(threeChannelMatrix);
         int[] minBorder = new int[]{0, 0};
         int[] maxBorder = new int[]{299, 299};
-        PSO pso = new PSO(2, minBorder, maxBorder, 400, 200,
-                colorFunction, 0.1, 0.1, 0.1, true, 10);
+        long a = System.currentTimeMillis();
+        PSO pso = new PSO(2, minBorder, maxBorder, 100, 100,
+                colorFunction, 0.2, 1, 0.5, true, 10, 1);
         pso.start(fatherX, fatherY);
+        long b = System.currentTimeMillis() - a;
+        System.out.println("时间：" + b);
         //        Matrix matrixR = threeChannelMatrix.getMatrixR();
 //        Matrix matrixG = threeChannelMatrix.getMatrixG();
 //        Matrix matrixB = threeChannelMatrix.getMatrixB();

@@ -56,6 +56,7 @@ public class Matrix {
     private void setState(int x, int y) {
         if (x == 1 && y == 1) {
             isZero = true;
+            isVector = true;
         } else if (x == 1 || y == 1) {
             isVector = true;
             if (x == 1) {

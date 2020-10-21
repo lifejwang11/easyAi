@@ -1,14 +1,11 @@
-package coverTest.regionCut;
+package org.wlld.imageRecognition.segmentation;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.PsoFunction;
 import org.wlld.imageRecognition.ThreeChannelMatrix;
-import org.wlld.imageRecognition.segmentation.RgbRegression;
 import org.wlld.tools.Frequency;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**

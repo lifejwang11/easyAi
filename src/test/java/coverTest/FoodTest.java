@@ -75,7 +75,6 @@ public class FoodTest {
         templeConfig.setFeatureNub(5);//聚类特征数量
         //菜品识别实体类
         food.setShrink(5);//缩紧像素
-        food.setTimes(1);//聚类数据增强
         food.setRegionSize(5);
         KNerveManger kNerveManger = new KNerveManger(12, 24, 6000);
         food.setkNerveManger(kNerveManger);
@@ -83,7 +82,6 @@ public class FoodTest {
         food.setColumnMark(0.15);//0.25
         food.setRegressionNub(20000);
         food.setTrayTh(0.08);
-        food.setDispersedTh(0.5);
         templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
         if (modelParameter != null) {

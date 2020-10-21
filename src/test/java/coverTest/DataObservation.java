@@ -24,9 +24,9 @@ public class DataObservation {
     public static void main(String[] args) throws Exception {
         //372,330,右 最大值 147.44
         //377 ,330右 最大值 69.6
-        int xp = 100;
-        int yp = 720;//290
-        observation2("/Users/lidapeng/Desktop/test/testOne/e2.jpg", xp, yp);
+        int xp = 100;//100 2
+        int yp = 720;//720 2
+        observation2("/Users/lidapeng/Desktop/test/testOne/e2.jpg", xp, yp);//2
     }
 
     public static void observation2(String url, int xp, int yp) throws Exception {

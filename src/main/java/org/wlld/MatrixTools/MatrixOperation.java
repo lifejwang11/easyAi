@@ -46,7 +46,7 @@ public class MatrixOperation {
 
     //多元线性回归
     public static Matrix getLinearRegression(Matrix parameter, Matrix out) throws Exception {
-        if (parameter.getX() == out.getX() && out.isVector() && !out.isRowVector()) {
+        if (parameter.getX() == out.getX() && out.isVector()) {
             //将参数矩阵转置
             Matrix matrix1 = transPosition(parameter);
             //转置的参数矩阵乘以参数矩阵
