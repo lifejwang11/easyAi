@@ -66,7 +66,7 @@ public class PSO {
         this.allPar = allPar;
     }
 
-    public List<double[]> start(int fatherX, int fatherY) throws Exception {//开始进行迭代
+    public List<double[]> start() throws Exception {//开始进行迭代
         int size = allPar.size();
         for (int i = 0; i < times; i++) {
             for (int j = 0; j < size; j++) {

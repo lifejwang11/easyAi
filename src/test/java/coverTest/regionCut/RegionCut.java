@@ -36,7 +36,7 @@ public class RegionCut {
         long a = System.currentTimeMillis();
         PSO pso = new PSO(2, minBorder, maxBorder, 100, 100,
                 colorFunction, 0.2, 1, 0.5, true, 10, 1);
-        pso.start(fatherX, fatherY);
+        pso.start();
         long b = System.currentTimeMillis() - a;
         System.out.println("时间：" + b);
         //        Matrix matrixR = threeChannelMatrix.getMatrixR();

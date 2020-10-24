@@ -8,10 +8,7 @@ import org.wlld.config.Classifier;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.imageRecognition.*;
-import org.wlld.imageRecognition.segmentation.KNerveManger;
-import org.wlld.imageRecognition.segmentation.RegionBody;
-import org.wlld.imageRecognition.segmentation.RegionMapping;
-import org.wlld.imageRecognition.segmentation.Specifications;
+import org.wlld.imageRecognition.segmentation.*;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.param.Cutting;
 import org.wlld.param.Food;
@@ -68,14 +65,14 @@ public class FoodTest {
         cutting.setRegionNub(100);
         cutting.setMaxIou(2);
         //knn参数
-        templeConfig.setKnnNub(15);
+        templeConfig.setKnnNub(1);
         //池化比例
         templeConfig.setPoolSize(2);//缩小比例
         //聚类
         templeConfig.setFeatureNub(5);//聚类特征数量
         //菜品识别实体类
         food.setShrink(5);//缩紧像素
-        food.setRegionSize(5);
+        food.setRegionSize(6);
         KNerveManger kNerveManger = new KNerveManger(12, 24, 6000);
         food.setkNerveManger(kNerveManger);
         food.setRowMark(0.15);//0.12
@@ -156,59 +153,65 @@ public class FoodTest {
             operation.colorStudy(threeChannelMatrix23, 23, specificationsList, name);
             operation.colorStudy(threeChannelMatrix24, 24, specificationsList, name);
         }
-        System.out.println("========================");
-        kNerveManger.startStudy();
-        int i = 3;
-//        ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix(name + "a" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix(name + "b" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix(name + "c" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix(name + "d" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix5 = picture.getThreeMatrix(name + "e" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix6 = picture.getThreeMatrix(name + "f" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix7 = picture.getThreeMatrix(name + "g" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix8 = picture.getThreeMatrix(name + "h" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix9 = picture.getThreeMatrix(name + "i" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix10 = picture.getThreeMatrix(name + "j" + i + ".jpg");
+        DimensionMappingStudy dimensionMappingStudy = new DimensionMappingStudy();
+        //System.out.println("映射前检查========================");
+        dimensionMappingStudy.selfTest(templeConfig);//检查
+        dimensionMappingStudy.start(templeConfig);//完成映射
+        System.out.println("映射后检查========================");
+        dimensionMappingStudy.selfTest(templeConfig);//检查
+        //System.out.println("========================");
+        // kNerveManger.startStudy();
+        int i = 4;
+        ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix(name + "a" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix(name + "b" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix(name + "c" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix4 = picture.getThreeMatrix(name + "d" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix5 = picture.getThreeMatrix(name + "e" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix6 = picture.getThreeMatrix(name + "f" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix7 = picture.getThreeMatrix(name + "g" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix8 = picture.getThreeMatrix(name + "h" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix9 = picture.getThreeMatrix(name + "i" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix10 = picture.getThreeMatrix(name + "j" + i + ".jpg");
         ThreeChannelMatrix threeChannelMatrix11 = picture.getThreeMatrix(name + "k" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix12 = picture.getThreeMatrix(name + "l" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix12 = picture.getThreeMatrix(name + "l" + i + ".jpg");
         ThreeChannelMatrix threeChannelMatrix13 = picture.getThreeMatrix(name + "m" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix14 = picture.getThreeMatrix(name + "n" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix14 = picture.getThreeMatrix(name + "n" + i + ".jpg");
 //
-//        ThreeChannelMatrix threeChannelMatrix15 = picture.getThreeMatrix(name + "o" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix16 = picture.getThreeMatrix(name + "p" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix17 = picture.getThreeMatrix(name + "q" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix18 = picture.getThreeMatrix(name + "r" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix19 = picture.getThreeMatrix(name + "s" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix20 = picture.getThreeMatrix(name + "t" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix21 = picture.getThreeMatrix(name + "u" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix22 = picture.getThreeMatrix(name + "v" + i + ".jpg");
-//        ThreeChannelMatrix threeChannelMatrix23 = picture.getThreeMatrix(name + "w" + i + ".jpg");
-        // ThreeChannelMatrix threeChannelMatrix24 = picture.getThreeMatrix(name + "x" + i + ".jpg");
-//        operation.colorLook(threeChannelMatrix1, specificationsList);
-//        operation.colorLook(threeChannelMatrix2, specificationsList);
-//        operation.colorLook(threeChannelMatrix3, specificationsList);
-//        operation.colorLook(threeChannelMatrix4, specificationsList);
-//        operation.colorLook(threeChannelMatrix5, specificationsList);
-//        operation.colorLook(threeChannelMatrix6, specificationsList);
-//        operation.colorLook(threeChannelMatrix7, specificationsList);
-//        operation.colorLook(threeChannelMatrix8, specificationsList);
-//        operation.colorLook(threeChannelMatrix9, specificationsList);
-//        operation.colorLook(threeChannelMatrix10, specificationsList);
+        ThreeChannelMatrix threeChannelMatrix15 = picture.getThreeMatrix(name + "o" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix16 = picture.getThreeMatrix(name + "p" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix17 = picture.getThreeMatrix(name + "q" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix18 = picture.getThreeMatrix(name + "r" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix19 = picture.getThreeMatrix(name + "s" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix20 = picture.getThreeMatrix(name + "t" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix21 = picture.getThreeMatrix(name + "u" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix22 = picture.getThreeMatrix(name + "v" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix23 = picture.getThreeMatrix(name + "w" + i + ".jpg");
+        ThreeChannelMatrix threeChannelMatrix24 = picture.getThreeMatrix(name + "x" + i + ".jpg");
+        operation.colorLook(threeChannelMatrix1, specificationsList);
+        operation.colorLook(threeChannelMatrix2, specificationsList);
+        operation.colorLook(threeChannelMatrix3, specificationsList);
+        operation.colorLook(threeChannelMatrix4, specificationsList);
+        operation.colorLook(threeChannelMatrix5, specificationsList);
+        operation.colorLook(threeChannelMatrix6, specificationsList);
+        operation.colorLook(threeChannelMatrix7, specificationsList);
+        operation.colorLook(threeChannelMatrix8, specificationsList);
+        operation.colorLook(threeChannelMatrix9, specificationsList);
+        operation.colorLook(threeChannelMatrix10, specificationsList);
         operation.colorLook(threeChannelMatrix11, specificationsList);
-//        operation.colorLook(threeChannelMatrix12, specificationsList);
+        operation.colorLook(threeChannelMatrix12, specificationsList);
         operation.colorLook(threeChannelMatrix13, specificationsList);
-//        operation.colorLook(threeChannelMatrix14, specificationsList);
-//        operation.colorLook(threeChannelMatrix15, specificationsList);
-//        operation.colorLook(threeChannelMatrix16, specificationsList);
-//        operation.colorLook(threeChannelMatrix17, specificationsList);
-//        operation.colorLook(threeChannelMatrix18, specificationsList);
-//        operation.colorLook(threeChannelMatrix19, specificationsList);
-//        operation.colorLook(threeChannelMatrix20, specificationsList);
-//        operation.colorLook(threeChannelMatrix21, specificationsList);
-//        operation.colorLook(threeChannelMatrix22, specificationsList);
-//        operation.colorLook(threeChannelMatrix23, specificationsList);
-//        operation.colorLook(threeChannelMatrix24, specificationsList);
-//
+        operation.colorLook(threeChannelMatrix14, specificationsList);
+        operation.colorLook(threeChannelMatrix15, specificationsList);
+        operation.colorLook(threeChannelMatrix16, specificationsList);
+        operation.colorLook(threeChannelMatrix17, specificationsList);
+        operation.colorLook(threeChannelMatrix18, specificationsList);
+        operation.colorLook(threeChannelMatrix19, specificationsList);
+        operation.colorLook(threeChannelMatrix20, specificationsList);
+        operation.colorLook(threeChannelMatrix21, specificationsList);
+        operation.colorLook(threeChannelMatrix22, specificationsList);
+        operation.colorLook(threeChannelMatrix23, specificationsList);
+        operation.colorLook(threeChannelMatrix24, specificationsList);
+
 //        test3(threeChannelMatrix1, operation, specificationsList, 1);
 //        test3(threeChannelMatrix2, operation, specificationsList, 2);
 //        test3(threeChannelMatrix3, operation, specificationsList, 3);
@@ -232,7 +235,7 @@ public class FoodTest {
 //        test3(threeChannelMatrix21, operation, specificationsList, 21);
 //        test3(threeChannelMatrix22, operation, specificationsList, 22);
 //        test3(threeChannelMatrix23, operation, specificationsList, 23);
-        //test3(threeChannelMatrix24, operation, specificationsList, 24);
+//        test3(threeChannelMatrix24, operation, specificationsList, 24);
 
     }
 

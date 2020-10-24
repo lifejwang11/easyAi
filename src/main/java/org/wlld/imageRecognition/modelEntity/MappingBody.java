@@ -10,19 +10,13 @@ public class MappingBody {
     private double[] feature;//特征
     private double mappingNub;//映射好的值
 
-    public MappingBody(double[] mapping, double[] feature) {
+    public MappingBody(double[] feature) {
         this.feature = feature;
         double sigma = 0;
-        for (int i = 0; i < mapping.length; i++) {
-            sigma = sigma + Math.pow(mapping[i], 2);
+        for (int i = 0; i < feature.length; i++) {
+            sigma = sigma + Math.pow(feature[i], 2);
         }
-        sigma = Math.sqrt(sigma);//映射维度的莫
-        double s = 0;
-        for (int j = 0; j < feature.length; j++) {
-            s = s + feature[j] * mapping[j];
-        }
-        mappingNub = s / sigma;
-
+        mappingNub = Math.sqrt(sigma);
     }
 
     public double[] getFeature() {

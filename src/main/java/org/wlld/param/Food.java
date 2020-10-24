@@ -24,14 +24,14 @@ public class Food {
     private int step = 1;//特征取样步长
     private int speciesNub = 24;//种类数
     private KNerveManger kNerveManger;
-    private Map<Integer, double[]> mappings;//类别映射集合
+    private double[] mappingParameter;//特征映射
 
-    public Map<Integer, double[]> getMappings() {
-        return mappings;
+    public double[] getMappingParameter() {
+        return mappingParameter;
     }
 
-    public void setMappings(Map<Integer, double[]> mappings) {
-        this.mappings = mappings;
+    public void setMappingParameter(double[] mappingParameter) {
+        this.mappingParameter = mappingParameter;
     }
 
     public KNerveManger getkNerveManger() {

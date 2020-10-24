@@ -93,7 +93,7 @@ public class MatrixOperation {
         }
     }
 
-    public static double errorNub(Matrix matrix, Matrix avgMatrix, int excNub) throws Exception {//求均方误差
+    public static double errorNub(Matrix matrix, Matrix avgMatrix) throws Exception {//求均方误差
         int y = matrix.getY();
         if (matrix.isRowVector() && avgMatrix.isRowVector() && y == avgMatrix.getY()) {
             double[] subAll = new double[y];
@@ -103,12 +103,11 @@ public class MatrixOperation {
                 double sub = Math.pow(avg - mySelf, 2);
                 subAll[j] = sub;
             }
-            Arrays.sort(subAll);
             double sigma = 0;
-            for (int i = 0; i < y - excNub; i++) {
+            for (int i = 0; i < y; i++) {
                 sigma = sigma + subAll[i];
             }
-            return sigma / (y - excNub);
+            return sigma / y;
         } else {
             throw new Exception("this matrix is not  rowVector or length different");
         }

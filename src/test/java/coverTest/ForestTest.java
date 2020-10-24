@@ -84,7 +84,6 @@ public class ForestTest {
         templeConfig.setFeatureNub(3);//聚类特征数量
         //菜品识别实体类
         food.setShrink(5);//缩紧像素
-        food.setTimes(1);//聚类数据增强
         food.setRowMark(0.15);//0.12
         food.setColumnMark(0.15);//0.25
         food.setRegressionNub(20000);

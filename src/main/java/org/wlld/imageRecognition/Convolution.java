@@ -7,8 +7,6 @@ import org.wlld.imageRecognition.border.Border;
 import org.wlld.imageRecognition.border.Frame;
 import org.wlld.imageRecognition.border.FrameBody;
 import org.wlld.imageRecognition.segmentation.ColorFunction;
-import org.wlld.imageRecognition.segmentation.DimensionMapping;
-import org.wlld.param.Food;
 import org.wlld.pso.PSO;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.Frequency;
@@ -100,62 +98,44 @@ public class Convolution extends Frequency {
 
 
     public List<Double> getCenterColor(ThreeChannelMatrix threeChannelMatrix, TempleConfig templeConfig,
-                                       boolean isStudy, int tag) throws Exception {
+                                       int sqNub) throws Exception {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
+        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig, true);
         int maxX = matrixR.getX();
         int maxY = matrixR.getY();
         ColorFunction colorFunction = new ColorFunction(threeChannelMatrix);
         int[] minBorder = new int[]{0, 0};
-        int[] maxBorder = new int[]{maxX, maxY};
+        int[] maxBorder = new int[]{maxX - 1, maxY - 1};
         //创建粒子群
-        PSO pso = new PSO(2, minBorder, maxBorder, 100, 100,
+        PSO pso = new PSO(2, minBorder, maxBorder, 200, 200,
                 colorFunction, 0.2, 1, 0.5, true, 10, 1);
-        List<double[]> positions = pso.start(0, 0);
-        List<double[]> feature = new ArrayList<>();//像素特征
+        List<double[]> positions = pso.start();
         for (int i = 0; i < positions.size(); i++) {
             double[] parameter = positions.get(i);
             //获取取样坐标
             int x = (int) parameter[0];
             int y = (int) parameter[1];
-            double[] rgb = new double[]{matrixR.getNumber(x, y) / 255, matrixG.getNumber(x, y) / 255,
-                    matrixB.getNumber(x, y) / 255};
-            feature.add(rgb);
+            double[] rgb = new double[]{matrixR.getNumber(x, y), matrixG.getNumber(x, y),
+                    matrixB.getNumber(x, y)};
+            meanClustering.setColor(rgb);
         }
-        if (isStudy) {//进行新维度映射排序
-            pso = new PSO(3, null, null, 200, 50,
-                    new DimensionMapping(feature), 0.5, 2, 2, true, 0.5, 0.001);
-            List<double[]> mappings = pso.start(0, 0);//最小映射集合
-            double[] sigmaMapping = new double[3];//最小映射
-            for (int i = 0; i < mappings.size(); i++) {
-                double[] mapping = mappings.get(i);
-                for (int j = 0; j < sigmaMapping.length; j++) {
-                    sigmaMapping[j] = sigmaMapping[j] + mapping[j];
-                }
+        meanClustering.start(true);
+        List<RGBNorm> rgbNorms = meanClustering.getMatrices();
+        List<Double> features = new ArrayList<>();
+        for (int i = 0; i < sqNub; i++) {
+            double[] rgb = rgbNorms.get(i).getRgb();
+            for (int j = 0; j < rgb.length; j++) {
+                features.add(rgb[j]);
             }
-            for (int j = 0; j < sigmaMapping.length; j++) {
-                sigmaMapping[j] = sigmaMapping[j] / mappings.size();
-            }
-            //保存类别及映射
-            Food food = templeConfig.getFood();
-            Map<Integer, double[]> allMappings = food.getMappings();
-            if (allMappings == null) {
-                allMappings = new HashMap<>();
-                food.setMappings(allMappings);
-            }
-            allMappings.put(tag, sigmaMapping);
-            //根据映射值进行排序
-
-        } else {
-
         }
 
-        return null;
+        return features;
     }
 
-    public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, int poolSize, TempleConfig templeConfig
-            , int sqNub, int tag) throws Exception {
+    public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, TempleConfig templeConfig
+            , int sqNub, boolean isStudy) throws Exception {
         MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig, true);
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
@@ -166,8 +146,8 @@ public class Convolution extends Frequency {
         //局部特征选区筛选
         int nub = size * size;
         int twoNub = nub * 2;
-        for (int i = 0; i <= xn - size; i++) {
-            for (int j = 0; j <= yn - size; j++) {
+        for (int i = 0; i <= xn - size; i += 3) {
+            for (int j = 0; j <= yn - size; j += 3) {
                 Matrix sonR = matrixR.getSonOfMatrix(i, j, size, size);
                 Matrix sonG = matrixG.getSonOfMatrix(i, j, size, size);
                 Matrix sonB = matrixB.getSonOfMatrix(i, j, size, size);
@@ -204,14 +184,29 @@ public class Convolution extends Frequency {
         List<Double> features = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {
             double[] rgb = rgbNorms.get(i).getRgb();
+            if (!isStudy) {
+                rgb = rgbMapping(rgb, i, templeConfig);
+            }
             for (int j = 0; j < rgb.length; j++) {
                 features.add(rgb[j]);
             }
+
         }
         // System.out.println(features);
         return features;
     }
 
+    private double[] rgbMapping(double[] rgb, int index, TempleConfig templeConfig) {//进行映射
+        double[] mapping = templeConfig.getFood().getMappingParameter();
+        int size = rgb.length;
+        int allSize = mapping.length / 2;
+        double[] mappingFeature = new double[size];
+        for (int i = 0; i < size; i++) {
+            int myIndex = size * index + i;
+            mappingFeature[i] = rgb[i] * mapping[myIndex] + mapping[allSize + myIndex];
+        }
+        return mappingFeature;
+    }
 
     private void normalization(Matrix matrix) throws Exception {
         for (int i = 0; i < matrix.getX(); i++) {

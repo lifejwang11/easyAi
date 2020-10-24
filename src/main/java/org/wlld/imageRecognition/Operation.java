@@ -93,10 +93,8 @@ public class Operation {//进行计算
             int ySize = maxY - minY;
             //convolution.imgNormalization(threeChannelMatrix);
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-//                List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
-//                        templeConfig.getFeatureNub(), templeConfig);
-            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(),
-                    templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub(), tag);
+            // List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig, templeConfig.getFeatureNub());
+            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(), templeConfig, templeConfig.getFeatureNub(), true);
             if (templeConfig.isShowLog()) {
                 System.out.println(tag + ":" + feature);
             }
@@ -169,10 +167,9 @@ public class Operation {//进行计算
             int xSize = maxX - minX;
             int ySize = maxY - minY;
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-//            List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
-//                    templeConfig.getFeatureNub(), templeConfig);
-            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(),
-                    templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub(), 0);
+            //List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig, templeConfig.getFeatureNub());
+            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(), templeConfig, templeConfig.getFeatureNub(), false);
+
             if (templeConfig.isShowLog()) {
                 System.out.println(feature);
             }
@@ -202,7 +199,7 @@ public class Operation {//进行计算
                     break;
             }
             regionBody.setType(id);
-            //System.out.println("类别" + id);
+            System.out.println("类别" + id);
         }
         return regionList;
     }
