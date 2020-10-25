@@ -1,9 +1,9 @@
 package org.wlld.imageRecognition.segmentation;
 
 import org.wlld.MatrixTools.Matrix;
-import org.wlld.i.PsoFunction;
-import org.wlld.imageRecognition.RGBNorm;
+import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.imageRecognition.TempleConfig;
+import org.wlld.imageRecognition.border.Knn;
 import org.wlld.pso.PSO;
 
 import java.util.*;
@@ -16,6 +16,11 @@ import java.util.*;
  * @Description 维度映射
  */
 public class DimensionMappingStudy {
+    private Knn knn = new Knn(1);//一个knn分类器，决定进这一层哪个类别
+    private int id;//类别id
+    private Map<Integer, DimensionMappingStudy> deepMappingMap = new HashMap<>();
+    private double[] mappingSigma;//映射层
+
     private double getDist(Matrix data1, Matrix data2) throws Exception {
         int size = data1.getY();
         double sigma = 0;
@@ -25,38 +30,17 @@ public class DimensionMappingStudy {
         return Math.sqrt(sigma);
     }
 
-    private double compareSame(List<Matrix> testFeatures) throws Exception {//比较同类找最小值
-        int size = testFeatures.size();
-        double max = 0;
-        for (int i = 0; i < size; i++) {
-            Matrix feature = testFeatures.get(i);
-            double min = -1;
-            for (int j = 0; j < size; j++) {
-                if (i != j) {
-                    double dist = getDist(feature, testFeatures.get(j));
-                    if (min == -1 || dist < min) {
-                        min = dist;
-                    }
-                }
-            }
-            if (min > max) {
-                max = min;
-            }
-        }
-        return max;
-    }
+    class MinTypeSort implements Comparator<MinType> {
 
-    private double compareDifferent(List<Matrix> featureSame, List<Matrix> featureDifferent) throws Exception {
-        double min = -1;//比较异类取最小值
-        for (Matrix myFeature : featureSame) {
-            for (Matrix feature : featureDifferent) {
-                double dist = getDist(myFeature, feature);
-                if (min < 0 || dist < min) {
-                    min = dist;
-                }
+        @Override
+        public int compare(MinType o1, MinType o2) {
+            if (o1.minDist < o2.minDist) {
+                return -1;
+            } else if (o1.minDist > o2.minDist) {
+                return 1;
             }
+            return 0;
         }
-        return min;
     }
 
     class MinType {
@@ -64,54 +48,119 @@ public class DimensionMappingStudy {
         private int type;
     }
 
-    public void selfTest(TempleConfig templeConfig) throws Exception {//对模型数据进行自检测
-        Map<Integer, List<Matrix>> featureMap = templeConfig.getKnn().getFeatureMap();
-        Map<Integer, Double> maxMap = new HashMap<>();//保存与该类别最大间距
-        Map<Integer, List<MinType>> minMap = new HashMap<>();//保存与该类别最相似的类别,及距离值
-        for (Map.Entry<Integer, List<Matrix>> entry : featureMap.entrySet()) {
-            int key = entry.getKey();
-            List<MinType> minTypes = new ArrayList<>();
-            List<Matrix> myFeatures = entry.getValue();
-            double sameMax = compareSame(myFeatures);//同类之间的最大值
-            maxMap.put(key, sameMax);
-            for (Map.Entry<Integer, List<Matrix>> entry2 : featureMap.entrySet()) {
-                int testKey = entry2.getKey();
-                if (testKey != key) {//找出最小距离
-                    List<Matrix> features = entry2.getValue();
-                    MinType minType = new MinType();
-                    double minDist = compareDifferent(myFeatures, features);//该类别的最小值
-                    if (minDist < sameMax) {
+    private double getSub(List<Matrix> featureSame, List<Matrix> featureDifferent) throws Exception {
+        double minSub = 0;
+        for (int i = 0; i < featureSame.size(); i++) {
+            Matrix sameFeature = featureSame.get(i);
+            double differentMin = -1;//与异类相比的最小值
+            double sameMin = -1;//与同类相比的最小值
+            for (int j = 0; j < featureDifferent.size(); j++) {
+                Matrix differentFeature = featureDifferent.get(j);
+                double dist = getDist(sameFeature, differentFeature);
+                if (differentMin < 0 || dist < differentMin) {
+                    differentMin = dist;
+                }
+            }
+            for (int k = 0; k < featureSame.size(); k++) {
+                if (k != i) {
+                    Matrix feature = featureSame.get(k);
+                    double dist = getDist(sameFeature, feature);
+                    if (sameMin < 0 || dist < sameMin) {
+                        sameMin = dist;
+                    }
+                }
+            }
+            double sub = differentMin - sameMin;//异类距离与同类距离的差距,选出其中最小的
+            if (i == 0) {
+                minSub = sub;
+            } else if (sub < minSub) {
+                minSub = sub;
+            }
+        }
+        return minSub;
+    }
+
+    private void nextDeep(TempleConfig templeConfig) throws Exception {//对模型数据进行自检测
+        Map<Integer, List<Matrix>> featureMap = knn.getFeatureMap();
+        int nub = featureMap.size() / 2;
+        if (nub > 1) {
+            MinTypeSort minTypeSort = new MinTypeSort();
+            Map<Integer, List<MinType>> minMap = new HashMap<>();//保存与该类别最相似的类别,及距离值
+            for (Map.Entry<Integer, List<Matrix>> entry : featureMap.entrySet()) {
+                int key = entry.getKey();
+                List<MinType> minTypes = new ArrayList<>();
+                List<Matrix> myFeatures = entry.getValue();
+                for (Map.Entry<Integer, List<Matrix>> entry2 : featureMap.entrySet()) {
+                    int testKey = entry2.getKey();
+                    if (testKey != key) {//找出最小距离
+                        List<Matrix> features = entry2.getValue();
+                        MinType minType = new MinType();
+                        double minDist = getSub(myFeatures, features);
                         minType.minDist = minDist;
                         minType.type = testKey;
                         minTypes.add(minType);
                     }
                 }
+                Collections.sort(minTypes, minTypeSort);
+                int len = 0;
+                for (int i = 0; i < minTypes.size(); i++) {
+                    if (minTypes.get(i).minDist < 0) {
+                        len++;
+                    } else {
+                        break;
+                    }
+                }
+                if (len < nub) {
+                    minTypes = minTypes.subList(0, nub);
+                } else {
+                    minTypes = minTypes.subList(0, len);
+                }
+                minMap.put(key, minTypes);
             }
-            minMap.put(key, minTypes);
-        }
-        for (Map.Entry<Integer, Double> entry : maxMap.entrySet()) {
-            int key = entry.getKey();
-            double maxValue = entry.getValue();
-            System.out.println("=============================================");
-            System.out.println("类别：" + key + ",最大类间距为：" + maxValue);
-            List<MinType> minTypes = minMap.get(key);
-            for (int i = 0; i < minTypes.size(); i++) {
-                MinType minType = minTypes.get(i);
-                System.out.println("相近类:" + minType.type + ",最小类间距为：" + minType.minDist);
+            for (Map.Entry<Integer, List<MinType>> entry : minMap.entrySet()) {
+                if (nub == 2 || nub == 3) {
+                    System.out.println("类别===============================" + entry.getKey());
+                }
+                List<MinType> minTypeList = entry.getValue();
+                DimensionMappingStudy dimensionMappingStudy = new DimensionMappingStudy();
+                Knn myKnn = dimensionMappingStudy.getKnn();
+                for (MinType minType : minTypeList) {
+                    if (nub == 2 || nub == 3) {
+                        System.out.println("type==" + minType.type + ",dist==" + minType.minDist);
+                    }
+                    List<Matrix> featureList = featureMap.get(minType.type);
+                    for (Matrix matrix : featureList) {
+                        myKnn.insertMatrix(matrix, minType.type);
+                    }
+                }
+                deepMappingMap.put(entry.getKey(), dimensionMappingStudy);
+            }
+            for (Map.Entry<Integer, DimensionMappingStudy> entry : deepMappingMap.entrySet()) {
+                entry.getValue().start(templeConfig);
             }
         }
     }
 
+    public int toClassification(Matrix feature) throws Exception {//进行识别 先映射
+        feature = mapping(feature, mappingSigma);
+        int type = knn.getType(feature);
+        if (deepMappingMap.size() > 0 && deepMappingMap.containsKey(type)) {//继续下一层
+            return deepMappingMap.get(type).toClassification(feature);
+        } else {//返回最后结果
+            return type;
+        }
+    }
+
     public void start(TempleConfig templeConfig) throws Exception {
-        Map<Integer, List<Matrix>> featureMap = templeConfig.getKnn().getFeatureMap();
+        Map<Integer, List<Matrix>> featureMap = knn.getFeatureMap();
         FeatureMapping featureMapping = new FeatureMapping(featureMap);
         int dimensionNub = templeConfig.getFeatureNub() * 3 * 2;//PSO维度
         //创建粒子群
-        PSO pso = new PSO(dimensionNub, null, null, 200, 100,
-                featureMapping, 0.4, 2, 2, true, 0.2, 0.01);
+        PSO pso = new PSO(dimensionNub, null, null, 500, 100,
+                featureMapping, 0.8, 2, 2, true, 0.2, 0.01);
         List<double[]> mappings = pso.start();
         int size = mappings.size();
-        double[] mappingSigma = new double[dimensionNub];
+        mappingSigma = new double[dimensionNub];
         for (int i = 0; i < size; i++) {
             double[] mapping = mappings.get(i);
             for (int j = 0; j < mapping.length; j++) {
@@ -121,9 +170,10 @@ public class DimensionMappingStudy {
         for (int i = 0; i < mappingSigma.length; i++) {
             mappingSigma[i] = mappingSigma[i] / size;
         }
-        templeConfig.getFood().setMappingParameter(mappingSigma);
         //还要把所有已存在的knn特征完成映射
         featureMapping(featureMap, mappingSigma, templeConfig);
+        //进行下一次映射选择
+        nextDeep(templeConfig);
     }
 
     private void featureMapping(Map<Integer, List<Matrix>> featureMap, double[] mapping
@@ -149,5 +199,9 @@ public class DimensionMappingStudy {
             matrix.setNub(0, i, nub);
         }
         return matrix;
+    }
+
+    public Knn getKnn() {
+        return knn;
     }
 }

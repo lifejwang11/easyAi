@@ -98,11 +98,11 @@ public class FoodTest {
         specifications.setMaxWidth(600);
         specifications.setMaxHeight(600);
         specificationsList.add(specifications);
-        KNerveManger kNerveManger = templeConfig.getFood().getkNerveManger();
+        //KNerveManger kNerveManger = templeConfig.getFood().getkNerveManger();
 //        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/d.jpg");
 //        operation.setTray(threeChannelMatrix);
         String name = "/Users/lidapeng/Desktop/test/testOne/";
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             System.out.println("轮数============================" + i);
             ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix(name + "a" + i + ".jpg");
             ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix(name + "b" + i + ".jpg");
@@ -153,12 +153,8 @@ public class FoodTest {
             operation.colorStudy(threeChannelMatrix23, 23, specificationsList, name);
             operation.colorStudy(threeChannelMatrix24, 24, specificationsList, name);
         }
-        DimensionMappingStudy dimensionMappingStudy = new DimensionMappingStudy();
-        //System.out.println("映射前检查========================");
-        dimensionMappingStudy.selfTest(templeConfig);//检查
+        DimensionMappingStudy dimensionMappingStudy = templeConfig.getFood().getDimensionMappingStudy();
         dimensionMappingStudy.start(templeConfig);//完成映射
-        System.out.println("映射后检查========================");
-        dimensionMappingStudy.selfTest(templeConfig);//检查
         //System.out.println("========================");
         // kNerveManger.startStudy();
         int i = 4;

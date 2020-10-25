@@ -80,6 +80,38 @@ public class FeatureMapping extends Frequency implements PsoFunction {
         return min;
     }
 
+    private double getSub(List<double[]> featureSame, List<double[]> featureDifferent) {
+        double minSub = 0;
+        for (int i = 0; i < featureSame.size(); i++) {
+            double[] sameFeature = featureSame.get(i);
+            double differentMin = -1;//与异类相比的最小值
+            double sameMin = -1;//与同类相比的最小值
+            for (int j = 0; j < featureDifferent.size(); j++) {
+                double[] differentFeature = featureDifferent.get(j);
+                double dist = getDist(sameFeature, differentFeature);
+                if (differentMin < 0 || dist < differentMin) {
+                    differentMin = dist;
+                }
+            }
+            for (int k = 0; k < featureSame.size(); k++) {
+                if (k != i) {
+                    double[] feature = featureSame.get(k);
+                    double dist = getDist(sameFeature, feature);
+                    if (sameMin < 0 || dist < sameMin) {
+                        sameMin = dist;
+                    }
+                }
+            }
+            double sub = differentMin - sameMin;//异类距离与同类距离的差距,选出其中最小的
+            if (i == 0) {
+                minSub = sub;
+            } else if (sub < minSub) {
+                minSub = sub;
+            }
+        }
+        return minSub;
+    }
+
     private double compareDist(Map<Integer, List<double[]>> mapping) {//比较距离
         double sigma = 0;
         for (Map.Entry<Integer, List<double[]>> entry : mapping.entrySet()) {
@@ -94,6 +126,7 @@ public class FeatureMapping extends Frequency implements PsoFunction {
             double sameMax = compareSame(myFeature);//同类最大值
             double differentMin = compareDifferent(myFeature, featureDifferent);//异类最小值
             double sub = differentMin - sameMax;
+            //double sub = getSub(myFeature, featureDifferent);
             sigma = sigma + sub;
         }
         return sigma;

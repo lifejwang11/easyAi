@@ -135,7 +135,7 @@ public class Convolution extends Frequency {
     }
 
     public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, TempleConfig templeConfig
-            , int sqNub, boolean isStudy) throws Exception {
+            , int sqNub) throws Exception {
         MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig, true);
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
@@ -146,8 +146,8 @@ public class Convolution extends Frequency {
         //局部特征选区筛选
         int nub = size * size;
         int twoNub = nub * 2;
-        for (int i = 0; i <= xn - size; i += 3) {
-            for (int j = 0; j <= yn - size; j += 3) {
+        for (int i = 0; i <= xn - size; i += 2) {
+            for (int j = 0; j <= yn - size; j += 2) {
                 Matrix sonR = matrixR.getSonOfMatrix(i, j, size, size);
                 Matrix sonG = matrixG.getSonOfMatrix(i, j, size, size);
                 Matrix sonB = matrixB.getSonOfMatrix(i, j, size, size);
@@ -184,9 +184,6 @@ public class Convolution extends Frequency {
         List<Double> features = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {
             double[] rgb = rgbNorms.get(i).getRgb();
-            if (!isStudy) {
-                rgb = rgbMapping(rgb, i, templeConfig);
-            }
             for (int j = 0; j < rgb.length; j++) {
                 features.add(rgb[j]);
             }
@@ -194,18 +191,6 @@ public class Convolution extends Frequency {
         }
         // System.out.println(features);
         return features;
-    }
-
-    private double[] rgbMapping(double[] rgb, int index, TempleConfig templeConfig) {//进行映射
-        double[] mapping = templeConfig.getFood().getMappingParameter();
-        int size = rgb.length;
-        int allSize = mapping.length / 2;
-        double[] mappingFeature = new double[size];
-        for (int i = 0; i < size; i++) {
-            int myIndex = size * index + i;
-            mappingFeature[i] = rgb[i] * mapping[myIndex] + mapping[allSize + myIndex];
-        }
-        return mappingFeature;
     }
 
     private void normalization(Matrix matrix) throws Exception {
