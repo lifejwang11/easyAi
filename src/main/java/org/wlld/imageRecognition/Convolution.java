@@ -135,7 +135,7 @@ public class Convolution extends Frequency {
     }
 
     public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, TempleConfig templeConfig
-            , int sqNub) throws Exception {
+            , int sqNub, boolean isStudy) throws Exception {
         MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig, true);
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
@@ -184,6 +184,9 @@ public class Convolution extends Frequency {
         List<Double> features = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {
             double[] rgb = rgbNorms.get(i).getRgb();
+            if (!isStudy) {
+                rgb = rgbMapping(rgb, i, templeConfig);
+            }
             for (int j = 0; j < rgb.length; j++) {
                 features.add(rgb[j]);
             }
@@ -191,6 +194,18 @@ public class Convolution extends Frequency {
         }
         // System.out.println(features);
         return features;
+    }
+
+    private double[] rgbMapping(double[] rgb, int index, TempleConfig templeConfig) {//进行映射
+        double[] mapping = templeConfig.getFood().getMappingParameter();
+        int size = rgb.length;
+        int allSize = mapping.length / 2;
+        double[] mappingFeature = new double[size];
+        for (int i = 0; i < size; i++) {
+            int myIndex = size * index + i;
+            mappingFeature[i] = rgb[i] * mapping[myIndex] + mapping[allSize + myIndex];
+        }
+        return mappingFeature;
     }
 
     private void normalization(Matrix matrix) throws Exception {

@@ -14,14 +14,96 @@ import org.wlld.param.Cutting;
 import org.wlld.param.Food;
 import org.wlld.tools.ArithUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class FoodTest {
 
     public static void main(String[] args) throws Exception {
-        test();
+        //test();
+        int[] a = new int[]{1, 4, 5, 7, 31};
+        int[] b = new int[]{4, 6, 7, 8, 21,};
+        int[] c = new int[]{12, 42, 54, 9};
+        int[] d = new int[]{63, 54, 99};
+        int[] e = new int[]{991, 123, 456};
+
+        List<int[]> t = new ArrayList<>();
+        t.add(a);
+        t.add(b);
+        t.add(c);
+        t.add(d);
+        t.add(e);
+        ab(t);
+    }
+
+    public static void ab(List<int[]> t) {
+
+        //最终输入结果
+        List<Set<Integer>> t1 = new ArrayList<>();
+
+        //储存临时值
+        Set<Integer> s = new HashSet<>();
+        //用来校验重复游标组
+        List<List<Integer>> k = new ArrayList<>();
+        Boolean x = true;//对循环进行判断
+        int num = 0;//循环游标初始值
+
+        while (x) {
+            //校验重复游标
+            List<Integer> l = new ArrayList<>();
+            //清楚临时存储值
+            s.clear();
+            //单个最终值
+            Set<Integer> s1 = new HashSet<>();
+
+            for (int i = num; i < t.size(); i++) {
+                Boolean check = false;
+                //如果存在已经验证的数组，则跳过
+                for (int j = num; j < k.size(); j++) {
+                    if (k.get(j).contains(i)) {
+                        check = true;
+                        break;
+
+                    }
+                }
+                if (check) {
+                    continue;
+                }
+
+                //循环判断数组是否存在重复（当i=num时，给初始的s赋值）
+                //当S中包含重复值的时候，插入
+                for (int info : t.get(i)) {
+                    if (i == num) {
+                        for (int info1 : t.get(i)) {
+                            l.add(i);
+                            k.add(l);
+                            s.add(info1);
+                        }
+                    } else if (s.contains(info)) {
+                        for (int info1 : t.get(i)) {
+                            l.add(i);
+                            k.add(l);
+                            s.add(info1);
+                        }
+                        break;
+                    }
+                }
+
+            }
+            //如果临时s不为空，给s1赋值，并存入到最后输出的t1中
+            if (!s.isEmpty()) {
+                for (Integer info : s) {
+                    s1.add(info);
+                }
+                t1.add(s1);
+            }
+            num++;
+            //跳出循环
+            if (num >= t.size()) {
+                x = false;
+            }
+        }
+
+        System.out.println(t1);
     }
 
     public static void test2(TempleConfig templeConfig) throws Exception {
@@ -153,8 +235,9 @@ public class FoodTest {
             operation.colorStudy(threeChannelMatrix23, 23, specificationsList, name);
             operation.colorStudy(threeChannelMatrix24, 24, specificationsList, name);
         }
-        DimensionMappingStudy dimensionMappingStudy = templeConfig.getFood().getDimensionMappingStudy();
-        dimensionMappingStudy.start(templeConfig);//完成映射
+        DimensionMappingStudy dimensionMappingStudy = new DimensionMappingStudy(templeConfig);
+        dimensionMappingStudy.start();//完成映射
+        //dimensionMappingStudy.selfTest(6);//检查
         //System.out.println("========================");
         // kNerveManger.startStudy();
         int i = 4;

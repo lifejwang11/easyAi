@@ -123,10 +123,10 @@ public class FeatureMapping extends Frequency implements PsoFunction {
                     featureDifferent.addAll(entry2.getValue());
                 }
             }
-            double sameMax = compareSame(myFeature);//同类最大值
-            double differentMin = compareDifferent(myFeature, featureDifferent);//异类最小值
-            double sub = differentMin - sameMax;
-            //double sub = getSub(myFeature, featureDifferent);
+//            double sameMax = compareSame(myFeature);//同类最大值
+//            double differentMin = compareDifferent(myFeature, featureDifferent);//异类最小值
+//            double sub = differentMin - sameMax;
+            double sub = getSub(myFeature, featureDifferent);
             sigma = sigma + sub;
         }
         return sigma;
