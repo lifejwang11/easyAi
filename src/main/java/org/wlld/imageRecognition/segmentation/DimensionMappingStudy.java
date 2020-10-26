@@ -3,6 +3,7 @@ package org.wlld.imageRecognition.segmentation;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.imageRecognition.TempleConfig;
 import org.wlld.imageRecognition.border.Knn;
+import org.wlld.imageRecognition.modelEntity.KeyMapping;
 import org.wlld.pso.PSO;
 
 import java.util.*;
@@ -19,10 +20,12 @@ public class DimensionMappingStudy {
     private Knn myKnn = new Knn(1);
     private double[] mappingSigma;//映射层
 
-    public DimensionMappingStudy(TempleConfig templeConfig) throws Exception {
+    public DimensionMappingStudy(TempleConfig templeConfig, boolean isClone) throws Exception {
         this.templeConfig = templeConfig;
         //深度克隆
-        myKnn.setFeatureMap(cloneFeature(templeConfig.getKnn().getFeatureMap()));
+        if (isClone) {
+            myKnn.setFeatureMap(cloneFeature(templeConfig.getKnn().getFeatureMap()));
+        }
     }
 
     public Knn getMyKnn() {
@@ -101,9 +104,9 @@ public class DimensionMappingStudy {
         return minSub;
     }
 
-    public void selfTest(int nub) throws Exception {//对模型数据进行自检测
-        Map<Integer, List<Matrix>> myFeatureMap = myKnn.getFeatureMap();//未映射的克隆的
-        Map<Integer, List<Matrix>> featureMap = templeConfig.getKnn().getFeatureMap();
+    public List<KeyMapping> selfTest(int nub) throws Exception {//对模型数据进行自检测
+        Map<Integer, List<Matrix>> myFeatureMap = templeConfig.getKnn().getFeatureMap();//未映射的克隆的
+        Map<Integer, List<Matrix>> featureMap = myKnn.getFeatureMap();
         MinTypeSort minTypeSort = new MinTypeSort();
         Map<Integer, List<MinType>> minMap = new HashMap<>();//保存与该类别最相似的类别,及距离值
         for (Map.Entry<Integer, List<Matrix>> entry : featureMap.entrySet()) {
@@ -137,13 +140,22 @@ public class DimensionMappingStudy {
             cups.add(cup);
         }
         List<Set<Integer>> setList = getTypeSet(cups);
+        List<KeyMapping> mappingList = new ArrayList<>();
         for (Set<Integer> set : setList) {
-            DimensionMappingStudy dimensionMappingStudy = new DimensionMappingStudy(templeConfig);
+            KeyMapping keyMapping = new KeyMapping();
+            DimensionMappingStudy dimension = new DimensionMappingStudy(templeConfig, false);
+            keyMapping.setDimensionMapping(dimension);
+            keyMapping.setKeys(set);
+            Knn knn = dimension.getMyKnn();
             for (int type : set) {
                 List<Matrix> features = myFeatureMap.get(type);
-
+                for (Matrix feature : features) {
+                    knn.insertMatrix(feature, type);
+                }
             }
+            dimension.mappingStart();
         }
+        return mappingList;
     }
 
     public List<Set<Integer>> getTypeSet(List<int[]> t) {
@@ -211,9 +223,12 @@ public class DimensionMappingStudy {
         return t1;
     }
 
+    public int getType(Matrix feature) throws Exception {
+        return myKnn.getType(feature);
+    }
 
     public void mappingStart() throws Exception {
-        Map<Integer, List<Matrix>> featureMap = templeConfig.getKnn().getFeatureMap();
+        Map<Integer, List<Matrix>> featureMap = myKnn.getFeatureMap();
         FeatureMapping featureMapping = new FeatureMapping(featureMap);
         int dimensionNub = templeConfig.getFeatureNub() * 3 * 2;//PSO维度
         //创建粒子群
@@ -236,9 +251,9 @@ public class DimensionMappingStudy {
         featureMapping(featureMap, mappingSigma, templeConfig);
     }
 
-    public void start() throws Exception {
+    public List<KeyMapping> start() throws Exception {
         mappingStart();
-        selfTest(3);
+        return selfTest(3);
     }
 
     private void featureMapping(Map<Integer, List<Matrix>> featureMap, double[] mapping

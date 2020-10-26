@@ -19,20 +19,7 @@ import java.util.*;
 public class FoodTest {
 
     public static void main(String[] args) throws Exception {
-        //test();
-        int[] a = new int[]{1, 4, 5, 7, 31};
-        int[] b = new int[]{4, 6, 7, 8, 21,};
-        int[] c = new int[]{12, 42, 54, 9};
-        int[] d = new int[]{63, 54, 99};
-        int[] e = new int[]{991, 123, 456};
-
-        List<int[]> t = new ArrayList<>();
-        t.add(a);
-        t.add(b);
-        t.add(c);
-        t.add(d);
-        t.add(e);
-        ab(t);
+        test();
     }
 
     public static void ab(List<int[]> t) {
@@ -235,7 +222,7 @@ public class FoodTest {
             operation.colorStudy(threeChannelMatrix23, 23, specificationsList, name);
             operation.colorStudy(threeChannelMatrix24, 24, specificationsList, name);
         }
-        DimensionMappingStudy dimensionMappingStudy = new DimensionMappingStudy(templeConfig);
+        DimensionMappingStudy dimensionMappingStudy = new DimensionMappingStudy(templeConfig, true);
         dimensionMappingStudy.start();//完成映射
         //dimensionMappingStudy.selfTest(6);//检查
         //System.out.println("========================");
