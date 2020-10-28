@@ -1,16 +1,14 @@
 package org.wlld.imageRecognition;
 
-import org.wlld.param.Food;
 
 import java.util.*;
 
 //K均值聚类
 public class MeanClustering {
-    private List<double[]> matrixList = new ArrayList<>();//聚类集合
+    protected List<double[]> matrixList = new ArrayList<>();//聚类集合
     private int length;//向量长度(模型需要返回)
-    private int speciesQuantity;//种类数量(模型需要返回)
-    private List<RGBNorm> matrices = new ArrayList<>();//均值K模型(模型需要返回)
-    private int size = 10000;
+    protected int speciesQuantity;//种类数量(模型需要返回)
+    protected List<RGBNorm> matrices = new ArrayList<>();//均值K模型(模型需要返回)
     private TempleConfig templeConfig;
     private int sensoryNerveNub;//神经元个数
     private List<MeanClustering> kList = new ArrayList<>();
@@ -19,16 +17,9 @@ public class MeanClustering {
         return matrices;
     }
 
-    public MeanClustering(int speciesQuantity, TempleConfig templeConfig, boolean isFirst) throws Exception {
+    public MeanClustering(int speciesQuantity, TempleConfig templeConfig) throws Exception {
         this.speciesQuantity = speciesQuantity;//聚类的数量
-        Food food = templeConfig.getFood();
-        size = food.getRegressionNub();
         this.templeConfig = templeConfig;
-//        if (isFirst) {
-//            for (int i = 0; i < speciesQuantity; i++) {
-//                kList.add(new MeanClustering(10, templeConfig, false));
-//            }
-//        }
     }
 
     public void setColor(double[] color) throws Exception {
@@ -174,7 +165,7 @@ public class MeanClustering {
             for (int i = 0; i < speciesQuantity; i++) {//初始化均值向量
                 int index = random.nextInt(matrixList.size());
                 double[] rgb = matrixList.get(index);
-                RGBNorm rgbNorm = new RGBNorm(rgb, length);
+                RGBNorm rgbNorm = new RGBNorm(rgb, length, speciesQuantity);
                 //要进行深度克隆
                 matrices.add(rgbNorm);
             }

@@ -7,6 +7,7 @@ import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
+import org.wlld.imageRecognition.modelEntity.DeepMappingBody;
 import org.wlld.imageRecognition.segmentation.RegionBody;
 import org.wlld.imageRecognition.segmentation.RgbRegression;
 import org.wlld.imageRecognition.segmentation.Specifications;
@@ -94,7 +95,7 @@ public class Operation {//进行计算
             //convolution.imgNormalization(threeChannelMatrix);
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
             // List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig, templeConfig.getFeatureNub());
-            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(), templeConfig, templeConfig.getFeatureNub(), true);
+            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(), templeConfig, templeConfig.getFeatureNub());
             if (templeConfig.isShowLog()) {
                 System.out.println(tag + ":" + feature);
             }
@@ -167,9 +168,7 @@ public class Operation {//进行计算
             int xSize = maxX - minX;
             int ySize = maxY - minY;
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-            //List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig, templeConfig.getFeatureNub());
-            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(), templeConfig, templeConfig.getFeatureNub(), false);
-
+            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(), templeConfig, templeConfig.getFeatureNub());
             if (templeConfig.isShowLog()) {
                 System.out.println(feature);
             }
@@ -194,8 +193,8 @@ public class Operation {//进行计算
                     break;
                 case Classifier.KNN:
                     Matrix myMatrix2 = MatrixOperation.listToRowVector(feature);
-                    Knn knn = templeConfig.getKnn();
-                    id = knn.getType(myMatrix2);
+                    DeepMappingBody deepMappingBody = templeConfig.getFood().getDeepMappingBody();
+                    id = deepMappingBody.getType(myMatrix2);
                     break;
             }
             regionBody.setType(id);

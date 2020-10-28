@@ -1,5 +1,6 @@
 package org.wlld.param;
 
+import org.wlld.imageRecognition.modelEntity.DeepMappingBody;
 import org.wlld.imageRecognition.segmentation.KNerveManger;
 import org.wlld.imageRecognition.segmentation.RgbRegression;
 
@@ -24,14 +25,14 @@ public class Food {
     private int step = 1;//特征取样步长
     private int speciesNub = 24;//种类数
     private KNerveManger kNerveManger;
-    private double[] mappingParameter;//特征映射
+    private DeepMappingBody deepMappingBody;//特征映射
 
-    public double[] getMappingParameter() {
-        return mappingParameter;
+    public DeepMappingBody getDeepMappingBody() {
+        return deepMappingBody;
     }
 
-    public void setMappingParameter(double[] mappingParameter) {
-        this.mappingParameter = mappingParameter;
+    public void setDeepMappingBody(DeepMappingBody deepMappingBody) {
+        this.deepMappingBody = deepMappingBody;
     }
 
     public KNerveManger getkNerveManger() {

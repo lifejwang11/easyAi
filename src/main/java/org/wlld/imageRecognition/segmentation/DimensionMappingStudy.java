@@ -38,7 +38,12 @@ public class DimensionMappingStudy {
             List<Matrix> matrixList = new ArrayList<>();
             List<Matrix> matrixAll = entry.getValue();
             for (Matrix matrix : matrixAll) {
-                matrixList.add(matrix.getRow(0));
+                Matrix myMatrix = new Matrix(1, matrix.getY());
+                for (int i = 0; i < matrix.getY(); i++) {
+                    myMatrix.setNub(0, i, matrix.getNumber(0, i));
+                }
+                // System.out.println(myMatrix.getString());
+                matrixList.add(myMatrix);
             }
             realFeatures.put(entry.getKey(), matrixList);
         }
@@ -137,28 +142,44 @@ public class DimensionMappingStudy {
             for (int i = 0; i < minTypeList.size(); i++) {
                 cup[i + 1] = minTypeList.get(i).type;
             }
+            System.out.println("type:" + Arrays.toString(cup));
             cups.add(cup);
         }
         List<Set<Integer>> setList = getTypeSet(cups);
         List<KeyMapping> mappingList = new ArrayList<>();
         for (Set<Integer> set : setList) {
             KeyMapping keyMapping = new KeyMapping();
-            DimensionMappingStudy dimension = new DimensionMappingStudy(templeConfig, false);
-            keyMapping.setDimensionMapping(dimension);
+            mappingList.add(keyMapping);
             keyMapping.setKeys(set);
-            Knn knn = dimension.getMyKnn();
+            Map<Integer, List<Matrix>> map = new HashMap<>();
             for (int type : set) {
                 List<Matrix> features = myFeatureMap.get(type);
-                for (Matrix feature : features) {
-                    knn.insertMatrix(feature, type);
-                }
+                map.put(type, features);
             }
+            DimensionMappingStudy dimension = new DimensionMappingStudy(templeConfig, false);
+            keyMapping.setDimensionMapping(dimension);
+            Knn knn = dimension.getMyKnn();
+            knn.setFeatureMap(cloneFeature(map));
             dimension.mappingStart();
         }
         return mappingList;
     }
 
-    public List<Set<Integer>> getTypeSet(List<int[]> t) {
+    private void insertSet(Set<Integer> team, int[] features) {
+        for (int feature : features) {
+            team.add(feature);
+        }
+    }
+
+    private void getSet(List<int[]> cups, Map<Integer, Set<Integer>> teams) {
+        for (int[] types : cups) {
+            for (int type : types) {
+                insertSet(teams.get(type), types);
+            }
+        }
+    }
+
+    private List<Set<Integer>> getTypeSet(List<int[]> t) {
         //最终输入结果
         List<Set<Integer>> t1 = new ArrayList<>();
         //储存临时值
@@ -224,16 +245,18 @@ public class DimensionMappingStudy {
     }
 
     public int getType(Matrix feature) throws Exception {
-        return myKnn.getType(feature);
+        Matrix myFeature = mapping(feature, mappingSigma);
+        return myKnn.getType(myFeature);
     }
 
     public void mappingStart() throws Exception {
         Map<Integer, List<Matrix>> featureMap = myKnn.getFeatureMap();
+        //创建粒子群适应函数
         FeatureMapping featureMapping = new FeatureMapping(featureMap);
         int dimensionNub = templeConfig.getFeatureNub() * 3 * 2;//PSO维度
         //创建粒子群
-        PSO pso = new PSO(dimensionNub, null, null, 500, 100,
-                featureMapping, 0.9, 2, 2, true, 0.2, 0.01);
+        PSO pso = new PSO(dimensionNub, null, null, 400, 50,
+                featureMapping, 0.8, 2, 2, true, 0.2, 0.01);
         List<double[]> mappings = pso.start();
         int size = mappings.size();
         mappingSigma = new double[dimensionNub];
@@ -243,21 +266,20 @@ public class DimensionMappingStudy {
                 mappingSigma[j] = mappingSigma[j] + mapping[j];
             }
         }
+        //生成第一层映射层
         for (int i = 0; i < mappingSigma.length; i++) {
             mappingSigma[i] = mappingSigma[i] / size;
         }
-        templeConfig.getFood().setMappingParameter(mappingSigma);
-        //还要把所有已存在的knn特征完成映射
-        featureMapping(featureMap, mappingSigma, templeConfig);
+        //还要把所有已存在的knn与混合高斯特征完成线性映射
+        myKnn.setFeatureMap(featureMapping(featureMap, mappingSigma));
     }
 
     public List<KeyMapping> start() throws Exception {
         mappingStart();
-        return selfTest(3);
+        return selfTest(2);
     }
 
-    private void featureMapping(Map<Integer, List<Matrix>> featureMap, double[] mapping
-            , TempleConfig templeConfig) throws Exception {
+    private Map<Integer, List<Matrix>> featureMapping(Map<Integer, List<Matrix>> featureMap, double[] mapping) throws Exception {
         Map<Integer, List<Matrix>> featureMap2 = new HashMap<>();
         for (Map.Entry<Integer, List<Matrix>> entry : featureMap.entrySet()) {
             int key = entry.getKey();
@@ -268,7 +290,7 @@ public class DimensionMappingStudy {
             }
             featureMap2.put(key, mappingFeatures);
         }
-        templeConfig.getKnn().setFeatureMap(featureMap2);
+        return featureMap2;
     }
 
     private Matrix mapping(Matrix feature, double[] mapping) throws Exception {

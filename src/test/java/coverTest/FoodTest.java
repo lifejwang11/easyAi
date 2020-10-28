@@ -8,6 +8,7 @@ import org.wlld.config.Classifier;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.imageRecognition.*;
+import org.wlld.imageRecognition.modelEntity.DeepMappingBody;
 import org.wlld.imageRecognition.segmentation.*;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.param.Cutting;
@@ -20,77 +21,6 @@ public class FoodTest {
 
     public static void main(String[] args) throws Exception {
         test();
-    }
-
-    public static void ab(List<int[]> t) {
-
-        //最终输入结果
-        List<Set<Integer>> t1 = new ArrayList<>();
-
-        //储存临时值
-        Set<Integer> s = new HashSet<>();
-        //用来校验重复游标组
-        List<List<Integer>> k = new ArrayList<>();
-        Boolean x = true;//对循环进行判断
-        int num = 0;//循环游标初始值
-
-        while (x) {
-            //校验重复游标
-            List<Integer> l = new ArrayList<>();
-            //清楚临时存储值
-            s.clear();
-            //单个最终值
-            Set<Integer> s1 = new HashSet<>();
-
-            for (int i = num; i < t.size(); i++) {
-                Boolean check = false;
-                //如果存在已经验证的数组，则跳过
-                for (int j = num; j < k.size(); j++) {
-                    if (k.get(j).contains(i)) {
-                        check = true;
-                        break;
-
-                    }
-                }
-                if (check) {
-                    continue;
-                }
-
-                //循环判断数组是否存在重复（当i=num时，给初始的s赋值）
-                //当S中包含重复值的时候，插入
-                for (int info : t.get(i)) {
-                    if (i == num) {
-                        for (int info1 : t.get(i)) {
-                            l.add(i);
-                            k.add(l);
-                            s.add(info1);
-                        }
-                    } else if (s.contains(info)) {
-                        for (int info1 : t.get(i)) {
-                            l.add(i);
-                            k.add(l);
-                            s.add(info1);
-                        }
-                        break;
-                    }
-                }
-
-            }
-            //如果临时s不为空，给s1赋值，并存入到最后输出的t1中
-            if (!s.isEmpty()) {
-                for (Integer info : s) {
-                    s1.add(info);
-                }
-                t1.add(s1);
-            }
-            num++;
-            //跳出循环
-            if (num >= t.size()) {
-                x = false;
-            }
-        }
-
-        System.out.println(t1);
     }
 
     public static void test2(TempleConfig templeConfig) throws Exception {
@@ -171,7 +101,7 @@ public class FoodTest {
 //        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/d.jpg");
 //        operation.setTray(threeChannelMatrix);
         String name = "/Users/lidapeng/Desktop/test/testOne/";
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             System.out.println("轮数============================" + i);
             ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix(name + "a" + i + ".jpg");
             ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix(name + "b" + i + ".jpg");
@@ -222,8 +152,8 @@ public class FoodTest {
             operation.colorStudy(threeChannelMatrix23, 23, specificationsList, name);
             operation.colorStudy(threeChannelMatrix24, 24, specificationsList, name);
         }
-        DimensionMappingStudy dimensionMappingStudy = new DimensionMappingStudy(templeConfig, true);
-        dimensionMappingStudy.start();//完成映射
+        DeepMappingBody deepMappingBody = new DeepMappingBody(templeConfig);
+        templeConfig.getFood().setDeepMappingBody(deepMappingBody);
         //dimensionMappingStudy.selfTest(6);//检查
         //System.out.println("========================");
         // kNerveManger.startStudy();
@@ -242,7 +172,6 @@ public class FoodTest {
         ThreeChannelMatrix threeChannelMatrix12 = picture.getThreeMatrix(name + "l" + i + ".jpg");
         ThreeChannelMatrix threeChannelMatrix13 = picture.getThreeMatrix(name + "m" + i + ".jpg");
         ThreeChannelMatrix threeChannelMatrix14 = picture.getThreeMatrix(name + "n" + i + ".jpg");
-//
         ThreeChannelMatrix threeChannelMatrix15 = picture.getThreeMatrix(name + "o" + i + ".jpg");
         ThreeChannelMatrix threeChannelMatrix16 = picture.getThreeMatrix(name + "p" + i + ".jpg");
         ThreeChannelMatrix threeChannelMatrix17 = picture.getThreeMatrix(name + "q" + i + ".jpg");
