@@ -68,9 +68,9 @@ public class FoodTest {
         //池化比例
         templeConfig.setPoolSize(2);//缩小比例
         //聚类
-        templeConfig.setFeatureNub(5);//聚类特征数量
+        templeConfig.setFeatureNub(2);//聚类特征数量
         //菜品识别实体类
-        food.setShrink(5);//缩紧像素
+        food.setShrink(0);//缩紧像素
         food.setRegionSize(6);
         KNerveManger kNerveManger = new KNerveManger(12, 24, 6000);
         food.setkNerveManger(kNerveManger);
@@ -101,7 +101,7 @@ public class FoodTest {
 //        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/d.jpg");
 //        operation.setTray(threeChannelMatrix);
         String name = "/Users/lidapeng/Desktop/test/testOne/";
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             System.out.println("轮数============================" + i);
             ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix(name + "a" + i + ".jpg");
             ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix(name + "b" + i + ".jpg");

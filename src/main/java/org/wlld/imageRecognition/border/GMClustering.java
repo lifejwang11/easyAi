@@ -4,6 +4,8 @@ import org.wlld.imageRecognition.MeanClustering;
 import org.wlld.imageRecognition.RGBNorm;
 import org.wlld.imageRecognition.TempleConfig;
 
+import java.util.Arrays;
+
 /**
  * @param
  * @DATA
@@ -41,6 +43,7 @@ public class GMClustering extends MeanClustering {
             for (int i = 0; i < speciesQuantity; i++) {
                 RGBNorm rgbNorm = matrices.get(i);
                 double probability = rgbNorm.getGMProbability(rgb);
+                //System.out.println("pro===" + probability);
                 allProbability = allProbability + probability;
                 pro[i] = probability;
             }

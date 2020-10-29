@@ -4,10 +4,7 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.imageRecognition.segmentation.RgbRegression;
 import org.wlld.tools.ArithUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class RGBNorm {
     private double[] rgbAll;
@@ -16,6 +13,7 @@ public class RGBNorm {
     private double[] rgb;//均值
     private double[] rgbUp;
     private List<double[]> rgbs = new ArrayList<>();//需要对它进行排序
+    private List<Double> powers = new ArrayList<>();//需要对它进行排序
     private RgbRegression rgbRegression;
     private int len;
     private double varAll = 1;
@@ -41,7 +39,7 @@ public class RGBNorm {
         rgbAll = new double[len];
         this.rgb = new double[len];
         this.rgbUp = rgb;
-        gmParameter = 1D / speciesQuantity;
+        gmParameter = new Random().nextDouble();
     }
 
     public void syn() {
@@ -51,10 +49,13 @@ public class RGBNorm {
     public void clearRGB() {
         probabilitySigma = 0;
         rgbs.clear();
+        powers.clear();
     }
 
+    //特征及权重
     public void setGmFeature(double[] feature, double probability) {
         rgbs.add(feature);
+        powers.add(probability);
         probabilitySigma = probability + probabilitySigma;
     }
 
@@ -107,14 +108,26 @@ public class RGBNorm {
         int x = matrix.getX();
         int y = matrix.getY();
         Matrix avgMatrix = new Matrix(x, 1);
+        boolean isPower = powers.size() > 1;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                double nub = avgMatrix.getNumber(i, 0) + matrix.getNumber(i, j);
+                double power;
+                if (!isPower) {
+                    power = 1;
+                } else {
+                    power = powers.get(j);
+                }
+                double nub = avgMatrix.getNumber(i, 0) + matrix.getNumber(i, j) * power;
                 avgMatrix.setNub(i, 0, nub);
             }
         }
         for (int i = 0; i < x; i++) {
-            double nub = avgMatrix.getNumber(i, 0) / y;
+            double nub;
+            if (probabilitySigma > 0) {
+                nub = avgMatrix.getNumber(i, 0) / probabilitySigma;
+            } else {
+                nub = avgMatrix.getNumber(i, 0) / y;
+            }
             avgMatrix.setNub(i, 0, nub);
         }
         return avgMatrix;
@@ -124,15 +137,27 @@ public class RGBNorm {
         int x = matrix.getX();
         int y = matrix.getY();
         Matrix varMatrix = new Matrix(x, 1);
+        boolean isPower = powers.size() > 1;
         for (int i = 0; i < x; i++) {
             double avg = avgMatrix.getNumber(i, 0);
             for (int j = 0; j < y; j++) {
-                double sub = Math.pow(matrix.getNumber(i, j) - avg, 2);
+                double power;
+                if (!isPower) {
+                    power = 1;
+                } else {
+                    power = powers.get(j);
+                }
+                double sub = Math.pow(matrix.getNumber(i, j) - avg, 2) * power;
                 varMatrix.setNub(i, 0, sub + varMatrix.getNumber(i, 0));
             }
         }
         for (int i = 0; i < x; i++) {
-            double nub = varMatrix.getNumber(i, 0) / y;
+            double nub;
+            if (probabilitySigma > 0) {
+                nub = varMatrix.getNumber(i, 0) / probabilitySigma;
+            } else {
+                nub = varMatrix.getNumber(i, 0) / y;
+            }
             varMatrix.setNub(i, 0, nub);
         }
         return varMatrix;
@@ -140,18 +165,14 @@ public class RGBNorm {
 
     public double[] getFeature() throws Exception {
         int avgLen = avgMatrix.getX();
-        int length = avgLen * 2 + 1;
+        int length = avgLen * 2;
         double[] feature = new double[length];
         for (int i = 0; i < length; i++) {
-            if (i < length - 1) {
-                if (i < avgLen) {
-                    feature[i] = avgMatrix.getNumber(i, 0);
-                } else {
-                    int t = i - avgLen;
-                    feature[i] = varMatrix.getNumber(t, 0);
-                }
+            if (i < avgLen) {
+                feature[i] = avgMatrix.getNumber(i, 0);
             } else {
-                feature[i] = gmParameter;
+                int t = i - avgLen;
+                feature[i] = varMatrix.getNumber(t, 0);
             }
         }
         return feature;
@@ -159,23 +180,25 @@ public class RGBNorm {
 
     public void gm() throws Exception {//混合高斯聚类模型参数计算
         int size = rgbs.size();
-        Matrix matrix = new Matrix(len, size);
-        for (int i = 0; i < size; i++) {
-            double[] rgb = rgbs.get(i);
-            for (int j = 0; j < len; j++) {
-                matrix.setNub(j, i, rgb[j]);
+        if (size > 0) {
+            Matrix matrix = new Matrix(len, size);
+            for (int i = 0; i < size; i++) {
+                double[] rgb = rgbs.get(i);
+                for (int j = 0; j < len; j++) {
+                    matrix.setNub(j, i, rgb[j]);
+                }
             }
-        }
-        avgMatrix = average(matrix);//均值矩阵
-        varMatrix = getVariance(matrix, avgMatrix);//方差矩阵
-        varAll = 1;
-        for (int i = 0; i < len; i++) {
-            double var = Math.sqrt(varMatrix.getNumber(i, 0));
-            varAll = varAll * var;
-        }
-        //确认新的混合系数
-        if (probabilitySigma > 0) {
-            gmParameter = probabilitySigma / rgbs.size();
+            avgMatrix = average(matrix);//均值矩阵
+            varMatrix = getVariance(matrix, avgMatrix);//方差矩阵
+            varAll = 1;
+            for (int i = 0; i < len; i++) {
+                double var = Math.sqrt(varMatrix.getNumber(i, 0));
+                varAll = varAll * var;
+            }
+            //确认新的混合系数
+            if (probabilitySigma > 0) {
+                gmParameter = probabilitySigma / rgbs.size();
+            }
         }
     }
 
@@ -187,9 +210,24 @@ public class RGBNorm {
             zSigma = sub + zSigma;
         }
         double one = 1 / (Math.pow(Math.sqrt(Math.PI * 2), size) * varAll);
-        double two = Math.exp(-zSigma / 2);
-        return one * two * gmParameter;
+        double two = Math.exp(zSigma * -0.5);
+        double n = one * two * gmParameter;
+        return n;
     }
+
+//    public double getGMProbability(double[] feature) throws Exception {//计算正态分布概率
+//        int size = feature.length;
+//        double all = 1;
+//        for (int i = 0; i < size; i++) {
+//            double biao = Math.sqrt(varMatrix.getNumber(i, 0));
+//            double one = 1 / (Math.sqrt(Math.PI * 2) * biao);
+//            double two = Math.pow((feature[i] - avgMatrix.getNumber(i, 0)) / biao, 2) * -0.5;
+//            double three = Math.exp(two);
+//            double sub = one * three;
+//            all = sub * all;
+//        }
+//        return all * gmParameter;
+//    }
 
     public double getGmParameter() {
         return gmParameter;

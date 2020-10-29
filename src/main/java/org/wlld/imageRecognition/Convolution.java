@@ -6,6 +6,7 @@ import org.wlld.config.Kernel;
 import org.wlld.imageRecognition.border.Border;
 import org.wlld.imageRecognition.border.Frame;
 import org.wlld.imageRecognition.border.FrameBody;
+import org.wlld.imageRecognition.border.GMClustering;
 import org.wlld.imageRecognition.segmentation.ColorFunction;
 import org.wlld.pso.PSO;
 import org.wlld.tools.ArithUtil;
@@ -19,7 +20,6 @@ import java.util.*;
  * @date 9:23 上午 2020/1/2
  */
 public class Convolution extends Frequency {
-    private MeanClustering meanClustering;
 
     protected Matrix getFeatures(Matrix matrix, int maxNub, TempleConfig templeConfig
             , int id) throws Exception {
@@ -136,7 +136,8 @@ public class Convolution extends Frequency {
 
     public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, TempleConfig templeConfig
             , int sqNub) throws Exception {
-        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
+        //MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
+        GMClustering meanClustering = new GMClustering(sqNub, templeConfig);
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
@@ -146,33 +147,44 @@ public class Convolution extends Frequency {
         //局部特征选区筛选
         int nub = size * size;
         int twoNub = nub * 2;
-        for (int i = 0; i <= xn - size; i += 2) {
-            for (int j = 0; j <= yn - size; j += 2) {
-                Matrix sonR = matrixR.getSonOfMatrix(i, j, size, size);
-                Matrix sonG = matrixG.getSonOfMatrix(i, j, size, size);
-                Matrix sonB = matrixB.getSonOfMatrix(i, j, size, size);
-                Matrix sonRGB = matrixRGB.getSonOfMatrix(i, j, size, size);
-                double[] h = new double[nub];
-                double[] rgb = new double[nub * 3];
-                for (int t = 0; t < size; t++) {
-                    for (int k = 0; k < size; k++) {
-                        int index = t * size + k;
-                        h[index] = sonRGB.getNumber(t, k);
-                        rgb[index] = sonR.getNumber(t, k) / 255;
-                        rgb[nub + index] = sonG.getNumber(t, k) / 255;
-                        rgb[twoNub + index] = sonB.getNumber(t, k) / 255;
-                    }
-                }
-                //900 200
-                double dispersed = variance(h);
-                if (dispersed < 900 && dispersed > 200) {
-                    for (int m = 0; m < nub; m++) {
-                        double[] color = new double[]{rgb[m], rgb[m + nub], rgb[m + twoNub]};
-                        meanClustering.setColor(color);
-                    }
+        for (int i = 0; i < xn; i++) {
+            for (int j = 0; j < yn; j++) {
+                double r = matrixR.getNumber(i, j);
+                double g = matrixG.getNumber(i, j);
+                double b = matrixB.getNumber(i, j);
+                if ((r + g + b) / 3 < 245) {
+                    double[] rgb = new double[]{r / 255, g / 255, b / 255};
+                    meanClustering.setColor(rgb);
                 }
             }
         }
+//        for (int i = 0; i <= xn - size; i += 2) {
+//            for (int j = 0; j <= yn - size; j += 2) {
+//                Matrix sonR = matrixR.getSonOfMatrix(i, j, size, size);
+//                Matrix sonG = matrixG.getSonOfMatrix(i, j, size, size);
+//                Matrix sonB = matrixB.getSonOfMatrix(i, j, size, size);
+//                Matrix sonRGB = matrixRGB.getSonOfMatrix(i, j, size, size);
+//                double[] h = new double[nub];
+//                double[] rgb = new double[nub * 3];
+//                for (int t = 0; t < size; t++) {
+//                    for (int k = 0; k < size; k++) {
+//                        int index = t * size + k;
+//                        h[index] = sonRGB.getNumber(t, k);
+//                        rgb[index] = sonR.getNumber(t, k) / 255;
+//                        rgb[nub + index] = sonG.getNumber(t, k) / 255;
+//                        rgb[twoNub + index] = sonB.getNumber(t, k) / 255;
+//                    }
+//                }
+//                //900 200
+//                double dispersed = variance(h);
+//                if (dispersed < 900 && dispersed > 200) {
+//                    for (int m = 0; m < nub; m++) {
+//                        double[] color = new double[]{rgb[m], rgb[m + nub], rgb[m + twoNub]};
+//                        meanClustering.setColor(color);
+//                    }
+//                }
+//            }
+//        }
         //List<double[]> list = meanClustering.start(true);//开始聚类
         meanClustering.start(true);
 //        if (tag == 0) {//识别
@@ -183,13 +195,14 @@ public class Convolution extends Frequency {
         List<RGBNorm> rgbNorms = meanClustering.getMatrices();
         List<Double> features = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {
-            double[] rgb = rgbNorms.get(i).getRgb();
+            //double[] rgb = rgbNorms.get(i).getRgb();
+            double[] rgb = rgbNorms.get(i).getFeature();
             for (int j = 0; j < rgb.length; j++) {
                 features.add(rgb[j]);
             }
 
         }
-        // System.out.println(features);
+        System.out.println(features);
         return features;
     }
 

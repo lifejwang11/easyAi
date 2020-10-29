@@ -253,10 +253,10 @@ public class DimensionMappingStudy {
         Map<Integer, List<Matrix>> featureMap = myKnn.getFeatureMap();
         //创建粒子群适应函数
         FeatureMapping featureMapping = new FeatureMapping(featureMap);
-        int dimensionNub = templeConfig.getFeatureNub() * 3 * 2;//PSO维度
+        int dimensionNub = templeConfig.getFeatureNub() * 3 * 2 * 2;//PSO维度
         //创建粒子群
-        PSO pso = new PSO(dimensionNub, null, null, 400, 50,
-                featureMapping, 0.8, 2, 2, true, 0.2, 0.01);
+        PSO pso = new PSO(dimensionNub, null, null, 3000, 50,
+                featureMapping, 1, 2, 2, true, 0.1, 0.01);
         List<double[]> mappings = pso.start();
         int size = mappings.size();
         mappingSigma = new double[dimensionNub];
@@ -276,7 +276,7 @@ public class DimensionMappingStudy {
 
     public List<KeyMapping> start() throws Exception {
         mappingStart();
-        return selfTest(2);
+        return selfTest(1);
     }
 
     private Map<Integer, List<Matrix>> featureMapping(Map<Integer, List<Matrix>> featureMap, double[] mapping) throws Exception {
