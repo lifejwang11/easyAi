@@ -4,7 +4,6 @@ import org.wlld.imageRecognition.MeanClustering;
 import org.wlld.imageRecognition.RGBNorm;
 import org.wlld.imageRecognition.TempleConfig;
 
-import java.util.Arrays;
 
 /**
  * @param
@@ -13,9 +12,26 @@ import java.util.Arrays;
  * @Description
  */
 public class GMClustering extends MeanClustering {
+    private int regionSize;//单区域面积
+
+    public int getRegionSize() {
+        return regionSize;
+    }
+
+    public void setRegionSize(int regionSize) {
+        this.regionSize = regionSize;
+    }
 
     public GMClustering(int speciesQuantity, TempleConfig templeConfig) throws Exception {
         super(speciesQuantity, templeConfig);
+    }
+
+    public double getProbabilityDensity(double[] feature) throws Exception {//获取总概率密度
+        double sigma = 0;
+        for (RGBNorm rgbNorm : matrices) {
+            sigma = sigma + rgbNorm.getGMProbability(feature);
+        }
+        return sigma;
     }
 
     @Override

@@ -131,10 +131,9 @@ public class Operation {//进行计算
                 int minY = regionBody.getMinY();
                 int maxX = regionBody.getMaxX();
                 int maxY = regionBody.getMaxY();
-                System.out.println("异常：minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY + ",tag==" + tag
-                        + "url==" + url);
+                System.out.println("异常：minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY + ",tag==" + tag);
             }
-            throw new Exception("Parameter exception region size==" + regionBodies.size());
+            throw new Exception("Parameter exception region size==" + regionBodies.size() + ",url" + url);
         }
     }
 

@@ -202,7 +202,7 @@ public class RGBNorm {
         }
     }
 
-    public double getGMProbability(double[] feature) throws Exception {//计算正态分布概率
+    public double getGMProbability(double[] feature) throws Exception {//计算正态分布概率密度
         double zSigma = 0;
         int size = feature.length;
         for (int i = 0; i < size; i++) {
