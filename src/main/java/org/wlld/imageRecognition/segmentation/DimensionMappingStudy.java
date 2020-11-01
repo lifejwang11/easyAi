@@ -274,9 +274,8 @@ public class DimensionMappingStudy {
         myKnn.setFeatureMap(featureMapping(featureMap, mappingSigma));
     }
 
-    public List<KeyMapping> start() throws Exception {
+    public void start() throws Exception {
         mappingStart();
-        return selfTest(1);
     }
 
     private Map<Integer, List<Matrix>> featureMapping(Map<Integer, List<Matrix>> featureMap, double[] mapping) throws Exception {

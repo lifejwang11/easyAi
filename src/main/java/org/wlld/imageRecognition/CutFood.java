@@ -38,7 +38,7 @@ public class CutFood {
                 mean.setColor(rgb);
             }
         }
-        mean.start(true);
+        mean.start();
     }
 
     private double getAvg(Matrix matrix) throws Exception {
@@ -89,7 +89,7 @@ public class CutFood {
             double regionSize = gmBody.getPixelNub() * s;
             int type = gmBody.getType();
             if (type != 1) {//背景直接过滤
-                int oneSize = meanMap.get(type).getRegionSize();
+                double oneSize = meanMap.get(type).getRegionSize();
                 if (regionSize > oneSize * 0.8) {
                     gmBodies2.add(gmBody);
                 }
@@ -98,7 +98,7 @@ public class CutFood {
         for (GMBody gmBody : gmBodies2) {
             int type = gmBody.getType();
             double regionSize = gmBody.getPixelNub() * s;
-            int oneSize = meanMap.get(type).getRegionSize();
+            double oneSize = meanMap.get(type).getRegionSize();
             double nub = regionSize / (double) oneSize;
             System.out.println("type==" + type + ",nub==" + nub + ",onSize==" + oneSize + ",gmNub=="
                     + gmBody.getPixelNub());
@@ -138,8 +138,8 @@ public class CutFood {
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         int x = matrixR.getX();
         int y = matrixR.getY();
-        GMClustering mean = new GMClustering(templeConfig.getFeatureNub(), templeConfig);
-        mean.setRegionSize(x * y);
+        GMClustering mean = new GMClustering(templeConfig.getFeatureNub());
+        mean.setRegionSize(x * y * 0.8);
         meanMap.put(type, mean);
         mean(threeChannelMatrix, mean);
         //记录非背景的单物体面积

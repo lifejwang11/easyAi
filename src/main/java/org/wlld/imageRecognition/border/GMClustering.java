@@ -12,18 +12,18 @@ import org.wlld.imageRecognition.TempleConfig;
  * @Description
  */
 public class GMClustering extends MeanClustering {
-    private int regionSize;//单区域面积
+    private double regionSize;//单区域面积
 
-    public int getRegionSize() {
+    public double getRegionSize() {
         return regionSize;
     }
 
-    public void setRegionSize(int regionSize) {
+    public void setRegionSize(double regionSize) {
         this.regionSize = regionSize;
     }
 
-    public GMClustering(int speciesQuantity, TempleConfig templeConfig) throws Exception {
-        super(speciesQuantity, templeConfig);
+    public GMClustering(int speciesQuantity) throws Exception {
+        super(speciesQuantity);
     }
 
     public double getProbabilityDensity(double[] feature) throws Exception {//获取总概率密度
@@ -35,8 +35,8 @@ public class GMClustering extends MeanClustering {
     }
 
     @Override
-    public void start(boolean isRegression) throws Exception {
-        super.start(isRegression);
+    public void start() throws Exception {
+        super.start();
         for (RGBNorm rgbNorm : matrices) {//高斯系数初始化
             rgbNorm.gm();
         }

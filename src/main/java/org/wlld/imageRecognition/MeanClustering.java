@@ -9,24 +9,19 @@ public class MeanClustering {
     private int length;//向量长度(模型需要返回)
     protected int speciesQuantity;//种类数量(模型需要返回)
     protected List<RGBNorm> matrices = new ArrayList<>();//均值K模型(模型需要返回)
-    private TempleConfig templeConfig;
-    private int sensoryNerveNub;//神经元个数
-    private List<MeanClustering> kList = new ArrayList<>();
 
     public List<RGBNorm> getMatrices() {
         return matrices;
     }
 
-    public MeanClustering(int speciesQuantity, TempleConfig templeConfig) throws Exception {
+    public MeanClustering(int speciesQuantity) throws Exception {
         this.speciesQuantity = speciesQuantity;//聚类的数量
-        this.templeConfig = templeConfig;
     }
 
     public void setColor(double[] color) throws Exception {
         if (matrixList.size() == 0) {
             matrixList.add(color);
             length = color.length;
-            sensoryNerveNub = templeConfig.getFeatureNub() * length;
         } else {
             if (length == color.length) {
                 matrixList.add(color);
@@ -90,76 +85,7 @@ public class MeanClustering {
         return sigma;
     }
 
-    private List<double[]> listK(List<double[]> listOne, int nub) {
-        int size = listOne.size();
-        int oneSize = size / nub;//几份取一份平均值
-        //System.out.println("oneSize==" + oneSize);
-        List<double[]> allList = new ArrayList<>();
-        for (int i = 0; i <= size - oneSize; i += oneSize) {
-            double[] avg = getListAvg(listOne.subList(i, i + oneSize));
-            allList.add(avg);
-        }
-        return allList;
-    }
-
-    private List<double[]> startBp() {
-        int times = 2000;
-        int index = 0;
-        List<double[]> features = new ArrayList<>();
-        List<List<double[]>> lists = new ArrayList<>();
-        for (int j = 0; j < matrices.size(); j++) {
-            List<double[]> listOne = matrices.get(j).getRgbs();
-            // List<double[]> list = listK(listOne, times);
-            //System.out.println(listOne.size());
-            List<double[]> list = listOne.subList(index, times + index);
-            lists.add(list);
-        }
-        for (int j = 0; j < times; j++) {
-            double[] feature = new double[sensoryNerveNub];
-            for (int i = 0; i < lists.size(); i++) {
-                double[] data = lists.get(i).get(j);
-                int len = data.length;
-                for (int k = 0; k < len; k++) {
-                    feature[i * len + k] = data[k];
-                }
-            }
-            features.add(feature);
-        }
-        return features;
-    }
-
-    private List<double[]> startRegression() throws Exception {//开始聚类回归
-        for (int i = 0; i < matrices.size(); i++) {
-            List<double[]> list = matrices.get(i).getRgbs();
-            MeanClustering k = kList.get(i);
-            for (double[] rgb : list) {
-                k.setColor(rgb);
-            }
-            k.start(false);
-        }
-        //遍历子聚类
-        int times = 2000;
-        Random random = new Random();
-        List<double[]> features = new ArrayList<>();
-        for (int i = 0; i < times; i++) {
-            double[] feature = new double[sensoryNerveNub];
-            for (int k = 0; k < kList.size(); k++) {
-                MeanClustering mean = kList.get(k);
-                List<RGBNorm> rgbNorms = mean.getMatrices();
-                double[] rgb = rgbNorms.get(random.nextInt(rgbNorms.size())).getRgb();
-                int rgbLen = rgb.length;
-                for (int t = 0; t < rgbLen; t++) {
-                    int index = k * rgbLen + t;
-                    feature[index] = rgb[t];
-                }
-            }
-            //System.out.println(Arrays.toString(feature));
-            features.add(feature);
-        }
-        return features;
-    }
-
-    public void start(boolean isRegression) throws Exception {//开始聚类
+    public void start() throws Exception {//开始聚类
         if (matrixList.size() > 1) {
             Random random = new Random();
             for (int i = 0; i < speciesQuantity; i++) {//初始化均值向量
@@ -182,10 +108,6 @@ public class MeanClustering {
             }
             RGBSort rgbSort = new RGBSort();
             Collections.sort(matrices, rgbSort);
-//            for (RGBNorm rgbNorm : matrices) {
-//                rgbNorm.finish();
-//            }
-            // return startBp();
         } else {
             throw new Exception("matrixList number less than 2");
         }

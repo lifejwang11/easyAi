@@ -70,7 +70,7 @@ public class Convolution extends Frequency {
         List<ThreeChannelMatrix> threeChannelMatrixList = regionThreeChannelMatrix(threeMatrix, regionSize);
         for (ThreeChannelMatrix threeChannelMatrix : threeChannelMatrixList) {
             List<Double> feature = new ArrayList<>();
-            MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
+            MeanClustering meanClustering = new MeanClustering(sqNub);
             Matrix matrixR = threeChannelMatrix.getMatrixR();
             Matrix matrixG = threeChannelMatrix.getMatrixG();
             Matrix matrixB = threeChannelMatrix.getMatrixB();
@@ -82,7 +82,7 @@ public class Convolution extends Frequency {
                     meanClustering.setColor(color);
                 }
             }
-            meanClustering.start(false);
+            meanClustering.start();
             List<RGBNorm> rgbNorms = meanClustering.getMatrices();
             Collections.sort(rgbNorms, rgbSort);
             for (RGBNorm rgbNorm : rgbNorms) {
@@ -96,48 +96,10 @@ public class Convolution extends Frequency {
         return features;
     }
 
-
-    public List<Double> getCenterColor(ThreeChannelMatrix threeChannelMatrix, TempleConfig templeConfig,
-                                       int sqNub) throws Exception {
-        Matrix matrixR = threeChannelMatrix.getMatrixR();
-        Matrix matrixG = threeChannelMatrix.getMatrixG();
-        Matrix matrixB = threeChannelMatrix.getMatrixB();
-        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
-        int maxX = matrixR.getX();
-        int maxY = matrixR.getY();
-        ColorFunction colorFunction = new ColorFunction(threeChannelMatrix);
-        int[] minBorder = new int[]{0, 0};
-        int[] maxBorder = new int[]{maxX - 1, maxY - 1};
-        //创建粒子群
-        PSO pso = new PSO(2, minBorder, maxBorder, 200, 200,
-                colorFunction, 0.2, 1, 0.5, true, 10, 1);
-        List<double[]> positions = pso.start();
-        for (int i = 0; i < positions.size(); i++) {
-            double[] parameter = positions.get(i);
-            //获取取样坐标
-            int x = (int) parameter[0];
-            int y = (int) parameter[1];
-            double[] rgb = new double[]{matrixR.getNumber(x, y), matrixG.getNumber(x, y),
-                    matrixB.getNumber(x, y)};
-            meanClustering.setColor(rgb);
-        }
-        meanClustering.start(true);
-        List<RGBNorm> rgbNorms = meanClustering.getMatrices();
-        List<Double> features = new ArrayList<>();
-        for (int i = 0; i < sqNub; i++) {
-            double[] rgb = rgbNorms.get(i).getRgb();
-            for (int j = 0; j < rgb.length; j++) {
-                features.add(rgb[j]);
-            }
-        }
-
-        return features;
-    }
-
     public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, TempleConfig templeConfig
             , int sqNub) throws Exception {
-        //MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
-        GMClustering meanClustering = new GMClustering(sqNub, templeConfig);
+        //MeanClustering meanClustering = new MeanClustering(sqNub);
+        GMClustering meanClustering = new GMClustering(sqNub);
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
@@ -158,40 +120,7 @@ public class Convolution extends Frequency {
                 }
             }
         }
-//        for (int i = 0; i <= xn - size; i += 2) {
-//            for (int j = 0; j <= yn - size; j += 2) {
-//                Matrix sonR = matrixR.getSonOfMatrix(i, j, size, size);
-//                Matrix sonG = matrixG.getSonOfMatrix(i, j, size, size);
-//                Matrix sonB = matrixB.getSonOfMatrix(i, j, size, size);
-//                Matrix sonRGB = matrixRGB.getSonOfMatrix(i, j, size, size);
-//                double[] h = new double[nub];
-//                double[] rgb = new double[nub * 3];
-//                for (int t = 0; t < size; t++) {
-//                    for (int k = 0; k < size; k++) {
-//                        int index = t * size + k;
-//                        h[index] = sonRGB.getNumber(t, k);
-//                        rgb[index] = sonR.getNumber(t, k) / 255;
-//                        rgb[nub + index] = sonG.getNumber(t, k) / 255;
-//                        rgb[twoNub + index] = sonB.getNumber(t, k) / 255;
-//                    }
-//                }
-//                //900 200
-//                double dispersed = variance(h);
-//                if (dispersed < 900 && dispersed > 200) {
-//                    for (int m = 0; m < nub; m++) {
-//                        double[] color = new double[]{rgb[m], rgb[m + nub], rgb[m + twoNub]};
-//                        meanClustering.setColor(color);
-//                    }
-//                }
-//            }
-//        }
-        //List<double[]> list = meanClustering.start(true);//开始聚类
-        meanClustering.start(true);
-//        if (tag == 0) {//识别
-//            templeConfig.getFood().getkNerveManger().look(list);
-//        } else {//训练
-//            templeConfig.getFood().getkNerveManger().setFeature(tag, list);
-//        }
+        meanClustering.start();
         List<RGBNorm> rgbNorms = meanClustering.getMatrices();
         List<Double> features = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {

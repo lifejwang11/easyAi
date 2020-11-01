@@ -71,8 +71,6 @@ public class FoodTest {
         //菜品识别实体类
         food.setShrink(0);//缩紧像素
         food.setRegionSize(2);
-        KNerveManger kNerveManger = new KNerveManger(12, 24, 6000);
-        food.setkNerveManger(kNerveManger);
         food.setRowMark(0.05);//0.12
         food.setColumnMark(0.05);//0.25
         food.setRegressionNub(50000);
@@ -128,12 +126,9 @@ public class FoodTest {
         ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix(c);
         study(threeChannelMatrix1, templeConfig, specificationsList, cutFood, 2);
         study(threeChannelMatrix2, templeConfig, specificationsList, cutFood, 3);
-        ///
-        ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix(g);
-        long time1 = System.currentTimeMillis();
+        //
+        ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix(e);
         look(threeChannelMatrix3, templeConfig, specificationsList, cutFood);
-        long end = System.currentTimeMillis() - time1;
-        System.out.println("time:" + end);
     }
 
     private static void look(ThreeChannelMatrix threeChannelMatrix, TempleConfig templeConfig, List<Specifications> specifications,
