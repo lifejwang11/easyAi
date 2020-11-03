@@ -3,7 +3,6 @@ package org.wlld.imageRecognition.segmentation;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.imageRecognition.TempleConfig;
 import org.wlld.imageRecognition.border.Knn;
-import org.wlld.imageRecognition.modelEntity.KeyMapping;
 import org.wlld.pso.PSO;
 
 import java.util.*;
@@ -20,12 +19,17 @@ public class DimensionMappingStudy {
     private Knn myKnn = new Knn(1);
     private double[] mappingSigma;//映射层
 
-    public DimensionMappingStudy(TempleConfig templeConfig, boolean isClone) throws Exception {
+    public DimensionMappingStudy(TempleConfig templeConfig) throws Exception {
         this.templeConfig = templeConfig;
-        //深度克隆
-        if (isClone) {
-            myKnn.setFeatureMap(cloneFeature(templeConfig.getKnn().getFeatureMap()));
-        }
+        myKnn.setFeatureMap(cloneFeature(templeConfig.getKnn().getFeatureMap()));
+    }
+
+    public double[] getMappingSigma() {
+        return mappingSigma;
+    }
+
+    public void setMappingSigma(double[] mappingSigma) {
+        this.mappingSigma = mappingSigma;
     }
 
     public Knn getMyKnn() {
@@ -42,7 +46,6 @@ public class DimensionMappingStudy {
                 for (int i = 0; i < matrix.getY(); i++) {
                     myMatrix.setNub(0, i, matrix.getNumber(0, i));
                 }
-                // System.out.println(myMatrix.getString());
                 matrixList.add(myMatrix);
             }
             realFeatures.put(entry.getKey(), matrixList);
@@ -109,8 +112,7 @@ public class DimensionMappingStudy {
         return minSub;
     }
 
-    public List<KeyMapping> selfTest(int nub) throws Exception {//对模型数据进行自检测
-        Map<Integer, List<Matrix>> myFeatureMap = templeConfig.getKnn().getFeatureMap();//未映射的克隆的
+    public void selfTest(int nub) throws Exception {//对模型数据进行自检测
         Map<Integer, List<Matrix>> featureMap = myKnn.getFeatureMap();
         MinTypeSort minTypeSort = new MinTypeSort();
         Map<Integer, List<MinType>> minMap = new HashMap<>();//保存与该类别最相似的类别,及距离值
@@ -145,24 +147,7 @@ public class DimensionMappingStudy {
             System.out.println("type:" + Arrays.toString(cup));
             cups.add(cup);
         }
-        List<Set<Integer>> setList = getTypeSet(cups);
-        List<KeyMapping> mappingList = new ArrayList<>();
-        for (Set<Integer> set : setList) {
-            KeyMapping keyMapping = new KeyMapping();
-            mappingList.add(keyMapping);
-            keyMapping.setKeys(set);
-            Map<Integer, List<Matrix>> map = new HashMap<>();
-            for (int type : set) {
-                List<Matrix> features = myFeatureMap.get(type);
-                map.put(type, features);
-            }
-            DimensionMappingStudy dimension = new DimensionMappingStudy(templeConfig, false);
-            keyMapping.setDimensionMapping(dimension);
-            Knn knn = dimension.getMyKnn();
-            knn.setFeatureMap(cloneFeature(map));
-            dimension.mappingStart();
-        }
-        return mappingList;
+
     }
 
     private void insertSet(Set<Integer> team, int[] features) {
@@ -249,14 +234,14 @@ public class DimensionMappingStudy {
         return myKnn.getType(myFeature);
     }
 
-    public void mappingStart() throws Exception {
+    public void mappingStart() throws Exception {//生成映射层
         Map<Integer, List<Matrix>> featureMap = myKnn.getFeatureMap();
         //创建粒子群适应函数
-        FeatureMapping featureMapping = new FeatureMapping(featureMap);
-        int dimensionNub = templeConfig.getFeatureNub() * 3 * 2 * 2;//PSO维度
+        FeatureMapping featureMapping = new FeatureMapping(featureMap, templeConfig);
+        int dimensionNub = templeConfig.getFeatureNub() * (3 * 2 + 1) * 2;//PSO维度
         //创建粒子群
-        PSO pso = new PSO(dimensionNub, null, null, 3000, 50,
-                featureMapping, 1, 2, 2, true, 0.1, 0.01);
+        PSO pso = new PSO(dimensionNub, null, null, 300, 50,
+                featureMapping, 0.8, 2, 2, true, 0.1, 0.01);
         List<double[]> mappings = pso.start();
         int size = mappings.size();
         mappingSigma = new double[dimensionNub];

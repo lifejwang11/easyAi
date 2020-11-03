@@ -1,8 +1,8 @@
 package org.wlld.imageRecognition.border;
 
+import org.wlld.MatrixTools.Matrix;
 import org.wlld.imageRecognition.MeanClustering;
 import org.wlld.imageRecognition.RGBNorm;
-import org.wlld.imageRecognition.TempleConfig;
 
 
 /**
@@ -42,6 +42,20 @@ public class GMClustering extends MeanClustering {
         }
         for (int i = 0; i < 50; i++) {
             gmClustering();
+        }
+    }
+
+    public void insertParameter(Matrix matrix) throws Exception {
+        int y = matrix.getY();
+        int size = y / speciesQuantity;
+        for (int i = 0; i <= y - size; i += size) {
+            double[] feature = new double[size];
+            RGBNorm rgbNorm = new RGBNorm();
+            matrices.add(rgbNorm);
+            for (int j = i; j < i + size; j++) {
+                feature[j - i] = matrix.getNumber(0, i);
+            }
+            rgbNorm.insertFeature(feature);
         }
     }
 

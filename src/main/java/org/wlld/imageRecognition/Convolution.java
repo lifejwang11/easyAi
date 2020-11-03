@@ -8,6 +8,7 @@ import org.wlld.imageRecognition.border.Frame;
 import org.wlld.imageRecognition.border.FrameBody;
 import org.wlld.imageRecognition.border.GMClustering;
 import org.wlld.imageRecognition.segmentation.ColorFunction;
+import org.wlld.param.Food;
 import org.wlld.pso.PSO;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.Frequency;
@@ -96,19 +97,52 @@ public class Convolution extends Frequency {
         return features;
     }
 
-    public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, TempleConfig templeConfig
-            , int sqNub) throws Exception {
+    private int[] insertFoodTypes(int[] foodTypes, int type) {
+        int[] foods;
+        if (foodTypes == null) {
+            foods = new int[]{type};
+        } else {
+            foods = new int[foodTypes.length + 1];
+            boolean isLife = false;
+            for (int myType : foodTypes) {
+                if (type == myType) {
+                    isLife = true;
+                    break;
+                }
+            }
+            if (!isLife) {
+                for (int i = 0; i < foodTypes.length; i++) {
+                    foods[i] = foodTypes[i];
+                }
+                foods[foodTypes.length] = type;
+            }
+        }
+        return foods;
+    }
+
+    public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, TempleConfig templeConfig
+            , int sqNub, boolean isStudy, int tag, boolean isFood) throws Exception {
         //MeanClustering meanClustering = new MeanClustering(sqNub);
+        Food food = templeConfig.getFood();
+        Map<Integer, Double> foods = food.getFoodS();
         GMClustering meanClustering = new GMClustering(sqNub);
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
-        Matrix matrixRGB = threeChannelMatrix.getMatrixRGB();
         int xn = matrixR.getX();
         int yn = matrixR.getY();
+        if (isStudy) {
+            Map<Integer, GMClustering> meanMap;
+            if (isFood) {//干食学习
+                food.setFoodType(insertFoodTypes(food.getFoodType(), tag));
+                meanMap = food.getFoodMeanMap();
+                foods.put(tag, xn * yn * food.getFoodFilterTh());
+            } else {//非干食学习
+                meanMap = food.getNotFoodMeanMap();
+            }
+            meanMap.put(tag, meanClustering);
+        }
         //局部特征选区筛选
-        int nub = size * size;
-        int twoNub = nub * 2;
         for (int i = 0; i < xn; i++) {
             for (int j = 0; j < yn; j++) {
                 double r = matrixR.getNumber(i, j);
@@ -131,7 +165,6 @@ public class Convolution extends Frequency {
             }
 
         }
-        System.out.println(features);
         return features;
     }
 

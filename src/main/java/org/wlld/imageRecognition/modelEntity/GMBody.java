@@ -13,6 +13,15 @@ public class GMBody {
     private int type;//类别
     private List<Integer> pixels = new ArrayList<>();
     private int pixelNub = 0;
+    private int nub;
+
+    public int getNub() {
+        return nub;
+    }
+
+    public void setNub(int nub) {
+        this.nub = nub;
+    }
 
     public GMBody(int type, int x, int y) {
         this.type = type;

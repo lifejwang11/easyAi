@@ -91,7 +91,7 @@ public class MeanClustering {
             for (int i = 0; i < speciesQuantity; i++) {//初始化均值向量
                 int index = random.nextInt(matrixList.size());
                 double[] rgb = matrixList.get(index);
-                RGBNorm rgbNorm = new RGBNorm(rgb, length, speciesQuantity);
+                RGBNorm rgbNorm = new RGBNorm(rgb, length);
                 //要进行深度克隆
                 matrices.add(rgbNorm);
             }

@@ -39,6 +39,7 @@ public class Watershed {
     private List<Specifications> specifications;//过滤候选区参数
     private List<RgbRegression> trayBody;//托盘参数
     private double trayTh;
+    private double brightnessTh;//亮度阈值
 
     public Watershed(ThreeChannelMatrix matrix, List<Specifications> specifications, TempleConfig templeConfig) throws Exception {
         if (matrix != null && specifications != null && specifications.size() > 0) {
@@ -50,6 +51,7 @@ public class Watershed {
             matrixR = matrix.getMatrixR();
             matrixG = matrix.getMatrixG();
             matrixB = matrix.getMatrixB();
+            brightnessTh = templeConfig.getCutting().getMaxRain();
             this.specifications = specifications;
             this.trayBody = templeConfig.getFood().getTrayBody();
             if (templeConfig.getEdge() > 0) {
@@ -496,7 +498,7 @@ public class Watershed {
         int minIdx = 0;
         for (int i = 0; i < array.length; i++) {
             double nub = array[i];
-            if (nub > -1 && nub < mySelf && nub < 280) {
+            if (nub > -1 && nub < mySelf && nub < brightnessTh) {
                 minIdx = minIdx | (1 << i);
             }
         }

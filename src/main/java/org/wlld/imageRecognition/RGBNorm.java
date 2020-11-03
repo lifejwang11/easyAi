@@ -34,12 +34,15 @@ public class RGBNorm {
         this.rgbRegression = rgbRegression;
     }
 
-    RGBNorm(double[] rgb, int len, int speciesQuantity) {
+    RGBNorm(double[] rgb, int len) {
         this.len = len;
         rgbAll = new double[len];
         this.rgb = new double[len];
         this.rgbUp = rgb;
         gmParameter = new Random().nextDouble();
+    }
+
+    public RGBNorm() {
     }
 
     public void syn() {
@@ -165,9 +168,9 @@ public class RGBNorm {
 
     public double[] getFeature() throws Exception {
         int avgLen = avgMatrix.getX();
-        int length = avgLen * 2;
+        int length = avgLen * 2 + 1;
         double[] feature = new double[length];
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < length - 1; i++) {
             if (i < avgLen) {
                 feature[i] = avgMatrix.getNumber(i, 0);
             } else {
@@ -175,7 +178,27 @@ public class RGBNorm {
                 feature[i] = varMatrix.getNumber(t, 0);
             }
         }
+        feature[length - 1] = gmParameter;
         return feature;
+    }
+
+    public void insertFeature(double[] feature) throws Exception {
+        int length = feature.length - 1;
+        int size = length / 2;
+        avgMatrix = new Matrix(size, 1);
+        varMatrix = new Matrix(size, 1);
+        gmParameter = feature[length];
+        varAll = 1;
+        for (int i = 0; i < length; i++) {
+            if (i < size) {
+                avgMatrix.setNub(i, 0, feature[i]);
+            } else {
+                int t = i - size;
+                double var = feature[i];
+                varMatrix.setNub(t, 0, var);
+                varAll = varAll * Math.sqrt(var);
+            }
+        }
     }
 
     public void gm() throws Exception {//混合高斯聚类模型参数计算

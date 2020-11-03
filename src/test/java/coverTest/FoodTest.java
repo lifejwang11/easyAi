@@ -8,7 +8,6 @@ import org.wlld.config.Classifier;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.imageRecognition.*;
-import org.wlld.imageRecognition.modelEntity.DeepMappingBody;
 import org.wlld.imageRecognition.segmentation.*;
 import org.wlld.nerveEntity.ModelParameter;
 import org.wlld.param.Cutting;
@@ -23,41 +22,12 @@ public class FoodTest {
         test();
     }
 
-    public static void test2(TempleConfig templeConfig) throws Exception {
-        if (templeConfig == null) {
-            ModelParameter parameter = JSON.parseObject(ModelData.DATA, ModelParameter.class);
-            templeConfig = getTemple(null);
-        }
-        Picture picture = new Picture();
-        List<Specifications> specificationsList = new ArrayList<>();
-        Specifications specifications = new Specifications();
-        specifications.setMinWidth(70);
-        specifications.setMinHeight(70);
-        specifications.setMaxWidth(950);
-        specifications.setMaxHeight(950);
-        specificationsList.add(specifications);
-        Operation operation = new Operation(templeConfig);
-        long a = System.currentTimeMillis();
-        for (int i = 1; i <= 1; i++) {
-            ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix("/Users/lidapeng/Desktop/test/d.jpg");
-            List<RegionBody> regionBody = operation.colorLook(threeChannelMatrix1, specificationsList);
-            long b = System.currentTimeMillis() - a;
-            System.out.println(b);
-            for (int j = 0; j < regionBody.size(); j++) {
-                RegionBody regionBody1 = regionBody.get(j);
-                System.out.println("minX==" + regionBody1.getMinX() + ",minY==" + regionBody1.getMinY()
-                        + ",maxX==" + regionBody1.getMaxX() + ",maxY==" + regionBody1.getMaxY());
-                System.out.println("type==" + regionBody.get(j).getType());
-            }
-        }
-    }
-
-    public static TempleConfig getTemple(ModelParameter modelParameter) throws Exception {
+    public static Operation getTemple() throws Exception {
         TempleConfig templeConfig = new TempleConfig();
         //templeConfig.isShowLog(true);//是否打印日志
         Cutting cutting = templeConfig.getCutting();
         Food food = templeConfig.getFood();
-        cutting.setMaxRain(360);//切割阈值
+        cutting.setMaxRain(280);//切割阈值
         cutting.setTh(0.5);
         cutting.setRegionNub(100);
         cutting.setMaxIou(2);
@@ -69,24 +39,35 @@ public class FoodTest {
         //聚类
         templeConfig.setFeatureNub(3);//聚类特征数量
         //菜品识别实体类
-        food.setShrink(0);//缩紧像素
         food.setRegionSize(2);
         food.setRowMark(0.05);//0.12
         food.setColumnMark(0.05);//0.25
         food.setRegressionNub(50000);
         food.setTrayTh(0.05);//封死
+        int[] foods = new int[]{2, 3};//干食品
+        food.setFoodType(foods);
         templeConfig.setClassifier(Classifier.KNN);
         templeConfig.init(StudyPattern.Cover_Pattern, true, 400, 400, 3);
-        if (modelParameter != null) {
-            templeConfig.insertModel(modelParameter);
-        }
-        return templeConfig;
+        Operation operation = new Operation(templeConfig);
+        return operation;
     }
 
-    public static void test() throws Exception {
+    public static void setting1() throws Exception {//前置设定第一步，设定背景
+        Picture picture = new Picture();//解析类
+        Operation operation = getTemple();//获取模版
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/d.jpg");
+        operation.setTray(threeChannelMatrix);
+    }
+
+    public static void setting2() throws Exception {//前置设定第二步，设定餐盘
         Picture picture = new Picture();
-        TempleConfig templeConfig = getTemple(null);
-        Operation operation = new Operation(templeConfig);
+        Operation operation = getTemple();
+        CutFood cutFood = new CutFood(operation.getTempleConfig());
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/pan1.jpg");
+        cutFood.study(1, threeChannelMatrix);
+    }
+
+    public static void study1() throws Exception {//进行学习
         List<Specifications> specificationsList = new ArrayList<>();
         Specifications specifications = new Specifications();
         specifications.setMinWidth(60);//150
@@ -94,6 +75,31 @@ public class FoodTest {
         specifications.setMaxWidth(600);
         specifications.setMaxHeight(600);
         specificationsList.add(specifications);
+        Picture picture = new Picture();
+        String a = "/Users/lidapeng/Desktop/test/testOne/a.jpg";
+        Operation operation = getTemple();
+        ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix(a);
+        //进行第一步学习目的是将特征生成混高模型
+        operation.colorStudy(threeChannelMatrix1, 2, specificationsList, "url", true);
+
+
+        CutFood cutFood = new CutFood(operation.getTempleConfig());
+        TempleConfig templeConfig = operation.getTempleConfig();
+        study(threeChannelMatrix1, templeConfig, specificationsList, cutFood, 2);
+
+    }
+
+    public static void test() throws Exception {
+        Picture picture = new Picture();
+        Operation operation = getTemple();
+        List<Specifications> specificationsList = new ArrayList<>();
+        Specifications specifications = new Specifications();
+        specifications.setMinWidth(60);//150
+        specifications.setMinHeight(60);//150
+        specifications.setMaxWidth(600);
+        specifications.setMaxHeight(600);
+        specificationsList.add(specifications);
+        TempleConfig templeConfig = operation.getTempleConfig();
         CutFood cutFood = new CutFood(templeConfig);
         //KNerveManger kNerveManger = templeConfig.getFood().getkNerveManger();
         ThreeChannelMatrix threeChannelMatrixB = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/d.jpg");
@@ -127,7 +133,7 @@ public class FoodTest {
         study(threeChannelMatrix1, templeConfig, specificationsList, cutFood, 2);
         study(threeChannelMatrix2, templeConfig, specificationsList, cutFood, 3);
         //
-        ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix(e);
+        ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix(g);
         look(threeChannelMatrix3, templeConfig, specificationsList, cutFood);
     }
 
@@ -144,7 +150,7 @@ public class FoodTest {
             int xSize = maxX - minX;
             int ySize = maxY - minY;
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-            cutFood.createRegion(threeChannelMatrix1);
+            cutFood.getTypeNub(threeChannelMatrix1, null);
             System.out.println("结束===================");
         }
     }
