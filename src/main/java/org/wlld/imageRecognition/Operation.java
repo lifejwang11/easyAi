@@ -167,7 +167,7 @@ public class Operation {//进行计算
                     }
                 }
             }
-            CutFood cutFood = food.getCutFood();
+            CutFood cutFood = new CutFood(templeConfig, food.getFoodMeanMap());
             if (isFood) {//一次判定就属于干食，则无需进行二次判定
                 regionBody.setTypeNub(cutFood.getTypeNub(threeChannelMatrix1, null));
             } else {//一次判定属于非干食，则进行二次判定

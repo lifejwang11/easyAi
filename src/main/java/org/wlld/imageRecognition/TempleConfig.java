@@ -1,20 +1,16 @@
 package org.wlld.imageRecognition;
 
-import com.sun.tools.javac.comp.Enter;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Classifier;
-import org.wlld.config.Kernel;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
-import org.wlld.function.Sigmod;
 import org.wlld.function.Tanh;
 import org.wlld.i.ActiveFunction;
 import org.wlld.imageRecognition.border.*;
 import org.wlld.imageRecognition.modelEntity.*;
 import org.wlld.imageRecognition.segmentation.DimensionMappingStudy;
-import org.wlld.imageRecognition.segmentation.RgbRegression;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveCenter.Normalization;
 import org.wlld.nerveEntity.BodyList;
@@ -705,6 +701,7 @@ public class TempleConfig {
                             GMClustering gmClustering = new GMClustering(featureNub);
                             gmClustering.insertParameter(matrix);
                             if (set.contains(key)) {//干食
+                                gmClustering.setRegionSize(foods.get(key));
                                 food.getFoodMeanMap().put(key, gmClustering);
                             } else {
                                 food.getNotFoodMeanMap().put(key, gmClustering);
@@ -714,9 +711,6 @@ public class TempleConfig {
                         DimensionMappingStudy dimensionAll = new DimensionMappingStudy(this);
                         dimensionAll.start();//生成映射层，并将已经保存的knn特征进行映射
                         food.setDimensionMappingStudy(dimensionAll);
-                        CutFood cutFood = new CutFood(this);
-                        cutFood.setMeanMap(food.getFoodMeanMap());
-                        food.setCutFood(cutFood);
                     }
                     break;
             }

@@ -29,15 +29,6 @@ public class Food {
     private Map<Integer, GMClustering> foodMeanMap = new HashMap<>();//干食类别混高模型 需激活注入
     private Map<Integer, GMClustering> notFoodMeanMap = new HashMap<>();//干食类别混高模型 需激活注入
     private DimensionMappingStudy dimensionMappingStudy;//需激活注入
-    private CutFood cutFood;//需激活时注入
-
-    public CutFood getCutFood() {
-        return cutFood;
-    }
-
-    public void setCutFood(CutFood cutFood) {
-        this.cutFood = cutFood;
-    }
 
     public DimensionMappingStudy getDimensionMappingStudy() {
         return dimensionMappingStudy;

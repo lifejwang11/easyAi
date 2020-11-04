@@ -59,35 +59,6 @@ public class FoodTest {
         operation.setTray(threeChannelMatrix);
     }
 
-    public static void setting2() throws Exception {//前置设定第二步，设定餐盘
-        Picture picture = new Picture();
-        Operation operation = getTemple();
-        CutFood cutFood = new CutFood(operation.getTempleConfig());
-        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/pan1.jpg");
-        cutFood.study(1, threeChannelMatrix);
-    }
-
-    public static void study1() throws Exception {//进行学习
-        List<Specifications> specificationsList = new ArrayList<>();
-        Specifications specifications = new Specifications();
-        specifications.setMinWidth(60);//150
-        specifications.setMinHeight(60);//150
-        specifications.setMaxWidth(600);
-        specifications.setMaxHeight(600);
-        specificationsList.add(specifications);
-        Picture picture = new Picture();
-        String a = "/Users/lidapeng/Desktop/test/testOne/a.jpg";
-        Operation operation = getTemple();
-        ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix(a);
-        //进行第一步学习目的是将特征生成混高模型
-        operation.colorStudy(threeChannelMatrix1, 2, specificationsList, "url", true);
-
-
-        CutFood cutFood = new CutFood(operation.getTempleConfig());
-        TempleConfig templeConfig = operation.getTempleConfig();
-        study(threeChannelMatrix1, templeConfig, specificationsList, cutFood, 2);
-
-    }
 
     public static void test() throws Exception {
         Picture picture = new Picture();
@@ -100,41 +71,16 @@ public class FoodTest {
         specifications.setMaxHeight(600);
         specificationsList.add(specifications);
         TempleConfig templeConfig = operation.getTempleConfig();
-        CutFood cutFood = new CutFood(templeConfig);
-        //KNerveManger kNerveManger = templeConfig.getFood().getkNerveManger();
         ThreeChannelMatrix threeChannelMatrixB = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/d.jpg");
         //背景也是盘子
-        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/pan1.jpg");
+        ThreeChannelMatrix threeChannelMatrix = picture.getThreeMatrix("/Users/lidapeng/Desktop/myDocument/pan.jpeg");
         //设定背景回归
         operation.setTray(threeChannelMatrixB);
-        //学习背景
-        cutFood.study(1, threeChannelMatrix);
-        //训练数据，单张馒头
-        String a = "/Users/lidapeng/Desktop/test/testOne/a.jpg";
-        //训练数据，一个鸡蛋
-        String c = "/Users/lidapeng/Desktop/test/testOne/c.jpg";
-        //测试数据，两个鸡蛋
-        String d = "/Users/lidapeng/Desktop/test/testOne/d.jpg";
-        //测试数据，两个馒头
-        String b = "/Users/lidapeng/Desktop/test/testOne/b.jpg";
-        String f = "/Users/lidapeng/Desktop/test/testOne/f.jpeg";
-
-        //测试数据，一个鸡蛋和一个馒头
-        String e = "/Users/lidapeng/Desktop/test/testOne/e.jpg";
-        //测试数据，两个鸡蛋 一个馒头
-        String g = "/Users/lidapeng/Desktop/test/testOne/f.jpg";
-        //测试数据，两个鸡蛋两个馒头
-        String h = "/Users/lidapeng/Desktop/test/testOne/g.jpg";
-
-        //训练馒头
+        String a = "/Users/lidapeng/Desktop/myDocument/man.jpeg";
         ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix(a);
-        //训练鸡蛋
-        ThreeChannelMatrix threeChannelMatrix2 = picture.getThreeMatrix(c);
-        study(threeChannelMatrix1, templeConfig, specificationsList, cutFood, 2);
-        study(threeChannelMatrix2, templeConfig, specificationsList, cutFood, 3);
-        //
-        ThreeChannelMatrix threeChannelMatrix3 = picture.getThreeMatrix(g);
-        look(threeChannelMatrix3, templeConfig, specificationsList, cutFood);
+        Watershed watershed = new Watershed(threeChannelMatrix1, specificationsList, templeConfig);
+        List<RegionBody> regionList = watershed.rainfall();
+        System.out.println("==");
     }
 
     private static void look(ThreeChannelMatrix threeChannelMatrix, TempleConfig templeConfig, List<Specifications> specifications,
@@ -155,34 +101,6 @@ public class FoodTest {
         }
     }
 
-    private static void study(ThreeChannelMatrix threeChannelMatrix, TempleConfig templeConfig, List<Specifications> specifications,
-                              CutFood cutFood, int type) throws Exception {
-        Convolution convolution = new Convolution();
-        Watershed watershed = new Watershed(threeChannelMatrix, specifications, templeConfig);
-        List<RegionBody> regionList = watershed.rainfall();
-        if (regionList.size() == 1) {
-            RegionBody regionBody = regionList.get(0);
-            int minX = regionBody.getMinX();
-            int minY = regionBody.getMinY();
-            int maxX = regionBody.getMaxX();
-            int maxY = regionBody.getMaxY();
-            int xSize = maxX - minX;
-            int ySize = maxY - minY;
-            System.out.println("正常：minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
-            ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-            cutFood.study(type, threeChannelMatrix1);
-        } else {
-            for (RegionBody regionBody : regionList) {
-                int minX = regionBody.getMinX();
-                int minY = regionBody.getMinY();
-                int maxX = regionBody.getMaxX();
-                int maxY = regionBody.getMaxY();
-                System.out.println("异常：minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
-            }
-            throw new Exception("Parameter exception region size:" + regionList.size());
-        }
-
-    }
 
     public static void study() throws Exception {
         TempleConfig templeConfig = new TempleConfig();

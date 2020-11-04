@@ -136,7 +136,9 @@ public class Convolution extends Frequency {
             if (isFood) {//干食学习
                 food.setFoodType(insertFoodTypes(food.getFoodType(), tag));
                 meanMap = food.getFoodMeanMap();
-                foods.put(tag, xn * yn * food.getFoodFilterTh());
+                double size = xn * yn * food.getFoodFilterTh();
+                meanClustering.setRegionSize(size);
+                foods.put(tag, size);
             } else {//非干食学习
                 meanMap = food.getNotFoodMeanMap();
             }

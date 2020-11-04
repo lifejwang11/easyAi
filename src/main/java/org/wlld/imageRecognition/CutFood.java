@@ -18,16 +18,13 @@ import java.util.Map;
  */
 public class CutFood {
     private TempleConfig templeConfig;
-    private Map<Integer, GMClustering> meanMap = new HashMap<>();//干食混高模型
+    private Map<Integer, GMClustering> meanMap;//干食混高模型
     private Matrix regionMap;
     private double foodFilterTh;
 
-    public CutFood(TempleConfig templeConfig) {
+    public CutFood(TempleConfig templeConfig, Map<Integer, GMClustering> meanMap) {
         this.templeConfig = templeConfig;
         foodFilterTh = templeConfig.getFood().getFoodFilterTh();
-    }
-
-    public void setMeanMap(Map<Integer, GMClustering> meanMap) {
         this.meanMap = meanMap;
     }
 
