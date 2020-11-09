@@ -167,11 +167,13 @@ public class Operation {//进行计算
                     }
                 }
             }
-            CutFood cutFood = new CutFood(templeConfig, food.getFoodMeanMap());
-            if (isFood) {//一次判定就属于干食，则无需进行二次判定
-                regionBody.setTypeNub(cutFood.getTypeNub(threeChannelMatrix1, null));
-            } else {//一次判定属于非干食，则进行二次判定
-                regionBody.setTypeNub(cutFood.getTypeNub(threeChannelMatrix1, food.getNotFoodMeanMap().get(id)));
+            if (isFood) {//判断类别，获取积分
+                Map<Integer, GMClustering> foods = food.getFoodMeanMap();
+                Map<Integer, GMClustering> test = new HashMap<>();
+                test.put(1, foods.get(1));
+                test.put(id, foods.get(id));
+                CutFood cutFood = new CutFood(templeConfig, test);
+                regionBody.setTypeNub(cutFood.getTypeNub(threeChannelMatrix1, id));
             }
             regionBody.setType(id);
             System.out.println("类别" + id);

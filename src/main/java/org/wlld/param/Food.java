@@ -1,6 +1,5 @@
 package org.wlld.param;
 
-import org.wlld.imageRecognition.CutFood;
 import org.wlld.imageRecognition.border.GMClustering;
 import org.wlld.imageRecognition.segmentation.DimensionMappingStudy;
 import org.wlld.imageRecognition.segmentation.RgbRegression;

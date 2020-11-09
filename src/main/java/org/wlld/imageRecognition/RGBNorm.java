@@ -22,6 +22,18 @@ public class RGBNorm {
     private double gmParameter;//gm混合系数
     private double probabilitySigma = 0;//后验概率求和
 
+    public double getVarAll() {
+        return varAll;
+    }
+
+    public Matrix getAvgMatrix() {
+        return avgMatrix;
+    }
+
+    public Matrix getVarMatrix() {
+        return varMatrix;
+    }
+
     public List<double[]> getRgbs() {
         return rgbs;
     }

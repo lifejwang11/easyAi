@@ -56,7 +56,7 @@ public class CutFood {
         return sigma / (x * y);
     }
 
-    private boolean getAvgPro(ThreeChannelMatrix threeChannelMatrix, GMClustering gm) throws Exception {
+    private void getAvgPro(ThreeChannelMatrix threeChannelMatrix) throws Exception {
         int size = templeConfig.getFood().getRegionSize();
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
@@ -64,35 +64,25 @@ public class CutFood {
         int x = matrixR.getX();
         int y = matrixR.getY();
         regionMap = new Matrix(x / size, y / size);
-        double sigmaPro = 0;
-        double sigmaOther = 0;
         for (int i = 0; i <= x - size; i += size) {
             for (int j = 0; j <= y - size; j += size) {
                 double r = getAvg(matrixR.getSonOfMatrix(i, j, size, size));
                 double g = getAvg(matrixG.getSonOfMatrix(i, j, size, size));
                 double b = getAvg(matrixB.getSonOfMatrix(i, j, size, size));
                 double[] rgb = new double[]{r / 255, g / 255, b / 255};
-                TypePro typePro = getType(rgb);
-                int index = typePro.index;//该区域所属类别
-                sigmaPro = sigmaPro + typePro.pro;
-                if (gm != null) {
-                    sigmaOther = sigmaOther + gm.getProbabilityDensity(rgb);//概率密度
-                }
+                int index = getType(rgb);
                 regionMap.setNub(i / size, j / size, index);
             }
         }
-        return sigmaPro > sigmaOther;
     }
 
-    public Map<Integer, Integer> getTypeNub(ThreeChannelMatrix threeChannelMatrix,
-                                            GMClustering gm) throws Exception {
-        if (getAvgPro(threeChannelMatrix, gm)) {//进行二次判定
-            return getTypeNub();
-        }
-        return null;
+    public Map<Integer, Integer> getTypeNub(ThreeChannelMatrix threeChannelMatrix
+            , int myType) throws Exception {
+        getAvgPro(threeChannelMatrix);
+        return getTypeNub(myType);
     }
 
-    private Map<Integer, Integer> getTypeNub() throws Exception {
+    private Map<Integer, Integer> getTypeNub(int myType) throws Exception {
         int size = templeConfig.getFood().getRegionSize();
         double s = Math.pow(size, 2);
         int xr = regionMap.getX();
@@ -113,7 +103,7 @@ public class CutFood {
             int type = gmBody.getType();
             if (type != 1) {//背景直接过滤
                 double oneSize = meanMap.get(type).getRegionSize();
-                int nub = (int) (regionSize / oneSize);
+                int nub = (int) (regionSize / oneSize);//数量
                 if (nub > 0) {
                     if (gmTypeNub.containsKey(type)) {
                         int myNub = gmTypeNub.get(type);
@@ -125,6 +115,9 @@ public class CutFood {
                     }
                 }
             }
+        }
+        if (gmTypeNub.size() == 0) {
+            gmTypeNub.put(myType, 1);
         }
         return gmTypeNub;
     }
@@ -140,17 +133,7 @@ public class CutFood {
         return isInsert;
     }
 
-    class TypePro {
-        private int index;
-        private double pro;//概率密度
-
-        TypePro(int index, double pro) {
-            this.index = index;
-            this.pro = pro;
-        }
-    }
-
-    private TypePro getType(double[] rgb) throws Exception {
+    private int getType(double[] rgb) throws Exception {
         int index = 0;
         double max = 0;
         for (Map.Entry<Integer, GMClustering> entry : meanMap.entrySet()) {
@@ -163,10 +146,8 @@ public class CutFood {
         }
         if (max < 2) {
             index = 1;
-            max = 0;
         }
-
-        return new TypePro(index, max);
+        return index;
     }
 
     public void study(int type, ThreeChannelMatrix threeChannelMatrix) throws Exception {

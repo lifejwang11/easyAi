@@ -48,7 +48,7 @@ public class FeatureMapping extends Frequency implements PsoFunction {
     @Override
     public double getResult(double[] parameter, int id) throws Exception {
 
-        return featuresMapping2(parameter);
+        return featuresMapping(parameter);
     }
 
     private double[] mapping(Matrix matrix, double[] parameter) throws Exception {

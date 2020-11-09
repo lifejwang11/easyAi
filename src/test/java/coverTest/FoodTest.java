@@ -80,7 +80,6 @@ public class FoodTest {
         ThreeChannelMatrix threeChannelMatrix1 = picture.getThreeMatrix(a);
         Watershed watershed = new Watershed(threeChannelMatrix1, specificationsList, templeConfig);
         List<RegionBody> regionList = watershed.rainfall();
-        System.out.println("==");
     }
 
     private static void look(ThreeChannelMatrix threeChannelMatrix, TempleConfig templeConfig, List<Specifications> specifications,
@@ -95,9 +94,6 @@ public class FoodTest {
             int maxY = regionBody.getMaxY();
             int xSize = maxX - minX;
             int ySize = maxY - minY;
-            ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-            cutFood.getTypeNub(threeChannelMatrix1, null);
-            System.out.println("结束===================");
         }
     }
 

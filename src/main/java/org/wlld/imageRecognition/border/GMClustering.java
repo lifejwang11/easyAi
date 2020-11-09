@@ -53,7 +53,7 @@ public class GMClustering extends MeanClustering {
             RGBNorm rgbNorm = new RGBNorm();
             matrices.add(rgbNorm);
             for (int j = i; j < i + size; j++) {
-                feature[j - i] = matrix.getNumber(0, i);
+                feature[j - i] = matrix.getNumber(0, j);
             }
             rgbNorm.insertFeature(feature);
         }

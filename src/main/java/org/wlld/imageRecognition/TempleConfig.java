@@ -707,7 +707,6 @@ public class TempleConfig {
                                 food.getNotFoodMeanMap().put(key, gmClustering);
                             }
                         }
-                        //
                         DimensionMappingStudy dimensionAll = new DimensionMappingStudy(this);
                         dimensionAll.start();//生成映射层，并将已经保存的knn特征进行映射
                         food.setDimensionMappingStudy(dimensionAll);

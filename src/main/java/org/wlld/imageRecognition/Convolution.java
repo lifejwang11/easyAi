@@ -102,7 +102,6 @@ public class Convolution extends Frequency {
         if (foodTypes == null) {
             foods = new int[]{type};
         } else {
-            foods = new int[foodTypes.length + 1];
             boolean isLife = false;
             for (int myType : foodTypes) {
                 if (type == myType) {
@@ -111,9 +110,14 @@ public class Convolution extends Frequency {
                 }
             }
             if (!isLife) {
-                for (int i = 0; i < foodTypes.length; i++) {
-                    foods[i] = foodTypes[i];
-                }
+                foods = new int[foodTypes.length + 1];
+            } else {
+                foods = new int[foodTypes.length];
+            }
+            for (int i = 0; i < foodTypes.length; i++) {
+                foods[i] = foodTypes[i];
+            }
+            if (!isLife) {
                 foods[foodTypes.length] = type;
             }
         }
