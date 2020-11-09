@@ -4,6 +4,7 @@ import org.wlld.MatrixTools.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lidapeng
@@ -19,6 +20,15 @@ public class RegionBody {
     private int ySize;
     private List<Integer> pointList = new ArrayList<>();
     private Matrix regionMap;//分区图
+    private Map<Integer, Integer> typeNub;//干食及数量
+
+    public Map<Integer, Integer> getTypeNub() {
+        return typeNub;
+    }
+
+    public void setTypeNub(Map<Integer, Integer> typeNub) {
+        this.typeNub = typeNub;
+    }
 
     RegionBody(Matrix regionMap, int type, int xSize, int ySize) {
         //System.out.println("type===" + type);

@@ -46,19 +46,40 @@ public class MatrixOperation {
 
     //多元线性回归
     public static Matrix getLinearRegression(Matrix parameter, Matrix out) throws Exception {
-        if (parameter.getX() == out.getX() && out.isVector() && !out.isRowVector()) {
+        if (parameter.getX() == out.getX() && out.isVector()) {
             //将参数矩阵转置
             Matrix matrix1 = transPosition(parameter);
             //转置的参数矩阵乘以参数矩阵
             Matrix matrix2 = mulMatrix(matrix1, parameter);
-            //求上一步的逆矩阵
+            //求上一步的逆矩阵 这一步需要矩阵非奇异,若出现奇异矩阵，则返回0矩阵，意味失败
             Matrix matrix3 = getInverseMatrixs(matrix2);
-            //逆矩阵乘以转置矩阵
-            Matrix matrix4 = mulMatrix(matrix3, matrix1);
-            //最后乘以输出矩阵,生成权重矩阵并返回
-            return mulMatrix(matrix4, out);
+            if (matrix3.getX() == 1 && matrix3.getY() == 1) {
+                return matrix3;
+            } else {
+                //逆矩阵乘以转置矩阵
+                Matrix matrix4 = mulMatrix(matrix3, matrix1);
+                //最后乘以输出矩阵,生成权重矩阵并返回
+                return mulMatrix(matrix4, out);
+            }
         } else {
             throw new Exception("invalid regression matrix");
+        }
+    }
+
+    public static double getEDistByMatrix(Matrix matrix1, Matrix matrix2) throws Exception {
+        if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
+            int x = matrix1.getX();
+            int y = matrix1.getY();
+            double sigma = 0;
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    double sub = matrix1.getNumber(i, j) - matrix2.getNumber(i, j);
+                    sigma = sigma + Math.pow(sub, 2);
+                }
+            }
+            return sigma / (x * y);
+        } else {
+            throw new Exception("two matrixes is not equals");
         }
     }
 
@@ -72,7 +93,7 @@ public class MatrixOperation {
         }
     }
 
-    public static double errorNub(Matrix matrix, Matrix avgMatrix, int excNub) throws Exception {//求均方误差
+    public static double errorNub(Matrix matrix, Matrix avgMatrix) throws Exception {//求均方误差
         int y = matrix.getY();
         if (matrix.isRowVector() && avgMatrix.isRowVector() && y == avgMatrix.getY()) {
             double[] subAll = new double[y];
@@ -82,12 +103,11 @@ public class MatrixOperation {
                 double sub = Math.pow(avg - mySelf, 2);
                 subAll[j] = sub;
             }
-            Arrays.sort(subAll);
             double sigma = 0;
-            for (int i = 0; i < y - excNub; i++) {
+            for (int i = 0; i < y; i++) {
                 sigma = sigma + subAll[i];
             }
-            return sigma / (y - excNub);
+            return sigma / y;
         } else {
             throw new Exception("this matrix is not  rowVector or length different");
         }
@@ -322,16 +342,17 @@ public class MatrixOperation {
         return inverserNumber;
     }
 
-    public static Matrix getInverseMatrixs(Matrix matrixs) throws Exception {//矩阵求逆
-        double def = matrixs.getDet();
+    public static Matrix getInverseMatrixs(Matrix matrix) throws Exception {//矩阵求逆
+        double def = matrix.getDet();
         if (def != 0) {
             def = ArithUtil.div(1, def);
-            Matrix myMatrix = adjointMatrix(matrixs);//伴随矩阵
+            Matrix myMatrix = adjointMatrix(matrix);//伴随矩阵
             mathMul(myMatrix, def);
             return myMatrix;
         } else {
-            System.out.println(matrixs.getString());
-            throw new Exception("this matrixs do not have InverseMatrixs");
+            //System.out.println("matrix def is zero error:");
+            //System.out.println(matrix.getString());
+            return new Matrix(1, 1);
         }
     }
 

@@ -1,9 +1,13 @@
 package org.wlld.param;
 
+import org.wlld.imageRecognition.border.GMClustering;
+import org.wlld.imageRecognition.segmentation.DimensionMappingStudy;
 import org.wlld.imageRecognition.segmentation.RgbRegression;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @param
@@ -12,14 +16,58 @@ import java.util.List;
  * @Description 菜品识别实体类
  */
 public class Food {
-    private int shrink = 60;//收缩参数
-    private int times = 10;//聚类增强次数
-    private double rowMark = 0.12;//行痕迹过滤
-    private double columnMark = 0.25;//列痕迹过滤
+    private double rowMark = 0.05;//行痕迹过滤
+    private double columnMark = 0.05;//列痕迹过滤
     private List<RgbRegression> trayBody = new ArrayList<>();//托盘实体参数
     private int regressionNub = 10000;//回归次数
     private double trayTh = 0.1;//托盘回归阈值
-    private int regionSize = 10;//纹理区域大小
+    private int regionSize = 5;//纹理区域大小
+    private double foodFilterTh = 0.8;//干食数量过滤阈值
+    private int[] foodType;//干食品类别集合 需激活注入
+    private Map<Integer, Double> foodS = new HashMap<>();//干食品类别对应的积分 需激活注入
+    private Map<Integer, GMClustering> foodMeanMap = new HashMap<>();//干食类别混高模型 需激活注入
+    private Map<Integer, GMClustering> notFoodMeanMap = new HashMap<>();//干食类别混高模型 需激活注入
+    private DimensionMappingStudy dimensionMappingStudy;//需激活注入
+
+    public DimensionMappingStudy getDimensionMappingStudy() {
+        return dimensionMappingStudy;
+    }
+
+    public void setDimensionMappingStudy(DimensionMappingStudy dimensionMappingStudy) {
+        this.dimensionMappingStudy = dimensionMappingStudy;
+    }
+
+    public Map<Integer, GMClustering> getFoodMeanMap() {
+        return foodMeanMap;
+    }
+
+    public Map<Integer, GMClustering> getNotFoodMeanMap() {
+        return notFoodMeanMap;
+    }
+
+    public Map<Integer, Double> getFoodS() {
+        return foodS;
+    }
+
+    public void setFoodS(Map<Integer, Double> foodS) {
+        this.foodS = foodS;
+    }
+
+    public int[] getFoodType() {
+        return foodType;
+    }
+
+    public void setFoodType(int[] foodType) {
+        this.foodType = foodType;
+    }
+
+    public double getFoodFilterTh() {
+        return foodFilterTh;
+    }
+
+    public void setFoodFilterTh(double foodFilterTh) {
+        this.foodFilterTh = foodFilterTh;
+    }
 
     public int getRegionSize() {
         return regionSize;
@@ -67,21 +115,5 @@ public class Food {
 
     public void setColumnMark(double columnMark) {
         this.columnMark = columnMark;
-    }
-
-    public int getShrink() {
-        return shrink;
-    }
-
-    public void setShrink(int shrink) {
-        this.shrink = shrink;
-    }
-
-    public int getTimes() {
-        return times;
-    }
-
-    public void setTimes(int times) {
-        this.times = times;
     }
 }

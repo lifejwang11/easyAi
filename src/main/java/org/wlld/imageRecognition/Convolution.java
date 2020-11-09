@@ -6,8 +6,10 @@ import org.wlld.config.Kernel;
 import org.wlld.imageRecognition.border.Border;
 import org.wlld.imageRecognition.border.Frame;
 import org.wlld.imageRecognition.border.FrameBody;
-import org.wlld.imageRecognition.modelEntity.RegressionBody;
-import org.wlld.imageRecognition.segmentation.RgbRegression;
+import org.wlld.imageRecognition.border.GMClustering;
+import org.wlld.imageRecognition.segmentation.ColorFunction;
+import org.wlld.param.Food;
+import org.wlld.pso.PSO;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.Frequency;
 
@@ -19,7 +21,6 @@ import java.util.*;
  * @date 9:23 上午 2020/1/2
  */
 public class Convolution extends Frequency {
-    private MeanClustering meanClustering;
 
     protected Matrix getFeatures(Matrix matrix, int maxNub, TempleConfig templeConfig
             , int id) throws Exception {
@@ -70,7 +71,7 @@ public class Convolution extends Frequency {
         List<ThreeChannelMatrix> threeChannelMatrixList = regionThreeChannelMatrix(threeMatrix, regionSize);
         for (ThreeChannelMatrix threeChannelMatrix : threeChannelMatrixList) {
             List<Double> feature = new ArrayList<>();
-            MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
+            MeanClustering meanClustering = new MeanClustering(sqNub);
             Matrix matrixR = threeChannelMatrix.getMatrixR();
             Matrix matrixG = threeChannelMatrix.getMatrixG();
             Matrix matrixB = threeChannelMatrix.getMatrixB();
@@ -96,151 +97,82 @@ public class Convolution extends Frequency {
         return features;
     }
 
-    public void filtering(ThreeChannelMatrix threeChannelMatrix) throws Exception {//平滑滤波
-        Matrix matrixR = threeChannelMatrix.getMatrixR();
-        Matrix matrixG = threeChannelMatrix.getMatrixG();
-        Matrix matrixB = threeChannelMatrix.getMatrixB();
-        int x = matrixR.getX();
-        int y = matrixR.getY();
-        double nub = x * y;
-        double sigmaR = 0;
-        double sigmaG = 0;
-        double sigmaB = 0;
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                sigmaR = matrixR.getNumber(i, j) + sigmaR;
-                sigmaG = matrixG.getNumber(i, j) + sigmaG;
-                sigmaB = matrixB.getNumber(i, j) + sigmaB;
+    private int[] insertFoodTypes(int[] foodTypes, int type) {
+        int[] foods;
+        if (foodTypes == null) {
+            foods = new int[]{type};
+        } else {
+            boolean isLife = false;
+            for (int myType : foodTypes) {
+                if (type == myType) {
+                    isLife = true;
+                    break;
+                }
+            }
+            if (!isLife) {
+                foods = new int[foodTypes.length + 1];
+            } else {
+                foods = new int[foodTypes.length];
+            }
+            for (int i = 0; i < foodTypes.length; i++) {
+                foods[i] = foodTypes[i];
+            }
+            if (!isLife) {
+                foods[foodTypes.length] = type;
             }
         }
-        double r = sigmaR / nub;
-        double g = sigmaG / nub;
-        double b = sigmaB / nub;
-        MatrixOperation.mathDiv(matrixR, r);
-        MatrixOperation.mathDiv(matrixG, g);
-        MatrixOperation.mathDiv(matrixB, b);
-
+        return foods;
     }
 
-    private double[] compareDis(double[] rgbTest, List<RGBNorm> rgbNorms) {
-        double[] feature = null;
-        double minDis = -1;
-        for (int i = 0; i < 3; i++) {
-            double[] rgb = rgbNorms.get(i).getRgb();
-            double sigma = 0;
-            for (int j = 0; j < 3; j++) {
-                sigma = sigma + Math.pow(rgbTest[j] - rgb[j], 2);
-            }
-            if (sigma < minDis || minDis == -1) {
-                minDis = sigma;
-                feature = rgb;
-            }
-        }
-        return feature;
-    }
-
-    private void dispersed(Matrix matrixR, Matrix matrixG, Matrix matrixB, List<RGBNorm> rgbNorms) throws Exception {//图像离散化
-        ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
-        int x = matrixR.getX();
-        int y = matrixR.getY();
-        Matrix matrixRD = new Matrix(x, y);
-        Matrix matrixGD = new Matrix(x, y);
-        Matrix matrixBD = new Matrix(x, y);
-        threeChannelMatrix.setMatrixR(matrixRD);
-        threeChannelMatrix.setMatrixG(matrixGD);
-        threeChannelMatrix.setMatrixB(matrixBD);
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                double r = matrixR.getNumber(i, j);
-                double g = matrixG.getNumber(i, j);
-                double b = matrixB.getNumber(i, j);
-                double[] rgb = new double[]{r, g, b};
-                double[] rgbNow = compareDis(rgb, rgbNorms);
-                matrixRD.setNub(i, j, rgbNow[0]);
-                matrixGD.setNub(i, j, rgbNow[1]);
-                matrixBD.setNub(i, j, rgbNow[2]);
-            }
-        }
-        //输入结束进行卷积
-        //System.out.println(matrixBD.getString());
-    }
-
-    public List<Double> getCenterColor(ThreeChannelMatrix threeChannelMatrix, int poolSize, int sqNub, TempleConfig templeConfig) throws Exception {
-        Matrix matrixR = threeChannelMatrix.getMatrixR();
-        Matrix matrixG = threeChannelMatrix.getMatrixG();
-        Matrix matrixB = threeChannelMatrix.getMatrixB();
-//        matrixR = late(matrixR, poolSize);
-//        matrixG = late(matrixG, poolSize);
-//        matrixB = late(matrixB, poolSize);
-        RGBSort rgbSort = new RGBSort();
-        int x = matrixR.getX();
-        int y = matrixR.getY();
-        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                double[] color = new double[]{matrixR.getNumber(i, j), matrixG.getNumber(i, j), matrixB.getNumber(i, j)};
-                meanClustering.setColor(color);
-            }
-        }
-        meanClustering.start();
-        List<RGBNorm> rgbNorms = meanClustering.getMatrices();
-        Collections.sort(rgbNorms, rgbSort);
-        List<Double> features = new ArrayList<>();
-        for (int i = 0; i < sqNub; i++) {
-            double[] rgb = rgbNorms.get(i).getRgb();
-            // RgbRegression rgbRegression = rgbNorms.get(i).getRgbRegression();
-            //double[] rgb = new double[]{rgbRegression.getWr(), rgbRegression.getWg(), rgbRegression.getB()};
-            for (int j = 0; j < 3; j++) {
-                features.add(rgb[j]);
-            }
-        }
-        //测试卷积
-        //dispersed(matrixR, matrixG, matrixB, rgbNorms);
-        //System.out.println("feature==" + feature);
-        return features;
-    }
-
-    public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, int size, int poolSize, TempleConfig templeConfig
-            , int sqNub) throws Exception {
-        RGBSort rgbSort = new RGBSort();
-        MeanClustering meanClustering = new MeanClustering(sqNub, templeConfig);
+    public List<Double> getCenterTexture(ThreeChannelMatrix threeChannelMatrix, TempleConfig templeConfig
+            , int sqNub, boolean isStudy, int tag, boolean isFood) throws Exception {
+        //MeanClustering meanClustering = new MeanClustering(sqNub);
+        Food food = templeConfig.getFood();
+        Map<Integer, Double> foods = food.getFoodS();
+        GMClustering meanClustering = new GMClustering(sqNub);
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
         int xn = matrixR.getX();
         int yn = matrixR.getY();
-        for (int i = 0; i <= xn - size; i += size) {
-            for (int j = 0; j <= yn - size; j += size) {
-                Matrix sonR = late(matrixR.getSonOfMatrix(i, j, size, size), poolSize);
-                Matrix sonG = late(matrixG.getSonOfMatrix(i, j, size, size), poolSize);
-                Matrix sonB = late(matrixB.getSonOfMatrix(i, j, size, size), poolSize);
-                int tSize = sonR.getX();
-                int kSize = sonR.getY();
-                double[] rgb = new double[tSize * kSize * 3];
-                for (int t = 0; t < tSize; t++) {
-                    for (int k = 0; k < kSize; k++) {
-                        int index = t * kSize + k;
-                        rgb[index] = sonR.getNumber(t, k);
-                        rgb[tSize * kSize + index] = sonG.getNumber(t, k);
-                        rgb[tSize * kSize * 2 + index] = sonB.getNumber(t, k);
-                    }
+        if (isStudy) {
+            Map<Integer, GMClustering> meanMap;
+            if (isFood) {//干食学习
+                food.setFoodType(insertFoodTypes(food.getFoodType(), tag));
+                meanMap = food.getFoodMeanMap();
+                double size = xn * yn * food.getFoodFilterTh();
+                meanClustering.setRegionSize(size);
+                foods.put(tag, size);
+            } else {//非干食学习
+                meanMap = food.getNotFoodMeanMap();
+            }
+            meanMap.put(tag, meanClustering);
+        }
+        //局部特征选区筛选
+        for (int i = 0; i < xn; i++) {
+            for (int j = 0; j < yn; j++) {
+                double r = matrixR.getNumber(i, j);
+                double g = matrixG.getNumber(i, j);
+                double b = matrixB.getNumber(i, j);
+                if ((r + g + b) / 3 < 245) {
+                    double[] rgb = new double[]{r / 255, g / 255, b / 255};
+                    meanClustering.setColor(rgb);
                 }
-                meanClustering.setColor(rgb);
             }
         }
-        meanClustering.start();//开始聚类
+        meanClustering.start();
         List<RGBNorm> rgbNorms = meanClustering.getMatrices();
-        Collections.sort(rgbNorms, rgbSort);
         List<Double> features = new ArrayList<>();
         for (int i = 0; i < sqNub; i++) {
-            double[] rgb = rgbNorms.get(i).getRgb();
+            //double[] rgb = rgbNorms.get(i).getRgb();
+            double[] rgb = rgbNorms.get(i).getFeature();
             for (int j = 0; j < rgb.length; j++) {
                 features.add(rgb[j]);
             }
+
         }
         return features;
     }
-
 
     private void normalization(Matrix matrix) throws Exception {
         for (int i = 0; i < matrix.getX(); i++) {
@@ -254,6 +186,24 @@ public class Convolution extends Frequency {
         Border border = new Border(templeConfig, matrix.getY() - 2, matrix.getX() - 2);
         convolution(matrix, Kernel.ALL_Two, true, border, true);
         return border;
+    }
+
+    public void imgNormalization(ThreeChannelMatrix threeChannelMatrix) throws Exception {
+        Matrix matrixR = threeChannelMatrix.getMatrixR();
+        Matrix matrixG = threeChannelMatrix.getMatrixG();
+        Matrix matrixB = threeChannelMatrix.getMatrixB();
+        int x = matrixR.getX();
+        int y = matrixR.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double colorR = matrixR.getNumber(i, j) / 255;
+                double colorG = matrixG.getNumber(i, j) / 255;
+                double colorB = matrixB.getNumber(i, j) / 255;
+                matrixR.setNub(i, j, colorR);
+                matrixG.setNub(i, j, colorG);
+                matrixB.setNub(i, j, colorB);
+            }
+        }
     }
 
     public ThreeChannelMatrix getRegionMatrix(ThreeChannelMatrix threeChannelMatrix, int x, int y, int xSize, int ySize) {

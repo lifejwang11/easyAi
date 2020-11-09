@@ -3,16 +3,14 @@ package org.wlld.imageRecognition;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.Classifier;
-import org.wlld.config.Kernel;
 import org.wlld.config.RZ;
 import org.wlld.config.StudyPattern;
 import org.wlld.function.ReLu;
-import org.wlld.function.Sigmod;
 import org.wlld.function.Tanh;
 import org.wlld.i.ActiveFunction;
 import org.wlld.imageRecognition.border.*;
 import org.wlld.imageRecognition.modelEntity.*;
-import org.wlld.imageRecognition.segmentation.RgbRegression;
+import org.wlld.imageRecognition.segmentation.DimensionMappingStudy;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveCenter.Normalization;
 import org.wlld.nerveEntity.BodyList;
@@ -22,10 +20,7 @@ import org.wlld.param.Cutting;
 import org.wlld.param.Food;
 import org.wlld.tools.ArithUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class TempleConfig {
@@ -565,6 +560,7 @@ public class TempleConfig {
                             knnVector.add(bodyList);
                         }
                         modelParameter.setKnnVector(knnVector);
+                        modelParameter.setFoodS(food.getFoodS());
                     }
                     break;
             }
@@ -687,6 +683,33 @@ public class TempleConfig {
                                 knn.insertMatrix(matrix, type);
                             }
                         }
+                        Map<Integer, Double> foods = modelParameter.getFoodS();
+                        Set<Integer> set = foods.keySet();
+                        int[] foodType = new int[foods.size()];
+                        int index = 0;
+                        for (int type : set) {
+                            foodType[index] = type;
+                            index++;
+                        }
+                        food.setFoodType(foodType);
+                        food.setFoodS(foods);
+                        //注入菜品信息
+                        Map<Integer, List<Matrix>> features = knn.getFeatureMap();
+                        for (Map.Entry<Integer, List<Matrix>> entry : features.entrySet()) {
+                            int key = entry.getKey();
+                            Matrix matrix = entry.getValue().get(0);
+                            GMClustering gmClustering = new GMClustering(featureNub);
+                            gmClustering.insertParameter(matrix);
+                            if (set.contains(key)) {//干食
+                                gmClustering.setRegionSize(foods.get(key));
+                                food.getFoodMeanMap().put(key, gmClustering);
+                            } else {
+                                food.getNotFoodMeanMap().put(key, gmClustering);
+                            }
+                        }
+                        DimensionMappingStudy dimensionAll = new DimensionMappingStudy(this);
+                        dimensionAll.start();//生成映射层，并将已经保存的knn特征进行映射
+                        food.setDimensionMappingStudy(dimensionAll);
                     }
                     break;
             }

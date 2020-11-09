@@ -7,13 +7,11 @@ import org.wlld.config.Classifier;
 import org.wlld.config.StudyPattern;
 import org.wlld.i.OutBack;
 import org.wlld.imageRecognition.border.*;
-import org.wlld.imageRecognition.segmentation.RegionBody;
-import org.wlld.imageRecognition.segmentation.RgbRegression;
-import org.wlld.imageRecognition.segmentation.Specifications;
-import org.wlld.imageRecognition.segmentation.Watershed;
+import org.wlld.imageRecognition.segmentation.*;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveCenter.Normalization;
 import org.wlld.nerveEntity.SensoryNerve;
+import org.wlld.param.Food;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.IdCreator;
 
@@ -25,17 +23,18 @@ public class Operation {//进行计算
     private MatrixBack matrixBack = new MatrixBack();
     private ImageBack imageBack = new ImageBack();
     private OutBack outBack;
-    private int dif;
+
+    public TempleConfig getTempleConfig() {
+        return templeConfig;
+    }
 
     public Operation(TempleConfig templeConfig) {
         this.templeConfig = templeConfig;
-        dif = templeConfig.getFood().getShrink();
     }
 
     public Operation(TempleConfig templeConfig, OutBack outBack) {
         this.templeConfig = templeConfig;
         this.outBack = outBack;
-        dif = templeConfig.getFood().getShrink();
     }
 
     public List<Double> convolution(Matrix matrix, Map<Integer, Double> tagging) throws Exception {
@@ -63,7 +62,6 @@ public class Operation {//进行计算
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();
         Matrix matrixB = threeChannelMatrix.getMatrixB();
-        //Matrix matrixRGB = threeChannelMatrix.getMatrixRGB();
         Random random = new Random();
         int x = matrixR.getX();
         int y = matrixR.getY();
@@ -77,70 +75,48 @@ public class Operation {//进行计算
             rgbRegression.insertRGB(rgb);
         }
         rgbRegression.regression();
-//        double[] rgb = new double[]{164 / 255, 189 / 255, 193 / 255};
-//        double dis = rgbRegression.getDisError(rgb);
-//        System.out.println("dis==" + dis);
         templeConfig.getFood().getTrayBody().add(rgbRegression);
     }
 
-    private void cutPic(ThreeChannelMatrix threeChannelMatrix, int x, int y, int xSize, int ySize) {
-        Matrix matrixR = threeChannelMatrix.getMatrixR();
-        Matrix matrixG = threeChannelMatrix.getMatrixG();
-        Matrix matrixB = threeChannelMatrix.getMatrixB();
-        threeChannelMatrix.setMatrixR(matrixR.getSonOfMatrix(x, y, xSize, ySize));
-        threeChannelMatrix.setMatrixG(matrixG.getSonOfMatrix(x, y, xSize, ySize));
-        threeChannelMatrix.setMatrixB(matrixB.getSonOfMatrix(x, y, xSize, ySize));
+    public void finishColorStudy() throws Exception {//进行最后学习
+        DimensionMappingStudy dimensionAll = new DimensionMappingStudy(templeConfig);
+        dimensionAll.start();//生成映射层，并将已经保存的knn特征进行映射
+        templeConfig.getFood().setDimensionMappingStudy(dimensionAll);
     }
 
-    public RegionBody colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList) throws Exception {
+    public RegionBody colorStudy(ThreeChannelMatrix threeChannelMatrix, int tag, List<Specifications> specificationsList
+            , String url, boolean isFood) throws Exception {
         Watershed watershed = new Watershed(threeChannelMatrix, specificationsList, templeConfig);
         List<RegionBody> regionBodies = watershed.rainfall();
-        if (regionBodies.size() == 1) {
-            RegionBody regionBody = regionBodies.get(0);
-            int minX = regionBody.getMinX() + dif;
-            int minY = regionBody.getMinY() + dif;
-            int maxX = regionBody.getMaxX() - dif;
-            int maxY = regionBody.getMaxY() - dif;
+        RegionBody regionBodyMax = null;
+        double max = 0;
+        for (RegionBody regionBody : regionBodies) {
+            int minX = regionBody.getMinX();
+            int minY = regionBody.getMinY();
+            int maxX = regionBody.getMaxX();
+            int maxY = regionBody.getMaxY();
+            int s = (maxX - minX) * (maxY - minY);
+            if (s > max) {
+                max = s;
+                regionBodyMax = regionBody;
+            }
+        }
+        if (max > 0) {
+            //直接选择面积最大的区域
+            int minX = regionBodyMax.getMinX();
+            int minY = regionBodyMax.getMinY();
+            int maxX = regionBodyMax.getMaxX();
+            int maxY = regionBodyMax.getMaxY();
             int xSize = maxX - minX;
             int ySize = maxY - minY;
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-            int times = templeConfig.getFood().getTimes();
-            for (int i = 0; i < times; i++) {
-//                List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
-//                        templeConfig.getFeatureNub(), templeConfig);
-                List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(),
-                        templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub());
-                if (templeConfig.isShowLog()) {
-                    System.out.println(tag + ":" + feature);
-                }
-                int classifier = templeConfig.getClassifier();
-                switch (classifier) {
-                    case Classifier.DNN:
-                        Map<Integer, Double> map = new HashMap<>();
-                        map.put(tag, 1.0);
-                        if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub() * 3) {
-                            intoDnnNetwork(1, feature, templeConfig.getSensoryNerves(), true, map, null);
-                        } else {
-                            throw new Exception("nerves number is not equal featureNub");
-                        }
-                        break;
-                    case Classifier.LVQ:
-                        Matrix vector = MatrixOperation.listToRowVector(feature);
-                        lvqStudy(tag, vector);
-                        break;
-                    case Classifier.VAvg:
-                        Matrix vec = MatrixOperation.listToRowVector(feature);
-                        avgStudy(tag, vec);
-                        break;
-                    case Classifier.KNN:
-                        Matrix veck = MatrixOperation.listToRowVector(feature);
-                        knnStudy(tag, veck);
-                        break;
-                }
-            }
-            return regionBody;
+            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig, templeConfig.getFeatureNub(), true, tag
+                    , isFood);
+            Matrix veck = MatrixOperation.listToRowVector(feature);//将特征转化为矩阵
+            knnStudy(tag, veck);
+            return regionBodyMax;
         } else {
-            throw new Exception("Parameter exception region size==" + regionBodies.size());
+            throw new Exception("Parameter exception region size 0 url:" + url);
         }
     }
 
@@ -166,48 +142,41 @@ public class Operation {//进行计算
         Watershed watershed = new Watershed(threeChannelMatrix, specificationsList, templeConfig);
         List<RegionBody> regionList = watershed.rainfall();
         for (RegionBody regionBody : regionList) {
-            MaxPoint maxPoint = new MaxPoint();
-            int minX = regionBody.getMinX() + dif;
-            int minY = regionBody.getMinY() + dif;
-            int maxX = regionBody.getMaxX() - dif;
-            int maxY = regionBody.getMaxY() - dif;
+            int minX = regionBody.getMinX();
+            int minY = regionBody.getMinY();
+            int maxX = regionBody.getMaxX();
+            int maxY = regionBody.getMaxY();
             int xSize = maxX - minX;
             int ySize = maxY - minY;
             ThreeChannelMatrix threeChannelMatrix1 = convolution.getRegionMatrix(threeChannelMatrix, minX, minY, xSize, ySize);
-//            List<Double> feature = convolution.getCenterColor(threeChannelMatrix1, templeConfig.getPoolSize(),
-//                    templeConfig.getFeatureNub(), templeConfig);
-            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig.getFood().getRegionSize(),
-                    templeConfig.getPoolSize(), templeConfig, templeConfig.getFeatureNub());
-            if (templeConfig.isShowLog()) {
-                System.out.println(feature);
-            }
-            int classifier = templeConfig.getClassifier();
-            int id = 0;
-            switch (classifier) {
-                case Classifier.LVQ:
-                    Matrix myMatrix = MatrixOperation.listToRowVector(feature);
-                    id = getIdByLVQ(myMatrix);
-                    break;
-                case Classifier.DNN:
-                    if (templeConfig.getSensoryNerves().size() == templeConfig.getFeatureNub() * 3) {
-                        intoDnnNetwork(IdCreator.get().nextId(), feature, templeConfig.getSensoryNerves(), false, null, maxPoint);
-                        id = maxPoint.getId();
-                    } else {
-                        throw new Exception("nerves number is not equal featureNub");
+            List<Double> feature = convolution.getCenterTexture(threeChannelMatrix1, templeConfig, templeConfig.getFeatureNub(), false, 0,
+                    false);
+            int id;
+            Food food = templeConfig.getFood();
+            int[] foodTypes = food.getFoodType();
+            Matrix myMatrix = MatrixOperation.listToRowVector(feature);
+            DimensionMappingStudy deepMapping = templeConfig.getFood().getDimensionMappingStudy();
+            id = deepMapping.getType(myMatrix);
+            //判断该类别是否属于干食
+            boolean isFood = false;
+            if (foodTypes != null) {
+                for (int myType : foodTypes) {
+                    if (id == myType) {
+                        isFood = true;
+                        break;
                     }
-                    break;
-                case Classifier.VAvg:
-                    Matrix myMatrix1 = MatrixOperation.listToRowVector(feature);
-                    id = getIdByVag(myMatrix1);
-                    break;
-                case Classifier.KNN:
-                    Matrix myMatrix2 = MatrixOperation.listToRowVector(feature);
-                    Knn knn = templeConfig.getKnn();
-                    id = knn.getType(myMatrix2);
-                    break;
+                }
+            }
+            if (isFood) {//判断类别，获取积分
+                Map<Integer, GMClustering> foods = food.getFoodMeanMap();
+                Map<Integer, GMClustering> test = new HashMap<>();
+                test.put(1, foods.get(1));
+                test.put(id, foods.get(id));
+                CutFood cutFood = new CutFood(templeConfig, test);
+                regionBody.setTypeNub(cutFood.getTypeNub(threeChannelMatrix1, id));
             }
             regionBody.setType(id);
-            //System.out.println("类别" + id);
+            System.out.println("类别" + id);
         }
         return regionList;
     }

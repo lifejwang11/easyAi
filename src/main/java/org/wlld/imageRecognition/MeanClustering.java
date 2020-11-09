@@ -1,24 +1,21 @@
 package org.wlld.imageRecognition;
 
-import org.wlld.imageRecognition.segmentation.RgbRegression;
 
 import java.util.*;
 
 //K均值聚类
 public class MeanClustering {
-    private List<double[]> matrixList = new ArrayList<>();//聚类集合
+    protected List<double[]> matrixList = new ArrayList<>();//聚类集合
     private int length;//向量长度(模型需要返回)
-    private int speciesQuantity;//种类数量(模型需要返回)
-    private List<RGBNorm> matrices = new ArrayList<>();//均值K模型(模型需要返回)
-    private int size = 10000;
+    protected int speciesQuantity;//种类数量(模型需要返回)
+    protected List<RGBNorm> matrices = new ArrayList<>();//均值K模型(模型需要返回)
 
     public List<RGBNorm> getMatrices() {
         return matrices;
     }
 
-    public MeanClustering(int speciesQuantity, TempleConfig templeConfig) {
+    public MeanClustering(int speciesQuantity) throws Exception {
         this.speciesQuantity = speciesQuantity;//聚类的数量
-        size = templeConfig.getFood().getRegressionNub();
     }
 
     public void setColor(double[] color) throws Exception {
@@ -73,21 +70,19 @@ public class MeanClustering {
         }
     }
 
-    private void startRegression() throws Exception {//开始聚类回归
-        Random random = new Random();
-        for (RGBNorm rgbNorm : matrices) {
-            RgbRegression rgbRegression = new RgbRegression(size);
-            List<double[]> list = rgbNorm.getRgbs();
-            for (int i = 0; i < size; i++) {
-                double[] rgb = list.get(random.nextInt(list.size()));
-                rgb[0] = rgb[0] / 255;
-                rgb[1] = rgb[1] / 255;
-                rgb[2] = rgb[2] / 255;
-                rgbRegression.insertRGB(rgb);
+    private double[] getListAvg(List<double[]> list) {
+        int len = list.get(0).length;
+        double[] sigma = new double[len];
+        for (double[] rgb : list) {
+            for (int i = 0; i < len; i++) {
+                sigma[i] = sigma[i] + rgb[i];
             }
-            rgbRegression.regression();
-            rgbNorm.setRgbRegression(rgbRegression);
         }
+        int size = list.size();
+        for (int i = 0; i < len; i++) {
+            sigma[i] = sigma[i] / size;
+        }
+        return sigma;
     }
 
     public void start() throws Exception {//开始聚类
@@ -102,16 +97,17 @@ public class MeanClustering {
             }
             //进行两者的比较
             boolean isNext;
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < 50; i++) {
                 averageMatrix();
                 isNext = isNext();
-                if (isNext && i < 29) {
+                if (isNext && i < 49) {
                     clear();
                 } else {
                     break;
                 }
             }
-            // startRegression();//开始进行回归
+            RGBSort rgbSort = new RGBSort();
+            Collections.sort(matrices, rgbSort);
         } else {
             throw new Exception("matrixList number less than 2");
         }

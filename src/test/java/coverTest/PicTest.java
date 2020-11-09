@@ -36,8 +36,8 @@ public class PicTest {
 
         //testImage(right, wrong, a, b);
         //test();
-    }
 
+    }
 
     public static void test() throws Exception {//对图像进行识别测试
         Picture picture = new Picture();

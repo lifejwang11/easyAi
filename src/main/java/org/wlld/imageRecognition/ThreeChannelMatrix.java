@@ -8,6 +8,24 @@ public class ThreeChannelMatrix {
     Matrix matrixB;
     Matrix H;
     Matrix matrixRGB;
+    int similarId;//最大相似id
+    boolean isLine = false;//是否被连接
+
+    public int getSimilarId() {
+        return similarId;
+    }
+
+    public boolean isLine() {
+        return isLine;
+    }
+
+    public void setLine(boolean line) {
+        isLine = line;
+    }
+
+    public void setSimilarId(int similarId) {
+        this.similarId = similarId;
+    }
 
     public Matrix getMatrixRGB() {
         return matrixRGB;

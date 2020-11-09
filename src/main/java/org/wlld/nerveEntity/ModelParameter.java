@@ -26,6 +26,15 @@ public class ModelParameter {
     private List<BodyList> knnVector;//Knn模型
     private Frame frame;//先验边框
     private double dnnAvg;//
+    private Map<Integer, Double> foodS;//干食品类别对应的积分 需激活注入
+
+    public Map<Integer, Double> getFoodS() {
+        return foodS;
+    }
+
+    public void setFoodS(Map<Integer, Double> foodS) {
+        this.foodS = foodS;
+    }
 
     public List<BodyList> getKnnVector() {
         return knnVector;

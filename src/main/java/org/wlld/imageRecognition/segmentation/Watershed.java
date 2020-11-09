@@ -39,6 +39,7 @@ public class Watershed {
     private List<Specifications> specifications;//过滤候选区参数
     private List<RgbRegression> trayBody;//托盘参数
     private double trayTh;
+    private double brightnessTh;//亮度阈值
 
     public Watershed(ThreeChannelMatrix matrix, List<Specifications> specifications, TempleConfig templeConfig) throws Exception {
         if (matrix != null && specifications != null && specifications.size() > 0) {
@@ -50,6 +51,7 @@ public class Watershed {
             matrixR = matrix.getMatrixR();
             matrixG = matrix.getMatrixG();
             matrixB = matrix.getMatrixB();
+            brightnessTh = templeConfig.getCutting().getMaxRain();
             this.specifications = specifications;
             this.trayBody = templeConfig.getFood().getTrayBody();
             if (templeConfig.getEdge() > 0) {
@@ -75,13 +77,15 @@ public class Watershed {
 
     private boolean isTray(int x, int y) throws Exception {
         boolean isTray = false;
-        double[] rgb = new double[]{matrixR.getNumber(x, y) / 255, matrixG.getNumber(x, y) / 255,
-                matrixB.getNumber(x, y) / 255};
-        for (RgbRegression rgbRegression : trayBody) {
-            double dist = rgbRegression.getDisError(rgb);
-            if (dist < trayTh) {
-                isTray = true;
-                break;
+        if (trayBody.size() > 0) {
+            double[] rgb = new double[]{matrixR.getNumber(x, y) / 255, matrixG.getNumber(x, y) / 255,
+                    matrixB.getNumber(x, y) / 255};
+            for (RgbRegression rgbRegression : trayBody) {
+                double dist = rgbRegression.getDisError(rgb);
+                if (dist < trayTh) {
+                    isTray = true;
+                    break;
+                }
             }
         }
         return isTray;
@@ -277,14 +281,16 @@ public class Watershed {
                 regionBodies.add(regionBody);
             }
         }
-        for (RegionBody regionBody : regionBodies) {
+        regionBodies = iou(regionBodies);
+        for (int i = 0; i < regionBodies.size(); i++) {
+            RegionBody regionBody = regionBodies.get(i);
             int minX = regionBody.getMinX();
             int maxX = regionBody.getMaxX();
             int minY = regionBody.getMinY();
             int maxY = regionBody.getMaxY();
-            System.out.println("minX==" + minX + ",minY==" + minY + ",maxX==" + maxX + ",maxY==" + maxY);
+            System.out.println("minX==" + minX + ",maxX==" + maxX + ",minY==" + minY + ",maxY==" + maxY);
         }
-        return iou(regionBodies);
+        return regionBodies;
     }
 
     private List<RegionBody> iou(List<RegionBody> regionBodies) {
@@ -354,10 +360,12 @@ public class Watershed {
             int width = maxY - minY;
             int height = maxX - minX;
             boolean isCenter = true;
-            if (edgeSize > 0) {
-                double h = this.height / edgeSize;
-                double w = this.width / edgeSize;
-                isCenter = maxX > h && maxY > w && maxX < (h * (edgeSize - 1)) && maxY < (w * (edgeSize - 1));
+            if (edgeSize > 0) {//边缘过滤
+                double top = this.height / edgeSize;//上边缘界限
+                double left = this.width / edgeSize;//左边缘界限
+                double bottom = this.height - top;//下边缘界限
+                double right = this.width - left;//右边缘界限
+                isCenter = minX > top && minY > left && minX < bottom && minY < right;
             }
             if (width >= specification.getMinWidth() && height >= specification.getMinHeight()
                     && width <= specification.getMaxWidth() && height <= specification.getMaxHeight()
@@ -490,7 +498,7 @@ public class Watershed {
         int minIdx = 0;
         for (int i = 0; i < array.length; i++) {
             double nub = array[i];
-            if (nub > -1 && nub < mySelf) {
+            if (nub > -1 && nub < mySelf && nub < brightnessTh) {
                 minIdx = minIdx | (1 << i);
             }
         }

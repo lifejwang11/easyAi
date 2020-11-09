@@ -12,13 +12,13 @@ import java.util.*;
  * @date 10:14 上午 2020/2/4
  */
 public class KClustering {
-    private List<Box> matrixList = new ArrayList<>();//聚类集合
-    private int length;//向量长度(模型需要返回)
-    private int speciesQuantity;//种类数量(模型需要返回)
-    private Matrix[] matrices;//均值K模型(模型需要返回)
-    private Map<Integer, List<Box>> clusterMap = new HashMap<>();//簇
-    private Map<Integer, Box> positionMap = new HashMap<>();//聚类K均值结果(需要返回)
-    private boolean isReady = false;
+    protected List<Box> matrixList = new ArrayList<>();//聚类集合
+    protected int length;//向量长度(模型需要返回)
+    protected int speciesQuantity;//种类数量(模型需要返回)
+    protected Matrix[] matrices;//均值K模型(模型需要返回)
+    protected Map<Integer, List<Box>> clusterMap = new HashMap<>();//簇
+    protected Map<Integer, Box> positionMap = new HashMap<>();//聚类K均值结果(需要返回)
+    protected boolean isReady = false;
 
     public void setLength(int length) {
         this.length = length;

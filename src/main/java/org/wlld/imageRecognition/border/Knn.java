@@ -14,6 +14,10 @@ public class Knn {//KNN分类器
         this.nub = nub;
     }
 
+    public void setFeatureMap(Map<Integer, List<Matrix>> featureMap) {
+        this.featureMap = featureMap;
+    }
+
     public Map<Integer, List<Matrix>> getFeatureMap() {
         return featureMap;
     }
@@ -96,12 +100,12 @@ public class Knn {//KNN分类器
             int type = entry.getKey();
             List<Matrix> matrices = entry.getValue();
             for (Matrix matrix : matrices) {
-                double dist = MatrixOperation.errorNub(vector, matrix, 0);
-                // double dist = MatrixOperation.getEDist(matrix, vector);
+                //double dist = MatrixOperation.errorNub(vector, matrix);
+                double dist = MatrixOperation.getEDist(matrix, vector);
                 compare(dists, types, dist, type);
             }
         }
-        //System.out.println(Arrays.toString(types));
+        System.out.println(Arrays.toString(types));
         Map<Integer, Integer> map = new HashMap<>();
         for (int i = 0; i < nub; i++) {
             int type = types[i];
