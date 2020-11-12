@@ -15,6 +15,6 @@ public class Tanh implements ActiveFunction {
 
     @Override
     public double functionG(double out) {
-        return 1 - Math.pow(function(out), 2);//ArithUtil.sub(1, Math.pow(function(out), 2));
+        return 1 - Math.pow(out, 2);//ArithUtil.sub(1, Math.pow(function(out), 2));
     }
 }

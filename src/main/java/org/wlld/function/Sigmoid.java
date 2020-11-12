@@ -4,11 +4,12 @@ import org.wlld.i.ActiveFunction;
 import org.wlld.tools.ArithUtil;
 
 /**
- * @author lidapeng
- * @description sigmod函数
- * @date 8:54 上午 2020/1/11
+ * @param
+ * @DATA
+ * @Author LiDaPeng
+ * @Description
  */
-public class Sigmod implements ActiveFunction {
+public class Sigmoid implements ActiveFunction {
     @Override
     public double function(double x) {
         return ArithUtil.div(1, ArithUtil.add(1, Math.exp(-x)));
