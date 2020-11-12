@@ -7,9 +7,7 @@ import org.wlld.imageRecognition.border.Border;
 import org.wlld.imageRecognition.border.Frame;
 import org.wlld.imageRecognition.border.FrameBody;
 import org.wlld.imageRecognition.border.GMClustering;
-import org.wlld.imageRecognition.segmentation.ColorFunction;
 import org.wlld.param.Food;
-import org.wlld.pso.PSO;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.Frequency;
 

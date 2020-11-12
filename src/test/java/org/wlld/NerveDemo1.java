@@ -2,7 +2,6 @@ package org.wlld;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.RZ;
-import org.wlld.function.Sigmod;
 import org.wlld.function.Tanh;
 import org.wlld.i.OutBack;
 import org.wlld.nerveCenter.NerveManager;
