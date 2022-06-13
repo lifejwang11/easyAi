@@ -10,7 +10,6 @@ import java.util.List;
  */
 public class DymNerveStudy {
     private List<Double> list = new ArrayList<>();
-    private double threshold;//此神经元的阈值需要取出
 
     public List<Double> getList() {
         return list;
@@ -18,13 +17,5 @@ public class DymNerveStudy {
 
     public void setList(List<Double> list) {
         this.list = list;
-    }
-
-    public double getThreshold() {
-        return threshold;
-    }
-
-    public void setThreshold(double threshold) {
-        this.threshold = threshold;
     }
 }

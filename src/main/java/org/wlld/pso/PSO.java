@@ -82,30 +82,6 @@ public class PSO {
         // draw("/Users/lidapeng/Desktop/test/testOne/e2.jpg", fatherX, fatherY);
     }
 
-    //绘图测试
-    private void draw(String path, int fatherX, int fatherY) throws Exception {
-        File file = new File(path);
-        FileInputStream fileInputStream = new FileInputStream(file);
-        BufferedImage image2 = ImageIO.read(fileInputStream);
-        int width = image2.getWidth();
-        int height = image2.getHeight();
-        BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = (Graphics2D) bi.getGraphics();
-        g2.setColor(Color.CYAN);
-        g2.drawImage(image2, 0, 0, width, height, null);
-        int size = allPar.size();
-        for (int j = 0; j < size; j++) {//输出
-            Particle particle = allPar.get(j);
-            double[] parameter = particle.getParameter();
-            int x = (int) (fatherX + parameter[0]);
-            int y = (int) (fatherY + parameter[1]);
-            Rectangle2D rect = new Rectangle2D.Double(y, x, 1, 1);//声明并创建矩形对象，矩形的左上角是(20，30)，宽是300，高是40
-            g2.draw(rect);
-        }
-        String savePath = "/Users/lidapeng/Desktop/test/testTwo/d.jpg";
-        ImageIO.write(bi, "JPEG", new FileOutputStream(savePath));
-    }
-
     private void move(Particle particle, int id) throws Exception {//粒子群开始移动
         double[] parameter = particle.getParameter();//当前粒子的位置
         BestData[] bestData = particle.bestDataArray;//该粒子的信息

@@ -1,7 +1,5 @@
 package org.wlld.MatrixTools;
 
-import org.wlld.tools.ArithUtil;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,6 +63,27 @@ public class Matrix {
                 isRowVector = false;
             }
         }
+    }
+
+    /**
+     * 计算全矩阵元素平均值
+     *
+     * @return 返回当前矩阵全部元素的平均值
+     */
+    public double getAVG() {
+        double sigma = 0;
+        int s = x * y;
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                sigma = sigma + matrix[i][j];
+            }
+        }
+        sigma = sigma / s;
+        return sigma;
+    }
+
+    public double[][] getMatrix() {
+        return matrix;
     }
 
     /**
@@ -218,7 +237,7 @@ public class Matrix {
 
     private double mulFather(Coordinate coordinate, double element, List<Coordinate> div) {
         div.add(coordinate);
-        element = ArithUtil.mul(matrix[coordinate.x][coordinate.y], element);
+        element = matrix[coordinate.x][coordinate.y] * element;
         if (coordinate.father != null) {
             element = mulFather(coordinate.father, element, div);
         } else {//道路尽头
@@ -318,6 +337,7 @@ public class Matrix {
                 }
             }
         } catch (Exception e) {
+            System.out.println("xr:" + xr + ",yr:" + yr);
             e.printStackTrace();
         }
         return myMatrix;
@@ -423,10 +443,10 @@ public class Matrix {
      * @throws Exception 超出矩阵范围抛出
      */
     public double getNumber(int x, int y) throws Exception {//从矩阵中拿值
-        if (this.x >= x && this.y >= y) {
+        if (this.x > x && this.y > y && x >= 0 && y >= 0) {
             return matrix[x][y];
         } else {
-            //System.out.println("x==" + x + ",y==" + y);
+            System.out.println("x==" + x + ",y==" + y + ",maxX:" + this.x + ",maxY:" + this.y);
             throw new Exception("matrix length too little");
         }
     }

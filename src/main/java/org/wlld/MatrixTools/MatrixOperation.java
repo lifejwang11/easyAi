@@ -1,9 +1,7 @@
 package org.wlld.MatrixTools;
 
-import org.wlld.tools.ArithUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MatrixOperation {
@@ -18,7 +16,7 @@ public class MatrixOperation {
             int y = matrix1.getY();
             for (int i = 0; i < x; i++) {//遍历行
                 for (int j = 0; j < y; j++) {//遍历列
-                    matrix.setNub(i, j, ArithUtil.add(matrix1.getNumber(i, j), matrix2.getNumber(i, j)));
+                    matrix.setNub(i, j, matrix1.getNumber(i, j) + matrix2.getNumber(i, j));
                 }
             }
             return matrix;
@@ -35,7 +33,7 @@ public class MatrixOperation {
             int y = matrix1.getY();
             for (int i = 0; i < x; i++) {//遍历行
                 for (int j = 0; j < y; j++) {//遍历列
-                    matrix.setNub(i, j, ArithUtil.sub(matrix1.getNumber(i, j), matrix2.getNumber(i, j)));
+                    matrix.setNub(i, j, matrix1.getNumber(i, j) - matrix2.getNumber(i, j));
                 }
             }
             return matrix;
@@ -274,8 +272,8 @@ public class MatrixOperation {
 
     public static double getNormCos(Matrix matrix1, Matrix matrix2) throws Exception {//求两个向量之间的余弦
         double inner = innerProduct(matrix1, matrix2);
-        double mulNorm = ArithUtil.mul(getNorm(matrix1), getNorm(matrix2));
-        return ArithUtil.div(inner, mulNorm);
+        double mulNorm = getNorm(matrix1) * getNorm(matrix2);
+        return inner / mulNorm;
     }
 
     public static Matrix transPosition(Matrix matrix) throws Exception {//矩阵转置
@@ -290,29 +288,20 @@ public class MatrixOperation {
         return myMatrix;
     }
 
-    public static double convolution(Matrix matrix, Matrix kernel, int x, int y, boolean isAccurate) throws Exception {//计算卷积
+    public static double convolution(Matrix matrix, Matrix kernel, int x, int y) throws Exception {//计算卷积
         double allNub = 0;
         int xr = 0;
         int yr = 0;
         int kxMax = kernel.getX();
         int kyMax = kernel.getY();
-        if (isAccurate) {
-            for (int i = 0; i < kxMax; i++) {
-                xr = i + x;
-                for (int j = 0; j < kyMax; j++) {
-                    yr = j + y;
-                    allNub = ArithUtil.add(ArithUtil.mul(matrix.getNumber(xr, yr), kernel.getNumber(i, j)), allNub);
-                }
-            }
-        } else {
-            for (int i = 0; i < kxMax; i++) {
-                xr = i + x;
-                for (int j = 0; j < kyMax; j++) {
-                    yr = j + y;
-                    allNub = matrix.getNumber(xr, yr) * kernel.getNumber(i, j) + allNub;
-                }
+        for (int i = 0; i < kxMax; i++) {
+            xr = i + x;
+            for (int j = 0; j < kyMax; j++) {
+                yr = j + y;
+                allNub = matrix.getNumber(xr, yr) * kernel.getNumber(i, j) + allNub;
             }
         }
+
         return allNub;
     }
 
@@ -345,7 +334,7 @@ public class MatrixOperation {
     public static Matrix getInverseMatrixs(Matrix matrix) throws Exception {//矩阵求逆
         double def = matrix.getDet();
         if (def != 0) {
-            def = ArithUtil.div(1, def);
+            def = 1 / def;
             Matrix myMatrix = adjointMatrix(matrix);//伴随矩阵
             mathMul(myMatrix, def);
             return myMatrix;
@@ -393,7 +382,7 @@ public class MatrixOperation {
             }
             double dm = myMatrix.getDet();
             if ((ij % 2) != 0) {//ij是奇数
-                dm = ArithUtil.mul(-1, dm);
+                dm = -dm;
             }
             return dm;
         } else {
@@ -466,11 +455,15 @@ public class MatrixOperation {
         }
     }
 
-    //行向量转LIST
-    public static List<Double> rowVectorToList(Matrix matrix) throws Exception {
+    //矩阵转LIST
+    public static List<Double> matrixToList(Matrix matrix) throws Exception {
         List<Double> list = new ArrayList<>();
-        for (int j = 0; j < matrix.getY(); j++) {
-            list.add(matrix.getNumber(0, j));
+        int x = matrix.getX();
+        int y = matrix.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                list.add(matrix.getNumber(i, j));
+            }
         }
         return list;
     }
@@ -495,5 +488,48 @@ public class MatrixOperation {
             matrix.setNub(0, i, n);
         }
         return matrix;
+    }
+
+    private static void inputVector(Matrix matrix, Matrix feature, int index, int kenLen) throws Exception {
+        int y = matrix.getY();
+        for (int i = 0; i < y - 1; i++) {
+            matrix.setNub(index, i, feature.getNumber(i / kenLen, i % kenLen));
+        }
+        // matrix.setNub(index, y - 1, 1);
+    }
+
+    public static Matrix im2col(Matrix matrix, int kernLen, int step) throws Exception {//卷积拉平
+        int ySize = kernLen * kernLen;
+        int x = matrix.getX();
+        int y = matrix.getY();
+        int xSize = ((x - (kernLen - step)) / step) * ((y - (kernLen - step)) / step);
+        Matrix myMatrix = new Matrix(xSize, ySize);
+        int index = 0;
+        for (int i = 0; i <= x - kernLen; i += step) {
+            for (int j = 0; j <= y - kernLen; j += step) {
+                inputVector(myMatrix, matrix.getSonOfMatrix(i, j, kernLen, kernLen), index, kernLen);
+                index++;
+            }
+        }
+        return myMatrix;
+    }
+
+    public static Matrix reverseIm2col(Matrix matrix, int kernLen, int step, int xSize, int ySize) throws Exception {//逆向im2col
+        int col = matrix.getY();//核长
+        int row = matrix.getX();
+        int sub = kernLen - step;
+        int y = (ySize - sub) / step;//线性变换后矩阵的列数,一行该有几列
+        Matrix myMatrix = new Matrix(xSize, ySize);
+        for (int i = 0; i < row; i++) {//某一行全部的值,首先要看这一行的值应该在逆运算的第几行
+            int xz = (i / y) * step;//左上角行数
+            int yz = (i % y) * step;//左上角列数
+            for (int j = 0; j < col; j++) {
+                int xr = j / kernLen + xz;
+                int yr = j % kernLen + yz;
+                double value = myMatrix.getNumber(xr, yr) + matrix.getNumber(i, j);
+                myMatrix.setNub(xr, yr, value);
+            }
+        }
+        return myMatrix;
     }
 }
