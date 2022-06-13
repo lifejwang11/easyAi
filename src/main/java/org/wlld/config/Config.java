@@ -7,8 +7,8 @@ package org.wlld.config;
  * @Description
  */
 public class Config {
-    private int boxSize = 253;//检测物体大致大小(像素)
-    private double pth = 0.4;//概率阈值
+    private int boxSize = 125;//检测物体大致大小(像素)
+    private double pth = 0.7;//概率阈值
     private boolean isShowLog = false;//是否要打印学习输出
     private int typeNub = 2;//类别数量
     private int pictureNumber = 5;//训练图片数量
