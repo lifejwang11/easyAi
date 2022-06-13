@@ -4,7 +4,6 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.naturalLanguage.Talk;
 import org.wlld.naturalLanguage.TemplateReader;
-import org.wlld.naturalLanguage.WordModel;
 import org.wlld.naturalLanguage.WordTemple;
 import org.wlld.randomForest.DataTable;
 import org.wlld.randomForest.RandomForest;

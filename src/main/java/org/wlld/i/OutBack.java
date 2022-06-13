@@ -15,5 +15,5 @@ public interface OutBack {
      * @param eventId 事件ID
      */
     void getBack(double out, int id, long eventId);
-    void getBackMatrix(Matrix matrix,long eventId);
+    void getBackMatrix(Matrix matrix, long eventId);
 }

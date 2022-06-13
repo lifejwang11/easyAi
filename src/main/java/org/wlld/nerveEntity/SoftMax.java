@@ -2,7 +2,6 @@ package org.wlld.nerveEntity;
 
 import org.wlld.config.RZ;
 import org.wlld.i.OutBack;
-import org.wlld.tools.ArithUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -12,8 +11,8 @@ public class SoftMax extends Nerve {
     private boolean isShowLog;
 
     public SoftMax(int id, int upNub, boolean isDynamic, OutNerve outNerve, boolean isShowLog) throws Exception {
-        super(id, upNub, "softMax", 0, 0, false, null, isDynamic,
-                false, RZ.NOT_RZ, 0);
+        super(id, upNub, "softMax", 0, 0, false, null, isDynamic
+                , RZ.NOT_RZ, 0, 0, 0);
         this.outNerve = outNerve;
         this.isShowLog = isShowLog;
     }

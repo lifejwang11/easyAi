@@ -3,9 +3,16 @@ package org.wlld.function;
 
 import org.wlld.i.ActiveFunction;
 
-public class Tanh implements ActiveFunction {
+/**
+ * @param
+ * @DATA
+ * @Author LiDaPeng
+ * @Description
+ */
+public class TanHX implements ActiveFunction {
     @Override
     public double function(double x) {
+        x = x * 0.038;
         double x1 = Math.exp(x);
         double x2 = Math.exp(-x);
         double son = x1 - x2;// ArithUtil.sub(x1, x2);
