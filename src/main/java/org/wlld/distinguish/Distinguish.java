@@ -125,7 +125,7 @@ public class Distinguish {
             for (int i = 0; i <= x - boxSize; i += boxSize) {
                 for (int j = 0; j <= y - boxSize; j += boxSize) {
                     ThreeChannelMatrix t = threeChannelMatrix.cutChannel(i, j, boxSize, boxSize);
-                    RegionBack regionBack = lookEnd(threeChannelMatrix);
+                    RegionBack regionBack = lookEnd(t);
                     double point = regionBack.getPoint();//概率
                     int id = regionBack.getId();//类别
                     if (id != 1 && point > pTh) {
