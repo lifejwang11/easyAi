@@ -13,8 +13,7 @@
 * 因为是框架没有图像化界面，演示结果就是控制台输出的数据，只能用视频展示，想看演示结果请看教学视频
 ## 控制台输出演示
 * 演示都是输出结果，详情请看具体视频教程，上有链接，这里就是展示一下控制台输出截图。
-* 单物体识别效果：[点击查看](./src/test/image/end1.png)
-* 多物体识别效果：[点击查看](./src/test/image/end2.png)
+* 识别测试训练素材：[点击查看](./src/test/image/a1.jpg)
 * 中文语言分类效果：[点击查看](./src/test/image/end3.png)
 ### 目前拥有的功能是
 * 对单张图片单物体进行识别
@@ -41,61 +40,88 @@
 * 功能还在扩展：
 本包现在的功能还在逐步扩展中
 * 抛错捕获暂时还没有做全，若有抛错请进群交流：561433236，我来做一下错误定位
+* 若您有相对复杂的人工智能业务（开源功能无法满足的，包括但不限于图像识别，自然语言）请联系作者 vx:thenk008 进行基于easyAi定制化业务情景开发（即java人工智能开发）
 ## HELLO WORLD说明：
 * 以下为最简API文档，所有非必设参数都使用本引擎默认值
 * 要注意的是使用最简API，及参数默认值准确度远不能达到最佳状态
 ### 图像学习部分最简API 说明:
 ``` java
- //创建图片解析类
- Picture picture = new Picture();
- //创建一个静态单例配置模板
- static TempleConfig templeConfig = new TempleConfig();
- //第三个参数和第四个参数分别是训练图片的宽和高，为保证训练的稳定性请保证训练图片大小的一致性
- templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 2);
- //将配置模板类作为构造塞入计算类
- Operation operation = new Operation(templeConfig);
- //一阶段 循环读取不同的图片
- for (int i = 1; i < 1900; i++) {
- //读取本地URL地址图片,并转化成矩阵
- Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
- Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
- //矩阵塞入运算类进行学习，第一个参数是图片矩阵，第二个参数是图片分类标注ID，第三个参数是第一次学习固定false
- operation.learning(a, 1, false);
- operation.learning(c, 2, false);
- }
- for (int i = 1; i < 1900; i++) {
- //读取本地URL地址图片,并转化成矩阵
- Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
- Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
- //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
- //第二次学习的时候，第三个参数必须是 true
- operation.learning(a, 1, true);
- operation.learning(c, 2, true);
- }
- templeConfig.finishStudy();//结束学习
- //获取学习结束的模型参数,并将model保存数据库
- ModelParameter modelParameter = templeConfig.getModel();
- String model = JSON.toJSONString(modelParameter);
-```
-### 单物体图像识别部分最简API 说明：
-``` java
-   //读取一张图片，并将其转化为矩阵
-   Matrix a = picture.getImageMatrixByLocal(fileURL);
-   //返回此图片的分类ID
-   int an = operation.toSee(a);
-```
-### 物体图像识别服务启动初始化API 说明:
-``` java
- //创建一个静态单例配置模板类
- static TempleConfig templeConfig = new TempleConfig();
- //初始化配置模板
- templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 2);
- //将配置模板类作为构造塞入计算类
- Operation operation = new Operation(templeConfig);
- //从数据库中读取学习的模型结果，反序列为ModelParameter       
- ModelParameter modelParameter = JSON.parseObject(ModelData.DATA2, ModelParameter.class);
- //将模型数据注入配置模板类   
- templeConfig.insertModel(modelParameter);
+       训练过程
+       Picture picture = new Picture();//图片解析类
+        Config config = new Config();//配置文件
+        config.setTypeNub(2);//设置训练种类数
+        config.setBoxSize(125);//设置物体大致大小 单位像素 即 125*125 的矩形
+        config.setPictureNumber(5);//设置每个种类训练图片数量 某个类别有几张照片，注意所有种类照片数量要保持一致
+        config.setPth(0.7);//设置可信概率，只有超过可信概率阈值，得出的结果才是可信的 数值为0-1之间
+        config.setShowLog(true);//输出学习时打印数据
+        Distinguish distinguish = new Distinguish(config);//创建识别类
+        distinguish.setBackGround(picture.getThreeMatrix("E:\\ls\\fp15\\back.jpg"));//设置识别的背景图片(该api为固定背景)
+        List<FoodPicture> foodPictures = new ArrayList<>();//创建训练模板集合
+        for (int i = 1; i < 3; i++) {
+            FoodPicture foodPicture = new FoodPicture();//创建每一类图片的训练模板类
+            foodPictures.add(foodPicture);//将该类模板加入集合
+            List<PicturePosition> picturePositionList = new ArrayList<>();//创建该类模板的训练集合类
+            foodPicture.setId(i + 1);//设置该图片类别id
+            foodPicture.setPicturePositionList(picturePositionList);
+            for (int j = 1; j < 6; j++) {//训练图片数量为 每种五张 注意跟config 中的 pictureNumber 要一致
+                String name;
+                if (i == 1) {//加载图片url地址名称
+                    name = "a";
+                } else {
+                    name = "b";
+                }
+                PicturePosition picturePosition = new PicturePosition();
+                picturePosition.setUrl("E:\\ls\\fp15\\" + name + i + ".jpg");//加载该类别图片地址
+                picturePosition.setNeedCut(false);//是否需要剪切，若训练素材为充满全图图片，则充满全图不需要剪切 写false
+                picturePositionList.add(picturePosition);//加载
+            }
+        }
+        distinguish.studyImage(foodPictures);//进行学习
+        System.out.println(JSON.toJSONString(distinguish.getModel()));//输出模型保存,将模型实体类序列化为json保存
+       ///////////////////////////////////////////////////////////////////////
+       初始化过程
+        Picture picture = new Picture();//图片解析类
+        Config config = new Config();//配置文件
+        config.setTypeNub(2);//设置类别数量
+        config.setBoxSize(125);//设置物体大小 单位像素
+        config.setPictureNumber(5);//设置每个种类训练图片数量
+        config.setPth(0.7);//设置可信概率，只有超过可信概率阈值，得出的结果才是可信的
+        config.setShowLog(true);//输出学习时打印数据
+        Distinguish distinguish = new Distinguish(config);//识别类
+        distinguish.insertModel(JSONObject.parseObject(ModelData.DATA, Model.class));//将之前训练时保存的训练模型反序列化为实体类后，注入模型
+        完成后请单例Distinguish类，即完成系统启动时初始化过程
+        ///////////////////////////////////////////////////////////////////////
+        识别过程
+        Distinguish distinguish; 此识别类为系统启动时已经初始化的 单例distinguish，识别过程请不要 "new" 这个类
+         for (int i = 1; i < 8; i++) {
+            System.out.println("i====" + i);
+            ThreeChannelMatrix t = picture.getThreeMatrix("E:\\ls\\fp15\\t" + i + ".jpg");//将识别图片转化为矩阵
+            Map<Integer, Double> map = distinguish.distinguish(t);//识别结果
+            for (Map.Entry<Integer, Double> entry : map.entrySet()) {
+                System.out.println(entry.getKey() + ":" + entry.getValue());//识别结果打印
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////////////
+        识别结果打印说明(此为本包提供的测试图片样本的 输出结果说明，在之前的训练中橘子设置的id为2，苹果为3)
+        i====1//第一张图 结果为 橘子，出现2：代表类别。:0.8874306751020916，带表该类别权重，权重越高说明该类别的物品在当前 图片中数量越多或者面积越大。
+        2:0.8874306751020916 说明（图1有橘子，权重为：0.8874306751020916）
+        i====2
+        2:0.8878192183606407
+        i====3
+        3:0.7233916245920673说明（图3有苹果，权重为：0.7233916245920673）
+        i====4
+        2:0.9335699571468958说明（图4有橘子，权重为：0.9335699571468958）
+        3:0.7750825597199661说明（图4有苹果，权重为：0.7750825597199661）
+        i====5
+        3:0.8481590575557582
+        i====6
+        2:0.7971025523095067
+        i====7
+        2:1.5584968376080388（图7有橘子，权重为：1.5584968376080388）
+        3:0.8754957897385587（图7有苹果，权重为：0.8754957897385587）
+        本演示样例代码位置在： src/test/java/org/wlld/ImageTest.java
+        本演示训练素材位置在： src/test/image
+        注意：以上图片识别代码样例为训练素材为物品全图充满图片(自己看能看到橘子训练图片为全图充满，苹果也是).自行开发时用以上代码样例时，请也使用全图充满训练物品的图片来做训练，非全图充满训练素材图训练api有变化！
 ```
 ### 自然语言分类最简API 说明:
 ``` java
