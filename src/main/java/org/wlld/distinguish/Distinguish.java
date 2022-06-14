@@ -105,9 +105,13 @@ public class Distinguish {
                 index++;
                 int id = foodPicture.getId();
                 if (id != 1) {
-                    mapping.put(id, index);
+                    if (!mapping.containsKey(id)) {
+                        mapping.put(id, index);
+                    } else {
+                        throw new Exception("ID repeat");
+                    }
                 } else {
-                    throw new Exception("ID can not be 1");
+                    throw new Exception("Rules for this function:ID can not be 1");
                 }
             }
         } else {
