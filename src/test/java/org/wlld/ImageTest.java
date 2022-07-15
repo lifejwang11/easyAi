@@ -17,8 +17,8 @@ import java.util.Map;
 
 public class ImageTest {
     public static void main(String[] args) throws Exception {
-        //dish();
-        study();
+        dish();
+        //study();
     }
 
     public static void dish() throws Exception {//识别
@@ -27,7 +27,7 @@ public class ImageTest {
         config.setTypeNub(2);//设置类别数量
         config.setBoxSize(125);//设置物体大小 单位像素
         config.setPictureNumber(5);//设置每个种类训练图片数量
-        config.setPth(0.7);//设置可信概率，只有超过可信概率阈值，得出的结果才是可信的
+        config.setPth(0.55);//设置可信概率，只有超过可信概率阈值，得出的结果才是可信的
         config.setShowLog(true);//输出学习时打印数据
         Distinguish distinguish = new Distinguish(config);
         distinguish.insertModel(JSONObject.parseObject(ModelData.DATA, Model.class));
@@ -49,7 +49,7 @@ public class ImageTest {
         config.setTypeNub(2);//设置类别数量
         config.setBoxSize(125);//设置物体大小 单位像素 125*125 矩形
         config.setPictureNumber(5);//设置每个种类训练图片数量
-        config.setPth(0.7);//设置可信概率，只有超过可信概率阈值，得出的结果才是可信的0-1
+        config.setPth(0.55);//设置可信概率，只有超过可信概率阈值，得出的结果才是可信的0-1
         config.setShowLog(true);//输出学习时打印数据
         Distinguish distinguish = new Distinguish(config);//识别类
         distinguish.setBackGround(picture.getThreeMatrix("E:\\ls\\fp15\\back.jpg"));//塞入背景图片

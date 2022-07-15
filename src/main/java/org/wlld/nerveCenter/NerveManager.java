@@ -45,7 +45,21 @@ public class NerveManager {
     public void setMatrixMap(Map<Integer, Matrix> matrixMap) {
         this.matrixMap = matrixMap;
     }
+    private Map<String, Double> conversion(Map<Integer, Double> map) {
+        Map<String, Double> cMap = new HashMap<>();
+        for (Map.Entry<Integer, Double> entry : map.entrySet()) {
+            cMap.put(String.valueOf(entry.getKey()), entry.getValue());
+        }
+        return cMap;
+    }
 
+    private Map<Integer, Double> unConversion(Map<String, Double> map) {
+        Map<Integer, Double> cMap = new HashMap<>();
+        for (Map.Entry<String, Double> entry : map.entrySet()) {
+            cMap.put(Integer.parseInt(entry.getKey()), entry.getValue());
+        }
+        return cMap;
+    }
     private ModelParameter getDymModelParameter() throws Exception {//获取动态神经元参数
         ModelParameter modelParameter = new ModelParameter();
         List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
@@ -96,7 +110,7 @@ public class NerveManager {
                 NerveStudy nerveStudy = new NerveStudy();
                 Nerve hiddenNerve = depthNerve.get(j);
                 nerveStudy.setThreshold(hiddenNerve.getThreshold());
-                nerveStudy.setDendrites(hiddenNerve.getDendrites());
+                nerveStudy.setDendrites(conversion(hiddenNerve.getDendrites()));
                 deepNerve.add(nerveStudy);
             }
             studyDepthNerves.add(deepNerve);
@@ -105,7 +119,7 @@ public class NerveManager {
             NerveStudy nerveStudy = new NerveStudy();
             Nerve outNerve = outNerves.get(i);
             nerveStudy.setThreshold(outNerve.getThreshold());
-            nerveStudy.setDendrites(outNerve.getDendrites());
+            nerveStudy.setDendrites(conversion(outNerve.getDendrites()));
             outStudyNerves.add(nerveStudy);
         }
         modelParameter.setDepthNerves(studyDepthNerves);
@@ -156,7 +170,7 @@ public class NerveManager {
                 Nerve nerve = depthNerve.get(j);
                 NerveStudy nerveStudy = depth.get(j);
                 //学习结果
-                Map<Integer, Double> studyDendrites = nerveStudy.getDendrites();
+                Map<Integer, Double> studyDendrites = unConversion(nerveStudy.getDendrites());
                 //神经元参数注入
                 Map<Integer, Double> dendrites = nerve.getDendrites();
                 nerve.setThreshold(nerveStudy.getThreshold());//注入隐层阈值
@@ -172,7 +186,7 @@ public class NerveManager {
             NerveStudy nerveStudy = outStudyNerves.get(i);
             outNerve.setThreshold(nerveStudy.getThreshold());
             Map<Integer, Double> dendrites = outNerve.getDendrites();
-            Map<Integer, Double> studyDendrites = nerveStudy.getDendrites();
+            Map<Integer, Double> studyDendrites =unConversion(nerveStudy.getDendrites());
             for (Map.Entry<Integer, Double> outEntry : dendrites.entrySet()) {
                 int key = outEntry.getKey();
                 dendrites.put(key, studyDendrites.get(key));
