@@ -5,7 +5,9 @@ import org.wlld.randomForest.RandomForest;
 import org.wlld.tools.ArithUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lidapeng
@@ -86,7 +88,10 @@ public class Talk {
                             List<String> words = wordTimes.get(i);
                             nub = getNub(words, keyWords.get(i));
                             if (nub == 0) {//出现了不认识的词
+                                System.out.println("不认识的词：" + keyWords.get(i));
                                 wrong++;
+                            } else {
+                                System.out.println("认识的词:" + keyWords.get(i));
                             }
                         }
                         features.add(nub);
@@ -115,14 +120,54 @@ public class Talk {
         }
     }
 
+    private int getDifferentPoint(String word1, String word2) {
+        String maxWord;
+        String minWord;
+        if (word1.length() >= word2.length()) {
+            maxWord = word1;
+            minWord = word2;
+        } else {
+            maxWord = word2;
+            minWord = word1;
+        }
+        int times = maxWord.length() - minWord.length();
+        boolean isRight = false;
+        for (int i = 0; i <= times; i++) {
+            String testWord = maxWord.substring(i, i + minWord.length());
+            if (testWord.hashCode() == minWord.hashCode() && testWord.equals(minWord)) {
+                isRight = true;
+                break;
+            }
+        }
+        if (isRight) {
+            return times;
+        } else {
+            return -1;
+        }
+    }
+
     private int getNub(List<String> words, String testWord) {
         int nub = 0;
         int size = words.size();
+        boolean isHere = false;//是否查询到了
         for (int i = 0; i < size; i++) {
             String word = words.get(i);
             if (testWord.hashCode() == word.hashCode() && testWord.equals(word)) {
+                isHere = true;
                 nub = i + 1;
                 break;
+            }
+        }
+        if (!isHere) {//进行模糊查询
+            int minTimes = -1;
+            for (int i = 0; i < size; i++) {
+                int times = getDifferentPoint(words.get(i), testWord);
+                if (times > 0) {
+                    if (minTimes < 0 || times < minTimes) {
+                        minTimes = times;
+                        nub = i + 1;
+                    }
+                }
             }
         }
         return nub;
