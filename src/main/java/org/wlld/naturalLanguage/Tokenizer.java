@@ -1,5 +1,6 @@
 package org.wlld.naturalLanguage;
 
+import org.wlld.entity.WordOfShop;
 import org.wlld.randomForest.DataTable;
 import org.wlld.randomForest.RandomForest;
 import org.wlld.tools.ArithUtil;
@@ -18,6 +19,11 @@ public class Tokenizer extends Frequency {
     private List<List<String>> wordTimes;//所有词编号
     private Word nowWord;//上一次出现的关键字
     private WordTemple wordTemple;
+    private List<WordOfShop> wordOfShopList = new ArrayList<>();
+
+    public List<WordOfShop> getWordOfShopList() {
+        return wordOfShopList;
+    }
 
     public Tokenizer(WordTemple wordTemple) {
         this.wordTemple = wordTemple;
@@ -48,6 +54,30 @@ public class Tokenizer extends Frequency {
             number();
             //进入随机森林进行学习
             study();
+        } else {//只进行分词
+            Map<String, WordOfShop> wordOfShopMap = new HashMap<>();
+            int size = sentences.size();
+            for (int i = 0; i < size; i++) {
+                Sentence sentence = sentences.get(i);//一句话
+                List<String> keyWords = sentence.getKeyWords();//关键词
+                int key = sentence.getKey();//id
+                for (String keyWord : keyWords) {
+                    if (wordOfShopMap.containsKey(keyWord)) {//存在当前词
+                        WordOfShop wordOfShop = wordOfShopMap.get(keyWord);
+                        wordOfShop.getShops().add(key);
+                    } else {//不存在
+                        WordOfShop wordOfShop = new WordOfShop();
+                        int index = wordOfShopMap.size() + 1;
+                        wordOfShop.setWord(keyWord);
+                        wordOfShop.setId(index);
+                        wordOfShop.getShops().add(key);
+                        wordOfShopMap.put(keyWord, wordOfShop);
+                    }
+                }
+            }
+            for (Map.Entry<String, WordOfShop> entry : wordOfShopMap.entrySet()) {
+                wordOfShopList.add(entry.getValue());
+            }
         }
     }
 
