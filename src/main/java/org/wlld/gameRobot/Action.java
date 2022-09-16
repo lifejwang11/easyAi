@@ -7,7 +7,7 @@ public abstract class Action {//动作
         return actionId;
     }
 
-    protected void setActionId(int actionId) {//设置动作id
+    public void setActionId(int actionId) {//设置动作id
         this.actionId = actionId;
     }
 

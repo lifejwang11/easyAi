@@ -1,5 +1,7 @@
 package org.wlld.gameRobot;
 
+import org.wlld.MatrixTools.Matrix;
+
 import java.util.*;
 
 /**
@@ -11,8 +13,8 @@ public class DynamicProgramming {
     private List<DynamicState> dynamicStateList = new ArrayList<>();//状态集合
     private Map<Integer, Action> actionMap = new HashMap<>();//动作列表
     private List<Integer> bestStrategy = new ArrayList<>();//最佳策略
-    private double gaMa = 0.8;//贴现因子
-    private double valueTh = 0.2;//价值阈值
+    private double gaMa = 0.9;//贴现因子
+    private double valueTh = 0.0001;//价值阈值
     private int maxTimes = 500;//策略改进最大迭代次数
 
     public void setMaxTimes(int maxTimes) {
@@ -71,6 +73,31 @@ public class DynamicProgramming {
         }
     }
 
+    public Matrix getValueMatrix() throws Exception {//获取价值矩阵
+        int size = dynamicStateList.size();
+        int maxX = 0, maxY = 0;
+        for (int i = 0; i < size; i++) {
+            DynamicState dynamicState = dynamicStateList.get(i);
+            int[] stateId = dynamicState.getStateId();
+            int x = stateId[0];
+            int y = stateId[1];
+            if (x > maxX) {
+                maxX = x;
+            }
+            if (y > maxY) {
+                maxY = y;
+            }
+        }
+        Matrix matrix = new Matrix(maxY + 1, maxX + 1);
+        for (int i = 0; i < size; i++) {
+            DynamicState dynamicState = dynamicStateList.get(i);
+            int[] stateId = dynamicState.getStateId();
+            double value = dynamicState.getValue();
+            matrix.setNub(stateId[1], stateId[0], value);
+        }
+        return matrix;
+    }
+
     public List<ValueFunction> getValueFunction() {//获取价值函数
         List<ValueFunction> valueFunctions = new ArrayList<>();
         int size = dynamicStateList.size();
@@ -90,16 +117,20 @@ public class DynamicProgramming {
         if (state != null) {
             Map<Integer, List<DynamicState>> sonStatesMap = state.getSonStatesMap();
             double maxValue = 0;//最大价值
+            boolean isFirstOne = true;
             for (Map.Entry<Integer, List<DynamicState>> entry : sonStatesMap.entrySet()) {
                 List<DynamicState> sonStates = entry.getValue();//子状态
                 double maxValue2 = 0;//actionId 的最大价值
+                boolean isFirstTwo = true;
                 for (DynamicState dynamicState : sonStates) {
                     double myValue = dynamicState.getValue();
-                    if (myValue > maxValue2) {
+                    if (myValue > maxValue2 || isFirstTwo) {
+                        isFirstTwo = false;
                         maxValue2 = myValue;
                     }
                 }
-                if (maxValue2 > maxValue) {
+                if (maxValue2 > maxValue || isFirstOne) {
+                    isFirstOne = false;
                     maxValue = maxValue2;
                 }
             }
@@ -127,7 +158,8 @@ public class DynamicProgramming {
             for (int i = 0; i < size; i++) {
                 DynamicState dynamicState = dynamicStateList.get(i);
                 if (!dynamicState.isFinish()) {
-                    dynamicState.setBestActionId(getBestStrategyByPro(dynamicState));//通过概率获取的当前状态最佳策略
+                    int actionId = getBestStrategyByPro(dynamicState);
+                    dynamicState.setBestActionId(actionId);//通过概率获取的当前状态最佳策略
                 }
             }
             if (times > 0) {
@@ -192,11 +224,13 @@ public class DynamicProgramming {
     private int getBestStrategyByPro(DynamicState dynamicState) {//通过概率获取当前状态下的最佳策略
         Map<Integer, List<DynamicState>> sonStatesMap = dynamicState.getSonStatesMap();//动作-子状态集合
         double maxValue = 0;//最大价值
+        boolean isFirst = true;
         int bestActionId = 0;//最佳动作
         for (Map.Entry<Integer, List<DynamicState>> entry : sonStatesMap.entrySet()) {
             int actionId = entry.getKey();//动作id
             double value = getValueByAction(dynamicState, actionId);//该动作的价值
-            if (value > maxValue) {
+            if (value > maxValue || isFirst) {
+                isFirst = false;
                 maxValue = value;
                 bestActionId = actionId;
             }

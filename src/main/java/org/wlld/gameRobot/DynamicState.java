@@ -9,7 +9,7 @@ import java.util.*;
  */
 public class DynamicState {
     private int[] stateId;//状态id
-    private int bestActionId = 0;//该状态的最优动作
+    private int bestActionId = 1;//该状态的最优动作
     private double value = 0;//该状态价值
     private int number = 0;//该状态被执行了几次 被执行的时候需要修改
     private boolean isFinish = false;//是否是终结态
