@@ -53,9 +53,6 @@ public class Down extends Action {
                 }
             }
         }
-//        if (Arrays.equals(gameConfig.getPrizeList().get(gameConfig.getPrizeIndex()),stateId)) {
-//
-//        }
         return profit;
     }
 }
