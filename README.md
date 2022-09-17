@@ -141,6 +141,11 @@
         System.out.println(list);
         //这里做一个特别说明，语义分类的分类id不要使用"0",本框架约定如果类别返回数字0，则意味不能理解该语义，即分类失败
         //通常原因是模板量不足，或者用户说的话的语义，不在你的语义分类训练范围内
+        //单纯对输入语句进行切词结果返回，不进行识别
+        List<List<String>> lists = talk.getSplitWord("空调坏了，帮我修一修");
+        for (List<String> list : lists) {
+            System.out.println(list);
+        }
    ```
 ### 神经网络最简API说明
 ``` java
