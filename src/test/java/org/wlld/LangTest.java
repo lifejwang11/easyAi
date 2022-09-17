@@ -146,13 +146,14 @@ public class LangTest {
         //同时也是学习过程
         templateReader.read("/Users/lidapeng/Desktop/myDocument/model.txt", "UTF-8", wordTemple);
         Talk talk = new Talk(wordTemple);
-        //输入语句进行识别，若有标点符号会形成LIST中的每个元素
-        //返回的集合中每个值代表了输入语句，每个标点符号前语句的分类
+        //单纯对输入语句进行切词结果返回，不进行识别
         List<List<String>> lists = talk.getSplitWord("空调坏了，帮我修一修");
         for (List<String> list : lists) {
             System.out.println(list);
         }
-//        List<Integer> list = talk.talk("空调坏了，帮我修一修");
-//        System.out.println(list);
+        //输入语句进行识别，若有标点符号会形成LIST中的每个元素
+        //返回的集合中每个值代表了输入语句，每个标点符号前语句的分类
+        List<Integer> list = talk.talk("空调坏了，帮我修一修");
+        System.out.println(list);
     }
 }
