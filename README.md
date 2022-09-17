@@ -184,83 +184,6 @@
         //插入特征数据，森林对该数据的最终分类结果进行判断
         randomForest.forest(Object objcet);
 ```
-### 如何提升精准度
-*  将模板类设置为不忽略精度
-``` java
- TempleConfig templeConfig = new TempleConfig(false, true);
-```
->使用TempleConfig()有参构造，第一个参数目前依然固定传false(因为有功能还没完成)，第二个参数是一个布尔值是否忽略精度。  
-众所周知JAVA计算浮点是有精度损失的，如果选择true则使用大数计算类即无精度损失（默认为FALSE），但是这是以速度变慢十倍以上为代价的。  
-忽略精度和使用精度准确度上差距，平均在5-6个百分点之间，所以用户按照自己的需求来判断是否使用精度计算。
->>优点：准确度提升5-6个百分点，配合DNN分类器可达99%以上的准确率
->>>缺点：运算速度变慢十倍以上，从百毫秒变为一至两秒
-* 根据业务情景选择使用分类器
-``` java
- TempleConfig templeConfig = new TempleConfig(false, true);
- templeConfig.setClassifier(Classifier.DNN);
-```
->在TempleConfig类调用init()方法前选择使用的分类器setClassifier()
-``` java
-public class Classifier {//分类器
-    public static final int LVQ = 1;//LVQ分类
-    public static final int DNN = 2; //使用DNN分类
-    public static final int VAvg = 3;//使用特征向量均值分类
-}
-```
->目前easyAi提供三种分类器,即用户选择一种参数设置进配置模板类 
->> 这三种分类器的特点
->> 1. LVQ:若用户训练图片量较少，比如一个种类只有一两百张图片，则使用此分类器达到当前条件下最大识别成功率
->> 2. VAvg:若用户训练图片较少，同时分类数量也很少，比如只训练两三种物体识别，则VAvg达到当前最大识别成功率
->> 3. DNN:若用户训练图片较多，每种分类1500张训练图片，则使用此分类器，准确率98%+。
->> 4. 若不设置分类器，则框架默认使用VAvg分类器
->>>使用DNN的话，API略有区别
-``` java
- //创建图片解析类
- Picture picture = new Picture();
- //创建一个静态单例配置模板
- static TempleConfig templeConfig = new TempleConfig();
- //使用DNN分类器
- templeConfig.setClassifier(Classifier.DNN);
- //第三个参数和第四个参数分别是训练图片的宽和高，为保证训练的稳定性请保证训练图片大小的一致性
- templeConfig.init(StudyPattern.Accuracy_Pattern, true, 640, 640, 2);
- //将配置模板类作为构造塞入计算类
- Operation operation = new Operation(templeConfig);
- //一阶段 循环读取不同的图片
- for (int i = 1; i < 1900; i++) {
- //读取本地URL地址图片,并转化成矩阵
- Matrix a = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/a" + i + ".jpg");
- Matrix c = picture.getImageMatrixByLocal("/Users/lidapeng/Desktop/myDocment/picture/c" + i + ".jpg");
- //矩阵塞入运算类进行学习，第一个参数是图片矩阵，第二个参数是图片分类标注ID，第三个参数是第一次学习固定false
- operation.learning(a, 1, false);
- operation.learning(c, 2, false);
- }
- for (int i = 1; i < 1900; i++) {
- Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
- Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
- operation.normalization(a, templeConfig.getConvolutionNerveManager());
- operation.normalization(c, templeConfig.getConvolutionNerveManager());
- }
- templeConfig.getNormalization().avg();
- for (int i = 1; i < 1900; i++) {
- //读取本地URL地址图片,并转化成矩阵
- Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
- Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
- //将图像矩阵和标注加入进行学习，Accuracy_Pattern 模式 进行第二次学习
- //第二次学习的时候，第三个参数必须是 true
- operation.learning(a, 1, true);
- operation.learning(c, 2, true);
- }
-```
->大家可以看到如果使用DNN,在一阶段学习和二阶段学习之间多了一段代码即：
-``` java
-for (int i = 1; i < 1900; i++) {
- Matrix a = picture.getImageMatrixByLocal("D:\\share\\picture/a" + i + ".jpg");
- Matrix c = picture.getImageMatrixByLocal("D:\\share\\picture/c" + i + ".jpg");
- operation.normalization(a, templeConfig.getConvolutionNerveManager());
- operation.normalization(c, templeConfig.getConvolutionNerveManager());
- }
- templeConfig.getNormalization().avg();
-```
 * 增加DNN神经网络深度
 ``` java
 templeConfig.setDeep(int deep);
@@ -269,23 +192,6 @@ templeConfig.setDeep(int deep);
 >增加一层深度，训练图片的数量至少乘以3，否则准确度不仅不会增加，反而会下降
 >>优点：更深的深度准确率可以无限接近100%，我们只要训练量足够大，我们就可以更深，越深越无敌
 >>>缺点：增加深度意味着成几何倍数提升的训练量，同时也意味着过拟合的风险
-* 修改可调参数
-``` java
-        //选择分类器
-        templeConfig.setClassifier(Classifier.DNN);
-        //选择期望矩阵宽度
-        templeConfig.setMatrixWidth(5);
-        //选择正则化模式
-        templeConfig.setRzType(RZ.L2);
-        //选择DNN 深度
-        templeConfig.setDeep(1);
-        //设置学习率
-        templeConfig.setStudyPoint(0.05);
-        //设置DNN隐层宽度
-        templeConfig.setHiddenNerveNub(6);
-        //设置正则系数
-        templeConfig.setlParam(0.015);//0.015
-```
 ### 什么样的图片会严重影响准确率
 * 训练图片或者识别图片有，比较大片的遮盖，暗光，阴影，或者使图片模糊的情况，识别和训练都会有严重的干扰
 * 训练图片要求会比较高，要求若物体无背景则扣干净，有背景的话使用统一背景不要变动，不要一个训练一个物体有很多种背景

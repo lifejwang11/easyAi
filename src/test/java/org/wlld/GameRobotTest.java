@@ -6,7 +6,6 @@ import org.wlld.gameRobot.DynamicProgramming;
 import org.wlld.gameRobot.DynamicState;
 import org.wlld.myAction.*;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +15,9 @@ public class GameRobotTest {
     private static DynamicProgramming dynamicProgramming = new DynamicProgramming();
 
     //游戏机器人测试
-    //这是一个寻找宝藏的游戏，地图是一个6*6大小的格子地图，游戏里有四个宝藏，每次宝藏刷新的位置随机。
-    //一个小人从地图的随机一个位置出发，共走六步，如果能拿到四个宝藏中的指定宝藏就成功。如果六步没有拿到宝藏就失败，或者六步之内撞到地图边缘同样也是失败。
+    //这是一个寻找宝藏的游戏，地图是一个6*6大小的格子地图，游戏里有1个宝藏，三个炸弹，每次宝藏和炸弹刷新的位置随机。
+    //一个小人从地图的随机一个位置出发，共走六步，如果能拿到四个宝藏中的指定宝藏就成功。
+    // 如果五步没有拿到宝藏就失败，或者五步之内撞到地图边缘同样也是失败，如果碰到炸弹同样失败。
     public static void main(String[] args) throws Exception {
         GameConfig gameConfig = new GameConfig();
         init(gameConfig);
@@ -26,11 +26,8 @@ public class GameRobotTest {
         for (int i = 0; i < size; i++) {
             System.out.println("i==" + i + ",cood==" + Arrays.toString(prizeList.get(i)));
         }
-        long a = System.currentTimeMillis();
         dynamicProgramming.gameStart();//先跑数据
         dynamicProgramming.strategyStudy();//研究策略
-        long b = System.currentTimeMillis() - a;
-        System.out.println("策略研究耗时:" + b);
         Matrix matrix = dynamicProgramming.getValueMatrix();
         System.out.println(matrix.getString());
     }
