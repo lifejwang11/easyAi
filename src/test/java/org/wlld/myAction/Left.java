@@ -22,7 +22,7 @@ public class Left extends Action {//向左移动
         super.setActionId(actionId);
     }
 
-    @Override
+    @Override//动作 参数是 执行该动作的状态
     protected int[] action(int[] stateId) {//左移动作
         int x = stateId[0];//横坐标
         int y = stateId[1];//纵坐标
@@ -36,7 +36,7 @@ public class Left extends Action {//向左移动
         return new int[]{x, y};
     }
 
-    @Override
+    @Override//该动作带来的收益
     protected int getProfit(int[] stateId) {//左移后的惩罚或者奖励值设置
         int profit = 0;
         if (stateId[0] == 0) {//如果左移会撞墙，给惩罚-10
