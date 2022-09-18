@@ -23,7 +23,7 @@ public class Left extends Action {//向左移动
     }
 
     @Override//动作 参数是 执行该动作的状态
-    protected int[] action(int[] stateId) {//左移动作
+    public int[] action(int[] stateId) {//左移动作
         int x = stateId[0];//横坐标
         int y = stateId[1];//纵坐标
         //小人向左移动，如果小人自身就在左边缘则坐标原地不动（注意这里计算时为了方便学习策略逻辑用原地不动，游戏实际操作遇到这种移动则直接触发炸毁）

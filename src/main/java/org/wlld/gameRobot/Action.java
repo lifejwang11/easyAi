@@ -11,7 +11,7 @@ public abstract class Action {//动作
         this.actionId = actionId;
     }
 
-    protected int[] action(int[] stateId) {
+    public int[] action(int[] stateId) {
         return new int[0];
     }
 
