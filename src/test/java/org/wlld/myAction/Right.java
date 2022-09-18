@@ -22,7 +22,7 @@ public class Right extends Action {
     }
 
     @Override
-    protected int[] action(int[] stateId) {//右移
+    public int[] action(int[] stateId) {//右移
         int x = stateId[0];//横坐标
         int y = stateId[1];//纵坐标
         if (x < 5) {

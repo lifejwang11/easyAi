@@ -23,7 +23,7 @@ public class Down extends Action {
     }
 
     @Override
-    protected int[] action(int[] stateId) {
+    public int[] action(int[] stateId) {
         int x = stateId[0];//横坐标
         int y = stateId[1];//纵坐标
         if (y < 5) {

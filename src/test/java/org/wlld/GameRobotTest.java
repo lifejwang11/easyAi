@@ -36,6 +36,72 @@ public class GameRobotTest {
         //返回一个动作id集合
         Matrix matrix = dynamicProgramming.getValueMatrix();//返回一个二维状态主键可打印的价值函数
         System.out.println(matrix.getString());
+        start(gameConfig);//执行游戏
+    }
+
+    private static int isPrize(GameConfig gameConfig, int[] position) {//是否有奖品
+        Map<Integer, Action> actionMap = dynamicProgramming.getActionMap();
+        int[] prize = gameConfig.getPrizeList().get(gameConfig.getPrizeIndex());
+        int key = 0;
+        for (Map.Entry<Integer, Action> entry : actionMap.entrySet()) {
+            int actionId = entry.getKey();
+            Action action = entry.getValue();
+            if (Arrays.equals(action.action(position), prize)) {
+                key = actionId;
+                break;
+            }
+        }
+        return key;
+    }
+
+    private static boolean isBoom(int[] position, GameConfig gameConfig) {//是否踩雷或撞墙
+        List<int[]> prizeList = gameConfig.getPrizeList();
+        boolean isBoom = false;
+        //验证是否撞到炸弹
+        for (int i = 0; i < prizeList.size(); i++) {
+            if (i != 2 && Arrays.equals(position, prizeList.get(i))) {
+                isBoom = true;
+            }
+        }
+        //验证是否撞到墙
+        int x = position[0];
+        int y = position[1];
+        if ((!isBoom) && (x < 0 || y < 0 || x > 5 || y > 5)) {
+            isBoom = true;
+        }
+        return isBoom;
+    }
+
+    public static void start(GameConfig gameConfig) {
+        Random random = new Random();
+        int[] startPosition;
+        do {
+            startPosition = new int[]{random.nextInt(6), random.nextInt(6)};
+        } while (isFinish(gameConfig, startPosition));
+        int step = 12;//步数
+        int[] actionId = startPosition;
+        Map<Integer, Action> actionMap = dynamicProgramming.getActionMap();
+        for (int i = 0; i < step; i++) {
+            if (i == 0) {
+                System.out.println("我从" + Arrays.toString(actionId) + "出发了！");
+            }
+            //首先确认下一步有没有奖品
+            int key = isPrize(gameConfig, actionId);
+            if (key != 0) {//移动中奖了
+                int[] finish = actionMap.get(key).action(actionId);
+                System.out.println("我走到目的地:" + Arrays.toString(finish) + ",且总共走了" + (i + 1) + "步!");
+                break;
+            } else {//随机获取下一步行动
+                List<Integer> actionList = dynamicProgramming.getBestAction(actionId);//获取下一步行动
+                int size = actionList.size();
+                int nextActionId = actionList.get(random.nextInt(size));
+                actionId = actionMap.get(nextActionId).action(actionId);
+                System.out.println("第" + (i + 1) + "步,我走到了" + Arrays.toString(actionId));
+            }
+            if (isBoom(actionId, gameConfig)) {
+                System.out.println("撞墙或者踩到炸弹了！坐标:" + Arrays.toString(actionId));
+            }
+        }
     }
 
     public static void init(GameConfig gameConfig) {//初始化数据
