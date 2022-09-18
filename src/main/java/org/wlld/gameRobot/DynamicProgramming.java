@@ -139,7 +139,7 @@ public class DynamicProgramming {
                 int actionId = entry.getKey();//动作id
                 List<DynamicState> sonStates = entry.getValue();//子状态
                 for (DynamicState dynamicState : sonStates) {
-                    if (dynamicState.getValue() == maxValue || dynamicState.getValue() == 0) {
+                    if (dynamicState.getValue() == maxValue) {
                         actions.add(actionId);
                         break;
                     }
