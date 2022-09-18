@@ -59,7 +59,7 @@ public class GameRobotTest {
         boolean isBoom = false;
         //验证是否撞到炸弹
         for (int i = 0; i < prizeList.size(); i++) {
-            if (i != 2 && Arrays.equals(position, prizeList.get(i))) {
+            if (i != gameConfig.getPrizeIndex() && Arrays.equals(position, prizeList.get(i))) {
                 isBoom = true;
             }
         }
