@@ -33,6 +33,14 @@ public class Up extends Action {
     }
 
     @Override
+    public int[] actionTest(int[] stateId) {
+        int x = stateId[0];//横坐标
+        int y = stateId[1];//纵坐标
+        y = y - 1;
+        return new int[]{x, y};
+    }
+
+    @Override
     protected int getProfit(int[] stateId) {
         int profit = 0;
         if (stateId[1] == 0) {

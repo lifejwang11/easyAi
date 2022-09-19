@@ -15,6 +15,10 @@ public abstract class Action {//动作
         return new int[0];
     }
 
+    public int[] actionTest(int[] stateId) {
+        return new int[0];
+    }
+
     protected int getProfit(int[] stateId) {
         return 0;
     }
