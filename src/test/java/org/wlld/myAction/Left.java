@@ -23,7 +23,7 @@ public class Left extends Action {//向左移动
     }
 
     @Override//动作 参数是 执行该动作的状态
-    public int[] action(int[] stateId) {//左移动作
+    public int[] action(int[] stateId) {//左移动作 动作方法 用来逻辑运算动作的
         int x = stateId[0];//横坐标
         int y = stateId[1];//纵坐标
         //小人向左移动，如果小人自身就在左边缘则坐标原地不动（注意这里计算时为了方便学习策略逻辑用原地不动，游戏实际操作遇到这种移动则直接触发炸毁）
@@ -33,6 +33,14 @@ public class Left extends Action {//向左移动
         if (x > 0) {
             x = x - 1;//左移
         }
+        return new int[]{x, y};
+    }
+
+    @Override
+    public int[] actionTest(int[] stateId) {//动作测试方法，用来测试实际移动效果的
+        int x = stateId[0];//横坐标
+        int y = stateId[1];//纵坐标
+        x = x - 1;//左移
         return new int[]{x, y};
     }
 

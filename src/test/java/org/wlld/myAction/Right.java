@@ -32,6 +32,14 @@ public class Right extends Action {
     }
 
     @Override
+    public int[] actionTest(int[] stateId) {
+        int x = stateId[0];//横坐标
+        int y = stateId[1];//纵坐标
+        x = x + 1;//左移
+        return new int[]{x, y};
+    }
+
+    @Override
     protected int getProfit(int[] stateId) {
         int profit = 0;
         if (stateId[0] == 5) {//如果右移会撞墙，给惩罚-10
