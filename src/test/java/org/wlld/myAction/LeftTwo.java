@@ -26,8 +26,10 @@ public class LeftTwo extends Action {
     public int[] action(int[] stateId) {
         int x = stateId[0];//横坐标
         int y = stateId[1];//纵坐标
-        if (x > 0) {
-            x = x - 1;//左移
+        x = x - 1;//左移
+        if (x < 0) {
+            x = 6;
+            y = 6;
         }
         return new int[]{x, y};
     }
@@ -37,6 +39,10 @@ public class LeftTwo extends Action {
         int x = stateId[0];//横坐标
         int y = stateId[1];//纵坐标
         x = x - 1;//左移
+        if (x < 0) {
+            x = 6;
+            y = 6;
+        }
         return new int[]{x, y};
     }
 

@@ -11,6 +11,7 @@ public class Right extends Action {
     public Right(GameConfig gameConfig) {
         this.gameConfig = gameConfig;
     }
+
     @Override
     public int getActionId() {
         return super.getActionId();
@@ -25,8 +26,10 @@ public class Right extends Action {
     public int[] action(int[] stateId) {//右移
         int x = stateId[0];//横坐标
         int y = stateId[1];//纵坐标
-        if (x < 5) {
-            x = x + 1;//左移
+        x = x + 1;//左移
+        if (x > 5) {
+            x = 6;
+            y = 6;
         }
         return new int[]{x, y};
     }
@@ -36,6 +39,10 @@ public class Right extends Action {
         int x = stateId[0];//横坐标
         int y = stateId[1];//纵坐标
         x = x + 1;//左移
+        if (x > 5) {
+            x = 6;
+            y = 6;
+        }
         return new int[]{x, y};
     }
 
