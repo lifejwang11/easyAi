@@ -125,29 +125,21 @@
 ```
 ### 自然语言分类最简API 说明:
 ``` java
-        //创建模板读取类
+         //通过txt默认格式进行读取
         TemplateReader templateReader = new TemplateReader();
-        //读取语言模版，第一个参数是模版地址，第二个参数是文本编码方式
+        WordTemple wordTemple = new WordTemple();//初始化语言模版，该语言模板训练结束后一定要static出来,在内存中长期持有，Talk识别构造参数进行复用
+        //wordTemple.setTreeNub(9);
+        //wordTemple.setTrustPunishment(0.5);
+        //读取语言模版，第一个参数是模版地址，第二个参数是编码方式 (教程里的第三个参数已经省略)
         //同时也是学习过程
-        templateReader.read("/Users/lidapeng/Desktop/myDocment/a1.txt", "UTF-8");
-        //学习结束获取模型参数
-        //WordModel wordModel = WordTemple.get().getModel();
-        //不用学习注入模型参数
-        //WordTemple.get().insertModel(wordModel);
-        Talk talk = new Talk();
+        templateReader.read("/Users/lidapeng/Desktop/myDocument/model.txt", "UTF-8", wordTemple);
+        Talk talk = new Talk(wordTemple);
         //输入语句进行识别，若有标点符号会形成LIST中的每个元素
         //返回的集合中每个值代表了输入语句，每个标点符号前语句的分类
-        List<Integer> list = talk.talk("帮我配把锁");
+        List<Integer> list = talk.talk("空调坏了，帮我修一修");
         System.out.println(list);
-        //这里做一个特别说明，语义分类的分类id不要使用"0",本框架约定如果类别返回数字0，则意味不能理解该语义，即分类失败
-        //通常原因是模板量不足，或者用户说的话的语义，不在你的语义分类训练范围内
-        //单纯对输入语句进行切词结果返回，不进行识别
-        List<List<String>> lists = talk.getSplitWord("空调坏了，帮我修一修");
-        for (List<String> list : lists) {
-            System.out.println(list);
-        }
         /////////////////////////////////自定义输入训练语句
-        WordTemple wordTemple = new WordTemple();//初始化语言模版
+        WordTemple wordTemple = new WordTemple();//初始化语言模版，该语言模板训练结束后一定要static出来,在内存中长期持有，Talk识别构造参数进行复用
         Tokenizer tokenizer = new Tokenizer(wordTemple);//学习类
         //训练模板 主键为类别id,值为该类别id的语句集合
         //注意

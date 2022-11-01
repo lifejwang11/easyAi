@@ -137,7 +137,7 @@ public class LangTest {
     }
 
     public static void test2() throws Exception {//自定义输入训练语句
-        WordTemple wordTemple = new WordTemple();//初始化语言模版
+        WordTemple wordTemple = new WordTemple();//初始化语言模版，该语言模板训练结束后一定要static出来,在内存中长期持有，Talk识别构造参数进行复用
         Tokenizer tokenizer = new Tokenizer(wordTemple);//学习类
         //训练模板 主键为类别id,值为该类别id的语句集合
         //注意
@@ -151,7 +151,7 @@ public class LangTest {
     public static void test() throws Exception {
         //创建模板读取累
         TemplateReader templateReader = new TemplateReader();
-        WordTemple wordTemple = new WordTemple();//初始化语言模版
+        WordTemple wordTemple = new WordTemple();//初始化语言模版，该语言模板训练结束后一定要static出来,在内存中长期持有，Talk识别构造参数进行复用
         //wordTemple.setTreeNub(9);
         //wordTemple.setTrustPunishment(0.5);
         //wordTemple.setSplitWord(true);
