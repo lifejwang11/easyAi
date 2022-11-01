@@ -4,6 +4,7 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.naturalLanguage.Talk;
 import org.wlld.naturalLanguage.TemplateReader;
+import org.wlld.naturalLanguage.Tokenizer;
 import org.wlld.naturalLanguage.WordTemple;
 import org.wlld.randomForest.DataTable;
 import org.wlld.randomForest.RandomForest;
@@ -135,13 +136,25 @@ public class LangTest {
         return new Random().nextInt(3) + 1;
     }
 
+    public static void test2() throws Exception {//自定义输入训练语句
+        WordTemple wordTemple = new WordTemple();//初始化语言模版
+        Tokenizer tokenizer = new Tokenizer(wordTemple);//学习类
+        //训练模板 主键为类别id,值为该类别id的语句集合
+        //注意
+        //1，若训练量不足，建议训练语句通过标点符号拆分为若干句，且不要将标点符号带入训练语句
+        //2，包含数字的语句用统一的占位符代替 例如 35,3,36% 变为 #,#,#%
+        Map<Integer, List<String>> model = new HashMap<>();
+        //开始训练
+        tokenizer.start(model);
+    }
+
     public static void test() throws Exception {
         //创建模板读取累
         TemplateReader templateReader = new TemplateReader();
         WordTemple wordTemple = new WordTemple();//初始化语言模版
         //wordTemple.setTreeNub(9);
         //wordTemple.setTrustPunishment(0.5);
-        wordTemple.setSplitWord(true);
+        //wordTemple.setSplitWord(true);
         //读取语言模版，第一个参数是模版地址，第二个参数是编码方式 (教程里的第三个参数已经省略)
         //同时也是学习过程
         templateReader.read("/Users/lidapeng/Desktop/myDocument/model.txt", "UTF-8", wordTemple);

@@ -146,6 +146,22 @@
         for (List<String> list : lists) {
             System.out.println(list);
         }
+        /////////////////////////////////自定义输入训练语句
+        WordTemple wordTemple = new WordTemple();//初始化语言模版
+        Tokenizer tokenizer = new Tokenizer(wordTemple);//学习类
+        //训练模板 主键为类别id,值为该类别id的语句集合
+        //注意
+        //1，若训练量不足，建议训练语句通过标点符号拆分为若干句，且不要将标点符号带入训练语句
+        //2，包含数字的语句用统一的占位符代替 例如 35,3,36% 变为 #,#,#%
+        Map<Integer, List<String>> model = new HashMap<>();
+        //开始训练
+        tokenizer.start(model);
+        ///////////////////////////////////单纯对输入语句进行切词结果返回，不进行识别
+        wordTemple.setSplitWord(true);//将模板设置成纯切词模式
+        List<List<String>> lists = talk.getSplitWord("空调坏了，帮我修一修");
+        for (List<String> list : lists) {
+            System.out.println(list);
+        }
    ```
 ### 神经网络最简API说明
 ``` java
