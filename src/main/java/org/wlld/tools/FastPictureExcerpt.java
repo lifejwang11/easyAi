@@ -29,6 +29,17 @@ public class FastPictureExcerpt {//图片摘要id生成
             for (int j = 0; j <= y - ySize; j += ySize) {
                 Matrix sonH = hr.getSonOfMatrix(i, j, xSize, ySize);
                 String name = getName(sonH, iSize, vector, regionSize);
+                if (regionSize > 10 && regionSize <= 100) {
+                    if (name.length() == 1) {
+                        name = "0" + name;
+                    }
+                } else if (regionSize > 100 && regionSize <= 1000) {
+                    if (name.length() == 1) {
+                        name = "00" + name;
+                    } else if (name.length() == 2) {
+                        name = "0" + name;
+                    }
+                }
                 stringBuilder.append(name);
             }
         }
