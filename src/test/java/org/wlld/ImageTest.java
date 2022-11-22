@@ -10,7 +10,6 @@ import org.wlld.entity.PicturePosition;
 import org.wlld.entity.ThreeChannelMatrix;
 import org.wlld.tools.Picture;
 
-import javax.jws.WebParam;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

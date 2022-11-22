@@ -135,7 +135,8 @@
 //什么是id敏感度：
 //id敏感度越高，对图片变化越敏感，越适合越大的检索区域匹配，即特征越细致，但缺点id长度越长。
 //id敏感度越低，对图片变化越不敏感，越适合越小的检索区域匹配,特征越粗，优点是id长度越短。
-String name = creatImageName(threeChannelMatrix, 5, 10);
+FastPictureExcerpt fastPictureExcerpt = new FastPictureExcerpt();
+String name = fastPictureExcerpt.creatImageName(threeChannelMatrix, 5, 10);
 ```
 ### 自然语言分类最简API 说明:
 ``` java
