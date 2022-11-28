@@ -74,7 +74,7 @@ public class TemplateReader {//模板读取类
     public void word(WordTemple wordTemple) throws Exception {
         //将模版注入分词器进行分词
         Tokenizer tokenizer = new Tokenizer(wordTemple);
-        //tokenizer.start(model,null);
+        tokenizer.start(model);
     }
 
     public String LinkToString(LinkedList<Byte> mod) throws UnsupportedEncodingException {
