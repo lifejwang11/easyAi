@@ -21,6 +21,52 @@ public class WordTemple {
     private double trustTh = 0.1;//信任阈值,相当于一次信任惩罚的数值
     private int treeNub = 9;//丛林里面树的数量
     private boolean isSplitWord = false;//是否使用拆分词模式,默认是不使用
+    //生成语句的参数
+    private int wordVectorDimension = 25;//词向量嵌入维度
+    private double studyPoint = 0.01;//词向量学习学习率0.02
+    private double lParam = 0.002;//词向量正则系数0.04
+    private boolean showLog = false;//是否打印学习数据
+    private int maxWordNumber = 40;//语句最大字数
+
+    public int getMaxWordNumber() {
+        return maxWordNumber;
+    }
+
+    public void setMaxWordNumber(int maxWordNumber) {
+        this.maxWordNumber = maxWordNumber;
+    }
+
+    public int getWordVectorDimension() {
+        return wordVectorDimension;
+    }
+
+    public void setWordVectorDimension(int wordVectorDimension) {
+        this.wordVectorDimension = wordVectorDimension;
+    }
+
+    public double getStudyPoint() {
+        return studyPoint;
+    }
+
+    public void setStudyPoint(double studyPoint) {
+        this.studyPoint = studyPoint;
+    }
+
+    public double getlParam() {
+        return lParam;
+    }
+
+    public void setlParam(double lParam) {
+        this.lParam = lParam;
+    }
+
+    public boolean isShowLog() {
+        return showLog;
+    }
+
+    public void setShowLog(boolean showLog) {
+        this.showLog = showLog;
+    }
 
     public boolean isSplitWord() {
         return isSplitWord;
