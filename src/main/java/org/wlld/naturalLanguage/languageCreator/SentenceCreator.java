@@ -15,7 +15,6 @@ public class SentenceCreator {//语言生成器
     private List<String> wordList = new ArrayList<>();//模型
     private NerveManager nerveManager;//模型
     private int maxWordNumber;
-    private WordTemple wordTemple;
 
     public SentenceCreator(WordTemple wordTemple, CreatorSentenceModel creatorSentenceModel) throws Exception {
         List<String> modelList = creatorSentenceModel.getWordList();
@@ -27,12 +26,10 @@ public class SentenceCreator {//语言生成器
                 , 1, new Tanh(), false, wordTemple.getStudyPoint(), RZ.NOT_RZ, 0);
         nerveManager.init(true, false, wordTemple.isShowLog(), true, 0, 0);
         maxWordNumber = wordTemple.getMaxWordNumber();
-        this.wordTemple = wordTemple;
         nerveManager.insertModelParameter(creatorSentenceModel.getModelParameter());
     }
 
     public SentenceCreator(List<String> sentenceList, WordTemple wordTemple) throws Exception {
-        this.wordTemple = wordTemple;
         this.sentenceList = anySort(sentenceList);
         int size = this.sentenceList.size();
         maxWordNumber = wordTemple.getMaxWordNumber();
@@ -77,8 +74,7 @@ public class SentenceCreator {//语言生成器
         }
     }
 
-    public String fill(String sentence) throws Exception {
-        Talk talk = new Talk(wordTemple);
+    public String fill(String sentence, Talk talk) throws Exception {
         int splitSize = talk.getSplitWord(sentence).size();//切词数量
         boolean isFill = splitSize < 5 && sentence.length() < 15;
         String upWord = null;
