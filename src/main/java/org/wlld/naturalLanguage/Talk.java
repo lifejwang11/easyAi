@@ -37,18 +37,7 @@ public class Talk {
     }
 
     private List<Sentence> splitSentence(String sentence) {
-        String rgm = null;
-        if (sentence.indexOf(",") > -1) {
-            rgm = ",";
-        } else if (sentence.indexOf("，") > -1) {
-            rgm = "，";
-        }
-        String[] sens;
-        if (rgm != null) {
-            sens = sentence.split(rgm);
-        } else {
-            sens = new String[]{sentence};
-        }
+        String[] sens = sentence.split("，|。|？|！|；|、|：");
         //拆词
         List<Sentence> sentences = new ArrayList<>();
         for (int i = 0; i < sens.length; i++) {
