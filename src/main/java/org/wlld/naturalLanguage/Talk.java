@@ -37,7 +37,7 @@ public class Talk {
     }
 
     private List<Sentence> splitSentence(String sentence) {
-        String[] sens = sentence.split("，|。|？|！|；|、|：");
+        String[] sens = sentence.replace(" ", "").split("，|。|？|！|；|、|：");
         //拆词
         List<Sentence> sentences = new ArrayList<>();
         for (int i = 0; i < sens.length; i++) {
