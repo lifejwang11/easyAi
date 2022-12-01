@@ -23,10 +23,28 @@ public class WordTemple {
     private boolean isSplitWord = false;//是否使用拆分词模式,默认是不使用
     //生成语句的参数
     private int wordVectorDimension = 25;//词向量嵌入维度
-    private double studyPoint = 0.01;//词向量学习学习率0.02
+    private double studyPoint = 0.008;//词向量学习学习率0.02
     private double lParam = 0.002;//词向量正则系数0.04
     private boolean showLog = false;//是否打印学习数据
     private int maxWordNumber = 40;//语句最大字数
+    private int maxSplitSize = 3;//最大切词数
+    private int maxWordSize = 12;//最大字数
+
+    public int getMaxSplitSize() {
+        return maxSplitSize;
+    }
+
+    public void setMaxSplitSize(int maxSplitSize) {
+        this.maxSplitSize = maxSplitSize;
+    }
+
+    public int getMaxWordSize() {
+        return maxWordSize;
+    }
+
+    public void setMaxWordSize(int maxWordSize) {
+        this.maxWordSize = maxWordSize;
+    }
 
     public int getMaxWordNumber() {
         return maxWordNumber;

@@ -88,7 +88,7 @@ public class RandomForest {
         //一棵树属性的数量
         if (dataTable.getSize() > 4) {
             int kNub = (int) ArithUtil.div(Math.log(dataTable.getSize()), Math.log(2));
-            //int kNub = dataTable.getSize() - 1;
+            //int kNub = dataTable.getSize() / 2;
             // System.out.println("knNub==" + kNub);
             for (int i = 0; i < forest.length; i++) {
                 Tree tree = new Tree(getRandomData(dataTable, kNub), trustPunishment);

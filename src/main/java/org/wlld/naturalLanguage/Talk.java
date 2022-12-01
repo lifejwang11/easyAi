@@ -77,10 +77,10 @@ public class Talk {
                             List<String> words = wordTimes.get(i);
                             nub = getNub(words, keyWords.get(i));
                             if (nub == 0) {//出现了不认识的词
-                                System.out.println("不认识的词：" + keyWords.get(i));
+                               // System.out.println("不认识的词：" + keyWords.get(i));
                                 wrong++;
                             } else {
-                                System.out.println("认识的词:" + keyWords.get(i));
+                                //System.out.println("认识的词:" + keyWords.get(i));
                             }
                         }
                         features.add(nub);
