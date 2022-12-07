@@ -7,6 +7,7 @@ import org.wlld.naturalLanguage.Talk;
 import org.wlld.naturalLanguage.WordTemple;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.SensoryNerve;
+import org.wlld.tools.IdCreator;
 
 import java.util.*;
 
@@ -78,7 +79,7 @@ public class SentenceCreator {//语言生成器
         while (isFill) {
             CreatorWord creatorWord = new CreatorWord();
             double[] feature = getFeature(sentence);
-            studyDNN(feature, 0, creatorWord, false);
+            studyDNN(feature, 0, creatorWord, false, IdCreator.get().nextId());
             if (creatorWord.getId() < maxId) {
                 int id = creatorWord.getId() - 1;
                 String word = wordList.get(id);//终止条件1 字数 2，拆词
@@ -105,15 +106,16 @@ public class SentenceCreator {//语言生成器
 
     public void study() throws Exception {
         int index = 1;
+        int sentenceSize = sentenceList.size();
         for (String sentence : sentenceList) {
-            System.out.println("i===" + index);
-            studyDNN(getFeature(sentence), maxId, null, true);//终结态
+            System.out.println("i===" + index + ",allSize==" + sentenceSize);
+            studyDNN(getFeature(sentence), maxId, null, true, 1);//终结态
             for (int i = 0; i < sentence.length() - 1; i++) {
                 String response = sentence.substring(i, i + 1);//单字
                 String request = sentence.substring(i + 1);//后缀
                 int restIndex = getRestIndex(response);
                 double[] feature = getFeature(request);
-                studyDNN(feature, restIndex, null, true);
+                studyDNN(feature, restIndex, null, true, 1);
             }
             index++;
         }
@@ -145,14 +147,14 @@ public class SentenceCreator {//语言生成器
         return feature;
     }
 
-    private void studyDNN(double[] feature, int resIndex, OutBack outBack, boolean isStudy) throws Exception {
+    private void studyDNN(double[] feature, int resIndex, OutBack outBack, boolean isStudy, long eventID) throws Exception {
         List<SensoryNerve> sensoryNerves = nerveManager.getSensoryNerves();
         int size = sensoryNerves.size();
         Map<Integer, Double> map = new HashMap<>();
         map.put(resIndex + 1, 1D);
         for (int i = 0; i < size; i++) {
             double myFeature = feature[i];
-            sensoryNerves.get(i).postMessage(1, myFeature, isStudy, map, outBack);
+            sensoryNerves.get(i).postMessage(eventID, myFeature, isStudy, map, outBack);
         }
     }
 
