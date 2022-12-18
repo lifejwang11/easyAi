@@ -6,6 +6,7 @@ import org.wlld.gameRobot.DynamicProgramming;
 import org.wlld.gameRobot.DynamicState;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +35,171 @@ public class CatchKeyWord {//抓取关键词
         actionMap.put(2, wordLeft);
         dynamicProgramming.gameStart();//探索中奖
         dynamicProgramming.strategyStudy();//研究策略中奖
+    }
+
+    private WordsValue isContinuity(int start1, int end1, int start2, int end2) {
+        boolean isContinuity = false;
+        WordsValue wordsValue = null;
+        if (end1 + 1 == start2 || end2 + 1 == start1) {//相接
+            isContinuity = true;
+        } else if ((start2 >= start1 && start2 <= end1) || (end2 >= start1 && end2 <= end1) ||
+                (start1 >= start2 && start1 <= end2) || (end1 >= start2 && end1 <= end2)) {//相交
+            isContinuity = true;
+        }
+        if (isContinuity) {
+            wordsValue = new WordsValue();
+            wordsValue.isMerge = false;
+            if (start1 > start2) {
+                wordsValue.startIndex = start2;
+            } else {
+                wordsValue.startIndex = start1;
+            }
+            if (end1 > end2) {
+                wordsValue.endIndex = end1;
+            } else {
+                wordsValue.endIndex = end2;
+            }
+        }
+        return wordsValue;
+    }
+
+    private void mergeWord(List<WordsValue> myDyList) {//合并状态
+        for (int i = 0; i < myDyList.size(); i++) {
+            WordsValue dynamicState = myDyList.get(i);
+            if (!dynamicState.isMerge) {
+                for (int j = 0; j < myDyList.size(); j++) {
+                    if (j != i) {
+                        int startIndex = dynamicState.startIndex;//开始下标
+                        int endIndex = dynamicState.endIndex;//结束下标
+                        boolean isFinish = dynamicState.isFinish;
+                        double value = dynamicState.value;
+                        WordsValue dynamic = myDyList.get(j);
+                        int myStart = dynamic.startIndex;
+                        int myEnd = dynamic.endIndex;
+                        WordsValue wordsValue = isContinuity(startIndex, endIndex, myStart, myEnd);
+                        if (wordsValue != null) {//可进行合并
+                            dynamic.isMerge = true;
+                            if (isFinish || dynamic.isFinish) {
+                                wordsValue.isFinish = true;
+                            } else {
+                                wordsValue.isFinish = false;
+                            }
+                            if (dynamic.value > value) {
+                                wordsValue.value = dynamic.value;
+                            } else {
+                                wordsValue.value = value;
+                            }
+                            dynamicState = wordsValue;
+                        }
+                    }
+                }
+                myDyList.set(i, dynamicState);//替换合并后的结果
+            }
+        }
+        for (int i = 0; i < myDyList.size(); i++) {
+            if (myDyList.get(i).isMerge) {
+                myDyList.remove(i);
+                i--;
+            }
+        }
+    }
+
+    public void getKeyWord(String sentence) {//获取关键词
+        List<DynamicState> dynamicStateList = dynamicProgramming.getDynamicStateList();
+        int size = sentence.length();
+        List<DynamicState> myDyList = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            DynamicState maxDy = null;
+            for (int j = i; j < size; j++) {
+                String word = sentence.substring(i, j + 1);//对该词进行收益判定
+                DynamicState dynamicState = getDynamicState(word, dynamicStateList);
+                if (dynamicState != null) {
+                    if (maxDy == null) {
+                        maxDy = dynamicState;
+                    } else {//先查询是否为终结态，若终结态跳出
+                        if (dynamicState.isFinish()) {//当前为终结态
+                            maxDy = dynamicState;
+                            break;
+                        } else {//当前不是终结态
+                            if (maxDy.getValue() <= dynamicState.getValue()) {
+                                maxDy = dynamicState;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                } else {//延伸后不存在该词，跳出循环
+                    break;
+                }
+            }
+            //该字延伸最大价值的词
+            myDyList.add(maxDy);
+        }
+        List<WordsValue> wordsValues = new ArrayList<>();
+        for (DynamicState dynamicState : myDyList) {
+            WordsValue wordsValue = new WordsValue();
+            String word = keyWords.get(dynamicState.getStateId()[0] - 1);
+            int startIndex = sentence.indexOf(word);//开始下标
+            int endIndex = startIndex + word.length() - 1;//结束下标
+            wordsValue.isFinish = dynamicState.isFinish();
+            wordsValue.value = dynamicState.getValue();
+            wordsValue.startIndex = startIndex;
+            wordsValue.endIndex = endIndex;
+            wordsValue.isMerge = false;
+            wordsValues.add(wordsValue);
+        }
+        mergeWord(wordsValues);
+        //合并完成，连接空档
+        int[] sen = new int[sentence.length()];
+        Arrays.fill(sen, 1);
+        for (int i = 0; i < wordsValues.size(); i++) {
+            WordsValue wordsValue = wordsValues.get(i);
+            int startIndex = wordsValue.startIndex;
+            int endIndex = wordsValue.endIndex;
+            for (int j = startIndex; j <= endIndex; j++) {
+                sen[j] = 0;
+            }
+        }
+        WordsValue wordsValue = null;
+        List<WordsValue> wordsValueList = new ArrayList<>();
+        for (int i = 0; i < sen.length; i++) {
+            if (sen[i] == 1) {//存在名词
+                if (wordsValue == null) {
+                    wordsValue = new WordsValue();
+                    wordsValue.startIndex = i;
+                }
+                wordsValue.endIndex = i;
+            } else {//不存在名词
+                if (wordsValue != null) {
+                    wordsValueList.add(wordsValue);
+                    wordsValue = null;
+                }
+            }
+        }
+        //最后计算优先度，选取一个关键词
+
+    }
+
+    private DynamicState getDynamicState(String myWord, List<DynamicState> dynamicStateList) {
+        DynamicState myDy = null;
+        int size = keyWords.size();
+        int id = 0;
+        for (int i = 0; i < size; i++) {
+            String keyWord = keyWords.get(i);
+            if (keyWord.hashCode() == myWord.hashCode() && keyWord.equals(myWord)) {
+                id = i + 1;
+                break;
+            }
+        }
+        if (id > 0) {//存在
+            for (DynamicState dynamicState : dynamicStateList) {
+                if (dynamicState.getStateId()[0] == id) {
+                    myDy = dynamicState;
+                    break;
+                }
+            }
+        }
+        return myDy;
     }
 
     private void creatID(String sentence, int startIndex, int endIndex) {//创建状态
@@ -107,5 +273,13 @@ public class CatchKeyWord {//抓取关键词
             id = keyWords.size();
         }
         return id;
+    }
+
+    class WordsValue {
+        int startIndex;//起始下标
+        int endIndex;//末尾下标
+        double value;//该状态收益
+        boolean isFinish;//是否为终结态
+        boolean isMerge;//是否被合并过
     }
 }
