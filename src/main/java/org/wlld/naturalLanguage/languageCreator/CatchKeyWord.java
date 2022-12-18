@@ -11,13 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 public class CatchKeyWord {//抓取关键词
-    private List<KeyWordForSentence> keyWordForSentenceList;
-    private DynamicProgramming dynamicProgramming = new DynamicProgramming();
-    private List<String> keyWords = new ArrayList<>();
+    private DynamicProgramming dynamicProgramming = new DynamicProgramming();//保存它的状态集合
+    private List<String> keyWords = new ArrayList<>();//保存词列表
     private List<String> finishWords = new ArrayList<>();//终结态词集合
 
     public void study(List<KeyWordForSentence> keyWordForSentenceList) {
-        this.keyWordForSentenceList = keyWordForSentenceList;
         int size = keyWordForSentenceList.size();
         for (int i = 0; i < size; i++) {
             KeyWordForSentence keyWords = keyWordForSentenceList.get(i);
@@ -104,7 +102,7 @@ public class CatchKeyWord {//抓取关键词
         }
     }
 
-    public void getKeyWord(String sentence) {//获取关键词
+    public String getKeyWord(String sentence) {//获取关键词
         List<DynamicState> dynamicStateList = dynamicProgramming.getDynamicStateList();
         int size = sentence.length();
         List<DynamicState> myDyList = new ArrayList<>();
@@ -177,7 +175,48 @@ public class CatchKeyWord {//抓取关键词
             }
         }
         //最后计算优先度，选取一个关键词
+        double maxValue = -200;
+        int keyIndex = -1;
+        for (int i = 0; i < wordsValueList.size(); i++) {
+            WordsValue wordsValue1 = wordsValueList.get(i);
+            int startIndex = wordsValue1.startIndex;
+            int endIndex = wordsValue1.endIndex;
+            double value;
+            double value1 = -100;//前
+            double value2 = -100;//后
+            if (startIndex > 0) {
+                value1 = getValue(wordsValues, startIndex - 1);
+            }
+            if (endIndex < sen.length - 1) {
+                value2 = getValue(wordsValues, endIndex + 1);
+            }
+            if (value1 > value2) {
+                value = value1;
+            } else {
+                value = value2;
+            }
+            if (value > maxValue) {
+                maxValue = value;
+                keyIndex = i;
+            }
+        }
+        String keyWord = null;
+        if (keyIndex > -1) {
+            WordsValue wordsValue1 = wordsValueList.get(keyIndex);
+            keyWord = sentence.substring(wordsValue1.startIndex, wordsValue1.endIndex + 1);
+        }
+        return keyWord;
+    }
 
+    private double getValue(List<WordsValue> wordsValues, int index) {
+        double value = -100;
+        for (WordsValue wordsValue : wordsValues) {
+            if (wordsValue.startIndex <= index && wordsValue.endIndex >= index) {
+                value = wordsValue.value;
+                break;
+            }
+        }
+        return value;
     }
 
     private DynamicState getDynamicState(String myWord, List<DynamicState> dynamicStateList) {
