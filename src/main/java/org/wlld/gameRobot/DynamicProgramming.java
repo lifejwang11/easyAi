@@ -15,7 +15,7 @@ public class DynamicProgramming {
     private List<Integer> bestStrategy = new ArrayList<>();//最佳策略
     private double gaMa = 0.9;//贴现因子
     private double valueTh = 0.0001;//价值阈值
-    private int maxTimes = 200;//策略改进最大迭代次数
+    private int maxTimes = 100;//策略改进最大迭代次数
 
     public void setMaxTimes(int maxTimes) {
         this.maxTimes = maxTimes;

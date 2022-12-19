@@ -2,7 +2,9 @@ package org.wlld.naturalLanguage.languageCreator;
 
 import org.wlld.gameRobot.Action;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class WordLeft extends Action {
     private List<String> keyWords;
@@ -36,17 +38,21 @@ public class WordLeft extends Action {
 
     @Override
     public int[] action(int[] stateId) {
+        Random random = new Random();
         int id = stateId[0];
         String myWord = keyWords.get(id - 1);
         int len = myWord.length() + 1;
         int size = keyWords.size();
         int[] nextId = new int[]{0};
+        List<Integer> list = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             String word = keyWords.get(i);
             if (word.length() == len && word.substring(1).equals(myWord)) {
-                nextId[0] = i + 1;
-                break;
+                list.add(i + 1);
             }
+        }
+        if (list.size() > 0) {
+            nextId[0] = list.get(random.nextInt(list.size()));
         }
         return nextId;
     }
