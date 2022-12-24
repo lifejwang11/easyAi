@@ -1,14 +1,18 @@
 package org.wlld;
 
+import com.alibaba.fastjson.JSONObject;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.naturalLanguage.Talk;
 import org.wlld.naturalLanguage.TemplateReader;
 import org.wlld.naturalLanguage.Tokenizer;
 import org.wlld.naturalLanguage.WordTemple;
+import org.wlld.naturalLanguage.languageCreator.CatchKeyWord;
+import org.wlld.naturalLanguage.languageCreator.KeyWordModel;
 import org.wlld.randomForest.DataTable;
 import org.wlld.randomForest.RandomForest;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -18,7 +22,40 @@ import java.util.*;
  */
 public class LangTest {
     public static void main(String[] args) throws Exception {
-        reTest();
+        CatchKeyWord catchKeyWord = new CatchKeyWord();
+        catchKeyWord.insertModel(readModel("E:\\model\\keyWord3.json"));
+        String a= catchKeyWord.getKeyWord("保姆");
+        System.out.println("关键词:"+a);
+    }
+
+    public static KeyWordModel readModel(String fileName) {
+        KeyWordModel model = JSONObject.parseObject(readPaper(fileName), KeyWordModel.class);
+        return model;
+    }
+
+    private static String readPaper(String fileName) {
+        File file = new File(fileName); //创建文件
+        Reader read = null;
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            //一次读一个字符
+            read = new InputStreamReader(new FileInputStream(file));
+            int tempchar;
+            while ((tempchar = read.read()) != -1) {
+                stringBuilder.append((char) tempchar);
+            }
+            read.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (read != null) {
+                try {
+                    read.close(); //确保关闭
+                } catch (IOException el) {
+                }
+            }
+        }
+        return stringBuilder.toString();
     }
 
     public static void reTest() throws Exception {
@@ -145,7 +182,7 @@ public class LangTest {
         //2，包含数字的语句用统一的占位符代替 例如 35,3,36% 变为 #,#,#%
         Map<Integer, List<String>> model = new HashMap<>();
         //开始训练
-        tokenizer.start(model);
+        //tokenizer.start(model,null);
     }
 
     public static void test() throws Exception {
