@@ -21,11 +21,11 @@ import java.util.*;
  * @date 2:07 下午 2020/2/23
  */
 public class LangTest {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         CatchKeyWord catchKeyWord = new CatchKeyWord();
-        catchKeyWord.insertModel(readModel("E:\\model\\keyWord3.json"));
-        String a= catchKeyWord.getKeyWord("保姆");
-        System.out.println("关键词:"+a);
+        catchKeyWord.insertModel(readModel("E:\\model\\keyWord.json"));
+        List<String> a = catchKeyWord.getKeyWord("我要买条牧羊犬");
+        System.out.println("关键词:" + a);
     }
 
     public static KeyWordModel readModel(String fileName) {

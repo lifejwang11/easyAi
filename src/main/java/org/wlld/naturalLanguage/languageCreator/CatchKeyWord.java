@@ -29,7 +29,9 @@ public class CatchKeyWord {//抓取关键词
             String sentence = keyWords.getSentence();//句子
             String keyWord = keyWords.getKeyWord();//关键词
             int startIndex = getIndex(sentence, keyWord);
-            creatID(sentence, startIndex, startIndex + keyWord.length() - 1);
+            if (startIndex >= 0) {
+                creatID(sentence, startIndex, startIndex + keyWord.length() - 1);
+            }
         }
         Map<Integer, Action> actionMap = dynamicProgramming.getActionMap();
         WordRight wordRight = new WordRight(keyWords, finishWords);
@@ -150,17 +152,7 @@ public class CatchKeyWord {//抓取关键词
         }
     }
 
-    public void test(String testWord) {
-        List<DynamicState> dynamicStateList = dynamicProgramming.getDynamicStateList();
-        for (DynamicState dynamicState : dynamicStateList) {
-            int stateId = dynamicState.getStateId()[0] - 1;
-            if (stateId >= 0 && keyWords.get(stateId).equals(testWord)) {
-                System.out.println("value:" + dynamicState.getValue());
-            }
-        }
-    }
-
-    public String getKeyWord(String sentence) {//获取关键词
+    public List<String> getKeyWord(String sentence) {//获取关键词
         List<DynamicState> dynamicStateList = dynamicProgramming.getDynamicStateList();
         int size = sentence.length();
         List<DynamicState> myDyList = new ArrayList<>();
@@ -169,9 +161,9 @@ public class CatchKeyWord {//抓取关键词
             for (int j = i; j < size; j++) {
                 String word = sentence.substring(i, j + 1);//对该词进行收益判定
                 DynamicState dynamicState = getDynamicState(word, dynamicStateList);
-                if (dynamicState != null && dynamicState.getValue() > 0) {
-//                    String test = keyWords.get(dynamicState.getStateId()[0] - 1);
-//                    System.out.println("文字:" + test + ",value:" + dynamicState.getValue());
+                if (dynamicState != null) {
+                    String test = keyWords.get(dynamicState.getStateId()[0] - 1);
+                   //System.out.println("文字:" + test + ",value:" + dynamicState.getValue());
                     if (maxDy == null) {
                         maxDy = dynamicState;
                     } else {//先查询是否为终结态，若终结态跳出
@@ -179,9 +171,28 @@ public class CatchKeyWord {//抓取关键词
                             maxDy = dynamicState;
                             break;
                         } else {//当前不是终结态
-                            if (maxDy.getValue() <= dynamicState.getValue()) {
+                            int index = sentence.indexOf(test);
+                            double myValue = maxDy.getValue();
+                            DynamicState state = null;
+                            if (index > 0) {
+                                int t = index - 1;
+                                String upWord = sentence.substring(t, t + test.length());
+                                state = getDynamicState(upWord, dynamicStateList);
+                                if (state != null) {
+                                    if (state.isFinish()) {
+                                        myValue = 10;
+                                    } else {
+                                        myValue = state.getValue();
+                                    }
+                                    //System.out.println("word:" + upWord + ",value==" + myValue + ",终结态:" + state.isFinish());
+                                }
+                            }
+                            if (myValue <= dynamicState.getValue()) {
                                 maxDy = dynamicState;
                             } else {
+                                if (state != null) {
+                                    maxDy = state;
+                                }
                                 break;
                             }
                         }
@@ -244,46 +255,13 @@ public class CatchKeyWord {//抓取关键词
                 }
             }
         }
-        //最后计算优先度，选取一个关键词
-        double maxValue = -200;
-        int keyIndex = -1;
-        int maxLen = 0;
+        List<String> keyWords = new ArrayList<>();
         for (int i = 0; i < wordsValueList.size(); i++) {
             WordsValue wordsValue1 = wordsValueList.get(i);
-            int startIndex = wordsValue1.startIndex;
-            int endIndex = wordsValue1.endIndex;
-            double value;
-            double value1 = -100;//前
-            double value2 = -100;//后
-            int myLen = endIndex - startIndex + 1;
-            if (startIndex > 0) {
-                value1 = getValue(wordsValues, startIndex - 1);
-            }
-            if (endIndex < sen.length - 1) {
-                value2 = getValue(wordsValues, endIndex + 1);
-            }
-            if (value1 > value2) {
-                value = value1;
-            } else {
-                value = value2;
-            }
-            if (value > maxValue) {
-                maxValue = value;
-                keyIndex = i;
-                maxLen = myLen;
-            } else if (value == maxValue) {
-                if (myLen >= maxLen) {
-                    keyIndex = i;
-                    maxLen = myLen;
-                }
-            }
+            String keyWord = sentence.substring(wordsValue1.startIndex, wordsValue1.endIndex + 1);
+            keyWords.add(keyWord);
         }
-        String keyWord = null;
-        if (keyIndex > -1) {
-            WordsValue wordsValue1 = wordsValueList.get(keyIndex);
-            keyWord = sentence.substring(wordsValue1.startIndex, wordsValue1.endIndex + 1);
-        }
-        return keyWord;
+        return keyWords;
     }
 
     private double getValue(List<WordsValue> wordsValues, int index) {
