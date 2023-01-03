@@ -24,7 +24,7 @@ public class LangTest {
     public static void main(String[] args) {
         CatchKeyWord catchKeyWord = new CatchKeyWord();
         catchKeyWord.insertModel(readModel("E:\\model\\keyWord.json"));
-        List<String> a = catchKeyWord.getKeyWord("我要买条牧羊犬");
+        List<String> a = catchKeyWord.getKeyWord("热水器不出热水");
         System.out.println("关键词:" + a);
     }
 
