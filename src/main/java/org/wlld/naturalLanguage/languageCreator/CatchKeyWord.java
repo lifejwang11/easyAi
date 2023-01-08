@@ -196,7 +196,7 @@ public class CatchKeyWord {//抓取关键词
                                     //  System.out.println("word:" + upWord + ",value==" + myValue + ",终结态:" + state.isFinish());
                                 }
                             }
-                            if (myValue <= dynamicState.getValue()) {
+                            if (myValue <= dynamicState.getValue() && maxDy.value <= dynamicState.getValue()) {
                                 insertValue(maxDy, dynamicState, j, i);
                             } else {
                                 if (state != null) {
@@ -254,10 +254,10 @@ public class CatchKeyWord {//抓取关键词
                                     } else {
                                         myValue = state.getValue();
                                     }
-                                   // System.out.println("word:" + upWord + ",value==" + myValue + ",终结态:" + state.isFinish());
+                                    //System.out.println("word:" + upWord + ",value==" + myValue + ",终结态:" + state.isFinish());
                                 }
                             }
-                            if (myValue <= dynamicState.getValue()) {
+                            if (myValue <= dynamicState.getValue() && maxDy.value <= dynamicState.getValue()) {
                                 insertValue(maxDy, dynamicState, i, j);
                             } else {
                                 if (state != null) {
