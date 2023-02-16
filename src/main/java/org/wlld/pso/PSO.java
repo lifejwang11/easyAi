@@ -62,22 +62,21 @@ public class PSO {
 
     }
 
+    public double[] getAllBest() {
+        return allBest;
+    }
+
     public void setAllPar(List<Particle> allPar) {//外置粒子群注入
         this.allPar = allPar;
     }
 
-    public List<double[]> start() throws Exception {//开始进行迭代
+    public void start() throws Exception {//开始进行迭代
         int size = allPar.size();
         for (int i = 0; i < times; i++) {
             for (int j = 0; j < size; j++) {
                 move(allPar.get(j), j);
             }
         }
-        List<double[]> feature = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            feature.add(allPar.get(i).getParameter());
-        }
-        return feature;
         //粒子群移动结束
         // draw("/Users/lidapeng/Desktop/test/testOne/e2.jpg", fatherX, fatherY);
     }
