@@ -33,7 +33,23 @@ public class PSO {
     private int[] minBorder, maxBorder;
     private double maxSpeed;
     private double initSpeed;//初始速度
-
+    /**
+     * 初始化
+     *
+     * @param dimensionNub 维度
+     * @param minBorder  最小边界
+     * @param maxBorder 最大边界
+     * @param times 迭代次数
+     * @param particleNub 粒子数量
+     * @param psoFunction 适应函数
+     * @param inertialFactor 惯性因子
+     * @param selfStudyFactor 个体学习因子
+     * @param socialStudyFactor 社会学习因子
+     * @param isMax 最大值是否为最优
+     * @param maxSpeed 最大速度
+     * @param initSpeed 初始速度
+     * @throws Exception
+     */
     public PSO(int dimensionNub, int[] minBorder, int[] maxBorder,
                int times, int particleNub, PsoFunction psoFunction,
                double inertialFactor, double selfStudyFactor, double socialStudyFactor
