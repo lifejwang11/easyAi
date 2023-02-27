@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>easyAI开发文档</title>
+    <title>easyAi开发文档</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
@@ -101,6 +101,11 @@
                 </li>
                 <li class="lv1">矩阵运算
                 </li>
+                <li class="lv1"><a href="#picture">图像工具</a>
+                    <ul>
+                        <li class="lv2"><a href="#pictureTools">图像解析</a></li>
+                    </ul>
+                </li>
                 <li class="lv1">持续更新
                 </li>
             </ul>
@@ -114,7 +119,8 @@
             <div class="top">
                 <p class="normTxt">easyAI是用来简易快速开发人工智能应用的JAVA引擎，也同时可以深度开发定制需求。本文档详细讲述本框架的所有即时更新版本内容，
                     详述所有内置API,内置参数，各种模式及应用，对于深度学习easyAI开发人员提供帮助。同时可以让企业低成本部署，快速应用落地，并降低人才门槛及费用。
-                    <a href="https://www.bilibili.com/video/av89134035">点击可查看EASYAI视频教程</a>
+                    <a href="https://www.bilibili.com/video/av89134035">点击可查看easyAi视频教程</a>，
+                    <a href="https://gitee.com/ldp_dpsmax/easyAi">easyAi-1.0.6Maven包下载地址</a>
                 </p>
                 <div class="alert alert-success" role="alert">注意：凡事本文档中涉及图片尺寸的参数，其单位都为<strong>像素</strong></div>
                 <h3 id="start">快速开始</h3>
@@ -213,7 +219,8 @@
                 </div>
                 <div class="alert alert-info" role="alert">
                     <strong>参数说明：</strong>
-                    <p>第一个参数：<code>threeChannelMatrix</code>图片矩阵（后文有说明，自行从目录内查询）</p>
+                    <p>第一个参数：<code>threeChannelMatrix</code>图像三通道矩阵，通过<code>Picture</code>类读取本地文件或输入流获取，
+                        前文代码有注释说明。</p>
                     <p>第二个参数：<code>boxSize</code>将一张图片横纵各分为几个区域提取特征，该值越大，生成的摘要id敏感度越高</p>
                     <p>第三个参数：<code>regionSize</code>相似特征区域分区种类数量，该值越大，生成的摘要id敏感度越高</p>
                     <p>最终返回<code>id</code>即为该图片摘要id，通过id逐位对比即可对比相似程度</p>
@@ -521,6 +528,77 @@ public class DynamicState {
     dynamicProgramming.getValueFunction();//返回价值函数
     dynamicProgramming.getBestAction(int[] stateId);//获取当前最优动作集合
                 </pre>
+                <h3 id="matrix">矩阵运算</h3>
+                <p class="normTxt"><strong>矩阵类：</strong><code>Matrix</code></p>
+                <pre>
+                 1,Matrix matrix = new Matrix(int x, int y);//初始化构造一个行为x，列为y的矩阵类
+                 2,Matrix matrix= new Matrix(int x, int y, String matr);//初始化构造一个行为x,列为y,内部数据为 matr 的矩阵
+                 3,int getX();//获取行数
+                 4,int getY();//获取列数
+                 5,void setState(int x, int y);//设置矩阵属性，根据x,y的数值大小，属性分别是0矩阵，行矩阵，列矩阵
+                 6,double getAVG();//获取当前矩阵中所有数值的平均值
+                 7,boolean isRowVector();//该矩阵是否是一个行矩阵
+                 8,boolean isVector();该矩阵是否为一个向量
+                 9,boolean isZero();该矩阵是否为一个0矩阵
+                 10,void clear();//清除矩阵数据
+                 11, double getDet();//求该矩阵的行列式
+                 12,Matrix getSonOfMatrix(int x, int y, int xSize, int ySize);//求该矩阵的分块矩阵
+                 13,Matrix getRow(int x);//求该矩阵指定一行的行向量
+                 14,Matrix getColumn(int y);//求该矩阵指定一列的列向量
+                 15,String getString();//返回字符串形式的该矩阵
+                 16,String getPositionString();//返回带坐标的该矩阵字符串
+                 17,void setNub(int x, int y, double number);//向该矩阵指定xy的位置输入一个数值
+                 18,double getNumber(int x, int y);//向该矩阵指定xy的位置获取一个数值
+                </pre>
+                <div class="alert alert-warning" role="alert">
+                    <p>2,<code>Matrix matrix= new Matrix(int x, int y, String matr)</code> 示例：
+                   <code>Matrix matrix = new Matrix(2, 2, "[1,2]#[3,4]")</code>，构造一个行为2，列为2，第一行数据为[1,2]，第二行数据为[3,4]的矩阵。</p>
+                </div>
+                <p class="normTxt"><strong>矩阵运算类：</strong><code>MatrixOperation</code></p>
+                <pre>
+                    static Matrix add(Matrix matrix1, Matrix matrix2);//矩阵相加
+                    static Matrix sub(Matrix matrix1, Matrix matrix2);//矩阵相减
+                    static Matrix getLinearRegression(Matrix parameter, Matrix out);//多元线性回归
+                    static double getEDistByMatrix(Matrix matrix1, Matrix matrix2);//矩阵相似度(欧氏距离)
+                    static double getEDist(Matrix matrix1, Matrix matrix2);//两个向量之间欧式距离的平方
+                    static Matrix pushVector(Matrix myMatrix, Matrix matrix, boolean addRow);//向一个矩阵里合并一个行向量或者列向量到矩阵行或者列的末尾
+                    static Matrix push(Matrix matrix, double nub, boolean isRow);//向一个向量里PUSH一个值
+                    static Matrix matrixToVector(Matrix matrix, boolean isRow);//将一个矩阵转成行向量
+                    static double innerProduct(Matrix matrix1, Matrix matrix2);//求两个向量的内积
+                    static double getNorm(Matrix matrix);//求向量范数
+                    static double getNormCos(Matrix matrix1, Matrix matrix2);//求两个向量之间的余弦
+                    static Matrix transPosition(Matrix matrix);//矩阵转置
+                    static int inverseNumber(double[] myInverse);//逆序数奇偶性判定
+                    static Matrix getInverseMatrixs(Matrix matrix);//矩阵求逆
+                    static Matrix adjointMatrix(Matrix matrix);//求伴随矩阵
+                    static double algebraicCofactor(Matrix matrix, int row, int column);//求矩阵代数余子式
+                    static Matrix mulMatrix(Matrix matrix1, Matrix matrix2);//矩阵相乘
+                    static void mathMul(Matrix matrix, double nub);//矩阵数乘
+                    static void mathSub(Matrix matrix, double nub);//矩阵数减
+                    static void mathDiv(Matrix matrix, double nub);//矩阵数除
+                    static List&lt;Double&gt; matrixToList(Matrix matrix);//矩阵转list集合
+                    static Matrix listToRowVector(List&lt;Double&gt; list);//list集合转行向量
+                    static Matrix im2col(Matrix matrix, int kernLen, int step);//卷积im2col
+                    static Matrix reverseIm2col(Matrix matrix, int kernLen, int step, int xSize, int ySize);//逆向im2col
+                </pre>
+                <div class="alert alert-success" role="alert">
+                    <p>所有的矩阵运算，返回矩阵都是一个新的实例化矩阵，对参与运算的所有原矩阵原数值不产生任何影响</p>
+                </div>
+                <h3 id="picture">图像工具</h3>
+                <p class="normTxt" id="pictureTools"><strong>图像解析类：</strong><code>Picture</code></p>
+                <pre>
+                Picture picture = new Picture();//实例化一个图像解析类
+                ThreeChannelMatrix getThreeMatrix(String fileURL);//根据本地图片url返回一个RGB三通道矩阵类
+                ThreeChannelMatrix getThreeMatrix(InputStream file);//根据一个输入流返回一个RGB三通道矩阵类</pre>
+                <div class="alert alert-warning" role="alert">
+                    解析图片返回的RGB三通道矩阵类<code>ThreeChannelMatrix</code>，所有像素值都为归一化后的0-1之间的值！
+                </div>
+                <p class="normTxt"><strong>RGB三通道矩阵：</strong><code>ThreeChannelMatrix</code></p>
+                <pre>
+    Matrix getMatrixR();//返回R矩阵
+    Matrix getMatrixG();//返回G矩阵
+    Matrix getMatrixB();//返回B矩阵
+    Matrix getH();//返回灰度矩阵</pre>
             </div>
         </div>
     </div>
