@@ -172,6 +172,7 @@ public class CatchKeyWord {//抓取关键词
         int size = sentence.length() - 1;
         for (int i = size; i >= 0; i--) {
             WordsValue maxDy = null;        //0,1,2,3
+            String maxWord = null;
             for (int j = i; j >= 0; j--) {//我是好人
                 String word = sentence.substring(j, i + 1);//对该词进行收益判定
                 DynamicState dynamicState = getDynamicState(word, dynamicStateList);
@@ -204,7 +205,7 @@ public class CatchKeyWord {//抓取关键词
                                     //System.out.println("testWord:" + word + ",value==" + dynamicState.getValue() + ",myValue:" + maxDy.value);
                                 }
                             }
-                            String maxWord = keyWords.get(maxDy.id - 1);
+                            maxWord = keyWords.get(maxDy.id - 1);
                             if (maxWord.length() > 1) {
                                 if (myValue <= dynamicState.getValue() && maxDy.value <= dynamicState.getValue()) {
                                     insertValue(maxDy, dynamicState, j, i);
@@ -214,7 +215,7 @@ public class CatchKeyWord {//抓取关键词
                                     }
                                     break;
                                 }
-                            }else {
+                            } else {
                                 if (myValue <= dynamicState.getValue()) {
                                     insertValue(maxDy, dynamicState, j, i);
                                 } else {
@@ -232,9 +233,8 @@ public class CatchKeyWord {//抓取关键词
             }
             if (maxDy != null) {
                 //该字延伸最大价值的词
-                String word = keyWords.get(maxDy.id - 1);
                 //System.out.println("测试===========" + word);
-                if (word.length() > 1) {
+                if (maxWord != null && maxWord.length() > 1) {
                     myDyList.add(maxDy);
                 }
             }
@@ -248,11 +248,12 @@ public class CatchKeyWord {//抓取关键词
         int size = sentence.length();
         for (int i = 0; i < size; i++) {
             WordsValue maxDy = null;
+            String maxWord = null;
             for (int j = i; j < size; j++) {
                 String word = sentence.substring(i, j + 1);//对该词进行收益判定
                 DynamicState dynamicState = getDynamicState(word, dynamicStateList);
                 if (dynamicState != null && dynamicState.getValue() >= proTh) {
-                   // System.out.println("文字:" + word + ",value:" + dynamicState.getValue());
+                    // System.out.println("文字:" + word + ",value:" + dynamicState.getValue());
                     if (maxDy == null) {
                         maxDy = new WordsValue();
                         insertValue(maxDy, dynamicState, i, j);
@@ -277,7 +278,7 @@ public class CatchKeyWord {//抓取关键词
                                     }
                                 }
                             }
-                            String maxWord = keyWords.get(maxDy.id - 1);
+                            maxWord = keyWords.get(maxDy.id - 1);
                             //System.out.println("word:" + upWord + ",value==" + myValue);
                             if (maxWord.length() > 1) {//maxDy参与比较
                                 if (myValue <= dynamicState.getValue() && maxDy.value <= dynamicState.getValue()) {
@@ -306,8 +307,7 @@ public class CatchKeyWord {//抓取关键词
             }
             if (maxDy != null) {
                 //该字延伸最大价值的词
-                String maxWord = keyWords.get(maxDy.id - 1);
-                if (maxWord.length() > 1) {
+                if (maxWord != null && maxWord.length() > 1) {
                     //System.out.println("测试===========" + maxWord);
                     myDyList.add(maxDy);
                 }
