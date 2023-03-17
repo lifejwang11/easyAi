@@ -13,7 +13,7 @@ public class CatchKeyWord {//抓取关键词
     private List<String> keyWords = new ArrayList<>();//保存词列表
     private List<String> finishWords = new ArrayList<>();//终结态词集合
     private Set<String> noList = new HashSet<>();//禁止词集合
-    private double proTh = 0;//收益阈值
+    private double proTh = 0.1;//收益阈值
 
     public void setProTh(double proTh) {
         this.proTh = proTh;
@@ -252,7 +252,7 @@ public class CatchKeyWord {//抓取关键词
                 String word = sentence.substring(i, j + 1);//对该词进行收益判定
                 DynamicState dynamicState = getDynamicState(word, dynamicStateList);
                 if (dynamicState != null && dynamicState.getValue() >= proTh) {
-                    //System.out.println("文字:" + word + ",value:" + dynamicState.getValue());
+                   // System.out.println("文字:" + word + ",value:" + dynamicState.getValue());
                     if (maxDy == null) {
                         maxDy = new WordsValue();
                         insertValue(maxDy, dynamicState, i, j);
@@ -264,7 +264,7 @@ public class CatchKeyWord {//抓取关键词
                             int index = sentence.indexOf(word);
                             double myValue = maxDy.value;
                             DynamicState state = null;
-                            String upWord;
+                            String upWord = null;
                             if (index > 0) {
                                 int t = index - 1;
                                 upWord = sentence.substring(t, t + word.length());

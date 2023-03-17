@@ -23,10 +23,10 @@ import java.util.*;
 public class LangTest {
     public static void main(String[] args) throws Exception {
         CatchKeyWord catchKeyWord = new CatchKeyWord();
-        catchKeyWord.setProTh(0);
-        catchKeyWord.insertModel(readModelById("E:\\model\\keyWord.json", 15));
+        catchKeyWord.setProTh(0.1);
+        catchKeyWord.insertModel(readModelById("E:\\model\\keyWord.json", 31));
         //catchKeyWord.insertModel(readModel("E:\\model\\keyWord2.json"));//我想咨询下关于劳动纠纷的问题//我想咨询关于婚姻家庭方面的问题
-        Set<String> a = catchKeyWord.getKeyWord("马桶坏了麻烦找个人来修修");//我想找个擅长拆迁安置方面的律师
+        Set<String> a = catchKeyWord.getKeyWord("我想找个擅长拆迁安置方面的律师");//我想找个擅长拆迁安置方面的律师
         System.out.println("关键词:" + a);
     }
 
