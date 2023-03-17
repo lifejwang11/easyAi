@@ -23,14 +23,28 @@ import java.util.*;
 public class LangTest {
     public static void main(String[] args) throws Exception {
         CatchKeyWord catchKeyWord = new CatchKeyWord();
-        catchKeyWord.insertModel(readModel("E:\\model\\keyWord2.json"));
-        List<String> a = catchKeyWord.getKeyWord("打印机报错一直不打印");
+        catchKeyWord.setProTh(0);
+        catchKeyWord.insertModel(readModelById("E:\\model\\keyWord.json", 15));
+        //catchKeyWord.insertModel(readModel("E:\\model\\keyWord2.json"));//我想咨询下关于劳动纠纷的问题//我想咨询关于婚姻家庭方面的问题
+        Set<String> a = catchKeyWord.getKeyWord("马桶坏了麻烦找个人来修修");//我想找个擅长拆迁安置方面的律师
         System.out.println("关键词:" + a);
     }
 
-    public static KeyWordModel readModel(String fileName) {
-        KeyWordModel model = JSONObject.parseObject(readPaper(fileName), KeyWordModel.class);
+    public static KeyWordModel readModelById(String fileName, int id) {
+        List<KeyWordModelMapping> keyWordModels = JSONObject.parseObject(readPaper(fileName), MyWordModel.class).getKeyWordModelMappings();
+        KeyWordModel model = null;
+        for (KeyWordModelMapping keyWordModel : keyWordModels) {
+            if (keyWordModel.getKey() == id) {
+                model = keyWordModel.getKeyWordModel();
+                break;
+            }
+        }
         return model;
+    }
+
+    public static KeyWordModel readModel(String fileName) {
+        KeyWordModelMapping keyWordModels = JSONObject.parseObject(readPaper(fileName), MyWordModel.class).getKeyWordModelMappings().get(0);
+        return keyWordModels.getKeyWordModel();
     }
 
     private static String readPaper(String fileName) {

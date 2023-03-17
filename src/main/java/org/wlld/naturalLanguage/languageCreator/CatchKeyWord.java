@@ -13,6 +13,11 @@ public class CatchKeyWord {//抓取关键词
     private List<String> keyWords = new ArrayList<>();//保存词列表
     private List<String> finishWords = new ArrayList<>();//终结态词集合
     private Set<String> noList = new HashSet<>();//禁止词集合
+    private double proTh = 0;//收益阈值
+
+    public void setProTh(double proTh) {
+        this.proTh = proTh;
+    }
 
     public void study(List<KeyWordForSentence> keyWordForSentenceList) {
         int size = keyWordForSentenceList.size();
@@ -170,13 +175,15 @@ public class CatchKeyWord {//抓取关键词
             for (int j = i; j >= 0; j--) {//我是好人
                 String word = sentence.substring(j, i + 1);//对该词进行收益判定
                 DynamicState dynamicState = getDynamicState(word, dynamicStateList);
-                if (dynamicState != null) {
-                    // System.out.println("word:" + word + ",value:" + dynamicState.getValue());
+                if (dynamicState != null && dynamicState.getValue() > proTh) {
+                    //System.out.println("word:" + word + ",value:" + dynamicState.getValue());
                     if (maxDy == null) {
                         maxDy = new WordsValue();
+                        //System.out.println("第一次:" + word);
                         insertValue(maxDy, dynamicState, j, i);
                     } else {//先查询是否为终结态，若终结态跳出
                         if (dynamicState.isFinish()) {//当前为终结态
+                            //System.out.println("终结态:" + word);
                             insertValue(maxDy, dynamicState, j, i);
                             break;
                         } else {//当前不是终结态
@@ -193,16 +200,29 @@ public class CatchKeyWord {//抓取关键词
                                     } else {
                                         myValue = state.getValue();
                                     }
-                                    //  System.out.println("word:" + upWord + ",value==" + myValue + ",终结态:" + state.isFinish());
+                                    //System.out.println("word:" + upWord + ",value==" + myValue + ",终结态:" + state.isFinish());
+                                    //System.out.println("testWord:" + word + ",value==" + dynamicState.getValue() + ",myValue:" + maxDy.value);
                                 }
                             }
-                            if (myValue <= dynamicState.getValue() && maxDy.value <= dynamicState.getValue()) {
-                                insertValue(maxDy, dynamicState, j, i);
-                            } else {
-                                if (state != null) {
-                                    insertValue(maxDy, state, j + 1, i + 1);
+                            String maxWord = keyWords.get(maxDy.id - 1);
+                            if (maxWord.length() > 1) {
+                                if (myValue <= dynamicState.getValue() && maxDy.value <= dynamicState.getValue()) {
+                                    insertValue(maxDy, dynamicState, j, i);
+                                } else {
+                                    if (state != null && maxDy.value < myValue) {
+                                        insertValue(maxDy, state, j + 1, i + 1);
+                                    }
+                                    break;
                                 }
-                                break;
+                            }else {
+                                if (myValue <= dynamicState.getValue()) {
+                                    insertValue(maxDy, dynamicState, j, i);
+                                } else {
+                                    if (state != null) {
+                                        insertValue(maxDy, state, j + 1, i + 1);
+                                    }
+                                    break;
+                                }
                             }
                         }
                     }
@@ -211,10 +231,10 @@ public class CatchKeyWord {//抓取关键词
                 }
             }
             if (maxDy != null) {
-                String word = keyWords.get(maxDy.id - 1);
                 //该字延伸最大价值的词
-                if (word.length() > 1) {//词长度必须大于1,只有一个字的词风险过高 不可用
-                    // System.out.println("测试===========" + word);
+                String word = keyWords.get(maxDy.id - 1);
+                //System.out.println("测试===========" + word);
+                if (word.length() > 1) {
                     myDyList.add(maxDy);
                 }
             }
@@ -231,7 +251,7 @@ public class CatchKeyWord {//抓取关键词
             for (int j = i; j < size; j++) {
                 String word = sentence.substring(i, j + 1);//对该词进行收益判定
                 DynamicState dynamicState = getDynamicState(word, dynamicStateList);
-                if (dynamicState != null) {
+                if (dynamicState != null && dynamicState.getValue() >= proTh) {
                     //System.out.println("文字:" + word + ",value:" + dynamicState.getValue());
                     if (maxDy == null) {
                         maxDy = new WordsValue();
@@ -244,9 +264,10 @@ public class CatchKeyWord {//抓取关键词
                             int index = sentence.indexOf(word);
                             double myValue = maxDy.value;
                             DynamicState state = null;
+                            String upWord;
                             if (index > 0) {
                                 int t = index - 1;
-                                String upWord = sentence.substring(t, t + word.length());
+                                upWord = sentence.substring(t, t + word.length());
                                 state = getDynamicState(upWord, dynamicStateList);
                                 if (state != null) {
                                     if (state.isFinish()) {
@@ -254,16 +275,28 @@ public class CatchKeyWord {//抓取关键词
                                     } else {
                                         myValue = state.getValue();
                                     }
-                                    //System.out.println("word:" + upWord + ",value==" + myValue + ",终结态:" + state.isFinish());
                                 }
                             }
-                            if (myValue <= dynamicState.getValue() && maxDy.value <= dynamicState.getValue()) {
-                                insertValue(maxDy, dynamicState, i, j);
-                            } else {
-                                if (state != null) {
-                                    insertValue(maxDy, dynamicState, i - 1, j - 1);
+                            String maxWord = keyWords.get(maxDy.id - 1);
+                            //System.out.println("word:" + upWord + ",value==" + myValue);
+                            if (maxWord.length() > 1) {//maxDy参与比较
+                                if (myValue <= dynamicState.getValue() && maxDy.value <= dynamicState.getValue()) {
+                                    insertValue(maxDy, dynamicState, i, j);
+                                } else {
+                                    if (state != null && maxDy.value < myValue) {
+                                        insertValue(maxDy, state, i - 1, j - 1);
+                                    }
+                                    break;
                                 }
-                                break;
+                            } else {
+                                if (myValue <= dynamicState.getValue()) {
+                                    insertValue(maxDy, dynamicState, i, j);
+                                } else {
+                                    if (state != null) {
+                                        insertValue(maxDy, state, i - 1, j - 1);
+                                    }
+                                    break;
+                                }
                             }
                         }
                     }
@@ -272,10 +305,10 @@ public class CatchKeyWord {//抓取关键词
                 }
             }
             if (maxDy != null) {
-                String word = keyWords.get(maxDy.id - 1);
                 //该字延伸最大价值的词
-                if (word.length() > 1) {//词长度必须大于1,只有一个字的词风险过高 不可用
-                    //System.out.println("测试===========" + word);
+                String maxWord = keyWords.get(maxDy.id - 1);
+                if (maxWord.length() > 1) {
+                    //System.out.println("测试===========" + maxWord);
                     myDyList.add(maxDy);
                 }
             }
@@ -283,36 +316,14 @@ public class CatchKeyWord {//抓取关键词
         return myDyList;
     }
 
-    public List<String> getKeyWord(String sentence) {
+    public Set<String> getKeyWord(String sentence) {
         List<String> first = getMyKeyWord(sentence, true);
         List<String> second = getMyKeyWord(sentence, false);
-        for (int i = 0; i < first.size(); i++) {
-            String word = first.get(i);
-            if (like(word, second)) {
-                first.remove(i);
-                i--;
-            }
-        }
-        for (int i = 0; i < second.size(); i++) {
-            String word = second.get(i);
-            if (like(word, first)) {
-                second.remove(i);
-                i--;
-            }
-        }
-        first.addAll(second);
-        return first;
-    }
-
-    private boolean like(String word, List<String> list) {//相似
-        boolean like = false;
-        for (String myWord : list) {
-            if (myWord.length() >= word.length() && myWord.contains(word)) {
-                like = true;
-                break;
-            }
-        }
-        return like;
+        Set<String> set = new HashSet<>();
+        set.addAll(first);
+        set.addAll(second);
+        //System.out.println("first:" + first + ",second:" + second);
+        return set;
     }
 
     private List<String> getMyKeyWord(String sentence, boolean first) {//获取关键词

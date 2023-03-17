@@ -2,22 +2,80 @@ package org.wlld;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.Config;
+import org.wlld.config.RZ;
 import org.wlld.distinguish.Distinguish;
 import org.wlld.entity.FoodPicture;
 import org.wlld.entity.Model;
 import org.wlld.entity.PicturePosition;
 import org.wlld.entity.ThreeChannelMatrix;
+import org.wlld.function.Tanh;
+import org.wlld.i.OutBack;
+import org.wlld.nerveCenter.NerveManager;
+import org.wlld.nerveEntity.SensoryNerve;
+import org.wlld.pso.PSO;
+import org.wlld.tools.FastPictureExcerpt;
 import org.wlld.tools.Picture;
 
-import java.util.ArrayList;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class ImageTest {
+
+
     public static void main(String[] args) throws Exception {
-        dish();
-        //study();
+     test();
+    }
+
+    public static void test() throws Exception {
+        TestPso testPso = new TestPso();
+        testPso.setTimes(5);
+        PSO pso = new PSO(5, new int[]{1, 1, 1, 1, 1}, new int[]{5, 5, 5, 5, 5}, 100, 100
+                , testPso, 0.5, 2, 2, false, 5, 0.01);
+        pso.start();
+        double[] parameter = pso.getAllBest();
+        System.out.println(Arrays.toString(parameter));
+
+    }
+
+    public ByteArrayOutputStream narrow2(String inputStream, int size) throws Exception {//图片缩小
+        Picture picture = new Picture();
+        ThreeChannelMatrix imageMatrix = picture.getThreeMatrix(inputStream);
+        Matrix matrix = imageMatrix.getMatrixB();
+        int maxXSize = matrix.getX();//图像x大小
+        int maxYSize = matrix.getY();//图像y大小
+        int yKern = maxYSize / size;//定y
+        int xKern = maxXSize / size;
+        BufferedImage bi = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = (Graphics2D) bi.getGraphics();
+        int xIndex = 0;
+        int yIndex = 0;
+        for (int i = 0; i < maxXSize - xKern; i += xKern) {
+            for (int j = 0; j < maxYSize - yKern; j += yKern) {
+                ThreeChannelMatrix threeChannelMatrix = imageMatrix.cutChannel(i, j, xKern, yKern);
+                Matrix matrixR = threeChannelMatrix.getMatrixR();
+                Matrix matrixG = threeChannelMatrix.getMatrixG();
+                Matrix matrixB = threeChannelMatrix.getMatrixB();
+                int r = (int) (matrixR.getAVG() * 255);
+                int g = (int) (matrixG.getAVG() * 255);
+                int b = (int) (matrixB.getAVG() * 255);
+                g2.setColor(new Color(r, g, b));
+                g2.drawRect(yIndex, xIndex, 1, 1);
+                yIndex++;
+            }
+            yIndex = 0;
+            xIndex++;
+        }
+        ByteArrayOutputStream ar = new ByteArrayOutputStream();
+        ImageIO.write(bi, "PNG", ar);
+        return ar;
     }
 
     public static void dish() throws Exception {//识别
