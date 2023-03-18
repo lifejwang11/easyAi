@@ -25,7 +25,7 @@ public class LangTest {
         CatchKeyWord catchKeyWord = new CatchKeyWord();
         catchKeyWord.setProTh(0.1);
         catchKeyWord.insertModel(readModelById("E:\\model\\keyWord.json", 31));
-        //catchKeyWord.insertModel(readModel("E:\\model\\keyWord2.json"));//我想咨询下关于劳动纠纷的问题//我想咨询关于婚姻家庭方面的问题
+        //我想咨询下关于劳动纠纷的问题//我想咨询关于婚姻家庭方面的问题
         Set<String> a = catchKeyWord.getKeyWord("我想找个擅长拆迁安置方面的律师");//我想找个擅长拆迁安置方面的律师
         System.out.println("关键词:" + a);
     }

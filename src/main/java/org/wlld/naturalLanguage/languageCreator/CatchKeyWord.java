@@ -214,13 +214,34 @@ public class CatchKeyWord {//抓取关键词
                                     }
                                     break;
                                 }
-                            }else {
-                                if (myValue <= dynamicState.getValue()) {
-                                    insertValue(maxDy, dynamicState, j, i);
-                                } else {
-                                    if (state != null) {
-                                        insertValue(maxDy, state, j + 1, i + 1);
+                            } else {
+                                int upIndex = sentence.indexOf(maxWord);//最大字符所在的位置
+                                DynamicState upState = null;
+                                double upValue = -1000000;
+                                String myUpWord = null;
+                                if (upIndex < sentence.length() - 2) {
+                                    myUpWord = sentence.substring(upIndex + 1, upIndex + 3);
+                                    upState = getDynamicState(myUpWord, dynamicStateList);
+                                    if (upState != null) {
+                                        if (upState.isFinish()) {
+                                            upValue = 10;
+                                        } else {
+                                            upValue = upState.getValue();
+                                        }
                                     }
+                                }
+                                if (upState == null || myValue >= upValue) {
+                                    if (myValue <= dynamicState.getValue()) {
+                                        insertValue(maxDy, dynamicState, j, i);
+                                    } else {
+                                        if (state != null) {
+                                            insertValue(maxDy, state, j + 1, i + 1);
+                                        }
+                                        break;
+                                    }
+                                } else {
+                                    //System.out.println("myUpWord:" + myUpWord + ",j:" + j + ",i:" + i + ",word:" + word + ",maxWord:" + maxWord);
+                                    insertValue(maxDy, upState, j + 2, i + 2);
                                     break;
                                 }
                             }
@@ -230,7 +251,7 @@ public class CatchKeyWord {//抓取关键词
                     break;
                 }
             }
-            if (maxDy != null) {
+            if (maxDy != null && maxDy.value >= proTh) {
                 //该字延伸最大价值的词
                 String word = keyWords.get(maxDy.id - 1);
                 //System.out.println("测试===========" + word);
@@ -264,7 +285,7 @@ public class CatchKeyWord {//抓取关键词
                             int index = sentence.indexOf(word);
                             double myValue = maxDy.value;
                             DynamicState state = null;
-                            String upWord;
+                            String upWord = null;
                             if (index > 0) {
                                 int t = index - 1;
                                 upWord = sentence.substring(t, t + word.length());
@@ -278,7 +299,7 @@ public class CatchKeyWord {//抓取关键词
                                 }
                             }
                             String maxWord = keyWords.get(maxDy.id - 1);
-                            //System.out.println("word:" + upWord + ",value==" + myValue);
+                            //System.out.println("upWord:" + upWord + ",value==" + myValue);
                             if (maxWord.length() > 1) {//maxDy参与比较
                                 if (myValue <= dynamicState.getValue() && maxDy.value <= dynamicState.getValue()) {
                                     insertValue(maxDy, dynamicState, i, j);
@@ -289,12 +310,33 @@ public class CatchKeyWord {//抓取关键词
                                     break;
                                 }
                             } else {
-                                if (myValue <= dynamicState.getValue()) {
-                                    insertValue(maxDy, dynamicState, i, j);
-                                } else {
-                                    if (state != null) {
-                                        insertValue(maxDy, state, i - 1, j - 1);
+                                int upIndex = sentence.indexOf(maxWord);//最大字符所在的位置
+                                DynamicState upState = null;
+                                double upValue = -1000000;
+                                String myUpWord = null;
+                                if (upIndex > 1) {
+                                    myUpWord = sentence.substring(upIndex - 2, upIndex);
+                                    upState = getDynamicState(myUpWord, dynamicStateList);
+                                    if (upState != null) {
+                                        if (upState.isFinish()) {
+                                            upValue = 10;
+                                        } else {
+                                            upValue = upState.getValue();
+                                        }
                                     }
+                                }
+                                //System.out.println("upupWord:" + myUpWord + ",upValue:" + upValue);
+                                if (upState == null || myValue >= upValue) {//可以保留该单字
+                                    if (myValue <= dynamicState.getValue()) {
+                                        insertValue(maxDy, dynamicState, i, j);
+                                    } else {
+                                        if (state != null) {
+                                            insertValue(maxDy, state, i - 1, j - 1);
+                                        }
+                                        break;
+                                    }
+                                } else {//进行后退
+                                    insertValue(maxDy, upState, i - 2, j - 2);
                                     break;
                                 }
                             }
@@ -304,7 +346,7 @@ public class CatchKeyWord {//抓取关键词
                     break;
                 }
             }
-            if (maxDy != null) {
+            if (maxDy != null && maxDy.value >= proTh) {
                 //该字延伸最大价值的词
                 String maxWord = keyWords.get(maxDy.id - 1);
                 if (maxWord.length() > 1) {
