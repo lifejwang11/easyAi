@@ -30,7 +30,7 @@ public class PSO {
     private boolean isMax;//取最大值还是最小值
     private double[] allBest;//全局最佳位置
     private Random random = new Random();
-    private int[] minBorder, maxBorder;
+    private double[] minBorder, maxBorder;
     private double maxSpeed;
     private double initSpeed;//初始速度
     /**
@@ -50,7 +50,7 @@ public class PSO {
      * @param initSpeed 初始速度
      * @throws Exception
      */
-    public PSO(int dimensionNub, int[] minBorder, int[] maxBorder,
+    public PSO(int dimensionNub, double[] minBorder, double[] maxBorder,
                int times, int particleNub, PsoFunction psoFunction,
                double inertialFactor, double selfStudyFactor, double socialStudyFactor
             , boolean isMax, double maxSpeed, double initSpeed) {
@@ -181,10 +181,10 @@ public class PSO {
             for (int i = 0; i < dimensionNub; i++) {
                 double position;
                 if (minBorder != null && maxBorder != null) {
-                    int min = minBorder[i];
-                    int max = maxBorder[i];
-                    int region = max - min + 1;
-                    position = random.nextInt(region) + min;//初始化该维度的位置
+                    double min = minBorder[i];
+                    double max = maxBorder[i];
+                    double region = max - min + 1;
+                    position = random.nextInt((int) region) + min;//初始化该维度的位置
                 } else {
                     position = random.nextDouble();
                 }
