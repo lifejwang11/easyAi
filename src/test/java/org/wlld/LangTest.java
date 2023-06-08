@@ -13,6 +13,7 @@ import org.wlld.randomForest.DataTable;
 import org.wlld.randomForest.RandomForest;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -24,11 +25,12 @@ public class LangTest {
     public static void main(String[] args) throws Exception {
         CatchKeyWord catchKeyWord = new CatchKeyWord();
         catchKeyWord.setProTh(0.1);
-        catchKeyWord.insertModel(readModelById("E:\\model\\keyWord.json", 31));
+        catchKeyWord.insertModel(readModelById("E:\\model\\keyWord.json", 7));
         //我想咨询下关于劳动纠纷的问题//我想咨询关于婚姻家庭方面的问题
-        Set<String> a = catchKeyWord.getKeyWord("我想找个擅长拆迁安置方面的律师");//我想找个擅长拆迁安置方面的律师
+        Set<String> a = catchKeyWord.getKeyWord("宠物体检有哪些项目");//我想找个擅长拆迁安置方面的律师
         System.out.println("关键词:" + a);
     }
+
 
     public static KeyWordModel readModelById(String fileName, int id) {
         List<KeyWordModelMapping> keyWordModels = JSONObject.parseObject(readPaper(fileName), MyWordModel.class).getKeyWordModelMappings();
@@ -53,7 +55,7 @@ public class LangTest {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             //一次读一个字符
-            read = new InputStreamReader(new FileInputStream(file));
+            read = new InputStreamReader(Files.newInputStream(file.toPath()));
             int tempchar;
             while ((tempchar = read.read()) != -1) {
                 stringBuilder.append((char) tempchar);

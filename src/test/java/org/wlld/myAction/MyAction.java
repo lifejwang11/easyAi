@@ -37,13 +37,13 @@ public class MyAction extends Action {
         int[] position = action(stateId);//移动后的坐标
         int nowTime = position[1];//当前所消耗的时间
         if (isGood) {
-            if (nowTime <= allTime) {
+            if (position[0] == 4 && nowTime <= allTime) {
                 profit = 10;
-            } else {
+            } else if (position[0] == 4) {
                 profit = -10;
             }
         } else {//不中奖
-            if (nowTime > allTime) {
+            if (position[0] == 4 && nowTime > allTime) {
                 profit = 10;
             } else if (position[0] == 4) {
                 profit = -10;

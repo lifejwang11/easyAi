@@ -8,7 +8,13 @@ public class MatrixOperation {
 
     private MatrixOperation() {
     }
-
+    public static List<Double> rowVectorToList(Matrix matrix) throws Exception {
+        List<Double> list = new ArrayList<>();
+        for (int j = 0; j < matrix.getY(); j++) {
+            list.add(matrix.getNumber(0, j));
+        }
+        return list;
+    }
     public static Matrix add(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相加
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
             Matrix matrix = new Matrix(matrix1.getX(), matrix1.getY());

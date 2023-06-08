@@ -2,10 +2,14 @@ package org.wlld;
 
 
 import org.wlld.i.PsoFunction;
-import org.wlld.tools.Frequency;
 
 public class TestPso implements PsoFunction {
-    private double times;
+    private double times;//总长度
+    private double myAvgSub;
+
+    public void setMyAvgSub(double myAvgSub) {
+        this.myAvgSub = myAvgSub;
+    }
 
     public void setTimes(double times) {
         this.times = times;
@@ -18,11 +22,12 @@ public class TestPso implements PsoFunction {
         for (int i = 0; i < size; i++) {
             sigma = sigma + parameter[i];
         }
-        double avg = sigma / size;
+        double avg = sigma / size;//平均值
         double allNub = 0;
         for (int i = 0; i < size; i++) {
             allNub = allNub + Math.abs(parameter[i] - avg);
         }
-        return Math.abs(sigma - times);
+        double vagSub = allNub / size;
+        return Math.abs(sigma - times) + Math.abs(vagSub - myAvgSub);
     }
 }

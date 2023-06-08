@@ -24,6 +24,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.List;
 
@@ -31,18 +33,76 @@ public class ImageTest {
 
 
     public static void main(String[] args) throws Exception {
-     test();
+        long a = System.currentTimeMillis();
+        int[] money = test(200, 50);
+        long b = System.currentTimeMillis() - a;
+        System.out.println("耗时:" + b);
+        int sigma = 0;
+        for (int i = 0; i < money.length; i++) {
+            sigma = sigma + money[i];
+        }
+        System.out.println("sigma:" + sigma);
     }
 
-    public static void test() throws Exception {
-        TestPso testPso = new TestPso();
-        testPso.setTimes(5);
-        PSO pso = new PSO(5, new int[]{1, 1, 1, 1, 1}, new int[]{5, 5, 5, 5, 5}, 100, 100
-                , testPso, 0.5, 2, 2, false, 5, 0.01);
-        pso.start();
-        double[] parameter = pso.getAllBest();
-        System.out.println(Arrays.toString(parameter));
-
+    public static int[] test(double value, int peopleNumber) throws Exception {
+        int fen = (int) (value * 100);
+        int[] money = new int[peopleNumber];
+        if (fen > peopleNumber) {
+            TestPso testPso = new TestPso();
+            Random random = new Random();
+            double subAvgE = value / peopleNumber * random.nextDouble();
+            testPso.setTimes(value);
+            testPso.setMyAvgSub(subAvgE);
+            double[] min = new double[peopleNumber];
+            double[] max = new double[peopleNumber];
+            for (int i = 0; i < peopleNumber; i++) {
+                min[i] = 0.01;
+                max[i] = value;
+            }
+            PSO pso = new PSO(peopleNumber, min, max, 200, 200
+                    , testPso, 0.5, 2, 2, false, 10, 1);
+            pso.start();
+            double[] parameter = pso.getAllBest();
+            int sigma = 0;
+            for (int i = 0; i < parameter.length; i++) {
+                int three = (int) (parameter[i] * 100);
+                sigma = sigma + three;
+                money[i] = three;
+            }
+            System.out.println("分配结果：" + sigma);
+            if (fen > sigma) {//还有剩余 找到最小金额者，加上
+                int minMoney = fen;
+                int minIndex = 0;
+                int sub = fen - sigma;
+                for (int i = 0; i < peopleNumber; i++) {
+                    if (money[i] < minMoney) {
+                        minIndex = i;
+                        minMoney = money[i];
+                    }
+                }
+                money[minIndex] = money[minIndex] + sub;
+            } else if (fen < sigma) {//多了 平均减少
+                int sub = sigma - fen;
+                while (sub > 0) {
+                    for (int i = 0; i < peopleNumber; i++) {
+                        if (money[i] > 1) {
+                            money[i] = money[i] - 1;
+                            sub--;
+                            if (sub == 0) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (fen == peopleNumber) {
+            for (int i = 0; i < peopleNumber; i++) {
+                money[i] = 1;
+            }
+        } else {
+            money = null;
+        }
+        return money;
     }
 
     public ByteArrayOutputStream narrow2(String inputStream, int size) throws Exception {//图片缩小

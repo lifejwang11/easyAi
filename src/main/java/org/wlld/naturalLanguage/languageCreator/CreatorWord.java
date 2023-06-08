@@ -31,4 +31,9 @@ public class CreatorWord implements OutBack {
     public void getBackMatrix(Matrix matrix, long eventId) {
 
     }
+
+    @Override
+    public void getWordVector(int id, double w) {
+
+    }
 }

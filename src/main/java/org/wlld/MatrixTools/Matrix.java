@@ -427,7 +427,7 @@ public class Matrix {
      * @throws Exception 超出矩阵范围抛出
      */
     public void setNub(int x, int y, double number) throws Exception {
-        if (this.x >= x && this.y >= y) {
+        if (this.x > x && this.y > y) {
             matrix[x][y] = number;
         } else {
             throw new Exception("matrix length too little");
