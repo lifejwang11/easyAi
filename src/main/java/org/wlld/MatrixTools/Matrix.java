@@ -333,7 +333,11 @@ public class Matrix {
                 xr = i + x;
                 for (int j = 0; j < ySize; j++) {
                     yr = j + y;
-                    myMatrix.setNub(i, j, matrix[xr][yr]);
+                    if (this.x > xr && this.y > yr) {
+                        myMatrix.setNub(i, j, matrix[xr][yr]);
+                    } else {
+                        throw new Exception("xr:" + xr + ",yr:" + yr + ",x:" + this.x + ",y:" + this.y + ",xSize:" + xSize + ",ySize:" + ySize + ",x:" + x + ",y:" + y);
+                    }
                 }
             }
         } catch (Exception e) {

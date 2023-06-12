@@ -14,6 +14,11 @@ public class WordBack implements OutBack {
     private int id;
     private double out = -2;
 
+    public void clear() {
+        out = -2;
+        id = 0;
+    }
+
     public double getOut() {
         return out;
     }

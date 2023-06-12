@@ -18,9 +18,18 @@ public class SentenceConfig {
     private double weLParam = 0.001;//词向量正则系数
     private int randomNumber = 11;//随机网络数量
     private int nerveDeep = 6;//随机网络一组深度
+    private int keyWordNerveDeep = 3;//关键词判断网络深度
     private boolean showLog = true;
     private int dateAug = 12000;
     private int TopNumber = 1;//取最高的几个类别
+
+    public int getKeyWordNerveDeep() {
+        return keyWordNerveDeep;
+    }
+
+    public void setKeyWordNerveDeep(int keyWordNerveDeep) {
+        this.keyWordNerveDeep = keyWordNerveDeep;
+    }
 
     public int getTopNumber() {
         return TopNumber;
