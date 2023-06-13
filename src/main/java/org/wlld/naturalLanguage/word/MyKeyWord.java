@@ -68,7 +68,7 @@ public class MyKeyWord {
             int endIndex = -1;
             if (!isStudy) {
                 wordBack = new WordBack();
-            } else if (keyWord != null) {
+            } else if (keyWord != null && keyWord.length() > 0) {
                 startIndex = word.indexOf(keyWord);
                 endIndex = startIndex + keyWord.length() - 1;
             }

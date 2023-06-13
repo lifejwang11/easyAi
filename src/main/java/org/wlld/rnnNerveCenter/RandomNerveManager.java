@@ -259,14 +259,20 @@ public class RandomNerveManager {//随机神经网络管理
             randomNerveBody.setFeatureIndexes(featureIndexes);
             randomNerveBody.setNerveManager(initNerveManager(true));
             randomNerveBodyList.add(randomNerveBody);
-            List<Integer> list = new ArrayList<>();
-            for (int k = 0; k < maxFeatureLength; k++) {
-                list.add(k);
-            }
-            for (int j = 0; j < nerveNumber; j++) {
-                int index = random.nextInt(list.size());
-                featureIndexes[j] = list.get(index);
-                list.remove(index);
+            if (i > 0) {
+                List<Integer> list = new ArrayList<>();
+                for (int k = 0; k < maxFeatureLength; k++) {
+                    list.add(k);
+                }
+                for (int j = 0; j < nerveNumber; j++) {
+                    int index = random.nextInt(list.size());
+                    featureIndexes[j] = list.get(index);
+                    list.remove(index);
+                }
+            } else {//第一组rnn进行特征自增选取保证短句输入
+                for (int j = 0; j < nerveNumber; j++) {
+                    featureIndexes[j] = j;
+                }
             }
         }
     }
