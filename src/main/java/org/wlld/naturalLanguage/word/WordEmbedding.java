@@ -1,7 +1,6 @@
 package org.wlld.naturalLanguage.word;
 
 
-
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.RZ;
@@ -31,15 +30,16 @@ public class WordEmbedding {
     private List<String> wordList = new ArrayList<>();//单字集合
     private SentenceConfig config;
 
-    public WordEmbedding(SentenceConfig config) throws Exception {
+    public WordEmbedding(SentenceConfig config) {
         this.config = config;
-        if (config.getSentenceModel() != null) {
-            this.sentenceModel = config.getSentenceModel();
-            wordList.addAll(sentenceModel.getWordSet());
-            nerveManager = new NerveManager(wordList.size(), config.getWordVectorDimension(), wordList.size()
-                    , 1, new Tanh(), false, config.getWeStudyPoint(), RZ.NOT_RZ, 0);
-            nerveManager.init(true, false, false, true, 0, 0);
-        }
+    }
+
+    public void init(SentenceModel sentenceModel) throws Exception {
+        this.sentenceModel = sentenceModel;
+        wordList.addAll(sentenceModel.getWordSet());
+        nerveManager = new NerveManager(wordList.size(), config.getWordVectorDimension(), wordList.size()
+                , 1, new Tanh(), false, config.getWeStudyPoint(), RZ.NOT_RZ, 0);
+        nerveManager.init(true, false, false, true, 0, 0);
     }
 
     public void insertModel(WordTwoVectorModel wordTwoVectorModel) throws Exception {
@@ -96,6 +96,7 @@ public class WordEmbedding {
         List<String> sentenceList = sentenceModel.getSentenceList();
         int size = sentenceList.size();
         int index = 0;
+        System.out.println("词嵌入训练启动...");
         for (int i = index; i < size; i++) {
             long start = System.currentTimeMillis();
             study(sentenceList.get(i));

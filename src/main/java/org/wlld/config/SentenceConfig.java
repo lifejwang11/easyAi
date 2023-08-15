@@ -10,7 +10,6 @@ import org.wlld.entity.SentenceModel;
  * @Description 参数配置
  */
 public class SentenceConfig {
-    private SentenceModel sentenceModel;
     private int typeNub = 11;//分类数量
     private int wordVectorDimension = 21;//词向量嵌入维度
     private int maxWordLength = 15;//最长字数
@@ -85,14 +84,6 @@ public class SentenceConfig {
 
     public void setTypeNub(int typeNub) {
         this.typeNub = typeNub;
-    }
-
-    public SentenceModel getSentenceModel() {
-        return sentenceModel;
-    }
-
-    public void setSentenceModel(SentenceModel sentenceModel) {
-        this.sentenceModel = sentenceModel;
     }
 
     public int getWordVectorDimension() {
