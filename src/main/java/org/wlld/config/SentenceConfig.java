@@ -19,7 +19,7 @@ public class SentenceConfig {
     private int nerveDeep = 6;//随机网络一组深度
     private int keyWordNerveDeep = 3;//关键词判断网络深度
     private boolean showLog = true;
-    private int dateAug = 12000;
+    private int dateAug = 6000;
     private int TopNumber = 1;//取最高的几个类别
 
     public int getKeyWordNerveDeep() {
