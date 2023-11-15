@@ -35,6 +35,11 @@ public class NerveManager {
     private List<Double> studyList = new ArrayList<>();
     private int rzType;//正则化类型，默认不进行正则化
     private double lParam;//正则参数
+    private boolean isSoftMax = true;
+
+    public void setSoftMax(boolean softMax) {
+        isSoftMax = softMax;
+    }
 
     public List<Double> getStudyList() {//查看每一次的学习率
         return studyList;
@@ -415,13 +420,17 @@ public class NerveManager {
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
                     activeFunction, false, isShowLog, rzType, lParam, true, 0, 0);
-            SoftMax softMax = new SoftMax(i, outNerveNub, false, outNerve, isShowLog);
-            mySoftMaxList.add(softMax);
+            if (isSoftMax) {
+                SoftMax softMax = new SoftMax(i, outNerveNub, false, outNerve, isShowLog);
+                mySoftMaxList.add(softMax);
+            }
             outNerve.connectFather(nerveList);//每一层的输出神经元 链接每一层的隐层神经元
             rnnOutNerves.add(outNerve);
         }
-        for (Nerve nerve : rnnOutNerves) {
-            nerve.connect(mySoftMaxList);
+        if (isSoftMax) {
+            for (Nerve nerve : rnnOutNerves) {
+                nerve.connect(mySoftMaxList);
+            }
         }
         for (Nerve nerve : nerveList) {
             nerve.connectOut(rnnOutNerves);
