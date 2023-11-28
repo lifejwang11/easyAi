@@ -419,7 +419,7 @@ public class NerveManager {
         rnnOutNerveBody.setOutNerves(rnnOutNerves);
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
-                    activeFunction, false, isShowLog, rzType, lParam, true, 0, 0);
+                    activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0, 0);
             if (isSoftMax) {
                 SoftMax softMax = new SoftMax(i, outNerveNub, false, outNerve, isShowLog);
                 mySoftMaxList.add(softMax);
