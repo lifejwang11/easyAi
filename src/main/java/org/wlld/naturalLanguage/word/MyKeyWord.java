@@ -10,6 +10,7 @@ import org.wlld.function.Tanh;
 import org.wlld.i.OutBack;
 import org.wlld.rnnNerveCenter.ModelParameter;
 import org.wlld.rnnNerveCenter.NerveManager;
+import org.wlld.rnnNerveCenter.RandomNerveManager;
 import org.wlld.rnnNerveEntity.SensoryNerve;
 
 import java.util.HashMap;
@@ -17,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 public class MyKeyWord {
-    private WordEmbedding wordEmbedding;
-    private NerveManager typeNerveManager;
-    private int nerveLength;
-    private int maxWordLength;//最高句子长度
+    private final WordEmbedding wordEmbedding;
+    private final NerveManager typeNerveManager;
+    private final int nerveLength;
+    private final int maxWordLength;//最高句子长度
 
     public MyKeyWord(SentenceConfig config, WordEmbedding wordEmbedding) throws Exception {
         int vectorDimension = config.getWordVectorDimension();
@@ -68,7 +69,7 @@ public class MyKeyWord {
             int endIndex = -1;
             if (!isStudy) {
                 wordBack = new WordBack();
-            } else if (keyWord != null && keyWord.length() > 0) {
+            } else if (keyWord != null && !keyWord.isEmpty()) {
                 startIndex = word.indexOf(keyWord);
                 endIndex = startIndex + keyWord.length() - 1;
             }
@@ -108,13 +109,6 @@ public class MyKeyWord {
     }
 
     private void studyNerve(long eventId, List<SensoryNerve> sensoryNerves, List<Double> featureList, Matrix rnnMatrix, Map<Integer, Double> E, boolean isStudy, OutBack convBack) throws Exception {
-        if (sensoryNerves.size() == featureList.size()) {
-            for (int i = 0; i < sensoryNerves.size(); i++) {
-                sensoryNerves.get(i).postMessage(eventId, featureList.get(i), isStudy, E, convBack, false, rnnMatrix);
-            }
-        } else {
-            throw new Exception("size not equals,feature size:" + featureList.size() + "," +
-                    "sensorySize:" + sensoryNerves.size());
-        }
+        RandomNerveManager.studyMyNerve(eventId, sensoryNerves, featureList, rnnMatrix, E, isStudy, convBack);
     }
 }

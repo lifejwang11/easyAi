@@ -11,14 +11,14 @@ import java.util.*;
 /**
  * @author lidapeng
  * 神经元，所有类别神经元都要继承的类，具有公用属性
- * @date 9:36 上午 2019/12/21
+ * &#064;date  9:36 上午 2019/12/21
  */
 public abstract class Nerve {
-    private List<Nerve> son = new ArrayList<>();//轴突下一层的连接神经元
-    private List<Nerve> father = new ArrayList<>();//树突上一层的连接神经元
+    private final List<Nerve> son = new ArrayList<>();//轴突下一层的连接神经元
+    private final List<Nerve> father = new ArrayList<>();//树突上一层的连接神经元
     protected Map<Integer, Double> dendrites = new HashMap<>();//上一层权重(需要取出)
     protected Map<Integer, Double> wg = new HashMap<>();//上一层权重与梯度的积
-    private int id;//同级神经元编号,注意在同层编号中ID应有唯一性
+    private final int id;//同级神经元编号,注意在同层编号中ID应有唯一性
     protected int upNub;//上一层神经元数量
     protected int downNub;//下一层神经元的数量
     protected Map<Long, List<Double>> features = new HashMap<>();//上一层神经元输入的数值
@@ -32,10 +32,10 @@ public abstract class Nerve {
     protected double sigmaW;//对上一层权重与上一层梯度的积进行求和
     private int backNub = 0;//当前节点被反向传播的次数
     protected ActiveFunction activeFunction;
-    private int rzType;//正则化类型，默认不进行正则化
-    private double lParam;//正则参数
-    private int step;//步长
-    private int kernLen;//核长
+    private final int rzType;//正则化类型，默认不进行正则化
+    private final double lParam;//正则参数
+    private final int step;//步长
+    private final int kernLen;//核长
     private Matrix im2col;//输入矩阵
     private int xInput;//输入矩阵的x
     private int yInput;//输入矩阵的y
@@ -87,7 +87,7 @@ public abstract class Nerve {
 
     public void sendMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
             , OutBack outBack) throws Exception {
-        if (son.size() > 0) {
+        if (!son.isEmpty()) {
             for (Nerve nerve : son) {
                 nerve.input(eventId, parameter, isStudy, E, outBack);
             }
@@ -123,7 +123,7 @@ public abstract class Nerve {
 
     public void sendMatrix(long eventId, Matrix parameter, boolean isStudy,
                            int E, OutBack outBack) throws Exception {
-        if (son.size() > 0) {
+        if (!son.isEmpty()) {
             for (Nerve nerve : son) {
                 nerve.inputMatrix(eventId, parameter, isStudy, E, outBack);
             }
@@ -133,7 +133,7 @@ public abstract class Nerve {
     }
 
     private void backSendMessage(long eventId) throws Exception {//反向传播
-        if (father.size() > 0) {
+        if (!father.isEmpty()) {
             for (int i = 0; i < father.size(); i++) {
                 father.get(i).backGetMessage(wg.get(i + 1), eventId);
             }
@@ -141,9 +141,9 @@ public abstract class Nerve {
     }
 
     private void backMatrixMessage(Matrix g) throws Exception {//反向传播矩阵
-        if (father.size() > 0) {
-            for (int i = 0; i < father.size(); i++) {
-                father.get(i).backMatrix(g);
+        if (!father.isEmpty()) {
+            for (Nerve nerve : father) {
+                nerve.backMatrix(g);
             }
         }
     }

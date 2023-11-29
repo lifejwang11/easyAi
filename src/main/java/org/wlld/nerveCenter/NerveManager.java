@@ -14,25 +14,25 @@ import java.util.Map;
  * 创建神经网络
  *
  * @author lidapeng
- * @date 11:05 上午 2019/12/21
+ * &#064;date  11:05 上午 2019/12/21
  */
 public class NerveManager {
-    private int hiddenNerveNub;//隐层神经元个数
-    private int sensoryNerveNub;//输入神经元个数
-    private int outNerveNub;//输出神经元个数
-    private int hiddenDepth;//隐层深度
-    private List<SensoryNerve> sensoryNerves = new ArrayList<>();//感知神经元
-    private List<List<Nerve>> depthNerves = new ArrayList<>();//隐层神经元
-    private List<Nerve> outNerves = new ArrayList<>();//输出神经元
-    private List<Nerve> softMaxList = new ArrayList<>();//softMax层
+    private final int hiddenNerveNub;//隐层神经元个数
+    private final int sensoryNerveNub;//输入神经元个数
+    private final int outNerveNub;//输出神经元个数
+    private final int hiddenDepth;//隐层深度
+    private final List<SensoryNerve> sensoryNerves = new ArrayList<>();//感知神经元
+    private final List<List<Nerve>> depthNerves = new ArrayList<>();//隐层神经元
+    private final List<Nerve> outNerves = new ArrayList<>();//输出神经元
+    private final List<Nerve> softMaxList = new ArrayList<>();//softMax层
     private boolean initPower;
     private double studyPoint = 0.1;//学习率
-    private ActiveFunction activeFunction;
+    private final ActiveFunction activeFunction;
     private Map<Integer, Matrix> matrixMap = new HashMap<>();//主键与期望矩阵的映射
-    private boolean isDynamic;//是否是动态神经网络
+    private final boolean isDynamic;//是否是动态神经网络
     private List<Double> studyList = new ArrayList<>();
-    private int rzType;//正则化类型，默认不进行正则化
-    private double lParam;//正则参数
+    private final int rzType;//正则化类型，默认不进行正则化
+    private final double lParam;//正则参数
 
     public List<Double> getStudyList() {//查看每一次的学习率
         return studyList;
@@ -101,25 +101,23 @@ public class NerveManager {
         ModelParameter modelParameter = new ModelParameter();
         List<List<NerveStudy>> studyDepthNerves = new ArrayList<>();//隐层神经元模型
         List<NerveStudy> outStudyNerves = new ArrayList<>();//输出神经元
-        for (int i = 0; i < depthNerves.size(); i++) {
+        //隐层神经元
+        for (List<Nerve> depthNerve : depthNerves) {
             //创建一层深度的隐层神经元模型
-            List<Nerve> depthNerve = depthNerves.get(i);//隐层神经元
             List<NerveStudy> deepNerve = new ArrayList<>();
-            for (int j = 0; j < depthNerve.size(); j++) {
+            for (Nerve nerve : depthNerve) {
                 //遍历某一层深度的所有隐层神经元
                 NerveStudy nerveStudy = new NerveStudy();
-                Nerve hiddenNerve = depthNerve.get(j);
-                nerveStudy.setThreshold(hiddenNerve.getThreshold());
-                nerveStudy.setDendrites(conversion(hiddenNerve.getDendrites()));
+                nerveStudy.setThreshold(nerve.getThreshold());
+                nerveStudy.setDendrites(conversion(nerve.getDendrites()));
                 deepNerve.add(nerveStudy);
             }
             studyDepthNerves.add(deepNerve);
         }
-        for (int i = 0; i < outNerves.size(); i++) {
+        for (Nerve nerve : outNerves) {
             NerveStudy nerveStudy = new NerveStudy();
-            Nerve outNerve = outNerves.get(i);
-            nerveStudy.setThreshold(outNerve.getThreshold());
-            nerveStudy.setDendrites(conversion(outNerve.getDendrites()));
+            nerveStudy.setThreshold(nerve.getThreshold());
+            nerveStudy.setDendrites(conversion(nerve.getDendrites()));
             outStudyNerves.add(nerveStudy);
         }
         modelParameter.setDepthNerves(studyDepthNerves);
@@ -227,30 +225,6 @@ public class NerveManager {
         }
     }
 
-    public int getHiddenNerverNub() {
-        return hiddenNerveNub;
-    }
-
-    public int getSensoryNerveNub() {
-        return sensoryNerveNub;
-    }
-
-    public int getOutNerveNub() {
-        return outNerveNub;
-    }
-
-    public int getHiddenDepth() {
-        return hiddenDepth;
-    }
-
-    public List<List<Nerve>> getDepthNerves() {
-        return depthNerves;
-    }
-
-    public List<Nerve> getOutNevers() {
-        return outNerves;
-    }
-
     public List<SensoryNerve> getSensoryNerves() {//获取感知神经元集合
         return sensoryNerves;
     }
@@ -264,7 +238,6 @@ public class NerveManager {
      * @param isSoftMax 最后一层是否用softMax激活
      * @param step      卷积步长
      * @param kernLen   卷积核长
-     * @throws Exception
      */
     public void init(boolean initPower, boolean isMatrix, boolean isShowLog, boolean isSoftMax
             , int step, int kernLen) throws Exception {//进行神经网络的初始化构建

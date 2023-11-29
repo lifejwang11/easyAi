@@ -17,18 +17,18 @@ import org.wlld.rnnNerveEntity.SensoryNerve;
 import java.util.*;
 
 public class RandomNerveManager {//随机神经网络管理
-    private WordEmbedding wordEmbedding;
-    private List<RandomNerveBody> randomNerveBodyList = new ArrayList<>();
-    private Map<Integer, Integer> mapping = new HashMap<>();//主键是真实id,值是映射识别用id
-    private int typeNub;//分类数量
-    private int vectorDimension;//特征纵向维度
-    private int maxFeatureLength;//特征最长长度
-    private double studyPoint;//词向量学习学习率
-    private boolean showLog;//是否输出学习数据
+    private final WordEmbedding wordEmbedding;
+    private final List<RandomNerveBody> randomNerveBodyList = new ArrayList<>();
+    private final Map<Integer, Integer> mapping = new HashMap<>();//主键是真实id,值是映射识别用id
+    private final int typeNub;//分类数量
+    private final int vectorDimension;//特征纵向维度
+    private final int maxFeatureLength;//特征最长长度
+    private final double studyPoint;//词向量学习学习率
+    private final boolean showLog;//是否输出学习数据
     private int randomNumber;//随机数量
     private int nerveNumber = 4;//神经元数量
-    private int dateAug;//数据增广
-    private int topNumber;//去最高几种类别
+    private final int dateAug;//数据增广
+    private final int topNumber;//去最高几种类别
 
     public RandomNerveManager(SentenceConfig config, WordEmbedding wordEmbedding) throws Exception {
         if (config.getNerveDeep() > 3) {
@@ -57,6 +57,10 @@ public class RandomNerveManager {//随机神经网络管理
     }
 
     private void studyNerve(long eventId, List<SensoryNerve> sensoryNerves, List<Double> featureList, Matrix rnnMatrix, Map<Integer, Double> E, boolean isStudy, OutBack convBack) throws Exception {
+        studyMyNerve(eventId, sensoryNerves, featureList, rnnMatrix, E, isStudy, convBack);
+    }
+
+    public static void studyMyNerve(long eventId, List<SensoryNerve> sensoryNerves, List<Double> featureList, Matrix rnnMatrix, Map<Integer, Double> E, boolean isStudy, OutBack convBack) throws Exception {
         if (sensoryNerves.size() == featureList.size()) {
             for (int i = 0; i < sensoryNerves.size(); i++) {
                 sensoryNerves.get(i).postMessage(eventId, featureList.get(i), isStudy, E, convBack, false, rnnMatrix);
@@ -74,14 +78,13 @@ public class RandomNerveManager {//随机神经网络管理
             mapping.put(typeMapping.getType(), typeMapping.getMapping());
         }
         randomNumber = randomModelParameters.size();
-        for (int i = 0; i < randomModelParameters.size(); i++) {
+        for (RandomModelParameter modelParameter : randomModelParameters) {
             RandomNerveBody randomNerveBody = new RandomNerveBody();
-            RandomModelParameter randomModelParameter = randomModelParameters.get(i);
-            int[] featureIndexes = randomModelParameter.getFeatureIndexes();
-            randomNerveBody.setKey(randomModelParameter.getKey());
+            int[] featureIndexes = modelParameter.getFeatureIndexes();
+            randomNerveBody.setKey(modelParameter.getKey());
             randomNerveBody.setFeatureIndexes(featureIndexes);
             NerveManager nerveManager = initNerveManager(false);
-            nerveManager.insertModelParameter(randomModelParameter.getModelParameter());
+            nerveManager.insertModelParameter(modelParameter.getModelParameter());
             randomNerveBody.setNerveManager(nerveManager);
             randomNerveBodyList.add(randomNerveBody);
         }
@@ -132,8 +135,7 @@ public class RandomNerveManager {//随机神经网络管理
         Trust trust = study(myFeature, null, false, eventId);
         List<Integer> keys = trust.getKeys();
         List<Integer> myKeys = new ArrayList<>();
-        for (int i = 0; i < keys.size(); i++) {
-            int key = keys.get(i);
+        for (int key : keys) {
             int id = -1;
             for (Map.Entry<Integer, Integer> entry : mapping.entrySet()) {
                 if (entry.getValue() == key) {
@@ -195,7 +197,6 @@ public class RandomNerveManager {//随机神经网络管理
     }
 
     private Trust study(Matrix feature, Map<Integer, Double> E, boolean isStudy, long eventId) throws Exception {
-        int key = -1;
         List<TypeBody> typeBodies = new ArrayList<>();
         Trust trust = null;
         int myNumber = 0;
@@ -206,8 +207,8 @@ public class RandomNerveManager {//随机神经网络管理
             Matrix myFeature = null;
             List<Double> firstFeature = null;
             int times = 0;
-            for (int j = 0; j < features.length; j++) {
-                int index = features[j];//不一定取的到前提是有这个序列
+            //不一定取的到前提是有这个序列
+            for (int index : features) {
                 if (feature.getX() > index) {//能找的到
                     times++;
                     if (myFeature == null) {
@@ -241,8 +242,8 @@ public class RandomNerveManager {//随机神经网络管理
                 typeBodies = typeBodies.subList(0, topNumber);
             }
             List<Integer> keys = new ArrayList<>();
-            for (int k = 0; k < typeBodies.size(); k++) {
-                keys.add(typeBodies.get(k).getType());
+            for (TypeBody typeBody : typeBodies) {
+                keys.add(typeBody.getType());
             }
             trust.setKeys(keys);
             trust.setTrust(myNumber / (double) randomNumber);

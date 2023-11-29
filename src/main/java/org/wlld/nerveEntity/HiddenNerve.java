@@ -9,10 +9,10 @@ import java.util.Map;
 /**
  * @author lidapeng
  * 隐层神经元
- * @date 9:30 上午 2019/12/21
+ * &#064;date  9:30 上午 2019/12/21
  */
 public class HiddenNerve extends Nerve {
-    private int depth;//所处深度
+    private final int depth;//所处深度
 
     public HiddenNerve(int id, int depth, int upNub, int downNub, double studyPoint,
                        boolean init, ActiveFunction activeFunction, boolean isDynamic, int rzType, double lParam

@@ -12,8 +12,8 @@ import java.util.Map;
  */
 public class OutNerve extends Nerve {
     private Map<Integer, Matrix> matrixMapE;//主键与期望矩阵的映射
-    private boolean isShowLog;
-    private boolean isSoftMax;
+    private final boolean isShowLog;
+    private final boolean isSoftMax;
 
     public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic, boolean isShowLog,
