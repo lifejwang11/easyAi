@@ -10,7 +10,6 @@ import org.wlld.function.Tanh;
 import org.wlld.i.OutBack;
 import org.wlld.rnnNerveCenter.ModelParameter;
 import org.wlld.rnnNerveCenter.NerveManager;
-import org.wlld.rnnNerveCenter.RandomNerveManager;
 import org.wlld.rnnNerveEntity.SensoryNerve;
 
 import java.util.HashMap;
@@ -77,7 +76,7 @@ public class MyKeyWord {
             if (nerveLength < word.length()) {
                 times = word.length() - nerveLength + 1;
             }
-            Matrix allFeature = wordEmbedding.getEmbedding(word, eventId);
+            Matrix allFeature = wordEmbedding.getEmbedding(word, eventId).getFeatureMatrix();
             for (int i = 0; i < times; i++) {
                 if (isStudy) {
                     E.clear();
@@ -109,6 +108,13 @@ public class MyKeyWord {
     }
 
     private void studyNerve(long eventId, List<SensoryNerve> sensoryNerves, List<Double> featureList, Matrix rnnMatrix, Map<Integer, Double> E, boolean isStudy, OutBack convBack) throws Exception {
-        RandomNerveManager.studyMyNerve(eventId, sensoryNerves, featureList, rnnMatrix, E, isStudy, convBack);
+        if (sensoryNerves.size() == featureList.size()) {
+            for (int i = 0; i < sensoryNerves.size(); i++) {
+                sensoryNerves.get(i).postMessage(eventId, featureList.get(i), isStudy, E, convBack, false, rnnMatrix);
+            }
+        } else {
+            throw new Exception("size not equals,feature size:" + featureList.size() + "," +
+                    "sensorySize:" + sensoryNerves.size());
+        }
     }
 }

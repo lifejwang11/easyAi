@@ -1,4 +1,4 @@
-package org.wlld.entity;
+package org.wlld.rnnJumpNerveEntity;
 
 
 import org.wlld.MatrixTools.Matrix;
@@ -6,44 +6,40 @@ import org.wlld.i.OutBack;
 
 import java.util.List;
 
-/**
- * @param
- * @DATA
- * @Author LiDaPeng
- * @Description
- */
-public class RegionBack implements OutBack {
+public class PowerBack implements OutBack {
+    private double out;
     private int id;
-    private double point = -2;
+    private List<Integer> powerList;
 
-    public void setId(int id) {
-        this.id = id;
+    public List<Integer> getPowerList() {
+        return powerList;
     }
 
-    public void clear() {
-        id = 0;
-        point = -2;
+    public PowerBack() {
+    }
+
+    public PowerBack(int id) {
+        this.id = id;
     }
 
     public int getId() {
         return id;
     }
 
-    public double getPoint() {
-        return point;
+    public double getOut() {
+        return out;
     }
 
     @Override
     public void getBack(double out, int id, long eventId) {
-        if (out > point) {
-            point = out;
-            this.id = id;
+        if (id == this.id) {
+            this.out = out;
         }
     }
 
     @Override
     public void backPower(List<Integer> powerList, long eventId) {
-
+        this.powerList = powerList;
     }
 
     @Override

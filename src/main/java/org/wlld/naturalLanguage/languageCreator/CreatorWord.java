@@ -3,6 +3,8 @@ package org.wlld.naturalLanguage.languageCreator;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.OutBack;
 
+import java.util.List;
+
 public class CreatorWord implements OutBack {
     private int id;
     private double maxOut = -2;
@@ -25,6 +27,11 @@ public class CreatorWord implements OutBack {
             maxOut = out;
             this.id = id;
         }
+    }
+
+    @Override
+    public void backPower(List<Integer> powerList, long eventId) {
+
     }
 
     @Override

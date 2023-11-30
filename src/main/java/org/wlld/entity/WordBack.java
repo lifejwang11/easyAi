@@ -4,6 +4,8 @@ package org.wlld.entity;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.OutBack;
 
+import java.util.List;
+
 /**
  * @param
  * @DATA
@@ -33,6 +35,11 @@ public class WordBack implements OutBack {
             this.out = out;
             this.id = id;
         }
+    }
+
+    @Override
+    public void backPower(List<Integer> powerList, long eventId) {
+
     }
 
     @Override

@@ -4,23 +4,19 @@ package org.wlld.config;
 import org.wlld.entity.SentenceModel;
 
 /**
- * @param
- * @DATA
- * @Author LiDaPeng
- * @Description 参数配置
  */
 public class SentenceConfig {
+    private SentenceModel sentenceModel;
     private int typeNub = 11;//分类数量
     private int wordVectorDimension = 21;//词向量嵌入维度
-    private int maxWordLength = 15;//最长字数
+    private int maxWordLength = 20;//最长字数
     private double weStudyPoint = 0.01;//词向量学习学习率
     private double weLParam = 0.001;//词向量正则系数
-    private int randomNumber = 11;//随机网络数量
-    private int nerveDeep = 6;//随机网络一组深度
-    private int keyWordNerveDeep = 3;//关键词判断网络深度
     private boolean showLog = true;
-    private int dateAug = 6000;
-    private int TopNumber = 1;//取最高的几个类别
+    private int dateAug = 5;
+    private int minLength = 4;
+    private double trustPowerTh = 0.5;//权重可信任阈值
+    private int keyWordNerveDeep = 3;
 
     public int getKeyWordNerveDeep() {
         return keyWordNerveDeep;
@@ -30,52 +26,12 @@ public class SentenceConfig {
         this.keyWordNerveDeep = keyWordNerveDeep;
     }
 
-    public int getTopNumber() {
-        return TopNumber;
+    public SentenceModel getSentenceModel() {
+        return sentenceModel;
     }
 
-    public void setTopNumber(int topNumber) {
-        TopNumber = topNumber;
-    }
-
-    public int getDateAug() {
-        return dateAug;
-    }
-
-    public void setDateAug(int dateAug) {
-        this.dateAug = dateAug;
-    }
-
-    public int getNerveDeep() {
-        return nerveDeep;
-    }
-
-    public void setNerveDeep(int nerveDeep) {
-        this.nerveDeep = nerveDeep;
-    }
-
-    public int getRandomNumber() {
-        return randomNumber;
-    }
-
-    public void setRandomNumber(int randomNumber) {
-        this.randomNumber = randomNumber;
-    }
-
-    public int getMaxWordLength() {
-        return maxWordLength;
-    }
-
-    public void setMaxWordLength(int maxWordLength) {
-        this.maxWordLength = maxWordLength;
-    }
-
-    public boolean isShowLog() {
-        return showLog;
-    }
-
-    public void setShowLog(boolean showLog) {
-        this.showLog = showLog;
+    public void setSentenceModel(SentenceModel sentenceModel) {
+        this.sentenceModel = sentenceModel;
     }
 
     public int getTypeNub() {
@@ -94,6 +50,14 @@ public class SentenceConfig {
         this.wordVectorDimension = wordVectorDimension;
     }
 
+    public int getMaxWordLength() {
+        return maxWordLength;
+    }
+
+    public void setMaxWordLength(int maxWordLength) {
+        this.maxWordLength = maxWordLength;
+    }
+
     public double getWeStudyPoint() {
         return weStudyPoint;
     }
@@ -108,5 +72,37 @@ public class SentenceConfig {
 
     public void setWeLParam(double weLParam) {
         this.weLParam = weLParam;
+    }
+
+    public boolean isShowLog() {
+        return showLog;
+    }
+
+    public void setShowLog(boolean showLog) {
+        this.showLog = showLog;
+    }
+
+    public int getDateAug() {
+        return dateAug;
+    }
+
+    public void setDateAug(int dateAug) {
+        this.dateAug = dateAug;
+    }
+
+    public int getMinLength() {
+        return minLength;
+    }
+
+    public void setMinLength(int minLength) {
+        this.minLength = minLength;
+    }
+
+    public double getTrustPowerTh() {
+        return trustPowerTh;
+    }
+
+    public void setTrustPowerTh(double trustPowerTh) {
+        this.trustPowerTh = trustPowerTh;
     }
 }

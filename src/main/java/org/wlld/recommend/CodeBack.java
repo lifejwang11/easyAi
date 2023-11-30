@@ -3,6 +3,8 @@ package org.wlld.recommend;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.OutBack;
 
+import java.util.List;
+
 public class CodeBack implements OutBack {
     private double[] myFeature;
 
@@ -17,6 +19,11 @@ public class CodeBack implements OutBack {
     @Override
     public void getBack(double out, int id, long eventId) {
         myFeature[id - 1] = out;
+    }
+
+    @Override
+    public void backPower(List<Integer> powerList, long eventId) {
+
     }
 
     @Override

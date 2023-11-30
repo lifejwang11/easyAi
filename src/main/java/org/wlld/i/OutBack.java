@@ -2,6 +2,8 @@ package org.wlld.i;
 
 import org.wlld.MatrixTools.Matrix;
 
+import java.util.List;
+
 /**
  * 将神经元的输出回调
  * @author lidapeng
@@ -16,6 +18,13 @@ public interface OutBack {
      * @param eventId 事件ID
      */
     void getBack(double out, int id, long eventId);
+    /**
+     * 回调
+     *
+     * @param powerList 输出权重路径
+     * @param eventId 事件ID
+     */
+    void backPower(List<Integer> powerList, long eventId);
 
     /**
      * 回调
@@ -30,5 +39,6 @@ public interface OutBack {
      *
      * @param id 当前词向量id
      */
-    void getWordVector(int id,double w);
+    void getWordVector(int id, double w);
+
 }

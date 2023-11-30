@@ -9,10 +9,10 @@ import org.wlld.gameRobot.DynamicState;
 import java.util.*;
 
 public class CatchKeyWord {//抓取关键词
-    private DynamicProgramming dynamicProgramming = new DynamicProgramming();//保存它的状态集合
-    private List<String> keyWords = new ArrayList<>();//保存词列表
-    private List<String> finishWords = new ArrayList<>();//终结态词集合
-    private Set<String> noList = new HashSet<>();//禁止词集合
+    private final DynamicProgramming dynamicProgramming = new DynamicProgramming();//保存它的状态集合
+    private final List<String> keyWords = new ArrayList<>();//保存词列表
+    private final List<String> finishWords = new ArrayList<>();//终结态词集合
+    private final Set<String> noList = new HashSet<>();//禁止词集合
     private double proTh = 0.1;//收益阈值
 
     public void setProTh(double proTh) {
@@ -62,16 +62,8 @@ public class CatchKeyWord {//抓取关键词
         if (isContinuity) {
             wordsValue = new WordsValue();
             wordsValue.isMerge = false;
-            if (start1 > start2) {
-                wordsValue.startIndex = start2;
-            } else {
-                wordsValue.startIndex = start1;
-            }
-            if (end1 > end2) {
-                wordsValue.endIndex = end1;
-            } else {
-                wordsValue.endIndex = end2;
-            }
+            wordsValue.startIndex = Math.min(start1, start2);
+            wordsValue.endIndex = Math.max(end1, end2);
         }
         return wordsValue;
     }
@@ -92,19 +84,11 @@ public class CatchKeyWord {//抓取关键词
                         WordsValue wordsValue = isContinuity(startIndex, endIndex, myStart, myEnd);
                         if (wordsValue != null) {//可进行合并
                             dynamic.isMerge = true;
-                            if (isFinish || dynamic.isFinish) {
-                                wordsValue.isFinish = true;
-                            } else {
-                                wordsValue.isFinish = false;
-                            }
+                            wordsValue.isFinish = isFinish || dynamic.isFinish;
                             if (wordsValue.isFinish) {
                                 wordsValue.value = 10;
                             } else {
-                                if (dynamic.value > value) {
-                                    wordsValue.value = dynamic.value;
-                                } else {
-                                    wordsValue.value = value;
-                                }
+                                wordsValue.value = Math.max(dynamic.value, value);
                             }
                             dynamicState = wordsValue;
                         }
@@ -125,9 +109,7 @@ public class CatchKeyWord {//抓取关键词
         KeyWordModel keyWordModel = new KeyWordModel();
         List<DyStateModel> dyStateModels = new ArrayList<>();
         List<DynamicState> dynamicStateList = dynamicProgramming.getDynamicStateList();
-        int size = dynamicStateList.size();
-        for (int i = 0; i < size; i++) {
-            DynamicState dynamicState = dynamicStateList.get(i);
+        for (DynamicState dynamicState : dynamicStateList) {
             DyStateModel dyStateModel = new DyStateModel();
             dyStateModel.setId(dynamicState.getStateId()[0]);
             dyStateModel.setFinish(dynamicState.isFinish());
@@ -143,13 +125,8 @@ public class CatchKeyWord {//抓取关键词
         List<String> myKeyWords = keyWordModel.getKeyWords();
         List<DyStateModel> dynamicStates = keyWordModel.getDynamicStateList();
         List<DynamicState> dynamicStateList = dynamicProgramming.getDynamicStateList();
-        int size = myKeyWords.size();
-        for (int i = 0; i < size; i++) {
-            keyWords.add(myKeyWords.get(i));
-        }
-        int s = dynamicStates.size();
-        for (int i = 0; i < s; i++) {
-            DyStateModel modelDy = dynamicStates.get(i);
+        keyWords.addAll(myKeyWords);
+        for (DyStateModel modelDy : dynamicStates) {
             DynamicState dynamicState = new DynamicState(new int[]{modelDy.getId()});
             dynamicState.setValue(modelDy.getValue());
             dynamicState.setFinish(modelDy.isFinish());
@@ -218,7 +195,7 @@ public class CatchKeyWord {//抓取关键词
                                 int upIndex = sentence.indexOf(maxWord);//最大字符所在的位置
                                 DynamicState upState = null;
                                 double upValue = -1000000;
-                                String myUpWord = null;
+                                String myUpWord;
                                 if (upIndex < sentence.length() - 2) {
                                     myUpWord = sentence.substring(upIndex + 1, upIndex + 3);
                                     upState = getDynamicState(myUpWord, dynamicStateList);
@@ -285,7 +262,7 @@ public class CatchKeyWord {//抓取关键词
                             int index = sentence.indexOf(word);
                             double myValue = maxDy.value;
                             DynamicState state = null;
-                            String upWord = null;
+                            String upWord;
                             if (index > 0) {
                                 int t = index - 1;
                                 upWord = sentence.substring(t, t + word.length());
@@ -313,7 +290,7 @@ public class CatchKeyWord {//抓取关键词
                                 int upIndex = sentence.indexOf(maxWord);//最大字符所在的位置
                                 DynamicState upState = null;
                                 double upValue = -1000000;
-                                String myUpWord = null;
+                                String myUpWord;
                                 if (upIndex > 1) {
                                     myUpWord = sentence.substring(upIndex - 2, upIndex);
                                     upState = getDynamicState(myUpWord, dynamicStateList);
@@ -361,6 +338,18 @@ public class CatchKeyWord {//抓取关键词
     public Set<String> getKeyWord(String sentence) {
         List<String> first = getMyKeyWord(sentence, true);
         List<String> second = getMyKeyWord(sentence, false);
+        for (int i = 0; i < first.size(); i++) {
+            if (first.get(i).length() == 1) {
+                first.remove(i);
+                i--;
+            }
+        }
+        for (int i = 0; i < second.size(); i++) {
+            if (second.get(i).length() == 1) {
+                second.remove(i);
+                i--;
+            }
+        }
         Set<String> set = new HashSet<>();
         set.addAll(first);
         set.addAll(second);
@@ -379,8 +368,7 @@ public class CatchKeyWord {//抓取关键词
         //合并完成，连接空档
         int[] sen = new int[sentence.length()];
         Arrays.fill(sen, 1);
-        for (int i = 0; i < wordsValues.size(); i++) {
-            WordsValue wordsValue = wordsValues.get(i);
+        for (WordsValue wordsValue : wordsValues) {
             int startIndex = wordsValue.startIndex;
             int endIndex = wordsValue.endIndex;
             for (int j = startIndex; j <= endIndex; j++) {
@@ -407,8 +395,7 @@ public class CatchKeyWord {//抓取关键词
             }
         }
         List<String> keyWords = new ArrayList<>();
-        for (int i = 0; i < wordsValueList.size(); i++) {
-            WordsValue wordsValue1 = wordsValueList.get(i);
+        for (WordsValue wordsValue1 : wordsValueList) {
             String keyWord = sentence.substring(wordsValue1.startIndex, wordsValue1.endIndex + 1);
             keyWords.add(keyWord);
         }
@@ -499,10 +486,8 @@ public class CatchKeyWord {//抓取关键词
 
     private int getID(String word) {
         int id = 0;
-        int size = keyWords.size();
         boolean isHere = false;
-        for (int i = 0; i < size; i++) {
-            String myWord = keyWords.get(i);
+        for (String myWord : keyWords) {
             if (myWord.hashCode() == word.hashCode() && myWord.equals(word)) {
                 isHere = true;
                 break;
@@ -515,7 +500,7 @@ public class CatchKeyWord {//抓取关键词
         return id;
     }
 
-    class WordsValue {
+    static class WordsValue {
         int id;//词id
         int startIndex;//起始下标
         int endIndex;//末尾下标

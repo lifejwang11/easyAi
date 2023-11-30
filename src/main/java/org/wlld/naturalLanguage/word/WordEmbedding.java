@@ -10,6 +10,7 @@ import org.wlld.entity.WordMatrix;
 import org.wlld.entity.WordTwoVectorModel;
 import org.wlld.function.Tanh;
 import org.wlld.i.OutBack;
+import org.wlld.rnnJumpNerveEntity.MyWordFeature;
 import org.wlld.rnnNerveCenter.NerveManager;
 import org.wlld.rnnNerveEntity.SensoryNerve;
 
@@ -55,10 +56,11 @@ public class WordEmbedding {
         nerveManager.insertModelParameter(wordTwoVectorModel.getModelParameter());
     }
 
-    public Matrix getEmbedding(String word, long eventId) throws Exception {//做截断
+    public MyWordFeature getEmbedding(String word, long eventId) throws Exception {//做截断
         if (word.length() > config.getMaxWordLength()) {
             word = word.substring(0, config.getMaxWordLength());
         }
+        MyWordFeature myWordFeature = new MyWordFeature();
         int wordDim = config.getWordVectorDimension();
         Matrix matrix = null;
         for (int i = 0; i < word.length(); i++) {
@@ -67,12 +69,14 @@ public class WordEmbedding {
             int index = getID(myWord);
             studyDNN(eventId, index, 0, wordMatrix, true, false);
             if (matrix == null) {
+                myWordFeature.setFirstFeatureList(wordMatrix.getList());
                 matrix = wordMatrix.getVector();
             } else {
                 matrix = MatrixOperation.pushVector(matrix, wordMatrix.getVector(), true);
             }
         }
-        return matrix;
+        myWordFeature.setFeatureMatrix(matrix);
+        return myWordFeature;
     }
 
     private void studyDNN(long eventId, int featureIndex, int resIndex, OutBack outBack, boolean isEmbedding, boolean isStudy) throws Exception {
