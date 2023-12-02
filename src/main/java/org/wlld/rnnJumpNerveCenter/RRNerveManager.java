@@ -60,7 +60,7 @@ public class RRNerveManager {
     }
 
     private int balance(Map<Integer, List<String>> model) {//强行均衡
-        int maxNumber = 0;
+        int maxNumber = 300;
         int index = 1;
         for (Map.Entry<Integer, List<String>> entry : model.entrySet()) {//查找最大数量
             mapping.put(entry.getKey(), index);
