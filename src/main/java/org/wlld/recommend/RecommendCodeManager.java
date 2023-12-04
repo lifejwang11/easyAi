@@ -8,17 +8,16 @@ import org.wlld.rnnNerveCenter.NerveManager;
 import org.wlld.rnnNerveEntity.SensoryNerve;
 import org.wlld.tools.IdCreator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class RecommendCodeManager {//推荐id管理
-    private NerveManager nerveManager;
-    private double studyTh;
-    private int dim;
-    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final NerveManager nerveManager;
+    private final double studyTh;
+    private final int dim;
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     public RecommendCodeManager(boolean initPower, RecommendConfig recommendConfig) throws Exception {
         studyTh = recommendConfig.getStudyTh();

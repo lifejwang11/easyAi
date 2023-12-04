@@ -275,13 +275,14 @@ public class NerveJumpManager {
      * @param hiddenDepth     隐层深度
      * @param activeFunction  激活函数
      * @param isDynamic       是否是动态神经元
+     * @param studyPoint   学习率
      * @param rzType          正则函数
      * @param lParam          正则系数
      * @throws Exception 如果参数错误则抛异常
      */
     public NerveJumpManager(int sensoryNerveNub, int hiddenNerveNub, int outNerveNub
             , int hiddenDepth, ActiveFunction activeFunction, boolean isDynamic,
-                        double studyPoint, int rzType, double lParam) throws Exception {
+                            double studyPoint, int rzType, double lParam) throws Exception {
         if (sensoryNerveNub > 0 && hiddenNerveNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
             this.hiddenNerveNub = hiddenNerveNub;
             this.sensoryNerveNub = sensoryNerveNub;
@@ -384,7 +385,14 @@ public class NerveJumpManager {
         }
         rnnOutNerveBodies.add(rnnOutNerveBody);
     }
-
+    /**
+     * 初始化残差Rnn神经元(跳层)参数
+     *
+     * @param initPower 是否是首次进行训练
+     * @param isShowLog  是否打印续写过程中的参数
+     * @param toSoftMax   是否增加softMax输出层
+     * @throws Exception 如果参数错误则抛异常
+     */
     public void initRnn(boolean initPower, boolean isShowLog, boolean toSoftMax) throws Exception {
         isRnn = true;
         initDepthNerve(false, 0, 0);//初始化深度隐层神经元

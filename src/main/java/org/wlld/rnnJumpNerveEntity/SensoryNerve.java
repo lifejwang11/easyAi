@@ -23,11 +23,14 @@ public class SensoryNerve extends Nerve {
     }
 
     /**
-     * @param eventId   唯一的事件id
-     * @param parameter 输入点的数据
-     * @param isStudy   是否是学习 (学习状态没有输出)
-     * @param E         标注
-     * @param outBack   回调结果
+     * @param eventId     唯一的事件id（每个用户线程一个id用来处理线程安全）
+     * @param parameter   该输入层的输入参数
+     * @param isStudy     是否是学习 (学习状态没有输出)
+     * @param E           标注
+     * @param outBack     回调结果
+     * @param isEmbedding 是否获取word2Vec返回结果(单独为词向量嵌入兼容，若无需则传false)
+     * @param rnnMatrix   rnn参数矩阵，矩阵中每一行是每一层的特征向量
+     * @param storeys    记录跳层路径的数组，即在rnn中经过的层数，若不在此路径集合内则跳跃
      */
     public void postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
             , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys) throws Exception {//感知神经元输出
