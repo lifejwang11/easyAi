@@ -15,7 +15,7 @@ public class SentenceConfig {
     private boolean showLog = true;
     private int minLength = 4;
     private double trustPowerTh = 0.5;//权重可信任阈值
-    private int keyWordNerveDeep = 4;
+    private int keyWordNerveDeep = 3;
 
     public int getKeyWordNerveDeep() {
         return keyWordNerveDeep;
