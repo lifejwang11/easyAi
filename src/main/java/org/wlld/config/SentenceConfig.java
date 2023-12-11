@@ -13,10 +13,9 @@ public class SentenceConfig {
     private double weStudyPoint = 0.01;//词向量学习学习率
     private double weLParam = 0.001;//词向量正则系数
     private boolean showLog = true;
-    private int dateAug = 5;
     private int minLength = 4;
     private double trustPowerTh = 0.5;//权重可信任阈值
-    private int keyWordNerveDeep = 3;
+    private int keyWordNerveDeep = 6;
 
     public int getKeyWordNerveDeep() {
         return keyWordNerveDeep;
@@ -80,14 +79,6 @@ public class SentenceConfig {
 
     public void setShowLog(boolean showLog) {
         this.showLog = showLog;
-    }
-
-    public int getDateAug() {
-        return dateAug;
-    }
-
-    public void setDateAug(int dateAug) {
-        this.dateAug = dateAug;
     }
 
     public int getMinLength() {

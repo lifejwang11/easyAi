@@ -18,34 +18,37 @@ public class RRNerveManager {
     private final WordEmbedding wordEmbedding;
     private final Map<Integer, Integer> mapping = new HashMap<>();//主键是真实id,值是映射识别用id
     private NerveJumpManager typeNerveManager;//类别网络
-    private final int typeNub;//分类数量
-    private final int vectorDimension;//特征纵向维度
-    private final int maxFeatureLength;//特征最长长度
-    private final double studyPoint;//词向量学习学习率
-    private final boolean showLog;//是否输出学习数据
-    private final int minLength;//最小长度
-    private final int dateAug;//数据增广
+    private int typeNub;//分类数量
+    private int vectorDimension;//特征纵向维度
+    private int maxFeatureLength;//特征最长长度
+    private double studyPoint;//词向量学习学习率
+    private boolean showLog;//是否输出学习数据
+    private int minLength;//最小长度
+    private double trustPowerTh = 0;//可信阈值
 
-    public RRNerveManager(SentenceConfig config, WordEmbedding wordEmbedding, boolean initPower) throws Exception {
+    public RRNerveManager(WordEmbedding wordEmbedding) {
+        this.wordEmbedding = wordEmbedding;
+    }
+
+    public void init(SentenceConfig config) throws Exception {
         if (config.getTypeNub() > 0) {
+            this.trustPowerTh = config.getTrustPowerTh();
             this.minLength = config.getMinLength();
-            this.wordEmbedding = wordEmbedding;
-            this.dateAug = config.getDateAug();
             this.typeNub = config.getTypeNub();
             this.vectorDimension = config.getWordVectorDimension();
             this.maxFeatureLength = config.getMaxWordLength();
             this.studyPoint = config.getWeStudyPoint();
             this.showLog = config.isShowLog();
-            initNerveManager(initPower, config.getTrustPowerTh());
+            initNerveManager();
         } else {
             throw new Exception("分类种类数量必须大于0");
         }
     }
 
-    private void initNerveManager(boolean initPower, double powerTh) throws Exception {
+    private void initNerveManager() throws Exception {
         typeNerveManager = new NerveJumpManager(vectorDimension, vectorDimension, typeNub, maxFeatureLength - 1, new Tanh(), false,
                 studyPoint, RZ.L1, studyPoint * 0.2);
-        typeNerveManager.initRnn(initPower, showLog, true);
+        typeNerveManager.initRnn(true, showLog, true);
     }
 
     private int getMappingType(int key) {//通过自增主键查找原映射
@@ -107,9 +110,13 @@ public class RRNerveManager {
         for (int i = 0; i < storeys.length; i++) {
             storeys[i] = i;
         }
-        WordBack wordBack = new WordBack();
+        WordBack wordBack = new WordBack();//trustPowerTh
         studyNerve(eventID, typeNerveManager.getSensoryNerves(), featureList, featureMatrix, null, false, wordBack, storeys);
-        return getMappingType(wordBack.getId());
+        if (wordBack.getOut() > trustPowerTh) {
+            return getMappingType(wordBack.getId());
+        } else {
+            return -1;
+        }
     }
 
     public void insertModel(RandomModel randomModel) throws Exception {
@@ -137,8 +144,8 @@ public class RRNerveManager {
 
     public RandomModel studyType(Map<Integer, List<String>> model) throws Exception {
         int maxNumber = balance(model);//平衡样本
-        for (int i = 0; i < dateAug; i++) {//第一阶段学习
-            System.out.println("1第：" + (i + 1) + "次。共:" + dateAug + "次");
+        for (int i = 0; i < maxFeatureLength; i++) {//第一阶段学习
+            System.out.println("1第：" + (i + 1) + "次。共:" + maxFeatureLength + "次");
             myStudy(maxNumber, model, i + 1);
         }
         return getModel();

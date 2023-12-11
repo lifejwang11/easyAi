@@ -28,10 +28,10 @@ import java.util.Map;
 public class WordEmbedding {
     private NerveManager nerveManager;
     private SentenceModel sentenceModel;
-    private List<String> wordList = new ArrayList<>();//单字集合
+    private final List<String> wordList = new ArrayList<>();//单字集合
     private SentenceConfig config;
 
-    public WordEmbedding(SentenceConfig config) {
+    public void setConfig(SentenceConfig config) {
         this.config = config;
     }
 
