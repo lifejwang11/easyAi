@@ -5,8 +5,8 @@
 * 若有想扩充的功能请进群提意见，若是通用场景我会陆续补充，技术交流群：561433236
 ## 详细视频教程地址：
 * 视频教程地址：https://www.bilibili.com/video/av89134035
-## 基于easyAi智能客服助手-JECS
-链接:https://gitee.com/ldp_dpsmax/JECS
+## 强大的自主智能客服工具——基于easyAi智能客服助手——myJecs
+链接:https://gitee.com/ldp_dpsmax/my-jecs
 ## 框架效果演示结果:
 * 因为是框架没有图像化界面，演示结果就是控制台输出的数据，只能用视频展示，想看演示结果请看教学视频
 * 详细api文档见项目html文档:https://wlhlwl.com/gw/easyAi.html
