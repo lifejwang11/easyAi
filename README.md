@@ -133,7 +133,7 @@
 FastPictureExcerpt fastPictureExcerpt = new FastPictureExcerpt();
 String name = fastPictureExcerpt.creatImageName(threeChannelMatrix, 5, 10);
 ```
-### 自然语言分类最简API 说明（该API已过时，自然语言处理请移步myJecs）:
+### 自然语言分类最简API 说明（已过时，自然语言处理请移步myJecs）:
 ``` java
          //通过txt默认格式进行读取
         TemplateReader templateReader = new TemplateReader();
