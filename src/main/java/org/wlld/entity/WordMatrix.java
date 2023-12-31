@@ -13,7 +13,7 @@ import java.util.List;
  * @Description
  */
 public class WordMatrix implements OutBack {
-    private double[] vector;
+    private final double[] vector;
 
     public WordMatrix(int size) {
         vector = new double[size];
@@ -29,8 +29,8 @@ public class WordMatrix implements OutBack {
 
     public List<Double> getList() {
         List<Double> list = new ArrayList<>();
-        for (int i = 0; i < vector.length; i++) {
-            list.add(vector[i]);
+        for (double v : vector) {
+            list.add(v);
         }
         return list;
     }
@@ -41,9 +41,10 @@ public class WordMatrix implements OutBack {
     }
 
     @Override
-    public void backPower(List<Integer> powerList, long eventId) {
+    public void backWord(String word, long eventId) {
 
     }
+
 
     @Override
     public void getBackMatrix(Matrix matrix, long eventId) {

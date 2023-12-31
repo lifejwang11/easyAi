@@ -1,13 +1,13 @@
 package org.wlld.i;
 
-import org.wlld.MatrixTools.Matrix;
 
-import java.util.List;
+import org.wlld.MatrixTools.Matrix;
 
 /**
  * 将神经元的输出回调
+ *
  * @author lidapeng
- * @date 1:07 下午 2019/12/24
+ * &#064;date  1:07 下午 2019/12/24
  */
 public interface OutBack {
     /**
@@ -18,13 +18,14 @@ public interface OutBack {
      * @param eventId 事件ID
      */
     void getBack(double out, int id, long eventId);
+
     /**
      * 回调
      *
-     * @param powerList 输出权重路径
+     * @param word    输出语句
      * @param eventId 事件ID
      */
-    void backPower(List<Integer> powerList, long eventId);
+    void backWord(String word, long eventId);
 
     /**
      * 回调

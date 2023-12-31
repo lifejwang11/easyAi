@@ -1,12 +1,12 @@
 package org.wlld.rnnJumpNerveEntity;
 
 
+
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -50,7 +50,7 @@ public class HiddenNerve extends Nerve {
     }
 
     @Override
-    protected void sendAppointTestMessage(long eventId, double parameter, int fromDepth, Matrix featureMatrix, List<Integer> storeys, OutBack outBack) throws Exception {
+    protected void sendAppointTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);//接收测试参数
         if (allReady) {//凑齐参数 发送给输出层
             double sigma = calculation(eventId);
@@ -58,15 +58,16 @@ public class HiddenNerve extends Nerve {
             out = out + featureMatrix.getNumber(depth, getId() - 1);
             destroyParameter(eventId);
             outMap.put(eventId, out);
-            sendRnnTestMessage(eventId, out, fromDepth, featureMatrix, storeys, outBack);
+            sendRnnTestMessage(eventId, out, featureMatrix, outBack, myWord, semanticsMatrix);
         }
     }
 
     @Override
-    protected void sendMyTestMessage(long eventId, int fromDepth, Matrix featureMatrix, List<Integer> storeys, OutBack outBack) throws Exception {
+    protected void sendMyTestMessage(long eventId, Matrix featureMatrix, OutBack outBack, String word, Matrix semanticsMatrix) throws Exception {
         //继续发送
         double out = outMap.get(eventId);
-        sendTestMessage(eventId, out, depth, featureMatrix, storeys, outBack);
+        outMap.remove(eventId);
+        sendTestMessage(eventId, out, featureMatrix, outBack, word, semanticsMatrix);
     }
 
     @Override

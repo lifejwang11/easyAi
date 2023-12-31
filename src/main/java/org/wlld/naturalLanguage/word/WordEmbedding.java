@@ -42,6 +42,12 @@ public class WordEmbedding {
                 , 1, new Tanh(), false, config.getWeStudyPoint(), RZ.NOT_RZ, 0);
         nerveManager.init(true, false, false, true, 0, 0);
     }
+    public List<String> getWordList() {
+        return wordList;
+    }
+    public String getWord(int id) {
+        return wordList.get(id);
+    }
 
     public void insertModel(WordTwoVectorModel wordTwoVectorModel) throws Exception {
         wordList.clear();
@@ -133,7 +139,7 @@ public class WordEmbedding {
         }
     }
 
-    private int getID(String word) {
+    public int getID(String word) {
         int index = 0;
         int size = wordList.size();
         for (int i = 0; i < size; i++) {

@@ -1,7 +1,5 @@
 package org.wlld.rnnJumpNerveEntity;
 
-
-
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.RZ;
@@ -112,6 +110,17 @@ public abstract class Nerve {
         return nextStorey;
     }
 
+    protected void sendSoftMaxBack(long eventId, double parameter, Matrix rnnMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
+        if (!son.isEmpty()) {
+            List<Nerve> nerverList = son.get(0);
+            for (Nerve nerve : nerverList) {
+                nerve.sendAppointSoftMax(eventId, parameter, rnnMatrix, outBack, myWord, semanticsMatrix);
+            }
+        } else {
+            throw new Exception("this storey is lastIndex");
+        }
+    }
+
     protected void sendSoftMax(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
             , OutBack outBack, Matrix rnnMatrix, int[] storeys, int index) throws Exception {
         if (!son.isEmpty()) {
@@ -127,37 +136,35 @@ public abstract class Nerve {
     protected void clearData(long eventId) {
     }
 
-    protected void sendMyTestMessage(long eventId, int fromDepth, Matrix featureMatrix, List<Integer> storeys, OutBack outBack) throws Exception {
+    protected void sendMyTestMessage(long eventId, Matrix featureMatrix, OutBack outBack, String word, Matrix semanticsMatrix) throws Exception {
 
     }
 
-    protected void sendAppointTestMessage(long eventId, double parameter, int fromDepth,
-                                          Matrix featureMatrix, List<Integer> storeys, OutBack outBack) throws Exception {
+    protected void sendAppointSoftMax(long eventId, double parameter, Matrix rnnMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
     }
 
-    protected void sendTestMessage(long eventId, double parameter, int fromDepth,
-                                   Matrix featureMatrix, List<Integer> storeys, OutBack outBack) throws Exception {
+    protected void sendAppointTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
+    }
+
+    protected void sendTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
         if (!son.isEmpty()) {
-            for (int i = depth + 1; i < featureMatrix.getX(); i++) {
-                List<Nerve> nerveList = son.get(i);
-                if (nerveList != null) {
-                    for (Nerve nerve : nerveList) {
-                        nerve.sendAppointTestMessage(eventId, parameter, fromDepth, featureMatrix, storeys, outBack);
-                    }
-                } else {
-                    throw new Exception("Insufficient layer:" + i);
+            List<Nerve> nerveList = son.get(depth + 1);
+            if (nerveList != null) {
+                for (Nerve nerve : nerveList) {
+                    nerve.sendAppointTestMessage(eventId, parameter, featureMatrix, outBack, myWord, semanticsMatrix);
                 }
+            } else {
+                throw new Exception("Insufficient layer:" + depth + 1);
             }
         } else {
             throw new Exception("this layer is lastIndex");
         }
     }
 
-    protected void sendRnnTestMessage(long eventId, double parameter, int fromDepth,
-                                      Matrix featureMatrix, List<Integer> storeys, OutBack outBack) throws Exception {
+    protected void sendRnnTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
         if (!rnnOut.isEmpty()) {
             for (Nerve nerve : rnnOut) {
-                nerve.sendAppointTestMessage(eventId, parameter, fromDepth, featureMatrix, storeys, outBack);
+                nerve.sendAppointTestMessage(eventId, parameter, featureMatrix, outBack, myWord, semanticsMatrix);
             }
         } else {
             throw new Exception("this layer is lastIndex");

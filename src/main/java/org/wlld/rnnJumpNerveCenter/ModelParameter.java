@@ -1,7 +1,5 @@
 package org.wlld.rnnJumpNerveCenter;
 
-
-
 import org.wlld.rnnJumpNerveEntity.DymNerveStudy;
 import org.wlld.rnnJumpNerveEntity.NerveStudy;
 
@@ -22,6 +20,15 @@ public class ModelParameter {
     private List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
     private DymNerveStudy dymOutNerveStudy = new DymNerveStudy();//动态神经元输出层
     private Map<Integer, Double> foodS;//干食品类别对应的积分 需激活注入
+    private List<double[][]> semanticsPowerList;//语义层权重
+
+    public List<double[][]> getSemanticsPowerList() {
+        return semanticsPowerList;
+    }
+
+    public void setSemanticsPowerList(List<double[][]> semanticsPowerList) {
+        this.semanticsPowerList = semanticsPowerList;
+    }
 
     public List<RnnOutNerveStudy> getRnnOutNerveStudies() {
         return rnnOutNerveStudies;

@@ -3,7 +3,6 @@ package org.wlld.naturalLanguage.languageCreator;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.OutBack;
 
-import java.util.List;
 
 public class CreatorWord implements OutBack {
     private int id;
@@ -30,9 +29,10 @@ public class CreatorWord implements OutBack {
     }
 
     @Override
-    public void backPower(List<Integer> powerList, long eventId) {
+    public void backWord(String word, long eventId) {
 
     }
+
 
     @Override
     public void getBackMatrix(Matrix matrix, long eventId) {

@@ -42,9 +42,10 @@ public class RegionBack implements OutBack {
     }
 
     @Override
-    public void backPower(List<Integer> powerList, long eventId) {
+    public void backWord(String word, long eventId) {
 
     }
+
 
     @Override
     public void getBackMatrix(Matrix matrix, long eventId) {

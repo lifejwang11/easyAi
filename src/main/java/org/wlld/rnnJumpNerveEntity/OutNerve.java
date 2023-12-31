@@ -4,8 +4,8 @@ package org.wlld.rnnJumpNerveEntity;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
+import org.wlld.rnnJumpNerveCenter.SemanticsNerve;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,9 +15,10 @@ import java.util.Map;
  */
 public class OutNerve extends Nerve {
     private Map<Integer, Matrix> matrixMapE;//主键与期望矩阵的映射
-    private NerveCenter nerveCenter;//该输出层对应的神经中枢
+    private SemanticsNerve semanticsNerve;
     private final boolean isShowLog;
     private final boolean isSoftMax;
+    private boolean semanticsLay = false;//语义层
 
     public OutNerve(int id, double studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic, boolean isShowLog,
@@ -29,8 +30,12 @@ public class OutNerve extends Nerve {
         this.isSoftMax = isSoftMax;
     }
 
-    public void setNerveCenter(NerveCenter nerveCenter) {
-        this.nerveCenter = nerveCenter;
+    public void setSemanticsLay(boolean semanticsLay) {
+        this.semanticsLay = semanticsLay;
+    }
+
+    public void setSemanticsNerve(SemanticsNerve semanticsNerve) {
+        this.semanticsNerve = semanticsNerve;
     }
 
     void getGBySoftMax(double g, long eventId, int[] storeys, int index) throws Exception {//接收softMax层回传梯度
@@ -43,16 +48,20 @@ public class OutNerve extends Nerve {
     }
 
     @Override
-    protected void sendAppointTestMessage(long eventId, double parameter, int fromDepth, Matrix featureMatrix, List<Integer> storeys
-            , OutBack outBack) throws Exception {
+    protected void sendAppointTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
         //计算出结果返回给对应的层的神经中枢
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//所有参数集齐
-            double sigma = calculation(eventId);//计算结果返回
-            double out = activeFunction.function(sigma);
+            double sigma = calculation(eventId);
             destroyParameter(eventId);
-            nerveCenter.backPower(eventId, out, fromDepth, storeys, featureMatrix, outBack);
+            sendSoftMaxBack(eventId, sigma, featureMatrix, outBack, myWord, semanticsMatrix);
         }
+    }
+
+    public void backMatrixError(double g, long eventId, int[] storeys, int index) throws Exception {//返回误差
+        gradient = activeFunction.functionG(outNub) * g;
+        //调整权重 修改阈值 并进行反向传播
+        updatePower(eventId, storeys, index);
     }
 
     @Override
@@ -66,6 +75,14 @@ public class OutNerve extends Nerve {
                     destroyParameter(eventId);
                 }
                 sendSoftMax(eventId, sigma, isStudy, E, outBack, rnnMatrix, storeys, index);
+            } else if (semanticsLay) {
+                double out = activeFunction.function(sigma);
+                if (isStudy) {
+                    outNub = out;
+                } else {
+                    destroyParameter(eventId);
+                }
+                semanticsNerve.send(getId(), out, eventId, outBack, isStudy, storeys, index);
             } else {
                 double out = activeFunction.function(sigma);
                 if (isStudy) {//输出结果并进行BP调整权重及阈值

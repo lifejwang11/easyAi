@@ -48,7 +48,7 @@ public class RRNerveManager {
     private void initNerveManager() throws Exception {
         typeNerveManager = new NerveJumpManager(vectorDimension, vectorDimension, typeNub, maxFeatureLength - 1, new Tanh(), false,
                 studyPoint, RZ.L1, studyPoint * 0.2);
-        typeNerveManager.initRnn(true, showLog, true);
+        typeNerveManager.initRnn(true, showLog, true, false, 1);
     }
 
     private int getMappingType(int key) {//通过自增主键查找原映射

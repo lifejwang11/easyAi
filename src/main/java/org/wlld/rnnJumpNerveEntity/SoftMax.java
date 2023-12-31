@@ -11,6 +11,7 @@ import java.util.Map;
 public class SoftMax extends Nerve {
     private final OutNerve outNerve;
     private final boolean isShowLog;
+    private NerveCenter nerveCenter;//该输出层对应的神经中枢
 
     public SoftMax(int id, boolean isDynamic, OutNerve outNerve, boolean isShowLog
             , int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, int allDepth) throws Exception {
@@ -18,6 +19,20 @@ public class SoftMax extends Nerve {
                 , RZ.NOT_RZ, 0, 0, 0, sensoryNerveNub, hiddenNerveNub, outNerveNub, allDepth);
         this.outNerve = outNerve;
         this.isShowLog = isShowLog;
+    }
+
+    public void setNerveCenter(NerveCenter nerveCenter) {
+        this.nerveCenter = nerveCenter;
+    }
+
+    @Override
+    protected void sendAppointSoftMax(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
+        boolean allReady = insertParameter(eventId, parameter);
+        if (allReady) {
+            double out = softMax(eventId);//输出值
+            destroyParameter(eventId);
+            nerveCenter.backType(eventId, out, getId(), featureMatrix, outBack, myWord, semanticsMatrix);
+        }
     }
 
     @Override
