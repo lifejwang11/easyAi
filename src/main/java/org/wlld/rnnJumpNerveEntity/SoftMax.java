@@ -26,8 +26,8 @@ public class SoftMax extends Nerve {
     }
 
     @Override
-    protected void sendAppointSoftMax(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix, int fromID) throws Exception {
-        boolean allReady = insertParameter(eventId, parameter, fromID);
+    protected void sendAppointSoftMax(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
+        boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {
             double out = softMax(eventId);//输出值
             destroyParameter(eventId);
@@ -37,8 +37,8 @@ public class SoftMax extends Nerve {
 
     @Override
     protected void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E, OutBack outBack, boolean isEmbedding
-            , Matrix rnnMatrix, int[] storeys, int index, int fromID) throws Exception {
-        boolean allReady = insertParameter(eventId, parameter, fromID);
+            , Matrix rnnMatrix, int[] storeys, int index) throws Exception {
+        boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {
             double out = softMax(eventId);//输出值
             if (isStudy) {//学习
@@ -76,11 +76,10 @@ public class SoftMax extends Nerve {
 
     private double softMax(long eventId) {//计算当前输出结果
         double sigma = 0;
-        Map<Integer, Double> featuresList = features.get(eventId);
-        double self = featuresList.get(getId());
+        List<Double> featuresList = features.get(eventId);
+        double self = featuresList.get(getId() - 1);
         double eSelf = Math.exp(self);
-        for (Map.Entry<Integer, Double> entry : featuresList.entrySet()) {
-            double value = entry.getValue();
+        for (double value : featuresList) {
             sigma = Math.exp(value) + sigma;
         }
         return eSelf / sigma;

@@ -1,6 +1,6 @@
 package org.wlld.entity;
 
-import org.wlld.rnnJumpNerveCenter.ModelParameter;
+import org.wlld.rnnNerveCenter.ModelParameter;
 
 import java.util.List;
 

@@ -10,9 +10,9 @@ import org.wlld.entity.WordMatrix;
 import org.wlld.entity.WordTwoVectorModel;
 import org.wlld.function.Tanh;
 import org.wlld.i.OutBack;
-import org.wlld.rnnJumpNerveCenter.NerveJumpManager;
 import org.wlld.rnnJumpNerveEntity.MyWordFeature;
-import org.wlld.rnnJumpNerveEntity.SensoryNerve;
+import org.wlld.rnnNerveCenter.NerveManager;
+import org.wlld.rnnNerveEntity.SensoryNerve;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +26,7 @@ import java.util.Map;
  * @Description 词嵌入向量训练
  */
 public class WordEmbedding {
-    private NerveJumpManager nerveManager;
+    private NerveManager nerveManager;
     private SentenceModel sentenceModel;
     private final List<String> wordList = new ArrayList<>();//单字集合
     private SentenceConfig config;
@@ -38,7 +38,7 @@ public class WordEmbedding {
     public void init(SentenceModel sentenceModel) throws Exception {
         this.sentenceModel = sentenceModel;
         wordList.addAll(sentenceModel.getWordSet());
-        nerveManager = new NerveJumpManager(wordList.size(), config.getWordVectorDimension(), wordList.size()
+        nerveManager = new NerveManager(wordList.size(), config.getWordVectorDimension(), wordList.size()
                 , 1, new Tanh(), false, config.getWeStudyPoint(), RZ.NOT_RZ, 0);
         nerveManager.init(true, false, false, true, 0, 0);
     }
@@ -56,7 +56,7 @@ public class WordEmbedding {
         for (int i = 0; i < size; i++) {
             wordList.add(myWordList.get(i));
         }
-        nerveManager = new NerveJumpManager(wordList.size(), config.getWordVectorDimension(), wordList.size()
+        nerveManager = new NerveManager(wordList.size(), config.getWordVectorDimension(), wordList.size()
                 , 1, new Tanh(), false, config.getWeStudyPoint(), RZ.NOT_RZ, 0);
         nerveManager.init(true, false, false, true, 0, 0);
         nerveManager.insertModelParameter(wordTwoVectorModel.getModelParameter());
@@ -97,7 +97,7 @@ public class WordEmbedding {
             if (i == featureIndex) {
                 feature = 1;
             }
-            sensoryNerves.get(i).postMessage(eventId, feature, isStudy, map, outBack, isEmbedding, null, null);
+            sensoryNerves.get(i).postMessage(eventId, feature, isStudy, map, outBack, isEmbedding, null);
         }
     }
 

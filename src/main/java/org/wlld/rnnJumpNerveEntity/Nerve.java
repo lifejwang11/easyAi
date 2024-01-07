@@ -5,10 +5,8 @@ import org.wlld.MatrixTools.MatrixOperation;
 import org.wlld.config.RZ;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
-import org.wlld.rnnJumpNerveCenter.TransferStation;
 
 import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author lidapeng
@@ -19,7 +17,6 @@ public abstract class Nerve {
     private final Map<Integer, List<Nerve>> son = new HashMap<>();//轴突下一层的连接神经元
     private final Map<Integer, List<Nerve>> father = new HashMap<>();//树突上一层的连接神经元
     private final List<Nerve> rnnOut = new ArrayList<>();//rnn隐层输出神经元集合
-    private final ReentrantLock lock = new ReentrantLock();//并发锁
     protected Map<Integer, Double> dendrites = new HashMap<>();//上一层权重(需要取出)
     protected Map<Integer, Double> wg = new HashMap<>();//上一层权重与梯度的积
     private final int id;//同级神经元编号,注意在同层编号中ID应有唯一性
@@ -27,7 +24,7 @@ public abstract class Nerve {
     private final int hiddenNerveNub;//隐层神经元个数
     private final int sensoryNerveNub;//输入神经元个数
     private final int outNerveNub;//输出神经元个数
-    protected Map<Long, Map<Integer, Double>> features = new HashMap<>();//上一层神经元输入的数值
+    protected Map<Long, List<Double>> features = new HashMap<>();//上一层神经元输入的数值
     protected Matrix nerveMatrix;//权重矩阵可获取及注入
     protected double threshold;//此神经元的阈值需要取出
     protected String name;//该神经元所属类型
@@ -113,11 +110,11 @@ public abstract class Nerve {
         return nextStorey;
     }
 
-    protected void sendSoftMaxBack(long eventId, double parameter, Matrix rnnMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix, int fromID) throws Exception {
+    protected void sendSoftMaxBack(long eventId, double parameter, Matrix rnnMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
         if (!son.isEmpty()) {
             List<Nerve> nerverList = son.get(0);
             for (Nerve nerve : nerverList) {
-                nerve.sendAppointSoftMax(eventId, parameter, rnnMatrix, outBack, myWord, semanticsMatrix, fromID);
+                nerve.sendAppointSoftMax(eventId, parameter, rnnMatrix, outBack, myWord, semanticsMatrix);
             }
         } else {
             throw new Exception("this storey is lastIndex");
@@ -125,16 +122,11 @@ public abstract class Nerve {
     }
 
     protected void sendSoftMax(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
-            , OutBack outBack, Matrix rnnMatrix, int[] storeys, int index, int fromID) throws Exception {
+            , OutBack outBack, Matrix rnnMatrix, int[] storeys, int index) throws Exception {
         if (!son.isEmpty()) {
             List<Nerve> nerverList = son.get(0);
             for (Nerve nerve : nerverList) {
-                if (isStudy) {
-                    InputBody inputBody = new InputBody(eventId, parameter, true, E, outBack, false, rnnMatrix, storeys, index, fromID, nerve);
-                    TransferStation.getTransferStation().message(inputBody, null);
-                } else {
-                    nerve.input(eventId, parameter, false, E, outBack, false, rnnMatrix, storeys, index, fromID);
-                }
+                nerve.input(eventId, parameter, isStudy, E, outBack, false, rnnMatrix, storeys, index);
             }
         } else {
             throw new Exception("this storey is lastIndex");
@@ -148,18 +140,18 @@ public abstract class Nerve {
 
     }
 
-    protected void sendAppointSoftMax(long eventId, double parameter, Matrix rnnMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix, int fromID) throws Exception {
+    protected void sendAppointSoftMax(long eventId, double parameter, Matrix rnnMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
     }
 
-    protected void sendAppointTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix, int fromID) throws Exception {
+    protected void sendAppointTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
     }
 
-    protected void sendTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix, int fromID) throws Exception {
+    protected void sendTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
         if (!son.isEmpty()) {
             List<Nerve> nerveList = son.get(depth + 1);
             if (nerveList != null) {
                 for (Nerve nerve : nerveList) {
-                    nerve.sendAppointTestMessage(eventId, parameter, featureMatrix, outBack, myWord, semanticsMatrix, fromID);
+                    nerve.sendAppointTestMessage(eventId, parameter, featureMatrix, outBack, myWord, semanticsMatrix);
                 }
             } else {
                 throw new Exception("Insufficient layer:" + depth + 1);
@@ -169,10 +161,10 @@ public abstract class Nerve {
         }
     }
 
-    protected void sendRnnTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix, int fromID) throws Exception {
+    protected void sendRnnTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
         if (!rnnOut.isEmpty()) {
             for (Nerve nerve : rnnOut) {
-                nerve.sendAppointTestMessage(eventId, parameter, featureMatrix, outBack, myWord, semanticsMatrix, fromID);
+                nerve.sendAppointTestMessage(eventId, parameter, featureMatrix, outBack, myWord, semanticsMatrix);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -180,7 +172,7 @@ public abstract class Nerve {
     }
 
     protected void sendMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
-            , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys, int index, int fromID) throws Exception {
+            , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys, int index) throws Exception {
         if (!son.isEmpty()) {
             List<Nerve> nerveList = null;
             if (storeys == null) {
@@ -198,15 +190,10 @@ public abstract class Nerve {
             }
             if (nerveList != null) {
                 for (Nerve nerve : nerveList) {
-                    if (isStudy) {
-                        InputBody inputBody = new InputBody(eventId, parameter, true, E, outBack, isEmbedding, rnnMatrix, storeys, index, fromID, nerve);
-                        TransferStation.getTransferStation().message(inputBody, null);
-                    } else {
-                        nerve.input(eventId, parameter, false, E, outBack, isEmbedding, rnnMatrix, storeys, index, fromID);
-                    }
+                    nerve.input(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, index);
                 }
             } else {//发送到输出神经元
-                sendRnnMessage(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, index, fromID);
+                sendRnnMessage(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, index);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -214,15 +201,10 @@ public abstract class Nerve {
     }
 
     private void sendRnnMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
-            , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys, int index, int fromID) throws Exception {
+            , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys, int index) throws Exception {
         if (!rnnOut.isEmpty()) {
             for (Nerve nerve : rnnOut) {
-                if (isStudy) {
-                    InputBody inputBody = new InputBody(eventId, parameter, true, E, outBack, isEmbedding, rnnMatrix, storeys, index, fromID, nerve);
-                    TransferStation.getTransferStation().message(inputBody, null);
-                } else {
-                    nerve.input(eventId, parameter, false, E, outBack, isEmbedding, rnnMatrix, storeys, index, fromID);
-                }
+                nerve.input(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, index);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -276,12 +258,9 @@ public abstract class Nerve {
             }
             if (nerveList != null) {
                 for (int i = 0; i < nerveList.size(); i++) {
-                    BackBody backBody = new BackBody(wg.get(i + 1), eventId, fromOutNerve, storeys, index, nerveList.get(i));
-                    TransferStation.getTransferStation().message(null, backBody);
+                    nerveList.get(i).backGetMessage(wg.get(i + 1), eventId, fromOutNerve, storeys, index);
                 }
             }
-        } else {//传递结束了
-            TransferStation.getTransferStation().getLatch().countDown();
         }
     }
 
@@ -295,18 +274,16 @@ public abstract class Nerve {
 
     protected void input(long eventId, double parameter, boolean isStudy
             , Map<Integer, Double> E, OutBack imageBack, boolean isEmbedding, Matrix rnnMatrix
-            , int[] storeys, int index, int fromID) throws Exception {//输入参数
+            , int[] storeys, int index) throws Exception {//输入参数
 
     }
 
     protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy, int E, OutBack outBack) throws Exception {//输入动态矩阵
     }
 
-    protected void backGetMessage(double parameter, long eventId, boolean fromOutNerve, int[] storeys, int index) throws Exception {//反向传播
-        lock.lock();
+    private void backGetMessage(double parameter, long eventId, boolean fromOutNerve, int[] storeys, int index) throws Exception {//反向传播
         backNub++;
         sigmaW = sigmaW + parameter;
-        lock.unlock();
         int number;
         if (fromOutNerve) {
             number = outNerveNub;
@@ -381,12 +358,12 @@ public abstract class Nerve {
     }
 
     private void updateW(double h, long eventId) {//h是学习率 * 当前g（梯度）
-        Map<Integer, Double> list = features.get(eventId);
+        List<Double> list = features.get(eventId);
         double param = studyPoint * lParam / dendrites.size();
         for (Map.Entry<Integer, Double> entry : dendrites.entrySet()) {
             int key = entry.getKey();//上层隐层神经元的编号
             double w = entry.getValue();//接收到编号为KEY的上层隐层神经元的权重
-            double bn = list.get(key);//接收到编号为KEY的上层隐层神经元的输入
+            double bn = list.get(key - 1);//接收到编号为KEY的上层隐层神经元的输入
             double wp = bn * h;
             double dm = w * gradient;
             double regular = regularization(w, param);//正则化抑制权重s
@@ -398,23 +375,21 @@ public abstract class Nerve {
         features.remove(eventId); //清空当前上层输入参数参数
     }
 
-    protected boolean insertParameter(long eventId, double parameter, int id) throws Exception {//添加参数
+    protected boolean insertParameter(long eventId, double parameter) throws Exception {//添加参数
         boolean allReady = false;
-        Map<Integer, Double> featuresList;
-        lock.lock();
+        List<Double> featuresList;
         if (features.containsKey(eventId)) {
             featuresList = features.get(eventId);
         } else {
-            featuresList = new HashMap<>();
+            featuresList = new ArrayList<>();
             features.put(eventId, featuresList);
         }
-        featuresList.put(id, parameter);
+        featuresList.add(parameter);
         if (featuresList.size() == myUpNumber) {
             allReady = true;
         } else if (featuresList.size() > myUpNumber) {
             throw new Exception("接收参数数量异常");
         }
-        lock.unlock();
         return allReady;
     }
 
@@ -423,11 +398,11 @@ public abstract class Nerve {
     }
 
     protected double getWOne(long eventId) {
-        Map<Integer, Double> featuresList = features.get(eventId);
+        List<Double> featuresList = features.get(eventId);
         double wt = 0;
-        for (Map.Entry<Integer, Double> entry : featuresList.entrySet()) {
-            double value = entry.getValue();
-            double w = dendrites.get(entry.getKey());//当value不为0的时候把w取出来
+        for (int i = 0; i < featuresList.size(); i++) {
+            double value = featuresList.get(i);
+            double w = dendrites.get(i + 1);//当value不为0的时候把w取出来
             if (value > 0.5) {
                 wt = w;
                 break;
@@ -438,11 +413,10 @@ public abstract class Nerve {
 
     protected double calculation(long eventId) {//计算当前输出结果
         double sigma = 0;
-        Map<Integer, Double> featuresList = features.get(eventId);
-        for (Map.Entry<Integer, Double> entry : featuresList.entrySet()) {
-            int key = entry.getKey();
-            double value = entry.getValue();
-            double w = dendrites.get(key);//当value不为0的时候把w取出来
+        List<Double> featuresList = features.get(eventId);
+        for (int i = 0; i < featuresList.size(); i++) {
+            double value = featuresList.get(i);
+            double w = dendrites.get(i + 1);//当value不为0的时候把w取出来
             sigma = w * value + sigma;
         }
         return sigma - threshold;
