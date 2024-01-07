@@ -48,13 +48,13 @@ public class OutNerve extends Nerve {
     }
 
     @Override
-    protected void sendAppointTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
+    protected void sendAppointTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix, int fromID) throws Exception {
         //计算出结果返回给对应的层的神经中枢
-        boolean allReady = insertParameter(eventId, parameter);
+        boolean allReady = insertParameter(eventId, parameter, fromID);
         if (allReady) {//所有参数集齐
             double sigma = calculation(eventId);
             destroyParameter(eventId);
-            sendSoftMaxBack(eventId, sigma, featureMatrix, outBack, myWord, semanticsMatrix);
+            sendSoftMaxBack(eventId, sigma, featureMatrix, outBack, myWord, semanticsMatrix, getId());
         }
     }
 
@@ -66,15 +66,15 @@ public class OutNerve extends Nerve {
 
     @Override
     public void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
-            , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys, int index) throws Exception {
-        boolean allReady = insertParameter(eventId, parameter);
+            , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys, int index, int fromID) throws Exception {
+        boolean allReady = insertParameter(eventId, parameter, fromID);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
             double sigma = calculation(eventId);
             if (isSoftMax) {
                 if (!isStudy) {
                     destroyParameter(eventId);
                 }
-                sendSoftMax(eventId, sigma, isStudy, E, outBack, rnnMatrix, storeys, index);
+                sendSoftMax(eventId, sigma, isStudy, E, outBack, rnnMatrix, storeys, index, getId());
             } else if (semanticsLay) {
                 double out = activeFunction.function(sigma);
                 if (isStudy) {

@@ -37,7 +37,12 @@ public class NerveJumpManager {
     private final List<NerveCenter> nerveCenterList = new ArrayList<>();//神经中枢集合
     private double powerTh = 0.2;//权重阈值
     private boolean semanticsLay = false;//是否有接语义层
+    private int threadNumber = 20;
     private final List<SemanticsNerve> semanticsNerves = new ArrayList<>();//语义层集合
+
+    public void setThreadNumber(int threadNumber) {
+        this.threadNumber = threadNumber;
+    }
 
     public List<SemanticsNerve> getSemanticsNerves() {
         return semanticsNerves;
@@ -370,7 +375,7 @@ public class NerveJumpManager {
 
         //初始化感知神经元
         for (int i = 1; i < sensoryNerveNub + 1; i++) {
-            SensoryNerve sensoryNerve = new SensoryNerve(i, hiddenDepth);
+            SensoryNerve sensoryNerve = new SensoryNerve(i, hiddenDepth, sensoryNerveNub);
             //感知神经元与第一层隐层神经元进行连接
             sensoryNerve.connect(0, nerveList);
             sensoryNerves.add(sensoryNerve);
@@ -427,7 +432,7 @@ public class NerveJumpManager {
         }
         //初始化感知神经元
         for (int i = 1; i < sensoryNerveNub + 1; i++) {
-            SensoryNerve sensoryNerve = new SensoryNerve(i, hiddenDepth);
+            SensoryNerve sensoryNerve = new SensoryNerve(i, hiddenDepth, sensoryNerveNub);
             for (int j = 0; j < hiddenDepth; j++) {
                 List<Nerve> hiddenNerveList = depthNerves.get(j);//当前遍历隐层神经元
                 sensoryNerve.connect(j + 1, hiddenNerveList);
@@ -441,6 +446,7 @@ public class NerveJumpManager {
             NerveCenter nerveCenter = new NerveCenter(0, null, powerTh, outNerveNub, false);
             nerveCenterList.add(nerveCenter);
         }
+        TransferStation.getTransferStation().initPooL(threadNumber, hiddenNerveNub);
         for (int i = 0; i < hiddenDepth; i++) {//遍历深度
             List<Nerve> hiddenNerveList = new ArrayList<>();
             double studyPoint = this.studyPoint;

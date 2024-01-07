@@ -3,6 +3,7 @@ package org.wlld.rnnJumpNerveEntity;
 
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.OutBack;
+import org.wlld.rnnJumpNerveCenter.TransferStation;
 
 import java.util.List;
 import java.util.Map;
@@ -14,11 +15,13 @@ import java.util.Map;
  * @date 9:29 上午 2019/12/21
  */
 public class SensoryNerve extends Nerve {
+    private final int maxID;
 
-    public SensoryNerve(int id, int allDepth) throws Exception {
+    public SensoryNerve(int id, int allDepth, int maxID) throws Exception {
         super(id, "SensoryNerve", 0, false, null, false, 0, 0,
                 0, 0, 0, 0, 0, allDepth);
         depth = 0;
+        this.maxID = maxID;
     }
 
     /**
@@ -30,11 +33,16 @@ public class SensoryNerve extends Nerve {
      */
     public void postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
             , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys) throws Exception {//感知神经元输出
-        sendMessage(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, 0);
+        sendMessage(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, 0, getId());
+        if (getId() == maxID) {
+            TransferStation.getTransferStation().getLatch().await();
+            TransferStation.getTransferStation().next();
+        }
+
     }
 
     public void postPowerMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, Matrix semanticsMatrix) throws Exception {
-        sendTestMessage(eventId, parameter, featureMatrix, outBack, null, semanticsMatrix);
+        sendTestMessage(eventId, parameter, featureMatrix, outBack, null, semanticsMatrix, getId());
     }
 
     public void postMatrixMessage(long eventId, Matrix parameter, boolean isKernelStudy
