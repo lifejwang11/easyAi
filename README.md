@@ -5,7 +5,7 @@
 * 若有想扩充的功能请进群提意见，若是通用场景我会陆续补充，技术交流群：222475213
 * 本软件永久免费商业使用，但作者已拥有本软件相关的知识产权，任何个人与集体不可擅自申请本软件内的技术与代码的知识产权。
 ## 详细视频教程地址：
-* 视频教程地址：https://www.bilibili.com/video/BV1W7411J7zr
+* 视频教程地址：https://www.bilibili.com/video/BV1W7411J7zr/?share_source=copy_web&vd_source=98c3ffef6e394c686711ee029b87c147
 ## 框架效果演示结果:
 * 因为是框架没有图像化界面，演示结果就是控制台输出的数据，只能用视频展示，想看演示结果请看教学视频
 * 详细api文档见项目html文档:https://wlhlwl.com/gw/easyAi.html
