@@ -207,5 +207,5 @@ String name = fastPictureExcerpt.creatImageName(threeChannelMatrix, 5, 10);
         //插入特征数据，森林对该数据的最终分类结果进行判断
         randomForest.forest(Object objcet);
 ```
-### 作者太穷了，快没饭吃了！如果该项目对你有用，请可怜一下作者的劳动力支持开源，请作者吃一顿早饭就好！给作者持续更新easyAi引擎，同时封装更多依赖easyAi的常用应用提供动力！为大家低成本部署AI应用添砖加瓦！万谢!好心人！
+### 如果该项目对你有用，请赞助一下作者的劳动力支持开源，请作者吃一顿早饭就好！给作者持续更新easyAi引擎，同时封装更多依赖easyAi的常用应用提供动力！为大家低成本部署AI应用添砖加瓦！万谢!好心人！
 ![支付宝支付](/zf/zs.jpg)![微信支付](/zf/ws.jpg)
