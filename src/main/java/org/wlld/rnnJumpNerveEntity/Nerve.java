@@ -173,30 +173,26 @@ public abstract class Nerve {
 
     protected void sendMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
             , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys, int index) throws Exception {
-        if (!son.isEmpty()) {
-            List<Nerve> nerveList = null;
-            if (storeys == null) {
-                nerveList = son.get(0);
-            } else {
-                int nextStorey = getNextStorey(storeys, index);
-                if (nextStorey > -1) {//可以继续向前
-                    nerveList = son.get(nextStorey);
-                    index++;
-                    if (nerveList == null) {
-                        throw new Exception("向前->要查找的层数不存在链接，序列：" + index + "层数:" + nextStorey +
-                                ",当前所在层数:" + depth + ",我的身份:" + name);
-                    }
-                }
-            }
-            if (nerveList != null) {
-                for (Nerve nerve : nerveList) {
-                    nerve.input(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, index);
-                }
-            } else {//发送到输出神经元
-                sendRnnMessage(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, index);
-            }
+        List<Nerve> nerveList = null;
+        if (storeys == null) {
+            nerveList = son.get(0);
         } else {
-            throw new Exception("this layer is lastIndex");
+            int nextStorey = getNextStorey(storeys, index);
+            if (nextStorey > -1) {//可以继续向前
+                nerveList = son.get(nextStorey);
+                index++;
+                if (nerveList == null) {
+                    throw new Exception("向前->要查找的层数不存在链接，序列：" + index + "层数:" + nextStorey +
+                            ",当前所在层数:" + depth + ",我的身份:" + name);
+                }
+            }
+        }
+        if (nerveList != null) {
+            for (Nerve nerve : nerveList) {
+                nerve.input(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, index);
+            }
+        } else {//发送到输出神经元
+            sendRnnMessage(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, index);
         }
     }
 
