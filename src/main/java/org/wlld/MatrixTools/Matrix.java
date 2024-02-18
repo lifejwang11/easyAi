@@ -431,10 +431,10 @@ public class Matrix {
      * @throws Exception 超出矩阵范围抛出
      */
     public void setNub(int x, int y, double number) throws Exception {
-        if (this.x > x && this.y > y) {
+        if (this.x > x && this.y > y && x >= 0 && y >= 0) {
             matrix[x][y] = number;
         } else {
-            throw new Exception("matrix length too little");
+            throw new Exception("setNub matrix length too little x:" + x + ",y:" + y);
         }
     }
 
@@ -451,7 +451,33 @@ public class Matrix {
             return matrix[x][y];
         } else {
             System.out.println("x==" + x + ",y==" + y + ",maxX:" + this.x + ",maxY:" + this.y);
-            throw new Exception("matrix length too little");
+            throw new Exception("getNumber matrix length too little x:" + x + ",y:" + y);
         }
+    }
+
+    /**
+     * 计算矩阵中某一行向量或者列向量所有元素的和
+     *
+     * @param isRow 是否取行向量
+     * @param index 索取向量在矩阵当中的下标
+     * @return 返回指定向量所有元素的和
+     * @throws Exception 超出矩阵范围抛出
+     */
+    public double getSigmaByVector(boolean isRow, int index) throws Exception {
+        double sigma = 0;
+        if (index >= 0 && ((isRow && x > index) || (!isRow && y > index))) {
+            if (isRow) {//取行向量
+                for (int i = 0; i < y; i++) {
+                    sigma = matrix[index][i] + sigma;
+                }
+            } else {
+                for (int i = 0; i < x; i++) {
+                    sigma = matrix[i][index] + sigma;
+                }
+            }
+        } else {
+            throw new Exception("index 数值下标溢出:" + index);
+        }
+        return sigma;
     }
 }
