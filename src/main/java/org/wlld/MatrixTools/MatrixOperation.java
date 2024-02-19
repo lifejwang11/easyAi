@@ -8,6 +8,7 @@ public class MatrixOperation {
 
     private MatrixOperation() {
     }
+
     public static List<Double> rowVectorToList(Matrix matrix) throws Exception {
         List<Double> list = new ArrayList<>();
         for (int j = 0; j < matrix.getY(); j++) {
@@ -15,6 +16,7 @@ public class MatrixOperation {
         }
         return list;
     }
+
     public static Matrix add(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相加
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
             Matrix matrix = new Matrix(matrix1.getX(), matrix1.getY());
@@ -408,6 +410,37 @@ public class MatrixOperation {
             }
         } else {
             throw new Exception("two matrix is not equals");
+        }
+        return matrix;
+    }
+
+    public static Matrix matrixMulPd(Matrix errorMatrix, Matrix first, Matrix second, boolean isFirstPd) throws Exception {//对两个相乘的矩阵求偏导
+        Matrix matrix;
+        int x, y;
+        if (isFirstPd) {//对相乘的前矩阵进行求导
+            Matrix st = transPosition(second);//对矩阵2进行转置
+            x = first.getX();
+            y = first.getY();
+            matrix = new Matrix(x, y);
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    double errorSigma = errorMatrix.getSigmaByVector(true, i);
+                    double xt = st.getSigmaByVector(false, j);
+                    matrix.setNub(i, j, errorSigma * xt);
+                }
+            }
+        } else {
+            Matrix ft = transPosition(first);
+            x = second.getX();
+            y = second.getY();
+            matrix = new Matrix(x, y);
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    double errorSigma = errorMatrix.getSigmaByVector(false, j);
+                    double at = ft.getSigmaByVector(true, i);
+                    matrix.setNub(i, j, errorSigma * at);
+                }
+            }
         }
         return matrix;
     }
