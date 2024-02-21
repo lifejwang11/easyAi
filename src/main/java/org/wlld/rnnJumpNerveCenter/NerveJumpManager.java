@@ -342,6 +342,7 @@ public class NerveJumpManager {
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
         //最后一层隐层神经元啊
         List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);
+        List<OutNerve> outNerveList = new ArrayList<>();
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, studyPoint, initPower,
@@ -349,16 +350,15 @@ public class NerveJumpManager {
             if (isMatrix) {//是卷积层神经网络
                 outNerve.setMatrixMap(matrixMap);
             }
-            if (isSoftMax) {
-                SoftMax softMax = new SoftMax(i, false, outNerve, isShowLog, sensoryNerveNub, hiddenNerveNub, outNerveNub, hiddenDepth);
-                softMaxList.add(softMax);
-            }
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFather(0, lastNerveList);
             outNerves.add(outNerve);
+            outNerveList.add(outNerve);
         }
         //生成softMax层
         if (isSoftMax) {//增加softMax层
+            SoftMax softMax = new SoftMax(false, outNerveList, isShowLog, sensoryNerveNub, hiddenNerveNub, outNerveNub, hiddenDepth);
+            softMaxList.add(softMax);
             for (Nerve nerve : outNerves) {
                 nerve.connect(0, softMaxList);
             }
@@ -397,11 +397,7 @@ public class NerveJumpManager {
             OutNerve outNerve = new OutNerve(i, studyPoint, initPower,
                     activeFunction, false, isShowLog, rzType, lParam, toSoftMax, 0, 0, sensoryNerveNub, hiddenNerveNub, outNerveNub, hiddenDepth);
             outNerve.setSemanticsLay(semanticsLay);//是否接语义层
-            if (toSoftMax) {
-                SoftMax softMax = new SoftMax(i, false, outNerve, isShowLog, sensoryNerveNub, hiddenNerveNub, outNerveNub, hiddenDepth);
-                softMax.setNerveCenter(nerveCenter);
-                mySoftMaxList.add(softMax);
-            } else if (semanticsLay) {
+            if (semanticsLay) {
                 outNerve.setSemanticsNerve(semanticsNerve);
             }
             outNerve.connectFather(depth, nerveList);//每一层的输出神经元 链接每一层的隐层神经元
@@ -409,6 +405,9 @@ public class NerveJumpManager {
             layOutNerves.add(outNerve);
         }
         if (toSoftMax) {
+            SoftMax softMax = new SoftMax(false, layOutNerves, isShowLog, sensoryNerveNub, hiddenNerveNub, outNerveNub, hiddenDepth);
+            softMax.setNerveCenter(nerveCenter);
+            mySoftMaxList.add(softMax);
             for (Nerve nerve : rnnOutNerves) {
                 nerve.connect(0, mySoftMaxList);
             }
@@ -421,6 +420,7 @@ public class NerveJumpManager {
 
     public void initRnn(boolean initPower, boolean isShowLog, boolean toSoftMax, boolean regular, double paramL) throws Exception {
         isRnn = true;
+        this.initPower = initPower;
         initDepthNerve(false, 0, 0);//初始化深度隐层神经元
         for (int i = 0; i < depthNerves.size(); i++) {
             createRnnOutNerve(initPower, isShowLog, depthNerves.get(i), i + 1, toSoftMax, regular, paramL);

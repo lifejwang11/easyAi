@@ -42,9 +42,11 @@ public class WordEmbedding {
                 , 1, new Tanh(), false, config.getWeStudyPoint(), RZ.NOT_RZ, 0);
         nerveManager.init(true, false, false, true, 0, 0);
     }
+
     public List<String> getWordList() {
         return wordList;
     }
+
     public String getWord(int id) {
         return wordList.get(id);
     }
@@ -52,10 +54,7 @@ public class WordEmbedding {
     public void insertModel(WordTwoVectorModel wordTwoVectorModel) throws Exception {
         wordList.clear();
         List<String> myWordList = wordTwoVectorModel.getWordList();
-        int size = myWordList.size();
-        for (int i = 0; i < size; i++) {
-            wordList.add(myWordList.get(i));
-        }
+        wordList.addAll(myWordList);
         nerveManager = new NerveManager(wordList.size(), config.getWordVectorDimension(), wordList.size()
                 , 1, new Tanh(), false, config.getWeStudyPoint(), RZ.NOT_RZ, 0);
         nerveManager.init(true, false, false, true, 0, 0);
@@ -63,10 +62,10 @@ public class WordEmbedding {
     }
 
     public MyWordFeature getEmbedding(String word, long eventId) throws Exception {//做截断
-        if (word.length() > config.getMaxWordLength()) {
-            word = word.substring(0, config.getMaxWordLength());
-        }
         MyWordFeature myWordFeature = new MyWordFeature();
+        if (config == null) {
+            System.out.println("词嵌入空了？");
+        }
         int wordDim = config.getWordVectorDimension();
         Matrix matrix = null;
         for (int i = 0; i < word.length(); i++) {

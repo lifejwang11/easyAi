@@ -5,19 +5,20 @@ import org.wlld.MatrixTools.Matrix;
 import org.wlld.config.RZ;
 import org.wlld.i.OutBack;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class SoftMax extends Nerve {
-    private final OutNerve outNerve;
+    private final List<OutNerve> outNerves;
     private final boolean isShowLog;
     private NerveCenter nerveCenter;//该输出层对应的神经中枢
 
-    public SoftMax(int id, boolean isDynamic, OutNerve outNerve, boolean isShowLog
+    public SoftMax(boolean isDynamic, List<OutNerve> outNerves, boolean isShowLog
             , int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, int allDepth) throws Exception {
-        super(id, "softMax", 0, false, null, isDynamic
+        super(0, "softMax", 0, false, null, isDynamic
                 , RZ.NOT_RZ, 0, 0, 0, sensoryNerveNub, hiddenNerveNub, outNerveNub, allDepth);
-        this.outNerve = outNerve;
+        this.outNerves = outNerves;
         this.isShowLog = isShowLog;
     }
 
@@ -29,9 +30,9 @@ public class SoftMax extends Nerve {
     protected void sendAppointSoftMax(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {
-            double out = softMax(eventId);//输出值
+            Mes mes = softMax(eventId, false);//输出值
             destroyParameter(eventId);
-            nerveCenter.backType(eventId, out, getId(), featureMatrix, outBack, myWord, semanticsMatrix);
+            nerveCenter.backType(eventId, mes.poi, mes.typeID, featureMatrix, outBack, myWord, semanticsMatrix);
         }
     }
 
@@ -40,24 +41,28 @@ public class SoftMax extends Nerve {
             , Matrix rnnMatrix, int[] storeys, int index) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {
-            double out = softMax(eventId);//输出值
+            Mes mes = softMax(eventId, isStudy);//输出值
+            int key = 0;
             if (isStudy) {//学习
-                outNub = out;
-                if (E.containsKey(getId())) {
-                    this.E = E.get(getId());
-                } else {
-                    this.E = 0;
+                for (Map.Entry<Integer, Double> entry : E.entrySet()) {
+                    if (entry.getValue() > 0.9) {
+                        key = entry.getKey();
+                        break;
+                    }
                 }
                 if (isShowLog) {
-                    System.out.println("softMax==" + this.E + ",out==" + out + ",nerveId==" + getId());
+                    System.out.println("softMax==" + key + ",out==" + mes.poi + ",nerveId==" + mes.typeID);
                 }
-                gradient = -outGradient();//当前梯度变化 把梯度返回
+                List<Double> errors = error(mes, key);
                 features.remove(eventId); //清空当前上层输入参数参数
-                outNerve.getGBySoftMax(gradient, eventId, storeys, index);
+                int size = outNerves.size();
+                for (int i = 0; i < size; i++) {
+                    outNerves.get(i).getGBySoftMax(errors.get(i), eventId, storeys, index);
+                }
             } else {//输出
                 destroyParameter(eventId);
                 if (outBack != null) {
-                    outBack.getBack(out, getId(), eventId);
+                    outBack.getBack(mes.poi, mes.typeID, eventId);
                 } else {
                     throw new Exception("not find outBack");
                 }
@@ -65,23 +70,53 @@ public class SoftMax extends Nerve {
         }
     }
 
-
-    private double outGradient() {//生成输出层神经元梯度变化
-        double g = outNub;
-        if (E == 1) {
-            g = g - 1;
+    private List<Double> error(Mes mes, int key) {
+        int t = key - 1;
+        List<Double> softMax = mes.softMax;
+        List<Double> error = new ArrayList<>();
+        for (int i = 0; i < softMax.size(); i++) {
+            double self = softMax.get(i);
+            double myError;
+            if (i != t) {
+                myError = -self;
+            } else {
+                myError = 1 - self;
+            }
+            error.add(myError);
         }
-        return g;
+        return error;
     }
 
-    private double softMax(long eventId) {//计算当前输出结果
+    private Mes softMax(long eventId, boolean isStudy) {//计算当前输出结果
         double sigma = 0;
+        int id = 0;
+        double poi = 0;
+        Mes mes = new Mes();
         List<Double> featuresList = features.get(eventId);
-        double self = featuresList.get(getId() - 1);
-        double eSelf = Math.exp(self);
         for (double value : featuresList) {
             sigma = Math.exp(value) + sigma;
         }
-        return eSelf / sigma;
+        List<Double> softMax = new ArrayList<>();
+        for (int i = 0; i < featuresList.size(); i++) {
+            double eSelf = Math.exp(featuresList.get(i));
+            double value = eSelf / sigma;
+            if (isStudy) {
+                softMax.add(value);
+            }
+            if (value > poi) {
+                poi = value;
+                id = i + 1;
+            }
+        }
+        mes.softMax = softMax;
+        mes.typeID = id;
+        mes.poi = poi;
+        return mes;
+    }
+
+    static class Mes {
+        int typeID;
+        double poi;
+        List<Double> softMax;
     }
 }

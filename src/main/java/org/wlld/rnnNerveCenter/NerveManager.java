@@ -24,7 +24,6 @@ public class NerveManager {
     private final List<SensoryNerve> sensoryNerves = new ArrayList<>();//感知神经元
     private final List<List<Nerve>> depthNerves = new ArrayList<>();//隐层神经元
     private final List<Nerve> outNerves = new ArrayList<>();//输出神经元
-    private final List<Nerve> softMaxList = new ArrayList<>();//softMax层
     private final List<RnnOutNerveBody> rnnOutNerveBodies = new ArrayList<>();//rnn输出层神经元
     private boolean initPower;
     private double studyPoint = 0.1;//学习率
@@ -340,22 +339,23 @@ public class NerveManager {
         //最后一层隐层神经元啊
         List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);
         //初始化输出神经元
+        List<OutNerve> outNerveList = new ArrayList<>();
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
                     activeFunction, isMatrix, isShowLog, rzType, lParam, isSoftMax, step, kernLen);
             if (isMatrix) {//是卷积层神经网络
                 outNerve.setMatrixMap(matrixMap);
             }
-            if (isSoftMax) {
-                SoftMax softMax = new SoftMax(i, outNerveNub, false, outNerve, isShowLog);
-                softMaxList.add(softMax);
-            }
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFather(lastNerveList);
             outNerves.add(outNerve);
+            outNerveList.add(outNerve);
         }
         //生成softMax层
-        if (isSoftMax) {//增加softMax层
+        if (isSoftMax) {
+            List<Nerve> softMaxList = new ArrayList<>();
+            SoftMax softMax = new SoftMax(outNerveNub, false, outNerveList, isShowLog);
+            softMaxList.add(softMax);
             for (Nerve nerve : outNerves) {
                 nerve.connect(softMaxList);
             }
@@ -376,21 +376,21 @@ public class NerveManager {
 
     private void createRnnOutNerve(boolean initPower, boolean isShowLog, List<Nerve> nerveList, int depth) throws Exception {
         RnnOutNerveBody rnnOutNerveBody = new RnnOutNerveBody();
-        List<Nerve> mySoftMaxList = new ArrayList<>();
         List<Nerve> rnnOutNerves = new ArrayList<>();
+        List<OutNerve> outNerveList = new ArrayList<>();
         rnnOutNerveBody.setDepth(depth);
         rnnOutNerveBody.setOutNerves(rnnOutNerves);
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
                     activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0, 0);
-            if (isSoftMax) {
-                SoftMax softMax = new SoftMax(i, outNerveNub, false, outNerve, isShowLog);
-                mySoftMaxList.add(softMax);
-            }
             outNerve.connectFather(nerveList);//每一层的输出神经元 链接每一层的隐层神经元
             rnnOutNerves.add(outNerve);
+            outNerveList.add(outNerve);
         }
         if (isSoftMax) {
+            List<Nerve> mySoftMaxList = new ArrayList<>();
+            SoftMax softMax = new SoftMax(outNerveNub, false, outNerveList, isShowLog);
+            mySoftMaxList.add(softMax);
             for (Nerve nerve : rnnOutNerves) {
                 nerve.connect(mySoftMaxList);
             }
@@ -403,6 +403,7 @@ public class NerveManager {
 
     public void initRnn(boolean initPower, boolean isShowLog) throws Exception {
         isRnn = true;
+        this.initPower = initPower;
         initDepthNerve(false, 0, 0);//初始化深度隐层神经元
         for (int i = 0; i < depthNerves.size(); i++) {
             createRnnOutNerve(initPower, isShowLog, depthNerves.get(i), i + 1);

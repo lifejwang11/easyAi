@@ -25,7 +25,7 @@ public class OutNerve extends Nerve {
         this.isSoftMax = isSoftMax;
     }
 
-    void getGBySoftMax(double g, long eventId, int id) throws Exception {//接收softMax层回传梯度
+    void getGBySoftMax(double g, long eventId) throws Exception {//接收softMax层回传梯度
         gradient = g;
         updatePower(eventId);
     }
