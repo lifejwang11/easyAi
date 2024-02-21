@@ -352,14 +352,7 @@ public class NerveManager {
             outNerveList.add(outNerve);
         }
         //生成softMax层
-        if (isSoftMax) {
-            List<Nerve> softMaxList = new ArrayList<>();
-            SoftMax softMax = new SoftMax(outNerveNub, false, outNerveList, isShowLog);
-            softMaxList.add(softMax);
-            for (Nerve nerve : outNerves) {
-                nerve.connect(softMaxList);
-            }
-        }
+        createSoftMax(isShowLog, isSoftMax, outNerveList, outNerves);
         //最后一层隐层神经元 与输出神经元进行连接
         for (Nerve nerve : lastNerveList) {
             nerve.connect(outNerves);
@@ -371,6 +364,17 @@ public class NerveManager {
             //感知神经元与第一层隐层神经元进行连接
             sensoryNerve.connect(nerveList);
             sensoryNerves.add(sensoryNerve);
+        }
+    }
+
+    private void createSoftMax(boolean isShowLog, boolean isSoftMax, List<OutNerve> outNerveList, List<Nerve> outNerves) throws Exception {
+        if (isSoftMax) {
+            List<Nerve> softMaxList = new ArrayList<>();
+            SoftMax softMax = new SoftMax(outNerveNub, false, outNerveList, isShowLog);
+            softMaxList.add(softMax);
+            for (Nerve nerve : outNerves) {
+                nerve.connect(softMaxList);
+            }
         }
     }
 
@@ -387,14 +391,7 @@ public class NerveManager {
             rnnOutNerves.add(outNerve);
             outNerveList.add(outNerve);
         }
-        if (isSoftMax) {
-            List<Nerve> mySoftMaxList = new ArrayList<>();
-            SoftMax softMax = new SoftMax(outNerveNub, false, outNerveList, isShowLog);
-            mySoftMaxList.add(softMax);
-            for (Nerve nerve : rnnOutNerves) {
-                nerve.connect(mySoftMaxList);
-            }
-        }
+        createSoftMax(isShowLog, isSoftMax, outNerveList, rnnOutNerves);
         for (Nerve nerve : nerveList) {
             nerve.connectOut(rnnOutNerves);
         }
