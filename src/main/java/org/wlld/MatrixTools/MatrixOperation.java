@@ -416,31 +416,10 @@ public class MatrixOperation {
 
     public static Matrix matrixMulPd(Matrix errorMatrix, Matrix first, Matrix second, boolean isFirstPd) throws Exception {//对两个相乘的矩阵求偏导
         Matrix matrix;
-        int x, y;
         if (isFirstPd) {//对相乘的前矩阵进行求导
-            Matrix st = transPosition(second);//对矩阵2进行转置
-            x = first.getX();
-            y = first.getY();
-            matrix = new Matrix(x, y);
-            for (int i = 0; i < x; i++) {
-                for (int j = 0; j < y; j++) {
-                    double errorSigma = errorMatrix.getSigmaByVector(true, i);
-                    double xt = st.getSigmaByVector(false, j);
-                    matrix.setNub(i, j, errorSigma * xt);
-                }
-            }
+            matrix = mulMatrix(errorMatrix, transPosition(second));
         } else {
-            Matrix ft = transPosition(first);
-            x = second.getX();
-            y = second.getY();
-            matrix = new Matrix(x, y);
-            for (int i = 0; i < x; i++) {
-                for (int j = 0; j < y; j++) {
-                    double errorSigma = errorMatrix.getSigmaByVector(false, j);
-                    double at = ft.getSigmaByVector(true, i);
-                    matrix.setNub(i, j, errorSigma * at);
-                }
-            }
+            matrix = mulMatrix(transPosition(first), errorMatrix);
         }
         return matrix;
     }

@@ -1,7 +1,6 @@
 package org.wlld.rnnJumpNerveEntity;
 
 
-
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
@@ -36,12 +35,13 @@ public class HiddenNerve extends Nerve {
             } else {
                 double sigma = calculation(eventId);
                 double out = activeFunction.function(sigma);//激活函数输出数值
+                if (isKernelStudy) {
+                    outNub = out;
+                }
                 if (rnnMatrix != null) {//rnn 1改输出值，2查看是否需要转向
                     out = out + rnnMatrix.getNumber(depth, getId() - 1);
                 }
-                if (isKernelStudy) {
-                    outNub = out;
-                } else {
+                if (!isKernelStudy) {
                     destroyParameter(eventId);
                 }
                 sendMessage(eventId, out, isKernelStudy, E, outBack, false, rnnMatrix, storeys, index);
