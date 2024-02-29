@@ -36,20 +36,12 @@ public class NerveJumpManager {
     private final double lParam;//正则参数
     private final List<NerveCenter> nerveCenterList = new ArrayList<>();//神经中枢集合
     private double powerTh = 0.2;//权重阈值
-    private boolean semanticsLay = false;//是否有接语义层
-    private final List<SemanticsNerve> semanticsNerves = new ArrayList<>();//语义层集合
 
-    public List<SemanticsNerve> getSemanticsNerves() {
-        return semanticsNerves;
-    }
 
     public List<NerveCenter> getNerveCenterList() {
         return nerveCenterList;
     }
 
-    public void setSemanticsLay(boolean semanticsLay) {
-        this.semanticsLay = semanticsLay;
-    }
 
     public void setPowerTh(double powerTh) {
         this.powerTh = powerTh;
@@ -120,11 +112,6 @@ public class NerveJumpManager {
         List<RnnOutNerveStudy> rnnOutNerveStudies = new ArrayList<>();
         modelParameter.setDepthNerves(studyDepthNerves);
         modelParameter.setRnnOutNerveStudies(rnnOutNerveStudies);
-        List<double[][]> semanticsPowerList = new ArrayList<>();
-        modelParameter.setSemanticsPowerList(semanticsPowerList);
-        for (SemanticsNerve semanticsNerve : semanticsNerves) {
-            semanticsPowerList.add(semanticsNerve.getModel());
-        }
         //隐层神经元
         for (List<Nerve> depthNerve : depthNerves) {
             //创建一层深度的隐层神经元模型
@@ -218,10 +205,6 @@ public class NerveJumpManager {
     private void insertRnnModelParameter(ModelParameter modelParameter) throws Exception {
         List<List<NerveStudy>> depthStudyNerves = modelParameter.getDepthNerves();//隐层神经元
         List<RnnOutNerveStudy> rnnOutNerveStudies = modelParameter.getRnnOutNerveStudies();
-        List<double[][]> semanticsPowerList = modelParameter.getSemanticsPowerList();
-        for (int i = 0; i < semanticsNerves.size(); i++) {
-            semanticsNerves.get(i).insertModel(semanticsPowerList.get(i));
-        }
         //隐层神经元参数注入
         depthNervesModel(depthStudyNerves);
         for (RnnOutNerveStudy rnnOutNerveStudy : rnnOutNerveStudies) {
@@ -338,7 +321,7 @@ public class NerveJumpManager {
     public void init(boolean initPower, boolean isMatrix, boolean isShowLog, boolean isSoftMax
             , int step, int kernLen) throws Exception {//进行神经网络的初始化构建
         this.initPower = initPower;
-        initDepthNerve(isMatrix, step, kernLen);//初始化深度隐层神经元
+        initDepthNerve(isMatrix, step, kernLen, false, 0);//初始化深度隐层神经元
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
         //最后一层隐层神经元啊
         List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);
@@ -378,10 +361,7 @@ public class NerveJumpManager {
     }
 
     private void createRnnOutNerve(boolean initPower, boolean isShowLog, List<Nerve> nerveList, int depth
-            , boolean toSoftMax, boolean regular, double paramL) throws Exception {
-        if (semanticsLay) {
-            toSoftMax = false;
-        }
+            , boolean toSoftMax) throws Exception {
         RnnOutNerveBody rnnOutNerveBody = new RnnOutNerveBody();
         List<Nerve> mySoftMaxList = new ArrayList<>();
         List<Nerve> rnnOutNerves = new ArrayList<>();
@@ -389,17 +369,9 @@ public class NerveJumpManager {
         rnnOutNerveBody.setDepth(depth);
         rnnOutNerveBody.setOutNerves(rnnOutNerves);
         NerveCenter nerveCenter = nerveCenterList.get(depth);
-        SemanticsNerve semanticsNerve = new SemanticsNerve(layOutNerves, studyPoint, regular, paramL);
-        if (semanticsLay) {
-            semanticsNerves.add(semanticsNerve);
-        }
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, studyPoint, initPower,
                     activeFunction, false, isShowLog, rzType, lParam, toSoftMax, 0, 0, sensoryNerveNub, hiddenNerveNub, outNerveNub, hiddenDepth);
-            outNerve.setSemanticsLay(semanticsLay);//是否接语义层
-            if (semanticsLay) {
-                outNerve.setSemanticsNerve(semanticsNerve);
-            }
             outNerve.connectFather(depth, nerveList);//每一层的输出神经元 链接每一层的隐层神经元
             rnnOutNerves.add(outNerve);
             layOutNerves.add(outNerve);
@@ -418,12 +390,12 @@ public class NerveJumpManager {
         rnnOutNerveBodies.add(rnnOutNerveBody);
     }
 
-    public void initRnn(boolean initPower, boolean isShowLog, boolean toSoftMax, boolean regular, double paramL) throws Exception {
+    public void initRnn(boolean initPower, boolean isShowLog, boolean toSoftMax, boolean creator, int startDepth) throws Exception {
         isRnn = true;
         this.initPower = initPower;
-        initDepthNerve(false, 0, 0);//初始化深度隐层神经元
+        initDepthNerve(false, 0, 0, creator, startDepth);//初始化深度隐层神经元
         for (int i = 0; i < depthNerves.size(); i++) {
-            createRnnOutNerve(initPower, isShowLog, depthNerves.get(i), i + 1, toSoftMax, regular, paramL);
+            createRnnOutNerve(initPower, isShowLog, depthNerves.get(i), i + 1, toSoftMax);
         }
         //初始化感知神经元
         for (int i = 1; i < sensoryNerveNub + 1; i++) {
@@ -436,7 +408,7 @@ public class NerveJumpManager {
         }
     }
 
-    private void initDepthNerve(boolean isMatrix, int step, int kernLen) throws Exception {//初始化隐层神经元1
+    private void initDepthNerve(boolean isMatrix, int step, int kernLen, boolean creator, int startDepth) throws Exception {//初始化隐层神经元1
         if (isRnn) {
             NerveCenter nerveCenter = new NerveCenter(0, null, powerTh, outNerveNub, false);
             nerveCenterList.add(nerveCenter);
@@ -454,7 +426,8 @@ public class NerveJumpManager {
             }
             for (int j = 1; j < hiddenNerveNub + 1; j++) {//遍历同级
                 HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, studyPoint, initPower, activeFunction, isMatrix
-                        , rzType, lParam, step, kernLen, sensoryNerveNub, hiddenNerveNub, outNerveNub, hiddenDepth);
+                        , rzType, lParam, step, kernLen, sensoryNerveNub, hiddenNerveNub, outNerveNub,
+                        hiddenDepth, creator, startDepth);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);

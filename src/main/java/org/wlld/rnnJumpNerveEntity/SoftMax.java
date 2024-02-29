@@ -17,7 +17,8 @@ public class SoftMax extends Nerve {
     public SoftMax(boolean isDynamic, List<OutNerve> outNerves, boolean isShowLog
             , int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, int allDepth) throws Exception {
         super(0, "softMax", 0, false, null, isDynamic
-                , RZ.NOT_RZ, 0, 0, 0, sensoryNerveNub, hiddenNerveNub, outNerveNub, allDepth);
+                , RZ.NOT_RZ, 0, 0, 0, sensoryNerveNub, hiddenNerveNub, outNerveNub, allDepth
+                , false, 0);
         this.outNerves = outNerves;
         this.isShowLog = isShowLog;
     }
@@ -27,18 +28,18 @@ public class SoftMax extends Nerve {
     }
 
     @Override
-    protected void sendAppointSoftMax(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
+    protected void sendAppointSoftMax(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {
             Mes mes = softMax(eventId, false);//输出值
             destroyParameter(eventId);
-            nerveCenter.backType(eventId, mes.poi, mes.typeID, featureMatrix, outBack, myWord, semanticsMatrix);
+            nerveCenter.backType(eventId, mes.poi, mes.typeID, featureMatrix, outBack, myWord);
         }
     }
 
     @Override
-    protected void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E, OutBack outBack, boolean isEmbedding
-            , Matrix rnnMatrix, int[] storeys, int index) throws Exception {
+    protected void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E, OutBack outBack
+            , Matrix rnnMatrix, int[] storeys, int index, int questionLength) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {
             Mes mes = softMax(eventId, isStudy);//输出值

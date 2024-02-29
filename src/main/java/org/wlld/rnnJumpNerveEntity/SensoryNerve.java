@@ -17,7 +17,7 @@ public class SensoryNerve extends Nerve {
 
     public SensoryNerve(int id, int allDepth) throws Exception {
         super(id, "SensoryNerve", 0, false, null, false, 0, 0,
-                0, 0, 0, 0, 0, allDepth);
+                0, 0, 0, 0, 0, allDepth, false, 0);
         depth = 0;
     }
 
@@ -29,13 +29,13 @@ public class SensoryNerve extends Nerve {
      * @param outBack   回调结果
      */
     public void postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
-            , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys) throws Exception {//感知神经元输出
-        sendMessage(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, 0);
+            , OutBack outBack, Matrix rnnMatrix, int[] storeys, int questionLength) throws Exception {//感知神经元输出
+        sendMessage(eventId, parameter, isStudy, E, outBack, rnnMatrix, storeys, 0, questionLength);
     }
 
-    public void postPowerMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, Matrix semanticsMatrix) throws Exception {
-        sendTestMessage(eventId, parameter, featureMatrix, outBack, null, semanticsMatrix);
-    }
+//    public void postPowerMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack) throws Exception {
+//        sendTestMessage(eventId, parameter, featureMatrix, outBack, null);
+//    }
 
     public void postMatrixMessage(long eventId, Matrix parameter, boolean isKernelStudy
             , int E, OutBack outBack) throws Exception {

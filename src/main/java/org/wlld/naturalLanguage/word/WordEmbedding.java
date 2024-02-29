@@ -30,15 +30,17 @@ public class WordEmbedding {
     private SentenceModel sentenceModel;
     private final List<String> wordList = new ArrayList<>();//单字集合
     private SentenceConfig config;
+    private int wordVectorDimension;
 
     public void setConfig(SentenceConfig config) {
         this.config = config;
     }
 
-    public void init(SentenceModel sentenceModel) throws Exception {
+    public void init(SentenceModel sentenceModel, int wordVectorDimension) throws Exception {
+        this.wordVectorDimension = wordVectorDimension;
         this.sentenceModel = sentenceModel;
         wordList.addAll(sentenceModel.getWordSet());
-        nerveManager = new NerveManager(wordList.size(), config.getWordVectorDimension(), wordList.size()
+        nerveManager = new NerveManager(wordList.size(), wordVectorDimension, wordList.size()
                 , 1, new Tanh(), false, config.getWeStudyPoint(), RZ.NOT_RZ, 0);
         nerveManager.init(true, false, false, true, 0, 0);
     }
@@ -51,11 +53,12 @@ public class WordEmbedding {
         return wordList.get(id);
     }
 
-    public void insertModel(WordTwoVectorModel wordTwoVectorModel) throws Exception {
+    public void insertModel(WordTwoVectorModel wordTwoVectorModel, int wordVectorDimension) throws Exception {
         wordList.clear();
+        this.wordVectorDimension = wordVectorDimension;
         List<String> myWordList = wordTwoVectorModel.getWordList();
         wordList.addAll(myWordList);
-        nerveManager = new NerveManager(wordList.size(), config.getWordVectorDimension(), wordList.size()
+        nerveManager = new NerveManager(wordList.size(), wordVectorDimension, wordList.size()
                 , 1, new Tanh(), false, config.getWeStudyPoint(), RZ.NOT_RZ, 0);
         nerveManager.init(true, false, false, true, 0, 0);
         nerveManager.insertModelParameter(wordTwoVectorModel.getModelParameter());
@@ -63,10 +66,7 @@ public class WordEmbedding {
 
     public MyWordFeature getEmbedding(String word, long eventId) throws Exception {//做截断
         MyWordFeature myWordFeature = new MyWordFeature();
-        if (config == null) {
-            System.out.println("词嵌入空了？");
-        }
-        int wordDim = config.getWordVectorDimension();
+        int wordDim = wordVectorDimension;//
         Matrix matrix = null;
         for (int i = 0; i < word.length(); i++) {
             WordMatrix wordMatrix = new WordMatrix(wordDim);
@@ -109,10 +109,11 @@ public class WordEmbedding {
         for (int i = index; i < size; i++) {
             long start = System.currentTimeMillis();
             study(sentenceList.get(i));
-            long end = (System.currentTimeMillis() - start) / 1000;
+            long end = System.currentTimeMillis() - start;
             index++;
             double r = (index / (double) size) * 100;
-            System.out.println("size:" + size + ",index:" + index + ",耗时:" + end + ",完成度:" + r);
+            String result = String.format("%.6f", r);
+            System.out.println("size:" + size + ",index:" + index + ",耗时:" + end + ",完成度:" + result + "%");
         }
         WordTwoVectorModel wordTwoVectorModel = new WordTwoVectorModel();
         wordTwoVectorModel.setModelParameter(nerveManager.getModelParameter());

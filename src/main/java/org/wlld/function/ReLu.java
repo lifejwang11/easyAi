@@ -10,11 +10,19 @@ import org.wlld.i.ActiveFunction;
 public class ReLu implements ActiveFunction {
     @Override
     public double function(double x) {
-        return x * 0.1;
+        if (x > 0) {
+            return x;
+        } else {
+            return 0;
+        }
     }
 
     @Override
     public double functionG(double out) {
-        return 0.1;
+        if (out > 0) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }

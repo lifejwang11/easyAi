@@ -10,22 +10,27 @@ import org.wlld.i.ActiveFunction;
  * @Description
  */
 public class ELu implements ActiveFunction {
+    private final double a;
+
+    public ELu(double a) {
+        this.a = a;
+    }
+
     @Override
     public double function(double x) {
         if (x > 0) {
-            x = x * 0.1;
+            return x;
         } else {
-            x = 0.1 * (Math.exp(x) - 1);
+            return a * (Math.exp(x) - 1);
         }
-        return x;
     }
 
     @Override
     public double functionG(double out) {
         if (out > 0) {
-            return 0.1;
+            return 1;
         } else {
-            return out + 0.1;
+            return out + a;
         }
     }
 }

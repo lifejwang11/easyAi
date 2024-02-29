@@ -34,8 +34,7 @@ public class NerveCenter {//神经中枢
         this.wordEmbedding = wordEmbedding;
     }
 
-    public void backType(long eventId, double parameter, int id, Matrix featureMatrix, OutBack outBack, String myWord
-            , Matrix semanticsMatrix) throws Exception {
+    public void backType(long eventId, double parameter, int id, Matrix featureMatrix, OutBack outBack, String myWord) throws Exception {
         if (id > 0 && parameter > powerTh) {//增加新特征继续传播
             String nextWord = wordEmbedding.getWord(id - 1);
             if (myWord == null) {
@@ -47,12 +46,8 @@ public class NerveCenter {//神经中枢
                 outBack.backWord(myWord, eventId);
             } else {
                 Matrix matrix = wordEmbedding.getEmbedding(nextWord, eventId).getFeatureMatrix();
-                if (depth > 1) {
-                    matrix = MatrixOperation.add(matrix, semanticsMatrix);
-                    MatrixOperation.mathMul(matrix, 0.5);
-                }
                 featureMatrix = MatrixOperation.pushVector(featureMatrix, matrix, true);
-                go(eventId, featureMatrix, outBack, myWord, semanticsMatrix);
+                go(eventId, featureMatrix, outBack, myWord);
             }
         } else {//停止继续传播 进行输出
             outBack.backWord(myWord, eventId);
@@ -61,10 +56,10 @@ public class NerveCenter {//神经中枢
 
     }
 
-    private void go(long eventId, Matrix featureMatrix, OutBack outBack, String word, Matrix semanticsMatrix) throws Exception {
+    private void go(long eventId, Matrix featureMatrix, OutBack outBack, String word) throws Exception {
         //神经中枢收到传递命令 将命令传递给本层神经元
         for (Nerve nerve : nerveList) {//将信息发送给目标层隐层神经元
-            nerve.sendMyTestMessage(eventId, featureMatrix, outBack, word, semanticsMatrix);
+            nerve.sendMyTestMessage(eventId, featureMatrix, outBack, word);
         }
     }
 

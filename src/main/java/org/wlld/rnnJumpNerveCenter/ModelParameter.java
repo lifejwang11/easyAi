@@ -19,16 +19,6 @@ public class ModelParameter {
     private List<RnnOutNerveStudy> rnnOutNerveStudies = new ArrayList<>();//rnn多级输出神经元
     private List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
     private DymNerveStudy dymOutNerveStudy = new DymNerveStudy();//动态神经元输出层
-    private Map<Integer, Double> foodS;//干食品类别对应的积分 需激活注入
-    private List<double[][]> semanticsPowerList;//语义层权重
-
-    public List<double[][]> getSemanticsPowerList() {
-        return semanticsPowerList;
-    }
-
-    public void setSemanticsPowerList(List<double[][]> semanticsPowerList) {
-        this.semanticsPowerList = semanticsPowerList;
-    }
 
     public List<RnnOutNerveStudy> getRnnOutNerveStudies() {
         return rnnOutNerveStudies;
@@ -68,13 +58,5 @@ public class ModelParameter {
 
     public void setDymOutNerveStudy(DymNerveStudy dymOutNerveStudy) {
         this.dymOutNerveStudy = dymOutNerveStudy;
-    }
-
-    public Map<Integer, Double> getFoodS() {
-        return foodS;
-    }
-
-    public void setFoodS(Map<Integer, Double> foodS) {
-        this.foodS = foodS;
     }
 }

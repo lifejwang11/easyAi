@@ -46,6 +46,8 @@ public abstract class Nerve {
     private int myUpNumber;//统计参数数量
     protected int depth;//所处深度
     protected int allDepth;//总深度
+    protected boolean creator;//是否为创建网络
+    protected int startDepth;//开始深度
 
     public int getDepth() {
         return depth;
@@ -78,8 +80,10 @@ public abstract class Nerve {
     protected Nerve(int id, String name,
                     double studyPoint, boolean init, ActiveFunction activeFunction
             , boolean isDynamic, int rzType, double lParam, int step, int kernLen, int sensoryNerveNub
-            , int hiddenNerveNub, int outNerveNub, int allDepth) throws Exception {//该神经元在同层神经元中的编号
+            , int hiddenNerveNub, int outNerveNub, int allDepth, boolean creator, int startDepth) throws Exception {//该神经元在同层神经元中的编号
         this.id = id;
+        this.creator = creator;
+        this.startDepth = startDepth;
         this.allDepth = allDepth;
         this.hiddenNerveNub = hiddenNerveNub;//隐层神经元个数
         this.sensoryNerveNub = sensoryNerveNub;//输入神经元个数
@@ -110,11 +114,11 @@ public abstract class Nerve {
         return nextStorey;
     }
 
-    protected void sendSoftMaxBack(long eventId, double parameter, Matrix rnnMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
+    protected void sendSoftMaxBack(long eventId, double parameter, Matrix rnnMatrix, OutBack outBack, String myWord) throws Exception {
         if (!son.isEmpty()) {
             List<Nerve> nerverList = son.get(0);
             for (Nerve nerve : nerverList) {
-                nerve.sendAppointSoftMax(eventId, parameter, rnnMatrix, outBack, myWord, semanticsMatrix);
+                nerve.sendAppointSoftMax(eventId, parameter, rnnMatrix, outBack, myWord);
             }
         } else {
             throw new Exception("this storey is lastIndex");
@@ -126,7 +130,7 @@ public abstract class Nerve {
         if (!son.isEmpty()) {
             List<Nerve> nerverList = son.get(0);
             for (Nerve nerve : nerverList) {
-                nerve.input(eventId, parameter, isStudy, E, outBack, false, rnnMatrix, storeys, index);
+                nerve.input(eventId, parameter, isStudy, E, outBack, rnnMatrix, storeys, index, 0);
             }
         } else {
             throw new Exception("this storey is lastIndex");
@@ -136,22 +140,22 @@ public abstract class Nerve {
     protected void clearData(long eventId) {
     }
 
-    protected void sendMyTestMessage(long eventId, Matrix featureMatrix, OutBack outBack, String word, Matrix semanticsMatrix) throws Exception {
+    protected void sendMyTestMessage(long eventId, Matrix featureMatrix, OutBack outBack, String word) throws Exception {
 
     }
 
-    protected void sendAppointSoftMax(long eventId, double parameter, Matrix rnnMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
+    protected void sendAppointSoftMax(long eventId, double parameter, Matrix rnnMatrix, OutBack outBack, String myWord) throws Exception {
     }
 
-    protected void sendAppointTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
+    protected void sendAppointTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord) throws Exception {
     }
 
-    protected void sendTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
+    protected void sendTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord) throws Exception {
         if (!son.isEmpty()) {
             List<Nerve> nerveList = son.get(depth + 1);
             if (nerveList != null) {
                 for (Nerve nerve : nerveList) {
-                    nerve.sendAppointTestMessage(eventId, parameter, featureMatrix, outBack, myWord, semanticsMatrix);
+                    nerve.sendAppointTestMessage(eventId, parameter, featureMatrix, outBack, myWord);
                 }
             } else {
                 throw new Exception("Insufficient layer:" + depth + 1);
@@ -161,10 +165,10 @@ public abstract class Nerve {
         }
     }
 
-    protected void sendRnnTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord, Matrix semanticsMatrix) throws Exception {
+    protected void sendRnnTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord) throws Exception {
         if (!rnnOut.isEmpty()) {
             for (Nerve nerve : rnnOut) {
-                nerve.sendAppointTestMessage(eventId, parameter, featureMatrix, outBack, myWord, semanticsMatrix);
+                nerve.sendAppointTestMessage(eventId, parameter, featureMatrix, outBack, myWord);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -172,12 +176,13 @@ public abstract class Nerve {
     }
 
     protected void sendMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
-            , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys, int index) throws Exception {
+            , OutBack outBack, Matrix rnnMatrix, int[] storeys, int index, int questionLength) throws Exception {
         List<Nerve> nerveList = null;
+        int nextStorey = 0;
         if (storeys == null) {
             nerveList = son.get(0);
         } else {
-            int nextStorey = getNextStorey(storeys, index);
+            nextStorey = getNextStorey(storeys, index);
             if (nextStorey > -1) {//可以继续向前
                 nerveList = son.get(nextStorey);
                 index++;
@@ -188,19 +193,25 @@ public abstract class Nerve {
             }
         }
         if (nerveList != null) {
-            for (Nerve nerve : nerveList) {
-                nerve.input(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, index);
+            if (creator && !isStudy && nextStorey == startDepth) {
+                for (Nerve nerve : nerveList) {
+                    nerve.sendAppointTestMessage(eventId, parameter, rnnMatrix, outBack, null);
+                }
+            } else {
+                for (Nerve nerve : nerveList) {
+                    nerve.input(eventId, parameter, isStudy, E, outBack, rnnMatrix, storeys, index, questionLength);
+                }
             }
         } else {//发送到输出神经元
-            sendRnnMessage(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, index);
+            sendRnnMessage(eventId, parameter, isStudy, E, outBack, rnnMatrix, storeys, index);
         }
     }
 
     private void sendRnnMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
-            , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix, int[] storeys, int index) throws Exception {
+            , OutBack outBack, Matrix rnnMatrix, int[] storeys, int index) throws Exception {
         if (!rnnOut.isEmpty()) {
             for (Nerve nerve : rnnOut) {
-                nerve.input(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix, storeys, index);
+                nerve.input(eventId, parameter, isStudy, E, outBack, rnnMatrix, storeys, index, 0);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -269,8 +280,8 @@ public abstract class Nerve {
     }
 
     protected void input(long eventId, double parameter, boolean isStudy
-            , Map<Integer, Double> E, OutBack imageBack, boolean isEmbedding, Matrix rnnMatrix
-            , int[] storeys, int index) throws Exception {//输入参数
+            , Map<Integer, Double> E, OutBack imageBack, Matrix rnnMatrix
+            , int[] storeys, int index, int questionLength) throws Exception {//输入参数
 
     }
 
@@ -391,20 +402,6 @@ public abstract class Nerve {
 
     protected void destroyParameter(long eventId) {//销毁参数
         features.remove(eventId);
-    }
-
-    protected double getWOne(long eventId) {
-        List<Double> featuresList = features.get(eventId);
-        double wt = 0;
-        for (int i = 0; i < featuresList.size(); i++) {
-            double value = featuresList.get(i);
-            double w = dendrites.get(i + 1);//当value不为0的时候把w取出来
-            if (value > 0.5) {
-                wt = w;
-                break;
-            }
-        }
-        return wt;
     }
 
     protected double calculation(long eventId) {//计算当前输出结果

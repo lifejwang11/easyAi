@@ -48,7 +48,7 @@ public class RRNerveManager {
     private void initNerveManager() throws Exception {
         typeNerveManager = new NerveJumpManager(vectorDimension, vectorDimension, typeNub, maxFeatureLength - 1, new Tanh(), false,
                 studyPoint, RZ.L1, studyPoint * 0.2);
-        typeNerveManager.initRnn(true, showLog, true, false, 1);
+        typeNerveManager.initRnn(true, showLog,true,false,0);
     }
 
     private int getMappingType(int key) {//通过自增主键查找原映射
@@ -91,7 +91,7 @@ public class RRNerveManager {
     private void studyNerve(long eventId, List<SensoryNerve> sensoryNerves, List<Double> featureList, Matrix rnnMatrix, Map<Integer, Double> E, boolean isStudy, OutBack convBack, int[] storeys) throws Exception {
         if (sensoryNerves.size() == featureList.size()) {
             for (int i = 0; i < sensoryNerves.size(); i++) {
-                sensoryNerves.get(i).postMessage(eventId, featureList.get(i), isStudy, E, convBack, false, rnnMatrix, storeys);
+                sensoryNerves.get(i).postMessage(eventId, featureList.get(i), isStudy, E, convBack, rnnMatrix, storeys, 0);
             }
         } else {
             throw new Exception("1size not equals,feature size:" + featureList.size() + "," +

@@ -12,19 +12,27 @@ import org.wlld.entity.SentenceModel;
 public class SentenceConfig {
     private SentenceModel sentenceModel;
     private int typeNub = 11;//分类数量
-    private int wordVectorDimension = 21;//词向量嵌入维度
+    private int wordVectorDimension = 21;//语义分类网络词向量嵌入维度
+    private int qaWordVectorDimension = 66;//问答模型此项链嵌入维度
     private int maxWordLength = 20;//最长字数
     private double weStudyPoint = 0.01;//词向量学习学习率
     private double weLParam = 0.001;//词向量正则系数
     private boolean showLog = true;
-    private int dateAug = 5;
     private int minLength = 5;
     private double trustPowerTh = 0.5;//权重可信任阈值
     private int maxAnswerLength = 20;//最大回答长度
     private double sentenceTrustPowerTh = 0.2;//语句生成可信赖阈值
-    private int times = 100;//增加训练数量
+    private int times = 10;//增加训练数量
     private double param = 0.4;
     private int keyWordNerveDeep = 3;
+
+    public int getQaWordVectorDimension() {
+        return qaWordVectorDimension;
+    }
+
+    public void setQaWordVectorDimension(int qaWordVectorDimension) {
+        this.qaWordVectorDimension = qaWordVectorDimension;
+    }
 
     public int getKeyWordNerveDeep() {
         return keyWordNerveDeep;
@@ -80,14 +88,6 @@ public class SentenceConfig {
 
     public void setMinLength(int minLength) {
         this.minLength = minLength;
-    }
-
-    public int getDateAug() {
-        return dateAug;
-    }
-
-    public void setDateAug(int dateAug) {
-        this.dateAug = dateAug;
     }
 
     public int getMaxWordLength() {
