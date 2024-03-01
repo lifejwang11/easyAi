@@ -10,7 +10,6 @@ import org.wlld.entity.SentenceModel;
  * @Description 参数配置
  */
 public class SentenceConfig {
-    private SentenceModel sentenceModel;
     private int typeNub = 11;//分类数量
     private int wordVectorDimension = 21;//语义分类网络词向量嵌入维度
     private int qaWordVectorDimension = 66;//问答模型此项链嵌入维度
@@ -112,14 +111,6 @@ public class SentenceConfig {
 
     public void setTypeNub(int typeNub) {
         this.typeNub = typeNub;
-    }
-
-    public SentenceModel getSentenceModel() {
-        return sentenceModel;
-    }
-
-    public void setSentenceModel(SentenceModel sentenceModel) {
-        this.sentenceModel = sentenceModel;
     }
 
     public int getWordVectorDimension() {
