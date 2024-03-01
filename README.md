@@ -1,4 +1,4 @@
-# <div align=center >![logo](./zf/easyAI.png)
+### <div align=center>![logo](./zf/easyAI.png)
 
 ### 软件说明：
 * 本软件对物体在图像中进行训练及识别，切割，定位的轻量级，面向小白的框架。
