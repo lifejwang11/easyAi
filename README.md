@@ -10,7 +10,7 @@
 * 因为是框架没有图像化界面，演示结果就是控制台输出的数据，只能用视频展示，想看演示结果请看教学视频
 * 详细api文档见项目html文档:https://wlhlwl.com/gw/easyAi.html
 ### 强大的自主智能客服工具，支持自动与用户对话，解答疑问，并捕捉用户对话中的需求后自动生成订单！基于easyAi算法引擎构建智脑——SayOrder
-链接:https://gitee.com/dromara/sayOrder.git
+链接:https://gitee.com/dromara/sayOrder
 ### 目前拥有的核心功能（若对您的学习或生产有帮助，请留下您的STAR）
 * 对图片中得物体进行识别。
 * 对中文语言进行分类语义识别,判断用户说话的语义是什么，关键词抓取，以及要做什么
