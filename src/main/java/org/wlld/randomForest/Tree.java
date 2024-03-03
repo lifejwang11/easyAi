@@ -77,7 +77,7 @@ public class Tree {//决策树
         return ArithUtil.add(gain, ArithUtil.mul(ent, dNub));
     }
 
-    private List<Node> createNode(Node node) {
+    private List<Node> createNode(Node node) throws Exception {
         Set<String> attributes = node.attribute;
         List<Integer> fatherList = node.fatherList;
         if (!attributes.isEmpty()) {
@@ -140,6 +140,9 @@ public class Tree {//决策树
             double avgGain = sigmaG / i;
             double gainRatio = -2;//最大增益率
             String key = null;//可选属性
+            if (gainMap.isEmpty()) {
+                throw new Exception("可用属性列表为空!");
+            }
             for (Map.Entry<String, Gain> entry : gainMap.entrySet()) {
                 Gain gain = entry.getValue();
                 if (gainMap.size() == 1 || (gain.gain >= avgGain && (gain.gainRatio >= gainRatio || gainRatio == -2))) {
