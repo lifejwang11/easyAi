@@ -11,7 +11,7 @@ import java.util.*;
  */
 public class DataTable {//数据表
     private final Map<String, List<Integer>> table = new HashMap<>();
-    private final Set<String> keyType;//表的属性
+    private Set<String> keyType;//表的属性
     private String key;//最终分类字段
     private int length;
 
@@ -43,10 +43,17 @@ public class DataTable {//数据表
         }
     }
 
-    public DataTable(Set<String> key) {//表的属性
-        this.keyType = key;
-        for (String name : key) {
-            table.put(name, new ArrayList<>());
+    public DataTable(Set<String> key) throws Exception {//表的属性
+        if (key != null) {
+            this.keyType = key;
+            for (String name : key) {
+                if (name == null) {
+                    throw new Exception("属性列表中，有一个属性的值为null");
+                }
+                table.put(name, new ArrayList<>());
+            }
+        } else {
+            throw new Exception("属性列表为空");
         }
     }
 
