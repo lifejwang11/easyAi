@@ -132,7 +132,7 @@ public class Tree {//决策树
                 if (IV != 0) {
                     gain1.gainRatio = ArithUtil.div(gain1.gain, -IV);//增益率
                 } else {
-                    gain1.gainRatio = -1;
+                    gain1.gainRatio = 100000;
                 }
                 sigmaG = ArithUtil.add(gain1.gain, sigmaG);
                 i++;
@@ -202,7 +202,7 @@ public class Tree {//决策树
         Class<?> body = ob.getClass();
         String methodName = "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
         Method method = body.getMethod(methodName);
-        return (int) method.invoke(ob);
+        return Integer.parseInt(method.invoke(ob).toString());
     }
 
     public TreeWithTrust judge(Object ob) throws Exception {//进行类别判断
