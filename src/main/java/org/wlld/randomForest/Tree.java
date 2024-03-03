@@ -142,7 +142,7 @@ public class Tree {//决策树
             String key = null;//可选属性
             for (Map.Entry<String, Gain> entry : gainMap.entrySet()) {
                 Gain gain = entry.getValue();
-                if (gainMap.size() == 1 || (gain.gain >= avgGain && gain.gainRatio >= gainRatio)) {
+                if (gainMap.size() == 1 || (gain.gain >= avgGain && (gain.gainRatio >= gainRatio || gainRatio == -2))) {
                     gainRatio = gain.gainRatio;
                     key = entry.getKey();
                 }
