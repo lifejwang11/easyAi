@@ -1,6 +1,5 @@
 package org.wlld.randomForest;
 
-import org.wlld.naturalLanguage.WordTemple;
 import org.wlld.tools.ArithUtil;
 
 import java.lang.reflect.Method;
@@ -16,9 +15,9 @@ public class Tree {//决策树
     private Map<String, List<Integer>> table;//总样本
     private Node rootNode;//根节点
     private List<Integer> endList;//最终结果分类
-    private List<Node> lastNodes = new ArrayList<>();//最后一层节点集合
-    private Random random = new Random();
-    private double trustPunishment;//信任惩罚
+    private final List<Node> lastNodes = new ArrayList<>();//最后一层节点集合
+    private final Random random = new Random();
+    private final double trustPunishment;//信任惩罚
 
     public Node getRootNode() {
         return rootNode;
@@ -32,7 +31,7 @@ public class Tree {//决策树
         this.rootNode = rootNode;
     }
 
-    private class Gain {
+    private static class Gain {
         private double gain;//信息增益
         private double gainRatio;//信息增益率
     }
@@ -68,7 +67,7 @@ public class Tree {//决策树
         double ent = 0;
         //求信息熵
         for (Map.Entry<Integer, Integer> entry1 : myType.entrySet()) {
-            double g = ArithUtil.div(entry1.getValue(), list.size());
+            double g = ArithUtil.div(entry1.getValue(), list.size());//每个类别的概率
             ent = ArithUtil.add(ent, ArithUtil.mul(g, log2(g)));
         }
         return -ent;
@@ -81,8 +80,8 @@ public class Tree {//决策树
     private List<Node> createNode(Node node) {
         Set<String> attributes = node.attribute;
         List<Integer> fatherList = node.fatherList;
-        if (attributes.size() > 0) {
-            Map<String, Map<Integer, List<Integer>>> mapAll = new HashMap<>();
+        if (!attributes.isEmpty()) {
+            Map<String, Map<Integer, List<Integer>>> mapAll = new HashMap<>();//主键：可用属性 次主键该属性的属性值，集合该值对应的id
             double fatherEnt = getEnt(fatherList);
             int fatherNub = fatherList.size();//总样本数
             //该属性每个离散数据分类的集合
@@ -93,7 +92,7 @@ public class Tree {//决策树
                         mapAll.put(attr, new HashMap<>());
                     }
                     Map<Integer, List<Integer>> map = mapAll.get(attr);
-                    int attrValue = table.get(attr).get(index);
+                    int attrValue = table.get(attr).get(index);//获取当前属性值
                     if (!map.containsKey(attrValue)) {
                         map.put(attrValue, new ArrayList<>());
                     }
@@ -106,24 +105,24 @@ public class Tree {//决策树
             double sigmaG = 0;
             Map<String, Gain> gainMap = new HashMap<>();
             for (Map.Entry<String, Map<Integer, List<Integer>>> mapEntry : mapAll.entrySet()) {
-                Map<Integer, List<Integer>> map = mapEntry.getValue();
+                Map<Integer, List<Integer>> map = mapEntry.getValue();//当前属性的 属性值及id
                 //求信息增益
                 double gain = 0;//信息增益
                 double IV = 0;//增益率
                 List<Node> nodeList = new ArrayList<>();
-                String name = mapEntry.getKey();
+                String name = mapEntry.getKey();//可用属性名称
                 nodeMap.put(name, nodeList);
-                for (Map.Entry<Integer, List<Integer>> entry : map.entrySet()) {
+                for (Map.Entry<Integer, List<Integer>> entry : map.entrySet()) {//遍历当前属性下的所有属性值的集合
                     Set<String> nowAttribute = removeAttribute(attributes, name);
                     Node sonNode = new Node();
                     nodeList.add(sonNode);
                     sonNode.attribute = nowAttribute;
-                    List<Integer> list = entry.getValue();
+                    List<Integer> list = entry.getValue();//该属性值下的数据id集合
                     sonNode.fatherList = list;
-                    sonNode.typeId = entry.getKey();
-                    int myNub = list.size();
-                    double ent = getEnt(list);
-                    double dNub = ArithUtil.div(myNub, fatherNub);
+                    sonNode.typeId = entry.getKey();//该属性值
+                    int myNub = list.size();//该属性值下数据的数量
+                    double ent = getEnt(list);//该属性值 的信息熵
+                    double dNub = ArithUtil.div(myNub, fatherNub);//该属性值在 父级样本中出现的概率
                     IV = ArithUtil.add(ArithUtil.mul(dNub, log2(dNub)), IV);
                     gain = getGain(ent, dNub, gain);
                 }
@@ -139,14 +138,11 @@ public class Tree {//决策树
                 i++;
             }
             double avgGain = sigmaG / i;
-            double gainRatio = 0;//最大增益率
+            double gainRatio = -2;//最大增益率
             String key = null;//可选属性
             for (Map.Entry<String, Gain> entry : gainMap.entrySet()) {
                 Gain gain = entry.getValue();
-                if (gainRatio == -1) {
-                    break;
-                }
-                if (gainMap.size() == 1 || (gain.gain >= avgGain && (gain.gainRatio >= gainRatio || gain.gainRatio == -1))) {
+                if (gainMap.size() == 1 || (gain.gain >= avgGain && gain.gainRatio >= gainRatio)) {
                     gainRatio = gain.gainRatio;
                     key = entry.getKey();
                 }
@@ -206,8 +202,7 @@ public class Tree {//决策树
         Class<?> body = ob.getClass();
         String methodName = "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
         Method method = body.getMethod(methodName);
-        int nub = (int) method.invoke(ob);
-        return nub;
+        return (int) method.invoke(ob);
     }
 
     public TreeWithTrust judge(Object ob) throws Exception {//进行类别判断
@@ -276,8 +271,7 @@ public class Tree {//决策树
                 list.add(i);
             }
             rootNode.fatherList = list;//当前父级样本
-            List<Node> nodeList = createNode(rootNode);
-            rootNode.nodeList = nodeList;
+            rootNode.nodeList = createNode(rootNode);
             //进行后剪枝
             for (Node lastNode : lastNodes) {
                 prune(lastNode.fatherNode);

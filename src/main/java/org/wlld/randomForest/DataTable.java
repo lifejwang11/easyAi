@@ -10,8 +10,8 @@ import java.util.*;
  * @date 3:48 下午 2020/2/17
  */
 public class DataTable {//数据表
-    private Map<String, List<Integer>> table = new HashMap<>();
-    private Set<String> keyType;//表的属性
+    private final Map<String, List<Integer>> table = new HashMap<>();
+    private final Set<String> keyType;//表的属性
     private String key;//最终分类字段
     private int length;
 
@@ -43,7 +43,7 @@ public class DataTable {//数据表
         }
     }
 
-    public DataTable(Set<String> key) {
+    public DataTable(Set<String> key) {//表的属性
         this.keyType = key;
         for (String name : key) {
             table.put(name, new ArrayList<>());
@@ -59,10 +59,10 @@ public class DataTable {//数据表
                 Method method = body.getMethod(methodName);
                 Object dm = method.invoke(ob);
                 List<Integer> list = table.get(name);
-                if (dm instanceof Integer) {//数据表只允许加入Double类型数据
+                if (dm instanceof Integer) {//数据表只允许加入Integer类型数据
                     list.add((int) dm);
                 } else {
-                    throw new Exception("type not Integer");
+                    throw new Exception("数据表只允许加入Integer类型数据");
                 }
             }
         } catch (Exception e) {
