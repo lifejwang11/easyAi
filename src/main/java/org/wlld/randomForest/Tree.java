@@ -139,7 +139,7 @@ public class Tree {//决策树
             double avgGain = sigmaG / i;
             double gainRatio = -2;//最大增益率
             String key = null;//可选属性
-            System.out.println("平均信息增益==============================" + avgGain);
+            //System.out.println("平均信息增益==============================" + avgGain);
             for (Map.Entry<String, Gain> entry : gainMap.entrySet()) {
                 Gain gain = entry.getValue();
 //                System.out.println("主键:" + entry.getKey() + ",平均信息增益:" + avgGain + ",可用属性数量:" + gainMap.size()
