@@ -140,14 +140,14 @@ public class Tree {//决策树
             double avgGain = sigmaG / i;
             double gainRatio = -2;//最大增益率
             String key = null;//可选属性
+            System.out.println("平均信息增益==============================" + avgGain);
             for (Map.Entry<String, Gain> entry : gainMap.entrySet()) {
                 Gain gain = entry.getValue();
+                System.out.println("主键:" + entry.getKey() + ",平均信息增益:" + avgGain + ",可用属性数量:" + gainMap.size()
+                        + "该属性信息增益:" + gain.gain + ",该属性增益率：" + gain.gainRatio + ",当前最高增益率:" + gainRatio);
                 if (gainMap.size() == 1 || (gain.gain >= avgGain && (gain.gainRatio >= gainRatio || gainRatio == -2))) {
                     gainRatio = gain.gainRatio;
                     key = entry.getKey();
-                    if (key == null) {
-                        System.out.println("key 空了!!!");
-                    }
                 }
             }
             node.key = key;
