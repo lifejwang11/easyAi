@@ -7,10 +7,10 @@ public abstract class Frequency {//统计频数
     public double average(double... m) {//计算平均值
         int len = m.length;
         double allNub = 0;
-        for (int i = 0; i < len; i++) {
-            allNub = allNub + m[i];
+        for (double v : m) {
+            allNub = allNub + v;
         }
-        allNub = ArithUtil.div(allNub, len);
+        allNub = allNub / len;
         return allNub;
     }
 
@@ -26,21 +26,10 @@ public abstract class Frequency {//统计频数
         return Math.sqrt(sigma);
     }
 
-    public double averageByList(List<Double> m) {//计算平均值
-        int len = m.size();
-        double allNub = 0;
-        for (int i = 0; i < len; i++) {
-            allNub = allNub + m.get(i);
-        }
-        allNub = ArithUtil.div(allNub, len);
-        return allNub;
-    }
-
     public double sigma(double... m) {//求和
-        int len = m.length;
         double allNub = 0;
-        for (int i = 0; i < len; i++) {
-            allNub = ArithUtil.add(allNub, m[i]);
+        for (double v : m) {
+            allNub = allNub + v;
         }
         return allNub;
     }
@@ -52,19 +41,18 @@ public abstract class Frequency {//统计频数
     public double variance(double... m) {//计算方差
         double ave = average(m);//先计算出平均值
         double allNub = 0;
-        for (int i = 0; i < m.length; i++) {
-            allNub = allNub + Math.pow(m[i] - ave, 2);
+        for (double v : m) {
+            allNub = allNub + Math.pow(v - ave, 2);
         }
-        double var = ArithUtil.div(allNub, m.length);
-        return var;
+        return allNub / m.length;
     }
 
     public double varianceByAve(double[] m, double ave) {// 计算方差，依赖平均值
         double allNub = 0;
-        for (int i = 0; i < m.length; i++) {
-            allNub = allNub + Math.pow(m[i] - ave, 2);
+        for (double v : m) {
+            allNub = allNub + Math.pow(v - ave, 2);
         }
-        return ArithUtil.div(allNub, m.length);
+        return allNub / m.length;
     }
 
     public double sd(double... m) {//计算标准差
@@ -74,8 +62,8 @@ public abstract class Frequency {//统计频数
 
     public double dcByAvg(double[] m, double ave) {//带均值算离散
         double allNub = 0;
-        for (int i = 0; i < m.length; i++) {
-            allNub = allNub + Math.pow(m[i] - ave, 2);
+        for (double v : m) {
+            allNub = allNub + Math.pow(v - ave, 2);
         }
         return ArithUtil.div(Math.sqrt(ArithUtil.div(allNub, m.length)), ave);//离散系数
     }
@@ -85,8 +73,8 @@ public abstract class Frequency {//统计频数
         double dc = 0;
         if (ave > 0) {
             double allNub = 0;
-            for (int i = 0; i < m.length; i++) {
-                allNub = allNub + Math.pow(m[i] - ave, 2);
+            for (double v : m) {
+                allNub = allNub + Math.pow(v - ave, 2);
             }
             dc = ArithUtil.div(Math.sqrt(ArithUtil.div(allNub, m.length)), ave);//离散系数
         }

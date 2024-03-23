@@ -58,7 +58,7 @@ public class MatrixOperation {
             //转置的参数矩阵乘以参数矩阵
             Matrix matrix2 = mulMatrix(matrix1, parameter);
             //求上一步的逆矩阵 这一步需要矩阵非奇异,若出现奇异矩阵，则返回0矩阵，意味失败
-            Matrix matrix3 = getInverseMatrixs(matrix2);
+            Matrix matrix3 = getInverseMatrix(matrix2);
             if (matrix3.getX() == 1 && matrix3.getY() == 1) {
                 return matrix3;
             } else {
@@ -339,7 +339,7 @@ public class MatrixOperation {
         return inverserNumber;
     }
 
-    public static Matrix getInverseMatrixs(Matrix matrix) throws Exception {//矩阵求逆
+    public static Matrix getInverseMatrix(Matrix matrix) throws Exception {//矩阵求逆
         double def = matrix.getDet();
         if (def != 0) {
             def = 1 / def;
