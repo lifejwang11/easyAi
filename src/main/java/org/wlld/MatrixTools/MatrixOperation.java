@@ -259,9 +259,17 @@ public class MatrixOperation {
     }
 
     public static double innerProduct(Matrix matrix1, Matrix matrix2) throws Exception {//两个向量内积
-        Matrix matrix = transPosition(matrix1);
-        Matrix matrix3 = mulMatrix(matrix, matrix2);
-        return matrix3.getNumber(0, 0);
+        if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
+            double sigma = 0;
+            for (int i = 0; i < matrix1.getX(); i++) {
+                for (int j = 0; j < matrix1.getY(); j++) {
+                    sigma = sigma + matrix1.getNumber(i, j) * matrix2.getNumber(i, j);
+                }
+            }
+            return sigma;
+        } else {
+            throw new Exception("两个向量的长宽必须相同");
+        }
     }
 
     public static double getNorm(Matrix matrix) throws Exception {//求向量范数
