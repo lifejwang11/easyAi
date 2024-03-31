@@ -7,8 +7,15 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 
 public class ImageTools {
+
+    public void writeImage(ThreeChannelMatrix img, String url) throws Exception {
+        ByteArrayOutputStream b = drawImage(img);
+        FileOutputStream fileOutputStream = new FileOutputStream(url);
+        b.writeTo(fileOutputStream);
+    }
 
     public ByteArrayOutputStream drawImage(ThreeChannelMatrix img) throws Exception {
         Matrix matrixR = img.getMatrixR();
