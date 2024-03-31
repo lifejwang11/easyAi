@@ -75,6 +75,8 @@ public class Picture {
         int width = bi.getWidth();//最大宽度
         int height = bi.getHeight();//最大高度
         ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
+        threeChannelMatrix.setX(height);
+        threeChannelMatrix.setY(width);
         Matrix matrixR = new Matrix(height, width);//行，列
         Matrix matrixG = new Matrix(height, width);//行，列
         Matrix matrixB = new Matrix(height, width);//行，列
@@ -83,7 +85,6 @@ public class Picture {
         threeChannelMatrix.setMatrixG(matrixG);
         threeChannelMatrix.setMatrixB(matrixB);
         threeChannelMatrix.setH(matrixH);
-        double norm = 255D / 2;
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 int pixel = bi.getRGB(j, i);// 下面三行代码将一个数字转换为RGB数字
