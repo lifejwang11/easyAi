@@ -86,6 +86,8 @@ public class ThreeChannelMatrix {
         Matrix matrixG = this.matrixG.getSonOfMatrix(x, y, XSize, YSize);
         Matrix matrixB = this.matrixB.getSonOfMatrix(x, y, XSize, YSize);
         Matrix matrixH = H.getSonOfMatrix(x, y, XSize, YSize);
+        threeChannelMatrix.setX(XSize);
+        threeChannelMatrix.setY(YSize);
         threeChannelMatrix.setMatrixR(matrixR);
         threeChannelMatrix.setMatrixG(matrixG);
         threeChannelMatrix.setMatrixB(matrixB);
