@@ -8,13 +8,31 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class ImageTools {
 
-    public void writeImage(ThreeChannelMatrix img, String url) throws Exception {
-        ByteArrayOutputStream b = drawImage(img);
-        FileOutputStream fileOutputStream = new FileOutputStream(url);
-        b.writeTo(fileOutputStream);
+    public void writeImage(ThreeChannelMatrix img, String url) {
+        ByteArrayOutputStream b = null;
+        FileOutputStream fileOutputStream = null;
+        try {
+            b = drawImage(img);
+            fileOutputStream = new FileOutputStream(url);
+            b.writeTo(fileOutputStream);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                if (fileOutputStream != null) {
+                    fileOutputStream.close();
+                }
+                if (b != null) {
+                    b.close();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public ByteArrayOutputStream drawImage(ThreeChannelMatrix img) throws Exception {
