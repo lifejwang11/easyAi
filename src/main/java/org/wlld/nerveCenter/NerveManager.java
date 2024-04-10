@@ -45,6 +45,7 @@ public class NerveManager {
     public void setMatrixMap(Map<Integer, Matrix> matrixMap) {
         this.matrixMap = matrixMap;
     }
+
     private Map<String, Double> conversion(Map<Integer, Double> map) {
         Map<String, Double> cMap = new HashMap<>();
         for (Map.Entry<Integer, Double> entry : map.entrySet()) {
@@ -60,6 +61,7 @@ public class NerveManager {
         }
         return cMap;
     }
+
     private ModelParameter getDymModelParameter() throws Exception {//获取动态神经元参数
         ModelParameter modelParameter = new ModelParameter();
         List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
@@ -184,7 +186,7 @@ public class NerveManager {
             NerveStudy nerveStudy = outStudyNerves.get(i);
             outNerve.setThreshold(nerveStudy.getThreshold());
             Map<Integer, Double> dendrites = outNerve.getDendrites();
-            Map<Integer, Double> studyDendrites =unConversion(nerveStudy.getDendrites());
+            Map<Integer, Double> studyDendrites = unConversion(nerveStudy.getDendrites());
             for (Map.Entry<Integer, Double> outEntry : dendrites.entrySet()) {
                 int key = outEntry.getKey();
                 dendrites.put(key, studyDendrites.get(key));
@@ -246,6 +248,7 @@ public class NerveManager {
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
         //最后一层隐层神经元啊
         List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);
+        List<OutNerve> myOutNerveList = new ArrayList<>();
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
@@ -253,16 +256,15 @@ public class NerveManager {
             if (isMatrix) {//是卷积层神经网络
                 outNerve.setMatrixMap(matrixMap);
             }
-            if (isSoftMax) {
-                SoftMax softMax = new SoftMax(i, outNerveNub, false, outNerve, isShowLog);
-                softMaxList.add(softMax);
-            }
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFather(lastNerveList);
             outNerves.add(outNerve);
+            myOutNerveList.add(outNerve);
         }
         //生成softMax层
         if (isSoftMax) {//增加softMax层
+            SoftMax softMax = new SoftMax(outNerveNub, false, myOutNerveList, isShowLog);
+            softMaxList.add(softMax);
             for (Nerve nerve : outNerves) {
                 nerve.connect(softMaxList);
             }
