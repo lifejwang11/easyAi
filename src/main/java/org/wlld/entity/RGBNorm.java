@@ -1,7 +1,6 @@
 package org.wlld.entity;
 
 import org.wlld.MatrixTools.Matrix;
-import org.wlld.tools.ArithUtil;
 import org.wlld.tools.RgbRegression;
 
 import java.util.*;
@@ -262,7 +261,7 @@ public class RGBNorm {
         double sigma = 0;
         if (nub > 0) {
             for (int i = 0; i < rgb.length; i++) {
-                double rgbc = ArithUtil.div(rgbAll[i], nub);
+                double rgbc = rgbAll[i] / nub;
                 rgb[i] = rgbc;
                 sigma = sigma + Math.pow(rgbc, 2);
             }

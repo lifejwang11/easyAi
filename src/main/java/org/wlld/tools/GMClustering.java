@@ -21,8 +21,8 @@ public class GMClustering extends MeanClustering {
         this.regionSize = regionSize;
     }
 
-    public GMClustering(int speciesQuantity) throws Exception {
-        super(speciesQuantity);
+    public GMClustering(int speciesQuantity, int maxTimes) throws Exception {
+        super(speciesQuantity, maxTimes);
     }
 
     public double getProbabilityDensity(double[] feature) throws Exception {//获取总概率密度

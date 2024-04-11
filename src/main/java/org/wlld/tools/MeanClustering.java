@@ -4,6 +4,7 @@ package org.wlld.tools;
 import org.wlld.entity.RGBNorm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -12,23 +13,39 @@ public class MeanClustering {
     protected List<double[]> matrixList = new ArrayList<>();//聚类集合
     private int length;//向量长度(模型需要返回)
     protected int speciesQuantity;//种类数量(模型需要返回)
+    private final int maxTimes;//最大迭代次数
     protected List<RGBNorm> matrices = new ArrayList<>();//均值K模型(模型需要返回)
 
     public List<RGBNorm> getMatrices() {
         return matrices;
     }
 
-    public MeanClustering(int speciesQuantity) throws Exception {
-        this.speciesQuantity = speciesQuantity;//聚类的数量
+    public double[] getResultByNorm() {
+        MeanSort meanSort = new MeanSort();
+        double[] dm = new double[matrices.size() * length];
+        matrices.sort(meanSort);
+        for (int i = 0; i < matrices.size(); i++) {
+            RGBNorm rgbNorm = matrices.get(i);
+            double[] rgb = rgbNorm.getRgb();
+            for (int j = 0; j < rgb.length; j++) {
+                dm[i * rgb.length + j] = rgb[j];
+            }
+        }
+        return dm;
     }
 
-    public void setColor(double[] color) throws Exception {
-        if (matrixList.size() == 0) {
-            matrixList.add(color);
-            length = color.length;
+    public MeanClustering(int speciesQuantity, int maxTimes) throws Exception {
+        this.speciesQuantity = speciesQuantity;//聚类的数量
+        this.maxTimes = maxTimes;
+    }
+
+    public void setFeature(double[] feature) throws Exception {
+        if (matrixList.isEmpty()) {
+            matrixList.add(feature);
+            length = feature.length;
         } else {
-            if (length == color.length) {
-                matrixList.add(color);
+            if (length == feature.length) {
+                matrixList.add(feature);
             } else {
                 throw new Exception("vector length is different");
             }
@@ -86,11 +103,11 @@ public class MeanClustering {
             }
             //进行两者的比较
             boolean isNext;
-            for (int i = 0; i < 60; i++) {
+            for (int i = 0; i < maxTimes; i++) {
                 //System.out.println("聚类：" + i);
                 averageMatrix();
                 isNext = isNext();
-                if (isNext && i < 59) {
+                if (isNext && i < maxTimes - 1) {
                     clear();
                 } else {
                     break;
