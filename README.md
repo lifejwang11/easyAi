@@ -9,7 +9,9 @@
 ### github同步链接
 https://github.com/lifejwang11/easyAi
 ## 详细视频教程地址：
-* 视频教程地址：https://www.bilibili.com/video/BV1W7411J7zr/?vd_source=20cf39c973b43e60c3bdbe8d47dc9e71
+* 框架视频教程地址：https://www.bilibili.com/video/BV1W7411J7zr/?vd_source=20cf39c973b43e60c3bdbe8d47dc9e71
+* 人工智能0基础JAVA程序员速成课（基础篇） 本课程为基础篇内容，后续更新还会有图像篇与自然语言篇，三部分构成。
+  地址：https://www.bilibili.com/cheese/play/ss17600
 ## 框架效果演示结果:
 * 因为是框架没有图像化界面，演示结果就是控制台输出的数据，只能用视频展示，想看演示结果请看教学视频
 * 详细api文档见项目html文档:http://146.56.228.93
