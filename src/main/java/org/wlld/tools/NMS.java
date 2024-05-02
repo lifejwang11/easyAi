@@ -11,7 +11,7 @@ import java.util.*;
  * @Description
  */
 public class NMS {
-    private double iouTh;//iou阈值
+    private final double iouTh;//iou阈值
 
     public NMS(double iouTh) {
         this.iouTh = iouTh;
@@ -21,13 +21,12 @@ public class NMS {
         //先进行排序
         List<Box> pixels = new ArrayList<>();
         ConfidenceSort2 confidenceSort = new ConfidenceSort2();
-        Collections.sort(pixelPositions, confidenceSort);
+        pixelPositions.sort(confidenceSort);
         screen(pixelPositions, pixels);
         return pixels;
     }
 
-    public boolean isOne(Box box1, Box box2, double iouTh) {
-        boolean isOne = false;
+    public double getMyIou(Box box1, Box box2) {
         int minX1 = box1.getX();
         int minY1 = box1.getY();
         int maxX1 = minX1 + box1.getxSize();
@@ -56,7 +55,12 @@ public class NMS {
         }
         double intersectS = widthSub * heightSub;//相交面积
         double mergeS = s1 + s2 - intersectS;
-        double iou = intersectS / mergeS;//交并比
+        return intersectS / mergeS;//交并比
+    }
+
+    private boolean isOne(Box box1, Box box2, double iouTh) {
+        boolean isOne = false;
+        double iou = getMyIou(box1, box2);
         if (iou > iouTh) {
             isOne = true;
         }

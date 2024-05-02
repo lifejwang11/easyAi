@@ -1,130 +1,131 @@
 ### <div align=center>![logo](./zf/easyAI.png)</div>
 
 ### 软件说明：
+
 * 本软件对物体在图像中进行训练及识别，切割，定位的轻量级，面向小白的框架。
 * 本软件对中文输入语句，对输入语句的类别进行分类，关键词抓取，词延伸，以及集成智能客服功能在逐渐扩展中
 * 若有想扩充的功能请进群提意见，若是通用场景我会陆续补充，微信技术交流群：thenk008
 * 本软件永久免费商业使用，但作者已拥有本软件相关的知识产权，任何个人与集体不可擅自申请本软件内的技术与代码的知识产权。
 * 目前easyAI只有微信交流群，QQ交流群已经不再拉新，凡是QQ交流群拉进去的，都不是我的群！大家注意！！
+
 ### github同步链接
+
 https://github.com/lifejwang11/easyAi
+
 ## 详细视频教程地址：
+
 * 框架视频教程地址：https://www.bilibili.com/video/BV1W7411J7zr/?vd_source=20cf39c973b43e60c3bdbe8d47dc9e71
 * 人工智能0基础JAVA程序员速成课（基础篇） 本课程为基础篇内容，后续更新还会有图像篇与自然语言篇，三部分构成。
   地址：https://www.bilibili.com/cheese/play/ss17600
+
 ## 框架效果演示结果:
+
 * 因为是框架没有图像化界面，演示结果就是控制台输出的数据，只能用视频展示，想看演示结果请看教学视频
 * 详细api文档见项目html文档:http://146.56.228.93
+
 ### 强大的自主智能客服工具，支持自动与用户对话，解答疑问，引导消费与对话，并捕捉用户对话中的需求后自动生成订单！基于easyAi算法引擎构建智脑——SayOrder(原名myJecs，现已正式更名为SayOrder)
+
 链接:https://gitee.com/dromara/sayOrder (gitee) https://github.com/lifejwang11/SayOrder (github)
+
 ### 目前拥有的核心功能（若对您的学习或生产有帮助，请留下您的STAR）
+
 * 对图片中得物体进行识别。
 * 对中文语言进行分类语义识别,判断用户说话的语义是什么，关键词抓取，以及要做什么
 * 游戏内交互策略机器人
 * 若有想扩充的功能请进群提意见，若是通用场景我会陆续补充，微信技术交流群：thenk008
+
 #### 目前市场上的AI应用的问题
+
 * 高门槛：
-现在随着人工智能技术的兴起，很多场景需要开发人员添加相应的功能，但是大多是JAVA开发程序员，JAVA却在AI领域的开源比较匮乏。
-现在比较火的大模型的应用只能帮助人去提高工作效率，而不能帮助业务系统，去自定义用户自己的业务来内嵌进系统进而帮助业务系统的智能化。
+  现在随着人工智能技术的兴起，很多场景需要开发人员添加相应的功能，但是大多是JAVA开发程序员，JAVA却在AI领域的开源比较匮乏。
+  现在比较火的大模型的应用只能帮助人去提高工作效率，而不能帮助业务系统，去自定义用户自己的业务来内嵌进系统进而帮助业务系统的智能化。
 * 高成本：
-人工智能往往要求大算力，大训练样本，使得大多数中小企业和个人开发者自定义AI入手成本非常高昂。
+  人工智能往往要求大算力，大训练样本，使得大多数中小企业和个人开发者自定义AI入手成本非常高昂。
+
 #### easyAI要怎么解决
+
 * easyAI是百分之百Java代码编写，并且无任何依赖，开箱即用，对广大JAVA程序员排除掉任何环境配置依赖问题，做到最友善。
 * easyAI并不是对主流算法JAVA的无差别重新实现，而是根据应用场景对主流算法进行优化与魔改，让用户即便使用一台普通的电脑，就可开箱直接跑起来。并且保证普通服务器或个人电脑CPU下依然达到可用性能的流畅运行。
-所以我的“easy”并不是只是指的简单，而是对算法进行了廉价，低成本方向的优化。如果我没有办法对某种算法做到廉价优化的算法实现，我也不会放入easyAI里面。
+  所以我的“easy”并不是只是指的简单，而是对算法进行了廉价，低成本方向的优化。如果我没有办法对某种算法做到廉价优化的算法实现，我也不会放入easyAI里面。
 * 只通过最简单的API调用，就可以实现部分人工智能应用，并面向覆盖面最广的JAVA程序员使用的，且能满足大部分AI业务场景实现的算法引擎。
 * 部署简单：
-本引擎所有底层函数及数学库都是作者JAVA手写，不依赖任何第三方库，所以开发者只需要将本包下载到本地后，打成JAR包
-引入到自己的POM文件中，就可以独立使用所有功能。
+  本引擎所有底层函数及数学库都是作者JAVA手写，不依赖任何第三方库，所以开发者只需要将本包下载到本地后，打成JAR包
+  引入到自己的POM文件中，就可以独立使用所有功能。
 * 功能还在扩展：
-本项目现在的功能还在逐步扩展中
-* 若您有相对复杂的人工智能业务（开源功能无法满足的，包括但不限于图像识别，自然语言）请联系作者 vx:thenk008 进行基于easyAi定制化业务情景开发（即java人工智能开发）
+  本项目现在的功能还在逐步扩展中
+* 若您有相对复杂的人工智能业务（开源功能无法满足的，包括但不限于图像识别，自然语言）请联系作者 vx:thenk008
+  进行基于easyAi定制化业务情景开发（即java人工智能开发）
+
 ### 微信交流群
-* 加wx技术交流群（目前只有微信交流群，QQ交流群已经不再拉新，凡是QQ交流群拉进去的，都不是我的群！大家注意！！）  
+
+* 加wx技术交流群（目前只有微信交流群，QQ交流群已经不再拉新，凡是QQ交流群拉进去的，都不是我的群！大家注意！！）
 * ![加交流群](./zf/wxt.png)
+
 ## HELLO WORLD说明：
+
 * 以下为最简API文档，所有非必设参数都使用本引擎默认值
 * 要注意的是使用最简API，及参数默认值准确度远不能达到最佳状态
+
 ### 图像学习部分最简API 说明:
+
 ``` java
-       训练过程
-       Picture picture = new Picture();//图片解析类
-        Config config = new Config();//配置文件
-        config.setTypeNub(2);//设置训练种类数
-        config.setBoxSize(125);//设置物体大致大小 单位像素 即 125*125 的矩形
-        config.setPictureNumber(5);//设置每个种类训练图片数量 某个类别有几张照片，注意所有种类照片数量要保持一致
-        config.setPth(0.7);//设置可信概率，只有超过可信概率阈值，得出的结果才是可信的 数值为0-1之间
-        config.setShowLog(true);//输出学习时打印数据
-        Distinguish distinguish = new Distinguish(config);//创建识别类
-        distinguish.setBackGround(picture.getThreeMatrix("E:\\ls\\fp15\\back.jpg"));//设置识别的背景图片(该api为固定背景)
-        List<FoodPicture> foodPictures = new ArrayList<>();//创建训练模板集合
-        for (int i = 1; i < 3; i++) {
-            FoodPicture foodPicture = new FoodPicture();//创建每一类图片的训练模板类
-            foodPictures.add(foodPicture);//将该类模板加入集合
-            List<PicturePosition> picturePositionList = new ArrayList<>();//创建该类模板的训练集合类
-            foodPicture.setId(i + 1);//设置该图片类别id
-            foodPicture.setPicturePositionList(picturePositionList);
-            for (int j = 1; j < 6; j++) {//训练图片数量为 每种五张 注意跟config 中的 pictureNumber 要一致
-                String name;
-                if (i == 1) {//加载图片url地址名称
-                    name = "a";
-                } else {
-                    name = "b";
-                }
-                PicturePosition picturePosition = new PicturePosition();
-                picturePosition.setUrl("E:\\ls\\fp15\\" + name + i + ".jpg");//加载该类别图片地址
-                picturePosition.setNeedCut(false);//是否需要剪切，若训练素材为充满全图图片，则充满全图不需要剪切 写false
-                picturePositionList.add(picturePosition);//加载
-            }
-        }
-        distinguish.studyImage(foodPictures);//进行学习
-        System.out.println(JSON.toJSONString(distinguish.getModel()));//输出模型保存,将模型实体类序列化为json保存
-       ///////////////////////////////////////////////////////////////////////
-       初始化过程
-        Picture picture = new Picture();//图片解析类
-        Config config = new Config();//配置文件
-        config.setTypeNub(2);//设置类别数量
-        config.setBoxSize(125);//设置物体大小 单位像素
-        config.setPictureNumber(5);//设置每个种类训练图片数量
-        config.setPth(0.7);//设置可信概率，只有超过可信概率阈值，得出的结果才是可信的
-        config.setShowLog(true);//输出学习时打印数据
-        Distinguish distinguish = new Distinguish(config);//识别类
-        distinguish.insertModel(JSONObject.parseObject(ModelData.DATA, Model.class));//将之前训练时保存的训练模型反序列化为实体类后，注入模型
-        完成后请单例Distinguish类，即完成系统启动时初始化过程
-        ///////////////////////////////////////////////////////////////////////
-        识别过程
-        Distinguish distinguish; 此识别类为系统启动时已经初始化的 单例distinguish，识别过程请不要 "new" 这个类
-         for (int i = 1; i < 8; i++) {
-            System.out.println("i====" + i);
-            ThreeChannelMatrix t = picture.getThreeMatrix("E:\\ls\\fp15\\t" + i + ".jpg");//将识别图片转化为矩阵
-            Map<Integer, Double> map = distinguish.distinguish(t);//识别结果
-            for (Map.Entry<Integer, Double> entry : map.entrySet()) {
-                System.out.println(entry.getKey() + ":" + entry.getValue());//识别结果打印
-            }
-        }
-        ////////////////////////////////////////////////////////////////////////////////////
-        识别结果打印说明(此为本包提供的测试图片样本的 输出结果说明，在之前的训练中橘子设置的id为2，苹果为3)
-        i====1//第一张图 结果为 橘子，出现2：代表类别。:0.8874306751020916，带表该类别权重，权重越高说明该类别的物品在当前 图片中数量越多或者面积越大。
-        2:0.8874306751020916 说明（图1有橘子，权重为：0.8874306751020916）
-        i====2
-        2:0.8878192183606407
-        i====3
-        3:0.7233916245920673说明（图3有苹果，权重为：0.7233916245920673）
-        i====4
-        2:0.9335699571468958说明（图4有橘子，权重为：0.9335699571468958）
-        3:0.7750825597199661说明（图4有苹果，权重为：0.7750825597199661）
-        i====5
-        3:0.8481590575557582
-        i====6
-        2:0.7971025523095067
-        i====7
-        2:1.5584968376080388（图7有橘子，权重为：1.5584968376080388）
-        3:0.8754957897385587（图7有苹果，权重为：0.8754957897385587）
-        本演示样例代码位置在： src/test/java/org/wlld/ImageTest.java
-        本演示训练素材位置在： src/test/image
-        注意：以上图片识别代码样例为训练素材为物品全图充满图片(自己看能看到橘子训练图片为全图充满，苹果也是).自行开发时用以上代码样例时，请也使用全图充满训练物品的图片来做训练，非全图充满训练素材图训练api有变化！
+    ///////////////训练部分
+    YoloConfig yoloConfig = new YoloConfig();//创建配置参数类
+    //配置类内的配置参数，根据实际情况修改
+    private int windowWidth = 90;//检测窗口宽
+    private int windowHeight = 140;//检测窗口高
+    private int typeNub = 10;//需要识别的种类数
+    private int hiddenNerveNub = 16;//线性层隐层神经元数量
+    private double lineStudy = 0.01;//线性层学习率
+    private int kernelSize = 3;//卷积核尺寸
+    private boolean showLog = false;//是否打印学习过程中的log
+    private double convStudy = 0.01;//卷积层学习率
+    private int enhance = 800;//训练样本过少时增强效果，如果有足够训练数据量，请将其设置为1
+    private double iouTh = 0.05;//NMS合并框交并比阈值
+    private double containIouTh = 0.15;//训练时是否包含样本判断交并比阈值
+    
+    FastYolo yolo = new FastYolo(yoloConfig); //初始化图像识别类
+    List<YoloSample> data//目标标注类集合
+    YoloSample data;//标注类
+    //标注类属性
+    private String locationURL;//标注图片的本地url
+    private List<YoloBody> yoloBodies;//该图片的内部标注
+    YoloBody yoloBody;//内部标注类
+    //内部标注类属性
+    private int x;//目标左上角x的值
+    private int y;//目标左上角得y的值
+    private int width;//目标的宽度
+    private int height;//目标的高度
+    private int typeID;//标注类别id
+    //开始训练
+    yolo.toStudy(data);
+    //训练结束将模型写出
+    YoloModel yoloModel = yolo.getModel();
+    writeModel(JSON.toJSONString(yoloModel), "D:\\lesson/yoloModel.json");
+    /////////////////////初始化部分（单例且只初始化一次）
+    FastYolo yolo = new FastYolo(yoloConfig); //初始化图像识别类
+    YoloModel yoloModel = readModelParameter();//从训练的模型中JSON反序列化读取模型
+    yolo.insertModel(yoloModel);//识别类注入模型
+    //////////////////////识别部分
+     Picture picture = new Picture();//初始化图像解析类
+     ThreeChannelMatrix th = picture.getThreeMatrix("D:\\lesson/number.png");//将图像解析为矩阵
+     List<OutBox> list = yolo.look(th);//对该图像矩阵进行识别，并返回识别结果
+     List<OutBox> list;//识别结果集合
+    ////识别结果类
+    OutBox outBox;
+    private int x;//检测到物体在该图片中的横坐标
+    private int y;//检测到物体在该图片中的纵坐标
+    private int width;//检测到物体在该图片中的宽度
+    private int height;//检测到物体在该图片中的高度
+    private int typeID;//检测到物体在该图片中的类别id
 ```
+
+#### 图像识别结果展示
+
+![图像识别结果展示](/zf/abc.png)
+
 ### 通过给图片生成摘要id进行快速相似度对比
+
 ``` java
 //参数分别为：
 //第一个参数：threeChannelMatrix,图片矩阵（图片矩阵如何提取，上文有讲不在阐述）
@@ -139,7 +140,9 @@ https://github.com/lifejwang11/easyAi
 FastPictureExcerpt fastPictureExcerpt = new FastPictureExcerpt();
 String name = fastPictureExcerpt.creatImageName(threeChannelMatrix, 5, 10);
 ```
+
 ### 自然语言分类最简API 说明（已过时，自然语言处理请移步SayOrder 链接：https://gitee.com/dromara/sayOrder ）:
+
 ``` java
          //通过txt默认格式进行读取
         TemplateReader templateReader = new TemplateReader();
@@ -171,7 +174,9 @@ String name = fastPictureExcerpt.creatImageName(threeChannelMatrix, 5, 10);
             System.out.println(list);
         }
    ```
+
 ### 神经网络最简API说明
+
 ``` java
      //创建一个DNN神经网络管理器
      NerveManager nerveManager = new NerveManager(...);
@@ -192,7 +197,9 @@ String name = fastPictureExcerpt.creatImageName(threeChannelMatrix, 5, 10);
      SensoryNerv.postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E, OutBack outBack)
      //每一次输出结果都会返回给回调类，通过回调类拿取输出结果，并通过eventId来对应事件
 ```
+
 ### 随机森林最简API说明
+
 ``` java
         //创建一个内存中的数据表
         DataTable dataTable = new DataTable(column);
@@ -213,5 +220,7 @@ String name = fastPictureExcerpt.creatImageName(threeChannelMatrix, 5, 10);
         //插入特征数据，森林对该数据的最终分类结果进行判断
         randomForest.forest(Object objcet);
 ```
+
 ### 如果该项目对你有用，请赞助一下作者的劳动力支持开源，请作者吃一顿早饭就好！给作者持续更新easyAi引擎，同时封装更多依赖easyAi的常用应用提供动力！为大家低成本部署AI应用添砖加瓦！万谢!好心人！
+
 ![支付宝支付](/zf/zs.jpg)![微信支付](/zf/ws.jpg)

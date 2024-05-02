@@ -6,11 +6,11 @@
 
     <groupId>com.wlld</groupId>
     <artifactId>easyAi</artifactId>
-    <version>1.1.7</version>
+    <version>1.1.8</version>
 
     <name>easyAi</name>
     <!-- FIXME change it to the project's website -->
-    <url>https://www.wlhlwl.com/</url>
+    <url>https://gitee.com/dromara/easyAi</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -21,7 +21,7 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.51</version>
-            <scope>test</scope>
+<!--            <scope>test</scope>-->
         </dependency>
 
     </dependencies>

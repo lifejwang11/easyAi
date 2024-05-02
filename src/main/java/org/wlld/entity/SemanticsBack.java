@@ -4,6 +4,8 @@ package org.wlld.entity;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.OutBack;
 
+import java.util.List;
+
 public class SemanticsBack implements OutBack {
     private Matrix matrix;
     private String word;
@@ -18,6 +20,11 @@ public class SemanticsBack implements OutBack {
 
     @Override
     public void getBack(double out, int id, long eventId) {
+
+    }
+
+    @Override
+    public void getSoftMaxBack(double out, int id, long eventId, List<Double> softMax) {
 
     }
 

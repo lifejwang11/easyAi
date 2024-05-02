@@ -17,9 +17,7 @@ public class ModelParameter {
     //神经远模型参数
     private List<List<NerveStudy>> depthNerves = new ArrayList<>();//隐层神经元
     private List<NerveStudy> outNerves = new ArrayList<>();//输出神经元
-    private List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
-    private DymNerveStudy dymOutNerveStudy = new DymNerveStudy();//动态神经元输出层
-    private Map<Integer, Double> foodS;//干食品类别对应的积分 需激活注入
+    private List<List<DymNerveStudy>> dymNerveStudies = new ArrayList<>();//动态神经元隐层
 
     public List<List<NerveStudy>> getDepthNerves() {
         return depthNerves;
@@ -37,27 +35,11 @@ public class ModelParameter {
         this.outNerves = outNerves;
     }
 
-    public List<DymNerveStudy> getDymNerveStudies() {
+    public List<List<DymNerveStudy>> getDymNerveStudies() {
         return dymNerveStudies;
     }
 
-    public void setDymNerveStudies(List<DymNerveStudy> dymNerveStudies) {
+    public void setDymNerveStudies(List<List<DymNerveStudy>> dymNerveStudies) {
         this.dymNerveStudies = dymNerveStudies;
-    }
-
-    public DymNerveStudy getDymOutNerveStudy() {
-        return dymOutNerveStudy;
-    }
-
-    public void setDymOutNerveStudy(DymNerveStudy dymOutNerveStudy) {
-        this.dymOutNerveStudy = dymOutNerveStudy;
-    }
-
-    public Map<Integer, Double> getFoodS() {
-        return foodS;
-    }
-
-    public void setFoodS(Map<Integer, Double> foodS) {
-        this.foodS = foodS;
     }
 }

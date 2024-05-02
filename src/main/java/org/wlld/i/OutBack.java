@@ -3,6 +3,8 @@ package org.wlld.i;
 
 import org.wlld.MatrixTools.Matrix;
 
+import java.util.List;
+
 /**
  * 将神经元的输出回调
  *
@@ -18,6 +20,16 @@ public interface OutBack {
      * @param eventId 事件ID
      */
     void getBack(double out, int id, long eventId);
+
+    /**
+     * 多分类回调
+     *
+     * @param out     输出数值
+     * @param id      输出神经元ID
+     * @param eventId 事件ID
+     * @param softMax 概率集合
+     */
+    void getSoftMaxBack(double out, int id, long eventId, List<Double> softMax);
 
     /**
      * 回调

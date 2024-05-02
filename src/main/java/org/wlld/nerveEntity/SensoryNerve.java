@@ -16,7 +16,7 @@ public class SensoryNerve extends Nerve {
 
     public SensoryNerve(int id, int upNub) throws Exception {
         super(id, upNub, "SensoryNerve", 0, 0.1, false,
-                null, false, 0, 0,0,0);
+                null, false, 0, 0, 0, 0, 0, 0, 0);
     }
 
     /**
@@ -34,7 +34,7 @@ public class SensoryNerve extends Nerve {
     }
 
     public void postMatrixMessage(long eventId, Matrix parameter, boolean isKernelStudy
-            , int E, OutBack outBack) throws Exception {
+            , Map<Integer, Double> E, OutBack outBack) throws Exception {
         sendMatrix(eventId, parameter, isKernelStudy, E, outBack);
     }
 

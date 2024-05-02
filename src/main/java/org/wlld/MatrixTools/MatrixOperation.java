@@ -465,6 +465,14 @@ public class MatrixOperation {
         }
     }
 
+    public static void mathAdd(Matrix matrix, double nub) throws Exception {//矩阵数加
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                matrix.setNub(i, j, matrix.getNumber(i, j) + nub);
+            }
+        }
+    }
+
     public static void mathSub(Matrix matrix, double nub) throws Exception {//矩阵数减
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
@@ -492,6 +500,18 @@ public class MatrixOperation {
             }
         }
         return list;
+    }
+
+    //list转矩阵
+    public static Matrix ListToMatrix(List<Double> list, int matrixX, int matrixY) throws Exception {
+        Matrix matrix = new Matrix(matrixX, matrixY);
+        for (int i = 0; i < matrixX; i++) {
+            for (int j = 0; j < matrixY; j++) {
+                int index = i * matrixY + j;
+                matrix.setNub(i, j, list.get(index));
+            }
+        }
+        return matrix;
     }
 
     //list转行向量

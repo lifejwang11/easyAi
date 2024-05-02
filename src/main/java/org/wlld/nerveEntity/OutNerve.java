@@ -1,4 +1,5 @@
 package org.wlld.nerveEntity;
+
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
@@ -11,7 +12,6 @@ import java.util.Map;
  * @date 11:25 上午 2019/12/21
  */
 public class OutNerve extends Nerve {
-    private Map<Integer, Matrix> matrixMapE;//主键与期望矩阵的映射
     private final boolean isShowLog;
     private final boolean isSoftMax;
 
@@ -19,7 +19,7 @@ public class OutNerve extends Nerve {
                     ActiveFunction activeFunction, boolean isDynamic, boolean isShowLog,
                     int rzType, double lParam, boolean isSoftMax, int step, int kernLen) throws Exception {
         super(id, upNub, "OutNerve", downNub, studyPoint, init,
-                activeFunction, isDynamic, rzType, lParam, step, kernLen);
+                activeFunction, isDynamic, rzType, lParam, step, kernLen, 0, 0, 0);
         this.isShowLog = isShowLog;
         this.isSoftMax = isSoftMax;
     }
@@ -29,9 +29,6 @@ public class OutNerve extends Nerve {
         updatePower(eventId);
     }
 
-    public void setMatrixMap(Map<Integer, Matrix> matrixMap) {
-        matrixMapE = matrixMap;
-    }
 
     @Override
     public void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
@@ -67,32 +64,6 @@ public class OutNerve extends Nerve {
                         throw new Exception("not find outBack");
                     }
                 }
-            }
-        }
-    }
-
-    @Override
-    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy
-            , int E, OutBack outBack) throws Exception {
-        Matrix myMatrix = conv(matrix);
-        if (isKernelStudy) {//回传
-            Matrix matrix1 = matrixMapE.get(E);
-            if (isShowLog) {
-                System.out.println("E========" + E);
-                System.out.println(myMatrix.getString());
-            }
-            if (matrix1.getX() == myMatrix.getX() && matrix1.getY() == myMatrix.getY()) {
-                Matrix g = getGradient(myMatrix, matrix1);
-                //System.out.println("error:" + g.getString() + ",hope:" + matrix1.getString());
-                backMatrix(g);
-            } else {
-                throw new Exception("Wrong size setting of image in templateConfig");
-            }
-        } else {//卷积层输出
-            if (outBack != null) {
-                outBack.getBackMatrix(myMatrix, eventId);
-            } else {
-                throw new Exception("not find outBack");
             }
         }
     }

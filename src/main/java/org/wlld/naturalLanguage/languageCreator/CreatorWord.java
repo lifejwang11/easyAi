@@ -3,6 +3,8 @@ package org.wlld.naturalLanguage.languageCreator;
 import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.OutBack;
 
+import java.util.List;
+
 
 public class CreatorWord implements OutBack {
     private int id;
@@ -26,6 +28,11 @@ public class CreatorWord implements OutBack {
             maxOut = out;
             this.id = id;
         }
+    }
+
+    @Override
+    public void getSoftMaxBack(double out, int id, long eventId, List<Double> softMax) {
+
     }
 
     @Override

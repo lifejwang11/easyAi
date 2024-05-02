@@ -30,6 +30,7 @@ public abstract class Nerve {
     protected double gradient;//当前梯度
     protected double studyPoint;
     protected double sigmaW;//对上一层权重与上一层梯度的积进行求和
+    protected Matrix sigmaMatrix;//对上层回传误差进行求和
     private int backNub = 0;//当前节点被反向传播的次数
     protected ActiveFunction activeFunction;
     private final int rzType;//正则化类型，默认不进行正则化
@@ -40,6 +41,9 @@ public abstract class Nerve {
     private int xInput;//输入矩阵的x
     private int yInput;//输入矩阵的y
     private Matrix outMatrix;//输出矩阵
+    protected final int depth;//所处深度
+    protected final int matrixX;//卷积输出行数列数
+    protected final int matrixY;//卷积输出矩阵列数
 
     public Map<Integer, Double> getDendrites() {
         return dendrites;
@@ -67,8 +71,12 @@ public abstract class Nerve {
 
     protected Nerve(int id, int upNub, String name, int downNub,
                     double studyPoint, boolean init, ActiveFunction activeFunction
-            , boolean isDynamic, int rzType, double lParam, int step, int kernLen) throws Exception {//该神经元在同层神经元中的编号
+            , boolean isDynamic, int rzType, double lParam, int step, int kernLen, int depth
+            , int matrixX, int matrixY) throws Exception {//该神经元在同层神经元中的编号
+        this.matrixX = matrixX;
+        this.matrixY = matrixY;
         this.id = id;
+        this.depth = depth;
         this.upNub = upNub;
         this.name = name;
         this.downNub = downNub;
@@ -121,8 +129,19 @@ public abstract class Nerve {
         return myMatrix;
     }
 
+    public void sendMatrixList(long eventId, List<Double> parameter, boolean isStudy,
+                               Map<Integer, Double> E, OutBack outBack) throws Exception {
+        if (!son.isEmpty()) {
+            for (Nerve nerve : son) {
+                nerve.inputMatrixFeature(eventId, parameter, isStudy, E, outBack);
+            }
+        } else {
+            throw new Exception("this layer is lastIndex");
+        }
+    }
+
     public void sendMatrix(long eventId, Matrix parameter, boolean isStudy,
-                           int E, OutBack outBack) throws Exception {
+                           Map<Integer, Double> E, OutBack outBack) throws Exception {
         if (!son.isEmpty()) {
             for (Nerve nerve : son) {
                 nerve.inputMatrix(eventId, parameter, isStudy, E, outBack);
@@ -134,8 +153,22 @@ public abstract class Nerve {
 
     private void backSendMessage(long eventId) throws Exception {//反向传播
         if (!father.isEmpty()) {
-            for (int i = 0; i < father.size(); i++) {
-                father.get(i).backGetMessage(wg.get(i + 1), eventId);
+            if (depth == 1) {
+                int size = matrixX * matrixY;
+                for (int i = 0; i < father.size(); i++) {
+                    List<Double> list = new ArrayList<>();
+                    int startIndex = size * i;
+                    int endIndex = startIndex + size;
+                    for (int j = startIndex; j < endIndex; j++) {
+                        list.add(wg.get(j + 1));
+                    }
+                    Matrix errorMatrix = MatrixOperation.ListToMatrix(list, matrixX, matrixY);
+                    father.get(i).backMatrix(errorMatrix);
+                }
+            } else {
+                for (int i = 0; i < father.size(); i++) {
+                    father.get(i).backGetMessage(wg.get(i + 1), eventId);
+                }
             }
         }
     }
@@ -153,7 +186,12 @@ public abstract class Nerve {
 
     }
 
-    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy, int E, OutBack outBack) throws Exception {//输入动态矩阵
+    protected void inputMatrixFeature(long eventId, List<Double> parameters, boolean isStudy
+            , Map<Integer, Double> E, OutBack imageBack) throws Exception {//卷积层向网络发送参数
+
+    }
+
+    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy, Map<Integer, Double> E, OutBack outBack) throws Exception {//输入动态矩阵
     }
 
     private void backGetMessage(double parameter, long eventId) throws Exception {//反向传播
@@ -166,41 +204,54 @@ public abstract class Nerve {
         }
     }
 
-    protected void backMatrix(Matrix g) throws Exception {//回传梯度
-        //对g进行重新排序
-        int x = g.getX();
-        int y = g.getY();
-        Matrix yc = new Matrix(x * y, 1);
-        int index = 0;
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                double error = g.getNumber(i, j);
-                double out = outMatrix.getNumber(i, j);
-                error = error * activeFunction.functionG(out) * studyPoint;
-                yc.setNub(index, 0, error);
-                index++;
-            }
+    protected void backMatrix(Matrix t) throws Exception {//回传梯度
+        backNub++;
+        if (sigmaMatrix == null) {
+            sigmaMatrix = t;
+        } else {
+            sigmaMatrix = MatrixOperation.add(t, sigmaMatrix);
         }
-        //计算权重变化量
-        Matrix trx = MatrixOperation.transPosition(im2col);
-        Matrix wSub = MatrixOperation.mulMatrix(trx, yc);
-        //给权重变化wSub增加正则项，抑制权重变化量
-        //System.out.println(wSub.getString());
-        //计算x变化量
-        x = im2col.getX();
-        y = im2col.getY();
-        for (int i = 0; i < x; i++) {
-            double ySub = yc.getNumber(i, 0);
-            for (int j = 0; j < y; j++) {
-                double k = nerveMatrix.getNumber(j, 0) * ySub;
-                im2col.setNub(i, j, k);
+        if (backNub == downNub) {
+            backNub = 0;
+//            if (downNub > 1) {
+//                System.out.println(sigmaMatrix.getString());
+//            }
+            //对g进行重新排序
+            int x = sigmaMatrix.getX();
+            int y = sigmaMatrix.getY();
+            Matrix yc = new Matrix(x * y, 1);
+            int index = 0;
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    double error = sigmaMatrix.getNumber(i, j);
+                    double out = outMatrix.getNumber(i, j);
+                    error = error * activeFunction.functionG(out) * studyPoint;
+                    yc.setNub(index, 0, error);
+                    index++;
+                }
             }
+            //计算权重变化量
+            Matrix trx = MatrixOperation.transPosition(im2col);
+            Matrix wSub = MatrixOperation.mulMatrix(trx, yc);
+            //给权重变化wSub增加正则项，抑制权重变化量
+            //System.out.println(wSub.getString());
+            //计算x变化量
+            x = im2col.getX();
+            y = im2col.getY();
+            for (int i = 0; i < x; i++) {
+                double ySub = yc.getNumber(i, 0);
+                for (int j = 0; j < y; j++) {
+                    double k = nerveMatrix.getNumber(j, 0) * ySub;
+                    im2col.setNub(i, j, k);
+                }
+            }
+            Matrix gNext = MatrixOperation.reverseIm2col(im2col, kernLen, step, xInput, yInput);
+            //更新权重
+            nerveMatrix = MatrixOperation.add(nerveMatrix, wSub);
+            sigmaMatrix = null;
+            //将梯度继续回传
+            backMatrixMessage(gNext);
         }
-        Matrix gNext = MatrixOperation.reverseIm2col(im2col, kernLen, step, xInput, yInput);
-        //更新权重
-        nerveMatrix = MatrixOperation.add(nerveMatrix, wSub);
-        //将梯度继续回传
-        backMatrixMessage(gNext);
     }
 
     protected void updatePower(long eventId) throws Exception {//修改阈值
@@ -250,6 +301,22 @@ public abstract class Nerve {
         features.remove(eventId); //清空当前上层输入参数参数
     }
 
+    protected boolean insertParameters(long eventId, List<Double> parameters) {//添加参数
+        boolean allReady = false;
+        List<Double> featuresList;
+        if (features.containsKey(eventId)) {
+            featuresList = features.get(eventId);
+        } else {
+            featuresList = new ArrayList<>();
+            features.put(eventId, featuresList);
+        }
+        featuresList.addAll(parameters);
+        if (featuresList.size() >= upNub) {
+            allReady = true;
+        }
+        return allReady;
+    }
+
     protected boolean insertParameter(long eventId, double parameter) {//添加参数
         boolean allReady = false;
         List<Double> featuresList;
@@ -270,9 +337,12 @@ public abstract class Nerve {
         features.remove(eventId);
     }
 
-    protected double calculation(long eventId) {//计算当前输出结果
+    protected double calculation(long eventId) throws Exception {//计算当前输出结果
         double sigma = 0;
         List<Double> featuresList = features.get(eventId);
+        if (dendrites.size() != featuresList.size()) {
+            throw new Exception("权重数量:" + dendrites.size() + ",特征数量:" + featuresList.size());
+        }
         for (int i = 0; i < featuresList.size(); i++) {
             double value = featuresList.get(i);
             double w = dendrites.get(i + 1);
@@ -308,7 +378,7 @@ public abstract class Nerve {
             for (int i = 0; i < nerveMatrix.getX(); i++) {
                 nub = 0;
                 if (init) {
-                    nub = random.nextDouble();// * sh;
+                    nub = random.nextDouble() / kernLen;// * sh;
                 }
                 nerveMatrix.setNub(i, 0, nub);
             }

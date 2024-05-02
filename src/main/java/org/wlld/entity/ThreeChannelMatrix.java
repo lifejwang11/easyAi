@@ -2,6 +2,7 @@ package org.wlld.entity;
 
 
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.MatrixTools.MatrixOperation;
 
 public class ThreeChannelMatrix {
     private Matrix matrixR;
@@ -33,6 +34,18 @@ public class ThreeChannelMatrix {
 
     public ThreeChannelMatrix(int x, int y) {
         matrixRGB = new Matrix(x, y);
+    }
+
+    public void add(double nub, boolean add) throws Exception {//对rgb矩阵曝光进行处理
+        if (add) {//加数值
+            MatrixOperation.mathAdd(matrixR, nub);
+            MatrixOperation.mathAdd(matrixG, nub);
+            MatrixOperation.mathAdd(matrixB, nub);
+        } else {//减数值
+            MatrixOperation.mathSub(matrixR, nub);
+            MatrixOperation.mathSub(matrixG, nub);
+            MatrixOperation.mathSub(matrixB, nub);
+        }
     }
 
     //对颜色进行填充

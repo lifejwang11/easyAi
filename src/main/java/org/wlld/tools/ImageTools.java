@@ -1,14 +1,16 @@
 package org.wlld.tools;
 
 import org.wlld.MatrixTools.Matrix;
+import org.wlld.entity.Box;
 import org.wlld.entity.ThreeChannelMatrix;
+import org.wlld.yolo.OutBox;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.util.List;
 
 public class ImageTools {
 
@@ -33,6 +35,24 @@ public class ImageTools {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public void drawBox(String fileURL, List<OutBox> borderFoods, String outFileName, int fontSize) throws Exception {
+        File file = new File(fileURL);
+        BufferedImage image2 = ImageIO.read(file);
+        int width = image2.getWidth();
+        int height = image2.getHeight();
+        BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = (Graphics2D) bi.getGraphics();
+        g2.setColor(Color.RED);
+        g2.drawImage(image2, 0, 0, width, height, null);
+        g2.setFont(new Font(null, Font.BOLD, fontSize));
+        for (OutBox borderFood : borderFoods) {//输出
+            Rectangle2D rect = new Rectangle2D.Double(borderFood.getX(), borderFood.getY(), borderFood.getWidth(), borderFood.getHeight());//声明并创建矩形对象，矩形的左上角是(20，30)，宽是300，高是40
+            g2.draw(rect);
+            g2.drawString(String.valueOf(borderFood.getTypeID()), borderFood.getX() + 10, borderFood.getY() + 10);
+        }
+        ImageIO.write(bi, "jpg", new FileOutputStream(outFileName));
     }
 
     public ByteArrayOutputStream drawImage(ThreeChannelMatrix img) throws Exception {
