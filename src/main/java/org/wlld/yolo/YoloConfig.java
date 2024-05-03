@@ -12,6 +12,15 @@ public class YoloConfig {
     private int enhance = 800;//数据增强
     private double iouTh = 0.05;//合并框交并比阈值
     private double containIouTh = 0.15;//是否包含样本交并比阈值
+    private double pth = 0.4;//可信概率阈值
+
+    public double getPth() {
+        return pth;
+    }
+
+    public void setPth(double pth) {
+        this.pth = pth;
+    }
 
     public double getContainIouTh() {
         return containIouTh;

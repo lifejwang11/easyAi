@@ -133,6 +133,7 @@ public class FastYolo {//yolo
         int y = th.getY();
         List<Box> boxes = new ArrayList<>();
         NMS nms = new NMS(yoloConfig.getIouTh());
+        double pth = yoloConfig.getPth();
         for (int i = 0; i <= x - winHeight; i += winHeight) {
             for (int j = 0; j <= y - winWidth; j += winWidth) {
                 YoloTypeBack yoloTypeBack = new YoloTypeBack();
@@ -140,7 +141,7 @@ public class FastYolo {//yolo
                 ThreeChannelMatrix myTh = th.cutChannel(i, j, winHeight, winWidth);
                 study(typeNerveManager.getSensoryNerves(), myTh, false, null, yoloTypeBack);
                 int mappingID = yoloTypeBack.getId();//映射id
-                if (mappingID != typeBodies.size() + 1) {
+                if (mappingID != typeBodies.size() + 1 && yoloTypeBack.getOut() > pth) {
                     TypeBody typeBody = getTypeBodyByMappingID(mappingID);
                     List<SensoryNerve> sensoryNerves = typeBody.getPositonNerveManager().getSensoryNerves();
                     study(sensoryNerves, myTh, false, null, positionBack);
