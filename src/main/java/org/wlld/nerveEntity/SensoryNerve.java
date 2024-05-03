@@ -33,6 +33,14 @@ public class SensoryNerve extends Nerve {
         sendMessage(eventId, parameter, isStudy, E, outBack);
     }
 
+    /**
+     * @param eventId       唯一的事件id
+     * @param parameter     特征矩阵
+     * @param isKernelStudy 是否是学习 (学习状态没有输出)
+     * @param E             标注
+     * @param outBack       回调结果
+     * @throws Exception
+     */
     public void postMatrixMessage(long eventId, Matrix parameter, boolean isKernelStudy
             , Map<Integer, Double> E, OutBack outBack) throws Exception {
         sendMatrix(eventId, parameter, isKernelStudy, E, outBack);
