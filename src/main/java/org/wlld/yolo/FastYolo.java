@@ -128,7 +128,7 @@ public class FastYolo {//yolo
         return outBoxes;
     }
 
-    public List<OutBox> look(ThreeChannelMatrix th) throws Exception {
+    public List<OutBox> look(ThreeChannelMatrix th, long eventID) throws Exception {
         int x = th.getX();
         int y = th.getY();
         List<Box> boxes = new ArrayList<>();
@@ -139,12 +139,12 @@ public class FastYolo {//yolo
                 YoloTypeBack yoloTypeBack = new YoloTypeBack();
                 PositionBack positionBack = new PositionBack();
                 ThreeChannelMatrix myTh = th.cutChannel(i, j, winHeight, winWidth);
-                study(typeNerveManager.getSensoryNerves(), myTh, false, null, yoloTypeBack);
+                study(eventID, typeNerveManager.getSensoryNerves(), myTh, false, null, yoloTypeBack);
                 int mappingID = yoloTypeBack.getId();//映射id
                 if (mappingID != typeBodies.size() + 1 && yoloTypeBack.getOut() > pth) {
                     TypeBody typeBody = getTypeBodyByMappingID(mappingID);
                     List<SensoryNerve> sensoryNerves = typeBody.getPositonNerveManager().getSensoryNerves();
-                    study(sensoryNerves, myTh, false, null, positionBack);
+                    study(eventID, sensoryNerves, myTh, false, null, positionBack);
                     boxes.add(getBox(i, j, x, y, positionBack, typeBody));
                 }
             }
@@ -294,7 +294,7 @@ public class FastYolo {//yolo
             ThreeChannelMatrix small = yoloMessage.getPic();
             int mappingID = yoloMessage.getMappingID();
             typeE.put(mappingID, 1D);
-            study(typeNerveManager.getSensoryNerves(), small, true, typeE, null);
+            study(1, typeNerveManager.getSensoryNerves(), small, true, typeE, null);
             if (!yoloMessage.isBackGround()) {
                 Map<Integer, Double> positionE = new HashMap<>();
                 positionE.put(1, yoloMessage.getDistX());
@@ -303,13 +303,13 @@ public class FastYolo {//yolo
                 positionE.put(4, yoloMessage.getHeight());
                 positionE.put(5, yoloMessage.getTrust());
                 NerveManager position = yoloMessage.getTypeBody().getPositonNerveManager();
-                study(position.getSensoryNerves(), small, true, positionE, null);
+                study(1, position.getSensoryNerves(), small, true, positionE, null);
             }
         }
 
     }
 
-    private void study(List<SensoryNerve> sensoryNerves, ThreeChannelMatrix feature, boolean isStudy, Map<Integer, Double> E, OutBack back) throws Exception {
+    private void study(long eventID, List<SensoryNerve> sensoryNerves, ThreeChannelMatrix feature, boolean isStudy, Map<Integer, Double> E, OutBack back) throws Exception {
         for (int i = 0; i < sensoryNerves.size(); i++) {
             Matrix p;
             switch (i) {
@@ -323,7 +323,7 @@ public class FastYolo {//yolo
                     p = feature.getMatrixB();
                     break;
             }
-            sensoryNerves.get(i).postMatrixMessage(1, p, isStudy, E, back);
+            sensoryNerves.get(i).postMatrixMessage(eventID, p, isStudy, E, back);
         }
     }
 }
