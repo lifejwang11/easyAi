@@ -105,9 +105,10 @@ https://github.com/lifejwang11/easyAi
     YoloModel yoloModel = readModelParameter();//从训练的模型中JSON反序列化读取模型
     yolo.insertModel(yoloModel);//识别类注入模型
     //////////////////////识别部分
+     long eventID;//需要生成一个唯一线程id来保证并发时的线程安全问题
      Picture picture = new Picture();//初始化图像解析类
      ThreeChannelMatrix th = picture.getThreeMatrix("D:\\lesson/number.png");//将图像解析为矩阵
-     List<OutBox> list = yolo.look(th);//对该图像矩阵进行识别，并返回识别结果
+     List<OutBox> list = yolo.look(th,eventID);//对该图像矩阵进行识别，并返回识别结果
      List<OutBox> list;//识别结果集合
     ////识别结果类
     OutBox outBox;
