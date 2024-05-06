@@ -36,6 +36,13 @@ public class ThreeChannelMatrix {
         matrixRGB = new Matrix(x, y);
     }
 
+    public double getDist(ThreeChannelMatrix th) throws Exception {
+        double subR = Math.abs(MatrixOperation.sub(matrixR, th.getMatrixR()).getAVG());
+        double subG = Math.abs(MatrixOperation.sub(matrixG, th.getMatrixG()).getAVG());
+        double subB = Math.abs(MatrixOperation.sub(matrixB, th.getMatrixB()).getAVG());
+        return (subR + subB + subG) / 3;
+    }
+
     public void add(double nub, boolean add) throws Exception {//对rgb矩阵曝光进行处理
         if (add) {//加数值
             MatrixOperation.mathAdd(matrixR, nub);
