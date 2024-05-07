@@ -37,10 +37,15 @@ public class ThreeChannelMatrix {
     }
 
     public double getDist(ThreeChannelMatrix th) throws Exception {
-        double subR = Math.abs(MatrixOperation.sub(matrixR, th.getMatrixR()).getAVG());
-        double subG = Math.abs(MatrixOperation.sub(matrixG, th.getMatrixG()).getAVG());
-        double subB = Math.abs(MatrixOperation.sub(matrixB, th.getMatrixB()).getAVG());
-        return (subR + subB + subG) / 3;
+        if (th.getX() == x && th.getY() == y) {
+            double subR = Math.abs(MatrixOperation.sub(matrixR, th.getMatrixR()).getAVG());
+            double subG = Math.abs(MatrixOperation.sub(matrixG, th.getMatrixG()).getAVG());
+            double subB = Math.abs(MatrixOperation.sub(matrixB, th.getMatrixB()).getAVG());
+            return (subR + subB + subG) / 3;
+        } else {
+            throw new Exception("图像尺寸大小不匹配，本图像尺寸x是：" + x + ",y:" + y + "。待匹配尺寸图像 x:" + th.getX() +
+                    ",y:" + th.getY());
+        }
     }
 
     public void add(double nub, boolean add) throws Exception {//对rgb矩阵曝光进行处理

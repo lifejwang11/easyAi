@@ -68,18 +68,6 @@ public class OutNerve extends Nerve {
         }
     }
 
-    private Matrix getGradient(Matrix matrix, Matrix E) throws Exception {
-        Matrix matrix1 = new Matrix(matrix.getX(), matrix.getY());
-        for (int i = 0; i < E.getX(); i++) {
-            for (int j = 0; j < E.getY(); j++) {
-                double nub = E.getNumber(i, j) - matrix.getNumber(i, j);
-                //ArithUtil.sub(E.getNumber(i, j), matrix.getNumber(i, j));
-                matrix1.setNub(i, j, nub);
-            }
-        }
-        return matrix1;
-    }
-
     private double outGradient() {//生成输出层神经元梯度变化
         //上层神经元输入值 * 当前神经元梯度*学习率 =该上层输入的神经元权重变化
         //当前梯度神经元梯度变化 *学习旅 * -1 = 当前神经元阈值变化
