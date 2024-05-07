@@ -255,10 +255,8 @@ public class FastYolo {//yolo
                 testBox.setxSize(winHeight);
                 testBox.setySize(winWidth);
                 YoloMessage yoloMessage = containSample(boxes, testBox, nms, i, j);
-                if (yoloMessage != null) {
-                    yoloMessage.setPic(pic.cutChannel(i, j, winHeight, winWidth));
-                    yoloMessageList.add(yoloMessage);
-                }
+                yoloMessage.setPic(pic.cutChannel(i, j, winHeight, winWidth));
+                yoloMessageList.add(yoloMessage);
             }
         }
         if (!yoloMessageList.isEmpty()) {
