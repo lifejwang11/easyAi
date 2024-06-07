@@ -22,7 +22,7 @@ https://github.com/lifejwang11/easyAi
 
 * 因为是框架没有图像化界面，演示结果就是控制台输出的数据，只能用视频展示，想看演示结果请看教学视频
 * 详细api文档见项目html文档位置:/zf/easyAi.html
-
+* api文档远程地址： http://116.198.227.105/easyAi.html
 ### 强大的自主智能客服工具，支持自动与用户对话，解答疑问，引导消费与对话，并捕捉用户对话中的需求后自动生成订单！基于easyAi算法引擎构建智脑——SayOrder(原名myJecs，现已正式更名为SayOrder)
 
 链接:https://gitee.com/dromara/sayOrder (gitee) https://github.com/lifejwang11/SayOrder (github)
