@@ -1,4 +1,4 @@
-### <div align=center>![logo](./zf/easyAI.png)</div>
+### <div align=center>![logo](./zf/easy.png)</div>
 
 ### 软件说明：
 
