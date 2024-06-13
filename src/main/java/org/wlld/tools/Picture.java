@@ -71,7 +71,7 @@ public class Picture {
         return matrix;
     }
 
-    public ThreeChannelMatrix getThreeChannel(BufferedImage bi) throws Exception {
+    private ThreeChannelMatrix getThreeChannel(BufferedImage bi) throws Exception {
         int width = bi.getWidth();//最大宽度
         int height = bi.getHeight();//最大高度
         ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
@@ -100,7 +100,7 @@ public class Picture {
         return threeChannelMatrix;
     }
 
-    public double dimensionReduction(int pixel) {//提取灰度进行降维
+    private double dimensionReduction(int pixel) {//提取灰度进行降维
         int r = (pixel & 0xff0000) >> 16;//R
         int g = (pixel & 0xff00) >> 8;//G
         int b = (pixel & 0xff);//B

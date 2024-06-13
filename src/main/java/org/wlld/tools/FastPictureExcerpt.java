@@ -11,16 +11,21 @@ import java.io.ByteArrayOutputStream;
 
 public class FastPictureExcerpt {//图片摘要id生成
 
+    public String creatImageName(ThreeChannelMatrix threeChannelMatrix, int boxSize, int regionSize) throws Exception {
+        String R = creatImageName(threeChannelMatrix.getMatrixR(), boxSize, regionSize);
+        String G = creatImageName(threeChannelMatrix.getMatrixG(), boxSize, regionSize);
+        String B = creatImageName(threeChannelMatrix.getMatrixB(), boxSize, regionSize);
+        return R + G + B;
+    }
 
     //String name = creatImageName(threeChannelMatrix, 5, 10);
     // 图像矩阵，横纵各分多少个区域，余弦区域分几份
-    public String creatImageName(ThreeChannelMatrix threeChannelMatrix, int boxSize, int regionSize) throws Exception {//生成文件名
+    private String creatImageName(Matrix h, int boxSize, int regionSize) throws Exception {//生成文件名
         int iSize = 5;
         Matrix vector = new Matrix(1, 3);
         vector.setNub(0, 0, 1);
         vector.setNub(0, 1, 0);
         vector.setNub(0, 2, 0);
-        Matrix h = threeChannelMatrix.getH();
         int xf = h.getX();
         int yf = h.getY();
         int xMO = (xf % boxSize) / 2;
