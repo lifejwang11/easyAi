@@ -72,7 +72,7 @@ public class CustomManager {//
         return semanticsBack.getWord();
     }
 
-    public CreatorModel study(List<TalkBody> talkBodies, long eventID) throws Exception {
+    public CreatorModel study(List<TalkBody> talkBodies) throws Exception {
         Random random = new Random();
         CreatorModel creatorModel = new CreatorModel();
         int maxTime = maxFeatureLength * answerMaxLength * times;
@@ -91,8 +91,8 @@ public class CustomManager {//
                     answer = answer.substring(0, answerMaxLength);
                 }
                 String word = question + answer;
-                MyWordFeature myWordFeature = wordEmbedding.getEmbedding(word, eventID);
-                semanticsStudy(myWordFeature, question, answer, eventID, random);
+                MyWordFeature myWordFeature = wordEmbedding.getEmbedding(word, 1);
+                semanticsStudy(myWordFeature, question, answer, 1, random);
                 double point = (double) index / (double) (wordSize) * 100;
                 String result = String.format("%.6f", point);
                 System.out.println("训练进度：" + result + "%");
