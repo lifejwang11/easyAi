@@ -25,12 +25,19 @@ public class GMClustering extends MeanClustering {
         super(speciesQuantity, maxTimes);
     }
 
-    public double getProbabilityDensity(double[] feature) throws Exception {//获取总概率密度
-        double sigma = 0;
+    public int getProbabilityDensity(double[] feature) throws Exception {//获取簇id
+        double maxPower = 0;
+        int id = 0;
+        int index = 0;
         for (RGBNorm rgbNorm : matrices) {
-            sigma = sigma + rgbNorm.getGMProbability(feature);
+            double power = rgbNorm.getGMProbability(feature);
+            if (power > maxPower) {
+                maxPower = power;
+                id = index;
+            }
+            index++;
         }
-        return sigma;
+        return id;
     }
 
     @Override
