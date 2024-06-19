@@ -24,12 +24,10 @@ public interface OutBack {
     /**
      * 多分类回调
      *
-     * @param out     输出数值
-     * @param id      输出神经元ID
      * @param eventId 事件ID
      * @param softMax 概率集合
      */
-    void getSoftMaxBack(double out, int id, long eventId, List<Double> softMax);
+    void getSoftMaxBack(long eventId, List<Double> softMax);
 
     /**
      * 回调

@@ -22,9 +22,10 @@ public class CodeBack implements OutBack {
     }
 
     @Override
-    public void getSoftMaxBack(double out, int id, long eventId, List<Double> softMax) {
+    public void getSoftMaxBack(long eventId, List<Double> softMax) {
 
     }
+
 
     @Override
     public void backWord(String word, long eventId) {

@@ -34,7 +34,8 @@ public class YoloTypeBack implements OutBack {
     }
 
     @Override
-    public void getSoftMaxBack(double out, int id, long eventId, List<Double> softMax) {
+    public void getSoftMaxBack(long eventId, List<Double> softMax) {
+
     }
 
 

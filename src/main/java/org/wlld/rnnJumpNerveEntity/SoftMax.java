@@ -64,6 +64,7 @@ public class SoftMax extends Nerve {
                 destroyParameter(eventId);
                 if (outBack != null) {
                     outBack.getBack(mes.poi, mes.typeID, eventId);
+                    outBack.getSoftMaxBack(eventId,mes.softMax);
                 } else {
                     throw new Exception("not find outBack");
                 }
