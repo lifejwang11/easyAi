@@ -102,9 +102,7 @@ public class SoftMax extends Nerve {
         for (int i = 0; i < featuresList.size(); i++) {
             double eSelf = Math.exp(featuresList.get(i));
             double value = eSelf / sigma;
-            if (isStudy) {
-                softMax.add(value);
-            }
+            softMax.add(value);
             if (value > poi) {
                 poi = value;
                 id = i + 1;
