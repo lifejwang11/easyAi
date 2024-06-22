@@ -9,7 +9,6 @@ public class ThreeChannelMatrix {
     private Matrix matrixG;
     private Matrix matrixB;
     private Matrix H;
-    private Matrix matrixRGB;
     private int x;
     private int y;
 
@@ -27,13 +26,6 @@ public class ThreeChannelMatrix {
 
     public void setY(int y) {
         this.y = y;
-    }
-
-    public ThreeChannelMatrix() {
-    }
-
-    public ThreeChannelMatrix(int x, int y) {
-        matrixRGB = new Matrix(x, y);
     }
 
     public double getDist(ThreeChannelMatrix th) throws Exception {
@@ -60,41 +52,44 @@ public class ThreeChannelMatrix {
         }
     }
 
-    //对颜色进行填充
-    public void fill(int x, int y, int xSize, int ySize, double color) throws Exception {
-        int xIndex = x + xSize;
-        int yIndex = y + ySize;
-        for (int i = x; i < xIndex; i++) {
-            for (int j = y; j < yIndex; j++) {
-                matrixRGB.setNub(i, j, color);
+    public ThreeChannelMatrix copy() throws Exception {//复制当前的三通道矩阵并返回
+        ThreeChannelMatrix copyThreeChannelMatrix = new ThreeChannelMatrix();
+        copyThreeChannelMatrix.setX(this.x);
+        copyThreeChannelMatrix.setY(this.y);
+        Matrix matrixCR = new Matrix(this.x, this.y);
+        Matrix matrixCG = new Matrix(this.x, this.y);
+        Matrix matrixCB = new Matrix(this.x, this.y);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                matrixCR.setNub(i, j, matrixR.getNumber(i, j));
+                matrixCG.setNub(i, j, matrixG.getNumber(i, j));
+                matrixCB.setNub(i, j, matrixB.getNumber(i, j));
             }
         }
+        copyThreeChannelMatrix.setMatrixR(matrixCR);
+        copyThreeChannelMatrix.setMatrixG(matrixCG);
+        copyThreeChannelMatrix.setMatrixB(matrixCB);
+        return copyThreeChannelMatrix;
     }
 
-    public Matrix late(int size) throws Exception {//池化处理
-        int xn = matrixRGB.getX();
-        int yn = matrixRGB.getY();
-        int x = xn / size;//求导后矩阵的行数
-        int y = yn / size;//求导后矩阵的列数
-        Matrix myMatrix = new Matrix(x, y);//迟化后的矩阵
-        for (int i = 0; i <= xn - size; i += size) {
-            for (int j = 0; j <= yn - size; j += size) {
-                Matrix matrix1 = matrixRGB.getSonOfMatrix(i, j, size, size);
-                double maxNub;
-                double n = size * size;
-                double sigma = 0;
-                for (int t = 0; t < matrix1.getX(); t++) {
-                    for (int k = 0; k < matrix1.getY(); k++) {
-                        double nub = matrix1.getNumber(t, k);
-                        sigma = sigma + nub;
-                    }
+    //将一个图像填充到本图像的指定位置
+    public void fill(int x, int y, ThreeChannelMatrix fillThreeChannelMatrix) throws Exception {
+        int xIndex = x + fillThreeChannelMatrix.getX();
+        int yIndex = y + fillThreeChannelMatrix.getY();
+        Matrix matrixFR = fillThreeChannelMatrix.getMatrixR();
+        Matrix matrixFG = fillThreeChannelMatrix.getMatrixG();
+        Matrix matrixFB = fillThreeChannelMatrix.getMatrixB();
+        if (xIndex <= this.x && yIndex <= this.y) {
+            for (int i = x; i < xIndex; i++) {
+                for (int j = y; j < yIndex; j++) {
+                    matrixR.setNub(i, j, matrixFR.getNumber(i - x, j - y));
+                    matrixG.setNub(i, j, matrixFG.getNumber(i - x, j - y));
+                    matrixB.setNub(i, j, matrixFB.getNumber(i - x, j - y));
                 }
-                maxNub = sigma / n;
-                //迟化的最大值是 MAXNUB
-                myMatrix.setNub(i / size, j / size, maxNub);
             }
+        } else {
+            throw new Exception("The filled image goes beyond the boundary !");
         }
-        return myMatrix;
     }
 
     public ThreeChannelMatrix cutChannel(int x, int y, int XSize, int YSize) throws Exception {
@@ -118,14 +113,6 @@ public class ThreeChannelMatrix {
         threeChannelMatrix.setMatrixB(matrixB);
         threeChannelMatrix.setH(matrixH);
         return threeChannelMatrix;
-    }
-
-    public Matrix getMatrixRGB() {
-        return matrixRGB;
-    }
-
-    public void setMatrixRGB(Matrix matrixRGB) {
-        this.matrixRGB = matrixRGB;
     }
 
     public Matrix getH() {
