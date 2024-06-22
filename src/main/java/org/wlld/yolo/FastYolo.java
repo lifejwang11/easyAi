@@ -239,7 +239,7 @@ public class FastYolo {//yolo
         return sent;
     }
 
-    public void study(YoloSample yoloSample) throws Exception {//
+    private void study(YoloSample yoloSample) throws Exception {//
         List<YoloBody> yoloBodies = yoloSample.getYoloBodies();//集合
         List<Box> boxes = getBoxes(yoloBodies);
         String url = yoloSample.getLocationURL();//地址
