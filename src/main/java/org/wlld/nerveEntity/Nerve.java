@@ -359,14 +359,14 @@ public abstract class Nerve {
                 for (int i = 1; i < upNub + 1; i++) {
                     double nub = 0;
                     if (init) {
-                        nub = random.nextDouble() / upNub;
+                        nub = random.nextDouble() / Math.sqrt(upNub);
                     }
                     dendrites.put(i, nub);//random.nextDouble()
                 }
                 //生成随机阈值
                 double nub = 0;
                 if (init) {
-                    nub = random.nextDouble() / upNub;
+                    nub = random.nextDouble() / Math.sqrt(upNub);
                 }
                 threshold = nub;
             }
