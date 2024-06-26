@@ -149,6 +149,9 @@ public class FastYolo {//yolo
                 }
             }
         }
+        if (boxes.isEmpty()) {
+            return  null;
+        }
         return getOutBoxList(nms.start(boxes));
     }
 
