@@ -19,6 +19,9 @@ public class NMS {
 
     public List<Box> start(List<Box> pixelPositions) {
         //先进行排序
+        if (pixelPositions.isEmpty()) {
+            return  null;
+        }
         List<Box> pixels = new ArrayList<>();
         ConfidenceSort2 confidenceSort = new ConfidenceSort2();
         pixelPositions.sort(confidenceSort);
