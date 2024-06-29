@@ -21,15 +21,24 @@ public class FastYolo {//yolo
     private final List<TypeBody> typeBodies = new ArrayList<>();//样本数据及集合
     private final int winWidth;
     private final int winHeight;
+    private final int widthStep;
+    private final int heightStep;
 
     public FastYolo(YoloConfig yoloConfig) throws Exception {
+        double stepReduce = yoloConfig.getStepReduce();
         this.yoloConfig = yoloConfig;
         winHeight = yoloConfig.getWindowHeight();
         winWidth = yoloConfig.getWindowWidth();
-        typeNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), yoloConfig.getTypeNub() + 1,
-                1, new ReLu(), yoloConfig.getLineStudy(), RZ.NOT_RZ, 0);
-        typeNerveManager.initImageNet(2, yoloConfig.getKernelSize(), winHeight, winWidth,
-                true, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu());
+        widthStep = (int) (winWidth * stepReduce);
+        heightStep = (int) (winHeight * stepReduce);
+        if (stepReduce <= 1 && widthStep > 0 && heightStep > 0) {
+            typeNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), yoloConfig.getTypeNub() + 1,
+                    1, new ReLu(), yoloConfig.getLineStudy(), RZ.NOT_RZ, 0);
+            typeNerveManager.initImageNet(2, yoloConfig.getKernelSize(), winHeight, winWidth,
+                    true, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu());
+        } else {
+            throw new Exception("The stepReduce must be (0,1] and widthStep ,heightStep must Greater than 0");
+        }
     }
 
     private void insertYoloBody(YoloBody yoloBody) throws Exception {
@@ -134,8 +143,8 @@ public class FastYolo {//yolo
         List<Box> boxes = new ArrayList<>();
         NMS nms = new NMS(yoloConfig.getIouTh());
         double pth = yoloConfig.getPth();
-        for (int i = 0; i <= x - winHeight; i += winHeight) {
-            for (int j = 0; j <= y - winWidth; j += winWidth) {
+        for (int i = 0; i <= x - winHeight; i += heightStep) {
+            for (int j = 0; j <= y - winWidth; j += widthStep) {
                 YoloTypeBack yoloTypeBack = new YoloTypeBack();
                 PositionBack positionBack = new PositionBack();
                 ThreeChannelMatrix myTh = th.cutChannel(i, j, winHeight, winWidth);
@@ -150,7 +159,7 @@ public class FastYolo {//yolo
             }
         }
         if (boxes.isEmpty()) {
-            return  null;
+            return null;
         }
         return getOutBoxList(nms.start(boxes));
     }
@@ -188,7 +197,7 @@ public class FastYolo {//yolo
         Box myBox = null;
         YoloMessage yoloMessage = new YoloMessage();
         for (Box box : boxes) {
-            double iou = nms.getMyIou(testBox, box);
+            double iou = nms.getSRatio(testBox, box, false);
             if (iou > containIouTh && iou > maxIou) {//有相交
                 maxIou = iou;
                 myBox = box;
@@ -250,8 +259,8 @@ public class FastYolo {//yolo
         NMS nms = new NMS(yoloConfig.getIouTh());
         ThreeChannelMatrix pic = picture.getThreeMatrix(url);
         List<YoloMessage> yoloMessageList = new ArrayList<>();
-        for (int i = 0; i <= pic.getX() - winHeight; i += winHeight) {
-            for (int j = 0; j <= pic.getY() - winWidth; j += winWidth) {
+        for (int i = 0; i <= pic.getX() - winHeight; i += winHeight / 4) {
+            for (int j = 0; j <= pic.getY() - winWidth; j += winWidth / 4) {
                 Box testBox = new Box();
                 testBox.setX(i);
                 testBox.setY(j);

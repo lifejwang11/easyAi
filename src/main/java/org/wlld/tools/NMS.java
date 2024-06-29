@@ -20,7 +20,7 @@ public class NMS {
     public List<Box> start(List<Box> pixelPositions) {
         //先进行排序
         if (pixelPositions.isEmpty()) {
-            return  null;
+            return null;
         }
         List<Box> pixels = new ArrayList<>();
         ConfidenceSort2 confidenceSort = new ConfidenceSort2();
@@ -29,7 +29,15 @@ public class NMS {
         return pixels;
     }
 
-    public double getMyIou(Box box1, Box box2) {
+    public double getSRatio(Box box1, Box box2, boolean first) {
+        IouMessage iouMessage = getMyIou(box1, box2);
+        if (first) {
+            return iouMessage.intersectS / iouMessage.s1;
+        }
+        return iouMessage.intersectS / iouMessage.s2;
+    }
+
+    private IouMessage getMyIou(Box box1, Box box2) {
         int minX1 = box1.getX();
         int minY1 = box1.getY();
         int maxX1 = minX1 + box1.getxSize();
@@ -56,14 +64,18 @@ public class NMS {
         if (heightSub < 0) {
             heightSub = 0;
         }
-        double intersectS = widthSub * heightSub;//相交面积
-        double mergeS = s1 + s2 - intersectS;
-        return intersectS / mergeS;//交并比
+        IouMessage iouMessage = new IouMessage();
+        iouMessage.intersectS = widthSub * heightSub;
+        iouMessage.s1 = s1;
+        iouMessage.s2 = s2;
+        return iouMessage;
     }
 
     private boolean isOne(Box box1, Box box2, double iouTh) {
         boolean isOne = false;
-        double iou = getMyIou(box1, box2);
+        IouMessage iouMessage = getMyIou(box1, box2);
+        double mergeS = iouMessage.s1 + iouMessage.s2 - iouMessage.intersectS;
+        double iou = iouMessage.intersectS / mergeS;
         if (iou > iouTh) {
             isOne = true;
         }
@@ -85,7 +97,7 @@ public class NMS {
         } while (pixelPositions.size() > 0);
     }
 
-    class ConfidenceSort2 implements Comparator<Box> {
+    static class ConfidenceSort2 implements Comparator<Box> {
 
         @Override
         public int compare(Box o1, Box o2) {
@@ -96,5 +108,11 @@ public class NMS {
             }
             return 0;
         }
+    }
+
+    static class IouMessage {
+        double intersectS;
+        double s1;
+        double s2;
     }
 }

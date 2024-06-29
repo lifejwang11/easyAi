@@ -13,6 +13,15 @@ public class YoloConfig {
     private double iouTh = 0.05;//合并框交并比阈值
     private double containIouTh = 0.15;//是否包含样本交并比阈值
     private double pth = 0.4;//可信概率阈值
+    private double stepReduce = 0.25;//检测步长收缩系数
+
+    public double getStepReduce() {
+        return stepReduce;
+    }
+
+    public void setStepReduce(double stepReduce) {
+        this.stepReduce = stepReduce;
+    }
 
     public double getPth() {
         return pth;
