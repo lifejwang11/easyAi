@@ -60,6 +60,17 @@ https://github.com/lifejwang11/easyAi
 
 链接:https://gitee.com/dromara/sayOrder (gitee) https://github.com/lifejwang11/SayOrder (github)
 
+## 部署
+* 从Gitee下载项目，打成JAR包后手动引入本地Maven库即可。
+* 在pom文件引入JAR包
+```    
+    <dependency>
+    <groupId>com.wlld</groupId>
+    <artifactId>easyAi</artifactId>
+    <version>1.1.9</version>
+    </dependency>
+```
+
 ### 目前拥有的核心功能（若对您的学习或生产有帮助，请留下您的STAR）
 
 * 对图片中得物体进行识别与定位。
