@@ -131,7 +131,7 @@ public class FastYolo {//yolo
             outBox.setY(box.getX());
             outBox.setHeight(box.getxSize());
             outBox.setWidth(box.getySize());
-            outBox.setTypeID(box.getTypeID());
+            outBox.setTypeID(String.valueOf(box.getTypeID()));
             outBoxes.add(outBox);
         }
         return outBoxes;

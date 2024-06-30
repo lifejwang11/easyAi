@@ -50,7 +50,7 @@ public class ImageTools {
         for (OutBox borderFood : borderFoods) {//输出
             Rectangle2D rect = new Rectangle2D.Double(borderFood.getX(), borderFood.getY(), borderFood.getWidth(), borderFood.getHeight());//声明并创建矩形对象，矩形的左上角是(20，30)，宽是300，高是40
             g2.draw(rect);
-            g2.drawString(String.valueOf(borderFood.getTypeID()), borderFood.getX() + 10, borderFood.getY() + 10);
+            g2.drawString(borderFood.getTypeID(), borderFood.getX() + 10, borderFood.getY() + 10);
         }
         ImageIO.write(bi, "jpg", new FileOutputStream(outFileName));
     }

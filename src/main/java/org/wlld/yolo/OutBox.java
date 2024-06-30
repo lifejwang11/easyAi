@@ -5,7 +5,7 @@ public class OutBox {
     private int y;//纵坐标
     private int width;//宽度
     private int height;//高度
-    private int typeID;//类别id
+    private String typeID;//类别id
 
     public int getX() {
         return x;
@@ -39,11 +39,11 @@ public class OutBox {
         this.height = height;
     }
 
-    public int getTypeID() {
+    public String getTypeID() {
         return typeID;
     }
 
-    public void setTypeID(int typeID) {
+    public void setTypeID(String typeID) {
         this.typeID = typeID;
     }
 }
