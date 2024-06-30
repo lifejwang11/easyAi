@@ -45,7 +45,7 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * 框架视频教程地址：https://www.bilibili.com/video/BV1W7411J7zr/
 * 人工智能0基础JAVA程序员速成课（基础篇） 本课程为基础篇内容，后续更新还会有图像篇与自然语言篇，三部分构成。
   地址：https://www.bilibili.com/cheese/play/ss17600
-* 技术文档远程地址： http://easyai.syxee.com
+* 技术文档远程地址： https://yhk.yhktech.com/easyai
 
 ### 软件说明：
 
