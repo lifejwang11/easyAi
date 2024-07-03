@@ -13,9 +13,9 @@ public class DynamicProgramming {
     private List<DynamicState> dynamicStateList = new ArrayList<>();//状态集合
     private Map<Integer, Action> actionMap = new HashMap<>();//动作列表
     private List<Integer> bestStrategy = new ArrayList<>();//最佳策略
-    private double gaMa = 0.9;//贴现因子
+    private double gaMa = 0.5;//贴现因子
     private double valueTh = 0.0001;//价值阈值
-    private int maxTimes = 400;//策略改进最大迭代次数
+    private int maxTimes = 500;//策略改进最大迭代次数
 
     public void setMaxTimes(int maxTimes) {
         this.maxTimes = maxTimes;
@@ -46,26 +46,29 @@ public class DynamicProgramming {
                 for (Map.Entry<Integer, Action> actionEntry : actionMap.entrySet()) {
                     Action action = actionEntry.getValue();
                     int actionId = action.getActionId();//动作id
-                    DynamicState state = getStateByStateId(action.action(stateId));//经过动作产生的新状态
-                    //产生一个新的动作-子状态合集的元素
-                    if (sonStatesMap.containsKey(actionId)) {//在动作集合里
-                        List<DynamicState> dynamicStates = sonStatesMap.get(actionId);
-                        if (!isHere(dynamicStates, state.getStateId())) {
-                            dynamicStates.add(state);
+                    List<int[]> stateList = action.action(stateId);
+                    for (int[] myStateId : stateList) {
+                        DynamicState state = getStateByStateId(myStateId);//经过动作产生的新状态
+                        //产生一个新的动作-子状态合集的元素
+                        if (sonStatesMap.containsKey(actionId)) {//在动作集合里
+                            List<DynamicState> dynamicStates = sonStatesMap.get(actionId);
+                            if (!isHere(dynamicStates, state.getStateId())) {
+                                dynamicStates.add(state);
+                            }
+                        } else {//创建动作-子状态集合
+                            List<DynamicState> dynamicStateList = new ArrayList<>();
+                            dynamicStateList.add(state);
+                            sonStatesMap.put(actionId, dynamicStateList);
                         }
-                    } else {//创建动作-子状态集合
-                        List<DynamicState> dynamicStateList = new ArrayList<>();
-                        dynamicStateList.add(state);
-                        sonStatesMap.put(actionId, dynamicStateList);
-                    }
-                    Map<Integer, Integer> profitMap = state.getProfitMap();//该状态的收益集合，主键是收益，值是次数 被执行的时候需要修改
-                    state.add();
-                    //产生一个新的收益
-                    int profit = action.getProfit(stateId);
-                    if (profitMap.containsKey(profit)) {
-                        profitMap.put(profit, profitMap.get(profit) + 1);
-                    } else {
-                        profitMap.put(profit, 1);
+                        Map<Integer, Integer> profitMap = state.getProfitMap();//该状态的收益集合，主键是收益，值是次数 被执行的时候需要修改
+                        state.add();
+                        //产生一个新的收益
+                        int profit = action.getProfit(stateId);
+                        if (profitMap.containsKey(profit)) {
+                            profitMap.put(profit, profitMap.get(profit) + 1);
+                        } else {
+                            profitMap.put(profit, 1);
+                        }
                     }
 
                 }
@@ -149,7 +152,7 @@ public class DynamicProgramming {
         return actions;
     }
 
-    public void strategyStudy() {//策略学习
+    public void strategyStudy() throws Exception {//策略学习
         //记录当前最佳策略
         int times = 0;
         boolean isDifferent = true;//策略是否不同
@@ -221,7 +224,7 @@ public class DynamicProgramming {
         return isDifferent;
     }
 
-    private int getBestStrategyByPro(DynamicState dynamicState) {//通过概率获取当前状态下的最佳策略
+    private int getBestStrategyByPro(DynamicState dynamicState) throws Exception {//通过概率获取当前状态下的最佳策略
         Map<Integer, List<DynamicState>> sonStatesMap = dynamicState.getSonStatesMap();//动作-子状态集合
         double maxValue = 0;//最大价值
         boolean isFirst = true;
@@ -239,7 +242,7 @@ public class DynamicProgramming {
         return bestActionId;
     }
 
-    private void strategyEvaluation() {//策略评估
+    private void strategyEvaluation() throws Exception {//策略评估
         double maxSub;//最大差值
         do {
             maxSub = 0;
@@ -254,9 +257,12 @@ public class DynamicProgramming {
         } while (maxSub >= valueTh);
     }
 
-    private double getValueByAction(DynamicState dynamicState, int actionId) {//通过动作获取价值
+    private double getValueByAction(DynamicState dynamicState, int actionId) throws Exception {//通过动作获取价值
         Map<Integer, List<DynamicState>> sonStatesMap = dynamicState.getSonStatesMap();//动作-子状态集合
         List<DynamicState> sonStateListByAction = sonStatesMap.get(actionId);//当前状态最优策略动作下的子状态集合
+        if (sonStateListByAction == null) {
+            throw new Exception("该状态无下一步动作！可能该状态属于终结态，但并没有设置为终结态！");
+        }
         double number = dynamicState.getNumber();//当前状态被执行的次数即所有子状态被执行的总数
         double updateValue = 0;//更新价值
         for (DynamicState sonState : sonStateListByAction) {
@@ -278,7 +284,7 @@ public class DynamicProgramming {
         return updateValue;
     }
 
-    private double valueEvaluation(DynamicState dynamicState) {//价值评估
+    private double valueEvaluation(DynamicState dynamicState) throws Exception {//价值评估
         double myValue = dynamicState.getValue();//当前价值
         int bestActionId = dynamicState.getBestActionId();//当前最优策略选择的动作
         double updateValue = getValueByAction(dynamicState, bestActionId);

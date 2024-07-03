@@ -37,38 +37,41 @@ public class WordLeft extends Action {
     }
 
     @Override
-    public int[] action(int[] stateId) {
-        Random random = new Random();
+    public List<int[]> action(int[] stateId) {
         int id = stateId[0];
         String myWord = keyWords.get(id - 1);
         int len = myWord.length() + 1;
         int size = keyWords.size();
-        int[] nextId = new int[]{0};
-        List<Integer> list = new ArrayList<>();
+        List<int[]> list = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             String word = keyWords.get(i);
             if (word.length() == len && word.substring(1).equals(myWord)) {
-                list.add(i + 1);
+                list.add(new int[]{i + 1});
             }
         }
-        if (list.size() > 0) {
-            nextId[0] = list.get(random.nextInt(list.size()));
-        }
-        return nextId;
+        return list;
     }
 
     @Override
     protected int getProfit(int[] stateId) {
-        int profit = 0;
-        int nextID = action(stateId)[0];
-        if (nextID > 0) {
-            String myWord = keyWords.get(nextID - 1);//查看是否为终结态
-            if (isFinish(myWord)) {//是终结态
-                profit = 10;
-            }
+        int allProfit = 0;
+        List<int[]> states = action(stateId);
+        if (states.isEmpty()) {
+            allProfit = -10;
         } else {
-            profit = -10;
+            for (int i = 0; i < states.size(); i++) {
+                int nextID = states.get(i)[0];
+                if (nextID > 0) {
+                    String myWord = keyWords.get(nextID - 1);//查看是否为终结态
+                    if (isFinish(myWord)) {//是终结态
+                        allProfit = allProfit + 10;
+                    }
+                } else {
+                    allProfit = allProfit - 10;
+                }
+            }
+            allProfit = allProfit / states.size();
         }
-        return profit;
+        return allProfit;
     }
 }

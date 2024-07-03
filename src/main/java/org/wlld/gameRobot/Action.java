@@ -1,5 +1,8 @@
 package org.wlld.gameRobot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Action {//动作
     private int actionId;//动作主键
 
@@ -11,8 +14,8 @@ public abstract class Action {//动作
         this.actionId = actionId;
     }
 
-    public int[] action(int[] stateId) {
-        return new int[0];
+    public List<int[]> action(int[] stateId) {
+        return new ArrayList<>();
     }
 
     public int[] actionTest(int[] stateId) {
