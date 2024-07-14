@@ -1,7 +1,7 @@
 package org.wlld.rnnJumpNerveCenter;
 
 
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.config.RZ;
 import org.wlld.config.SentenceConfig;
 import org.wlld.entity.TypeMapping;

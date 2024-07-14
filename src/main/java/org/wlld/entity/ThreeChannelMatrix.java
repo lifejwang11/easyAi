@@ -1,8 +1,8 @@
 package org.wlld.entity;
 
 
-import org.wlld.MatrixTools.Matrix;
-import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.matrixTools.Matrix;
+import org.wlld.matrixTools.MatrixOperation;
 
 public class ThreeChannelMatrix {
     private Matrix matrixR;

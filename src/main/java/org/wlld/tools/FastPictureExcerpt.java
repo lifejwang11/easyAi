@@ -1,13 +1,8 @@
 package org.wlld.tools;
 
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.entity.ThreeChannelMatrix;
 import org.wlld.regressionForest.LinearRegression;
-
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 
 public class FastPictureExcerpt {//图片摘要id生成
 

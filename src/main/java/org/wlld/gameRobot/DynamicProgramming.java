@@ -1,6 +1,6 @@
 package org.wlld.gameRobot;
 
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 
 import java.util.*;
 

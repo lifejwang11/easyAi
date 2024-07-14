@@ -1,8 +1,8 @@
 package org.wlld.naturalLanguage.word;
 
 
-import org.wlld.MatrixTools.Matrix;
-import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.matrixTools.Matrix;
+import org.wlld.matrixTools.MatrixOperation;
 import org.wlld.config.RZ;
 import org.wlld.config.SentenceConfig;
 import org.wlld.entity.SentenceModel;

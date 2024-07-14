@@ -10,7 +10,7 @@ public abstract class Frequency {//统计频数
         for (int i = 0; i < len; i++) {
             allNub = allNub + m[i];
         }
-        allNub = ArithUtil.div(allNub, len);
+        allNub = allNub / len;
         return allNub;
     }
 
@@ -55,8 +55,7 @@ public abstract class Frequency {//统计频数
         for (int i = 0; i < m.length; i++) {
             allNub = allNub + Math.pow(m[i] - ave, 2);
         }
-        double var = ArithUtil.div(allNub, m.length);
-        return var;
+        return allNub / m.length;
     }
 
     public double varianceByAve(double[] m, double ave) {// 计算方差，依赖平均值
@@ -64,7 +63,12 @@ public abstract class Frequency {//统计频数
         for (int i = 0; i < m.length; i++) {
             allNub = allNub + Math.pow(m[i] - ave, 2);
         }
-        return ArithUtil.div(allNub, m.length);
+        return allNub / m.length;
+    }
+
+    public double sdByAvg(double[] m, double avg) {//计算标准差，带平均值
+        double var = varianceByAve(m, avg);
+        return Math.sqrt(var);
     }
 
     public double sd(double... m) {//计算标准差

@@ -1,6 +1,5 @@
 package org.wlld.nerveEntity;
 
-import org.wlld.MatrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
 

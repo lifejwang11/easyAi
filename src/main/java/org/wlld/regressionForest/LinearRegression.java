@@ -1,8 +1,8 @@
 package org.wlld.regressionForest;
 
 
-import org.wlld.MatrixTools.Matrix;
-import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.matrixTools.Matrix;
+import org.wlld.matrixTools.MatrixOperation;
 
 /**
  * @param

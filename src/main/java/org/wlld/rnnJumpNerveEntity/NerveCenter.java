@@ -1,14 +1,11 @@
 package org.wlld.rnnJumpNerveEntity;
 
-import org.wlld.MatrixTools.Matrix;
-import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.matrixTools.Matrix;
+import org.wlld.matrixTools.MatrixOperation;
 import org.wlld.i.OutBack;
 import org.wlld.naturalLanguage.word.WordEmbedding;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class NerveCenter {//神经中枢
     private final int depth;//该神经中枢的深度

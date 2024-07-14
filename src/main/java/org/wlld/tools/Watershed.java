@@ -1,5 +1,5 @@
 package org.wlld.tools;
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.config.FoodConfig2;
 import org.wlld.config.Kernel;
 import org.wlld.entity.Box;

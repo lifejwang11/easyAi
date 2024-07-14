@@ -1,7 +1,7 @@
 package org.wlld.entity;
 
 
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.i.OutBack;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package org.wlld.rnnJumpNerveEntity;
 
 
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
 
@@ -14,7 +14,7 @@ import java.util.Map;
  * &#064;date  9:30 上午 2019/12/21
  */
 public class HiddenNerve extends Nerve {
-    private Map<Long, Double> outMap = new HashMap<>();
+    private final Map<Long, Double> outMap = new HashMap<>();
 
     public HiddenNerve(int id, int depth, double studyPoint,
                        boolean init, ActiveFunction activeFunction, boolean isDynamic, int rzType, double lParam

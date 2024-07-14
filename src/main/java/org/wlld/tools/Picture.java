@@ -1,5 +1,5 @@
 package org.wlld.tools;
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.entity.ThreeChannelMatrix;
 
 import javax.imageio.ImageIO;

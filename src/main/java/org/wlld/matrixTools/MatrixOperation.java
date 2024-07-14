@@ -1,4 +1,4 @@
-package org.wlld.MatrixTools;
+package org.wlld.matrixTools;
 
 
 import java.util.ArrayList;
@@ -430,6 +430,17 @@ public class MatrixOperation {
             matrix = mulMatrix(transPosition(first), errorMatrix);
         }
         return matrix;
+    }
+
+    public static double getSdByMatrix(Matrix m, double avg, double e) throws Exception {//计算矩阵元素的标准差
+        double var = 0;
+        double size = m.getX() * m.getY();
+        for (int i = 0; i < m.getX(); i++) {
+            for (int j = 0; j < m.getY(); j++) {
+                var = var + Math.pow(m.getNumber(i, j) - avg, 2);
+            }
+        }
+        return Math.sqrt(var / size + e);
     }
 
     public static Matrix mulMatrix(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘

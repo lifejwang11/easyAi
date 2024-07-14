@@ -1,13 +1,12 @@
 package org.wlld.rnnJumpNerveCenter;
 
 
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.config.RZ;
 import org.wlld.config.SentenceConfig;
 import org.wlld.entity.CreatorModel;
 import org.wlld.entity.SemanticsBack;
 import org.wlld.entity.TalkBody;
-import org.wlld.function.ReLu;
 import org.wlld.function.Tanh;
 import org.wlld.naturalLanguage.word.WordEmbedding;
 import org.wlld.rnnJumpNerveEntity.MyWordFeature;

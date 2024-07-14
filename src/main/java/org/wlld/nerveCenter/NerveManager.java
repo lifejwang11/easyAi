@@ -1,7 +1,6 @@
 package org.wlld.nerveCenter;
 
-import org.wlld.MatrixTools.Matrix;
-import org.wlld.function.Tanh;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.nerveEntity.*;
 

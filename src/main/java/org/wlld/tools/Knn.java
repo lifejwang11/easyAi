@@ -1,7 +1,7 @@
 package org.wlld.tools;
 
-import org.wlld.MatrixTools.Matrix;
-import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.matrixTools.Matrix;
+import org.wlld.matrixTools.MatrixOperation;
 
 import java.util.*;
 

@@ -1,12 +1,10 @@
 package org.wlld.yolo;
 
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.config.RZ;
 import org.wlld.entity.Box;
 import org.wlld.entity.ThreeChannelMatrix;
-import org.wlld.function.ELu;
 import org.wlld.function.ReLu;
-import org.wlld.function.Tanh;
 import org.wlld.i.OutBack;
 import org.wlld.nerveCenter.NerveManager;
 import org.wlld.nerveEntity.SensoryNerve;
@@ -175,7 +173,10 @@ public class FastYolo {//yolo
         int enh = yoloConfig.getEnhance();
         for (int i = 0; i < enh; i++) {
             System.out.println("第===========================" + i + "次" + "共" + enh + "次");
+            int index = 0;
             for (YoloSample yoloSample : yoloSamples) {
+                index++;
+                System.out.println("index:" + index + ",size:" + yoloSamples.size());
                 study(yoloSample);
             }
         }

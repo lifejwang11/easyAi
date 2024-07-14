@@ -1,8 +1,8 @@
 package org.wlld.rnnNerveEntity;
 
 
-import org.wlld.MatrixTools.Matrix;
-import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.matrixTools.Matrix;
+import org.wlld.matrixTools.MatrixOperation;
 import org.wlld.config.RZ;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
@@ -15,12 +15,12 @@ import java.util.*;
  * @date 9:36 上午 2019/12/21
  */
 public abstract class Nerve {
-    private List<Nerve> son = new ArrayList<>();//轴突下一层的连接神经元
-    private List<Nerve> rnnOut = new ArrayList<>();//rnn隐层输出神经元集合
-    private List<Nerve> father = new ArrayList<>();//树突上一层的连接神经元
+    private final List<Nerve> son = new ArrayList<>();//轴突下一层的连接神经元
+    private final List<Nerve> rnnOut = new ArrayList<>();//rnn隐层输出神经元集合
+    private final List<Nerve> father = new ArrayList<>();//树突上一层的连接神经元
     protected Map<Integer, Double> dendrites = new HashMap<>();//上一层权重(需要取出)
     protected Map<Integer, Double> wg = new HashMap<>();//上一层权重与梯度的积
-    private int id;//同级神经元编号,注意在同层编号中ID应有唯一性
+    private final int id;//同级神经元编号,注意在同层编号中ID应有唯一性
     boolean fromOutNerve = false;//是否是输出神经元
     protected int upNub;//上一层神经元数量
     protected int downNub;//下一层神经元的数量
@@ -260,16 +260,11 @@ public abstract class Nerve {
             int key = entry.getKey();//上层隐层神经元的编号
             double w = entry.getValue();//接收到编号为KEY的上层隐层神经元的权重
             double bn = list.get(key - 1);//接收到编号为KEY的上层隐层神经元的输入
-            //double wp = ArithUtil.mul(bn, h);//编号为KEY的上层隐层神经元权重的变化值
             double wp = bn * h;
-            // double dm = ArithUtil.mul(w, gradient);//返回给相对应的神经元
-            double dm = w * gradient;
+            double dm = w * h;
             double regular = regularization(w, param);//正则化抑制权重s
-            //w = ArithUtil.add(w, regular);
             w = w + regular;
-            //w = ArithUtil.add(w, wp);//修正后的编号为KEY的上层隐层神经元权重
             w = w + wp;
-            // System.out.println("allG==" + allG + ",dm==" + dm);
             wg.put(key, dm);//保存上一层权重与梯度的积
             dendrites.put(key, w);//保存修正结果
         }
@@ -316,8 +311,6 @@ public abstract class Nerve {
         for (int i = 0; i < featuresList.size(); i++) {
             double value = featuresList.get(i);
             double w = dendrites.get(i + 1);//当value不为0的时候把w取出来
-            //System.out.println("w==" + w + ",value==" + value);
-            //sigma = ArithUtil.add(ArithUtil.mul(w, value), sigma);
             sigma = w * value + sigma;
         }
         return sigma - threshold;//ArithUtil.sub(sigma, threshold);

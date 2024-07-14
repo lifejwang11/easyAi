@@ -1,6 +1,6 @@
 package org.wlld.rnnNerveEntity;
 
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.config.RZ;
 import org.wlld.i.OutBack;
 

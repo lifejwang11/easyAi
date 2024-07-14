@@ -1,7 +1,7 @@
 package org.wlld.rnnJumpNerveEntity;
 
-import org.wlld.MatrixTools.Matrix;
-import org.wlld.MatrixTools.MatrixOperation;
+import org.wlld.matrixTools.Matrix;
+import org.wlld.matrixTools.MatrixOperation;
 import org.wlld.config.RZ;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
@@ -372,7 +372,7 @@ public abstract class Nerve {
             double w = entry.getValue();//接收到编号为KEY的上层隐层神经元的权重
             double bn = list.get(key - 1);//接收到编号为KEY的上层隐层神经元的输入
             double wp = bn * h;
-            double dm = w * gradient;
+            double dm = w * h;
             double regular = regularization(w, param);//正则化抑制权重s
             w = w + regular;
             w = w + wp;

@@ -1,11 +1,9 @@
 package org.wlld.yolo;
 
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.i.OutBack;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class YoloTypeBack implements OutBack {
     private double out = -1;

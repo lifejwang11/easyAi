@@ -1,4 +1,4 @@
-package org.wlld.MatrixTools;
+package org.wlld.matrixTools;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -227,7 +227,7 @@ public class Matrix {
 
     private void defCalculation(List<Coordinate> coordinates) {
         for (Coordinate coordinate : coordinates) {
-            if (coordinate.coordinateList.size() > 0) {//继续向丛林深处进发
+            if (!coordinate.coordinateList.isEmpty()) {//继续向丛林深处进发
                 defCalculation(coordinate.coordinateList);
             } else {//到道路的尽头了,进行核算
                 mulFather(coordinate, 1, new ArrayList<>());
@@ -436,6 +436,16 @@ public class Matrix {
         } else {
             throw new Exception("setNub matrix length too little x:" + x + ",y:" + y);
         }
+    }
+
+    public Matrix copy() throws Exception {//复制一个矩阵
+        Matrix myMatrix = new Matrix(this.x, this.y);
+        for (int i = 0; i < this.x; i++) {
+            for (int j = 0; j < this.y; j++) {
+                myMatrix.setNub(i, j, matrix[i][j]);
+            }
+        }
+        return myMatrix;
     }
 
     /**

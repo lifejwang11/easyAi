@@ -1,6 +1,6 @@
 package org.wlld.recommend;
 
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.config.RZ;
 import org.wlld.function.Tanh;
 import org.wlld.i.OutBack;

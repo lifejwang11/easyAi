@@ -2,7 +2,7 @@ package org.wlld.tools;
 
 
 
-import org.wlld.MatrixTools.Matrix;
+import org.wlld.matrixTools.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;

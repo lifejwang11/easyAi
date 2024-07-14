@@ -1,7 +1,6 @@
 package org.wlld.tools;
 
-import org.wlld.MatrixTools.Matrix;
-import org.wlld.entity.Box;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.entity.ThreeChannelMatrix;
 import org.wlld.yolo.OutBox;
 
