@@ -4,6 +4,7 @@ import org.wlld.function.ReLu;
 import org.wlld.i.OutBack;
 import org.wlld.matrixTools.Matrix;
 import org.wlld.matrixTools.MatrixOperation;
+import org.wlld.transFormer.model.CodecBlockModel;
 import org.wlld.transFormer.nerve.HiddenNerve;
 import org.wlld.transFormer.nerve.Nerve;
 import org.wlld.transFormer.seflAttention.LayNorm;
@@ -24,10 +25,38 @@ public class CodecBlock {
     private CodecBlock afterEncoderBlock;//后编码模块
     private CodecBlock beforeEncoderBlock;//前编码模块
     private CodecBlock lastEncoderBlock;//最后一层编码器
-    private Map<Long, Matrix> outMatrixMap = new HashMap<>();
+    private final Map<Long, Matrix> outMatrixMap = new HashMap<>();
     private final boolean encoder;//是否为编码器
     private LineBlock lineBlock;//解码器最后的线性分类器
     private FirstDecoderBlock firstDecoderBlock;//解码器第一层
+
+    public CodecBlockModel getModel() {
+        List<double[][]> firstNerveModel = new ArrayList<>();
+        List<double[][]> secondNerveModel = new ArrayList<>();
+        for (int i = 0; i < fistHiddenNerves.size(); i++) {
+            firstNerveModel.add(fistHiddenNerves.get(i).getModel());
+            secondNerveModel.add(secondHiddenNerves.get(i).getModel());
+        }
+        CodecBlockModel codecBlockModel = new CodecBlockModel();
+        codecBlockModel.setMultiSelfAttentionModel(multiSelfAttention.getModel());
+        codecBlockModel.setAttentionLayNormModel(attentionLayNorm.getModel());
+        codecBlockModel.setFistNervesModel(firstNerveModel);
+        codecBlockModel.setSecondNervesModel(secondNerveModel);
+        codecBlockModel.setLineLayNormModel(lineLayNorm.getModel());
+        return codecBlockModel;
+    }
+
+    public void insertModel(CodecBlockModel codecBlockModel) throws Exception {
+        multiSelfAttention.insertModel(codecBlockModel.getMultiSelfAttentionModel());
+        attentionLayNorm.insertModel(codecBlockModel.getAttentionLayNormModel());
+        List<double[][]> firstNerveModel = codecBlockModel.getFistNervesModel();
+        List<double[][]> secondNerveModel = codecBlockModel.getSecondNervesModel();
+        for (int i = 0; i < fistHiddenNerves.size(); i++) {
+            fistHiddenNerves.get(i).insertModel(firstNerveModel.get(i));
+            secondHiddenNerves.get(i).insertModel(secondNerveModel.get(i));
+        }
+        lineLayNorm.insertModel(codecBlockModel.getLineLayNormModel());
+    }
 
     public void setFirstDecoderBlock(FirstDecoderBlock firstDecoderBlock) {
         this.firstDecoderBlock = firstDecoderBlock;
@@ -117,14 +146,14 @@ public class CodecBlock {
         List<Nerve> secondNerves = new ArrayList<>();
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve1 = new HiddenNerve(i + 1, 1, studyPoint, new ReLu(), featureDimension,
-                    featureDimension, true, null);
+                    featureDimension, null);
             fistHiddenNerves.add(hiddenNerve1);
             hiddenNerve1.setAfterLayNorm(attentionLayNorm);
             firstNerves.add(hiddenNerve1);
         }
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve2 = new HiddenNerve(i + 1, 2, studyPoint, null,
-                    featureDimension, 1, true, null);
+                    featureDimension, 1, null);
             hiddenNerve2.setBeforeLayNorm(lineLayNorm);
             secondHiddenNerves.add(hiddenNerve2);
             secondNerves.add(hiddenNerve2);

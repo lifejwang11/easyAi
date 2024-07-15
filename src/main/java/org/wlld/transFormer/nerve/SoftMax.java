@@ -1,14 +1,12 @@
 package org.wlld.transFormer.nerve;
 
 
-import org.wlld.config.RZ;
 import org.wlld.i.OutBack;
 import org.wlld.matrixTools.Matrix;
 import org.wlld.matrixTools.MatrixOperation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class SoftMax extends Nerve {
     private final List<OutNerve> outNerves;
@@ -16,8 +14,7 @@ public class SoftMax extends Nerve {
 
     public SoftMax(List<OutNerve> outNerves, boolean isShowLog
             , int sensoryNerveNub, int hiddenNerveNub, int outNerveNub) throws Exception {
-        super(0, "softMax", 0, null, sensoryNerveNub, hiddenNerveNub, outNerveNub,
-                false, null);
+        super(0, "softMax", 0, null, sensoryNerveNub, hiddenNerveNub, outNerveNub, null);
         this.outNerves = outNerves;
         this.isShowLog = isShowLog;
     }

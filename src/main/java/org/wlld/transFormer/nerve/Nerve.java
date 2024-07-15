@@ -21,16 +21,12 @@ public abstract class Nerve {
     private final List<Nerve> father = new ArrayList<>();//树突上一层的连接神经元
     protected LayNorm beforeLayNorm;//多头自注意力层
     protected LayNorm afterLayNorm;//多头自注意力层
-    protected Map<Integer, Double> dendrites = new HashMap<>();//上一层权重(需要取出)
-    protected Matrix powerMatrix;//权重矩阵
+    protected Matrix powerMatrix;//权重矩阵 作为模型取出
     private final int id;//同级神经元编号,注意在同层编号中ID应有唯一性
     private final int hiddenNerveNub;//隐层神经元个数
     private final int sensoryNerveNub;//输入神经元个数
     private final int outNerveNub;//输出神经元个数
-    private final boolean encoder;
-    protected Map<Long, List<Double>> features = new HashMap<>();//上一层神经元输入的数值
     protected Map<Long, Matrix> reMatrixFeatures = new HashMap<>();
-    protected double threshold;//此神经元的阈值需要取出
     protected String name;//该神经元所属类型
     protected Matrix featureMatrix;
     protected double E;//模板期望值
@@ -47,23 +43,6 @@ public abstract class Nerve {
         return depth;
     }
 
-    public Map<Integer, Double> getDendrites() {
-        return dendrites;
-    }
-
-
-    public void setDendrites(Map<Integer, Double> dendrites) {
-        this.dendrites = dendrites;
-    }
-
-    public double getThreshold() {
-        return threshold;
-    }
-
-    public void setThreshold(double threshold) {
-        this.threshold = threshold;
-    }
-
     public void setBeforeLayNorm(LayNorm beforeLayNorm) {
         this.beforeLayNorm = beforeLayNorm;
     }
@@ -73,10 +52,9 @@ public abstract class Nerve {
     }
 
     protected Nerve(int id, String name, double studyPoint, ActiveFunction activeFunction, int sensoryNerveNub,
-                    int hiddenNerveNub, int outNerveNub, boolean encoder, LineBlock lineBlock) throws Exception {//该神经元在同层神经元中的编号
+                    int hiddenNerveNub, int outNerveNub, LineBlock lineBlock) throws Exception {//该神经元在同层神经元中的编号
         this.id = id;
         this.lineBlock = lineBlock;
-        this.encoder = encoder;
         this.hiddenNerveNub = hiddenNerveNub;//隐层神经元个数
         this.sensoryNerveNub = sensoryNerveNub;//输入神经元个数
         this.outNerveNub = outNerveNub;//输出神经元个数
@@ -86,10 +64,17 @@ public abstract class Nerve {
         initPower();//生成随机权重
     }
 
-    protected void setStudyPoint(double studyPoint) {
-        this.studyPoint = studyPoint;
+    public double[][] getModel() {
+        return powerMatrix.getMatrix();
     }
 
+    public void insertModel(double[][] modelPower) throws Exception {
+        for (int i = 0; i < powerMatrix.getX(); i++) {
+            for (int j = 0; j < powerMatrix.getY(); j++) {
+                powerMatrix.setNub(i, j, modelPower[i][j]);
+            }
+        }
+    }
 
     protected void sendMessage(long eventId, Matrix parameter, boolean isStudy, Matrix allFeature, OutBack outBack,
                                List<Integer> E, Matrix encoderFeature) throws Exception {
@@ -208,19 +193,6 @@ public abstract class Nerve {
         return sigma;
     }
 
-    protected double calculation(long eventId) throws Exception {//计算当前输出结果
-        double sigma = 0;
-        List<Double> featuresList = features.get(eventId);
-        if (dendrites.size() != featuresList.size()) {
-            throw new Exception("隐层参数数量与权重数量不一致");
-        }
-        for (int i = 0; i < featuresList.size(); i++) {
-            double value = featuresList.get(i);
-            double w = dendrites.get(i + 1);//当value不为0的时候把w取出来
-            sigma = w * value + sigma;
-        }
-        return sigma - threshold;
-    }
 
     private void initPower() throws Exception {//初始化权重及阈值
         Random random = new Random();
@@ -235,14 +207,12 @@ public abstract class Nerve {
         if (myUpNumber > 0) {//输入个数
             powerMatrix = new Matrix(myUpNumber + 1, 1);
             double sh = Math.sqrt(myUpNumber);
-            for (int i = 1; i < myUpNumber + 1; i++) {
+            for (int i = 0; i < myUpNumber; i++) {
                 double nub = random.nextDouble() / sh;
-                dendrites.put(i, nub);//random.nextDouble()
-                powerMatrix.setNub(i - 1, 0, nub);
+                powerMatrix.setNub(i, 0, nub);
             }
             //生成随机阈值
-            threshold = random.nextDouble() / sh;
-            powerMatrix.setNub(myUpNumber, 0, threshold);
+            powerMatrix.setNub(myUpNumber, 0, random.nextDouble() / sh);
         }
     }
 

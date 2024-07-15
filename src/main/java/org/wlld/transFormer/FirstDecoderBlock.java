@@ -2,6 +2,7 @@ package org.wlld.transFormer;
 
 import org.wlld.i.OutBack;
 import org.wlld.matrixTools.Matrix;
+import org.wlld.transFormer.model.FirstDecoderModel;
 import org.wlld.transFormer.seflAttention.LayNorm;
 import org.wlld.transFormer.seflAttention.MultiSelfAttention;
 
@@ -27,6 +28,18 @@ public class FirstDecoderBlock {//解码器模块
         multiSelfAttention.setLayNorm(attentionLayNorm);
         attentionLayNorm.setMultiSelfAttention(multiSelfAttention);
         this.codecBlock = codecBlock;
+    }
+
+    public FirstDecoderModel getModel() {
+        FirstDecoderModel firstDecoderModel = new FirstDecoderModel();
+        firstDecoderModel.setMultiSelfAttentionModel(multiSelfAttention.getModel());
+        firstDecoderModel.setAttentionLayNormModel(attentionLayNorm.getModel());
+        return firstDecoderModel;
+    }
+
+    public void insertModel(FirstDecoderModel firstDecoderModel) throws Exception {
+        multiSelfAttention.insertModel(firstDecoderModel.getMultiSelfAttentionModel());
+        attentionLayNorm.insertModel(firstDecoderModel.getAttentionLayNormModel());
     }
 
     public void backError(long eventID, Matrix error) throws Exception {

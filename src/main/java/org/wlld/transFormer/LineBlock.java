@@ -4,6 +4,7 @@ import org.wlld.function.Tanh;
 import org.wlld.i.OutBack;
 import org.wlld.matrixTools.Matrix;
 import org.wlld.matrixTools.MatrixOperation;
+import org.wlld.transFormer.model.LineBlockModel;
 import org.wlld.transFormer.nerve.HiddenNerve;
 import org.wlld.transFormer.nerve.Nerve;
 import org.wlld.transFormer.nerve.OutNerve;
@@ -20,6 +21,32 @@ public class LineBlock {//线性层模块
     private final int featureDimension;
     private int backNumber = 0;//误差返回次数
 
+    public LineBlockModel getModel() {
+        LineBlockModel lineBlockModel = new LineBlockModel();
+        List<double[][]> hiddenNerveModel = new ArrayList<>();
+        List<double[][]> outNerveModel = new ArrayList<>();
+        for (HiddenNerve hiddenNerve : hiddenNerveList) {
+            hiddenNerveModel.add(hiddenNerve.getModel());
+        }
+        for (OutNerve outNerve : outNerveList) {
+            outNerveModel.add(outNerve.getModel());
+        }
+        lineBlockModel.setHiddenNervesModel(hiddenNerveModel);
+        lineBlockModel.setOutNervesModel(outNerveModel);
+        return lineBlockModel;
+    }
+
+    public void insertModel(LineBlockModel lineBlockModel) throws Exception {
+        List<double[][]> hiddenNerveModel = lineBlockModel.getHiddenNervesModel();
+        List<double[][]> outNerveModel = lineBlockModel.getOutNervesModel();
+        for (int i = 0; i < hiddenNerveList.size(); i++) {
+            hiddenNerveList.get(i).insertModel(hiddenNerveModel.get(i));
+        }
+        for (int i = 0; i < outNerveList.size(); i++) {
+            outNerveList.get(i).insertModel(outNerveModel.get(i));
+        }
+    }
+
     public LineBlock(int typeNumber, int featureDimension, double studyPoint, CodecBlock lastCodecBlock, boolean showLog) throws Exception {
         this.featureDimension = featureDimension;
         this.lastCodecBlock = lastCodecBlock;
@@ -28,7 +55,7 @@ public class LineBlock {//线性层模块
         List<Nerve> hiddenNerves = new ArrayList<>();
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve = new HiddenNerve(i + 1, 1, studyPoint, new Tanh(), featureDimension,
-                    typeNumber, false, this);
+                    typeNumber, this);
             hiddenNerves.add(hiddenNerve);
             hiddenNerveList.add(hiddenNerve);
         }

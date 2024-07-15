@@ -1,4 +1,4 @@
-package org.wlld.transFormer.seflAttention;
+package org.wlld.transFormer.model;
 
 public class QKVModel {
     private double[][] Q;

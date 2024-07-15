@@ -2,6 +2,7 @@ package org.wlld.transFormer.seflAttention;
 
 import org.wlld.matrixTools.Matrix;
 import org.wlld.matrixTools.MatrixOperation;
+import org.wlld.transFormer.model.QKVModel;
 
 import java.util.HashMap;
 import java.util.Map;

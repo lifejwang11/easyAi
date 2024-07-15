@@ -1,6 +1,7 @@
 package org.wlld.transFormer;
 
-import org.wlld.naturalLanguage.word.WordEmbedding;
+import org.wlld.transFormer.model.CodecBlockModel;
+import org.wlld.transFormer.model.TransFormerModel;
 import org.wlld.transFormer.nerve.SensoryNerve;
 
 import java.util.ArrayList;
@@ -15,6 +16,32 @@ public class TransFormerManager {
 
     public SensoryNerve getSensoryNerve() {
         return sensoryNerve;
+    }
+
+    public TransFormerModel getModel() {
+        TransFormerModel transFormerModel = new TransFormerModel();
+        List<CodecBlockModel> encoderBlockModels = new ArrayList<>();
+        List<CodecBlockModel> decoderBlockModels = new ArrayList<>();
+        for (int i = 0; i < encoderBlocks.size(); i++) {
+            encoderBlockModels.add(encoderBlocks.get(i).getModel());
+            decoderBlockModels.add(decoderBlocks.get(i).getModel());
+        }
+        transFormerModel.setEncoderBlockModels(encoderBlockModels);
+        transFormerModel.setDecoderBlockModels(decoderBlockModels);
+        transFormerModel.setFirstDecoderBlockModel(firstDecoderBlock.getModel());
+        transFormerModel.setLineBlockModel(lineBlock.getModel());
+        return transFormerModel;
+    }
+
+    public void insertModel(TransFormerModel transFormerModel) throws Exception {
+        List<CodecBlockModel> encoderBlockModels = transFormerModel.getEncoderBlockModels();
+        List<CodecBlockModel> decoderBlockModels = transFormerModel.getDecoderBlockModels();
+        for (int i = 0; i < encoderBlocks.size(); i++) {
+            encoderBlocks.get(i).insertModel(encoderBlockModels.get(i));
+            decoderBlocks.get(i).insertModel(decoderBlockModels.get(i));
+        }
+        firstDecoderBlock.insertModel(transFormerModel.getFirstDecoderBlockModel());
+        lineBlock.insertModel(transFormerModel.getLineBlockModel());
     }
 
     /**

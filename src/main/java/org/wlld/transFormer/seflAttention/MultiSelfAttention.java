@@ -3,9 +3,9 @@ package org.wlld.transFormer.seflAttention;
 import org.wlld.matrixTools.Matrix;
 import org.wlld.matrixTools.MatrixOperation;
 import org.wlld.i.OutBack;
-import org.wlld.tools.Frequency;
 import org.wlld.transFormer.CodecBlock;
-import org.wlld.transFormer.nerve.HiddenNerve;
+import org.wlld.transFormer.model.MultiSelfAttentionModel;
+import org.wlld.transFormer.model.QKVModel;
 
 import java.util.*;
 

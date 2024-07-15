@@ -21,9 +21,9 @@ import java.util.Map;
 public class HiddenNerve extends Nerve {
 
     public HiddenNerve(int id, int depth, double studyPoint, ActiveFunction activeFunction, int sensoryNerveNub,
-                       int outNerveNub, boolean isEncoder, LineBlock lineBlock) throws Exception {//隐层神经元
+                       int outNerveNub, LineBlock lineBlock) throws Exception {//隐层神经元
         super(id, "HiddenNerve", studyPoint, activeFunction, sensoryNerveNub, 0,
-                outNerveNub, isEncoder, lineBlock);
+                outNerveNub, lineBlock);
         this.depth = depth;
     }
 
@@ -41,7 +41,7 @@ public class HiddenNerve extends Nerve {
     protected void input(long eventId, Matrix parameter, boolean isStudy, Matrix allFeature, OutBack outBack,
                          List<Integer> E, Matrix encoderFeature) throws Exception {//第二层收到参数
         boolean allReady = insertMatrixParameter(eventId, parameter);
-        if (allReady) {//参数齐了，开始计算 sigma - threshold
+        if (allReady) {//参数齐了，开始计算
             Matrix out = opMatrix(reMatrixFeatures.get(eventId), isStudy);
             reMatrixFeatures.remove(eventId);
             beforeLayNorm.addNormFromNerve(eventId, isStudy, out, allFeature, outBack, E, encoderFeature);

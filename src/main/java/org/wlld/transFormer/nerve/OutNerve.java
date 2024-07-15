@@ -18,7 +18,7 @@ public class OutNerve extends Nerve {
 
     public OutNerve(int id, double studyPoint, int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, SoftMax softMax) throws Exception {
         super(id, "OutNerve", studyPoint, null, sensoryNerveNub,
-                hiddenNerveNub, outNerveNub, false, null);
+                hiddenNerveNub, outNerveNub, null);
         this.softMax = softMax;
     }
 

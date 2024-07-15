@@ -5,6 +5,7 @@ import org.wlld.matrixTools.Matrix;
 import org.wlld.matrixTools.MatrixOperation;
 import org.wlld.transFormer.CodecBlock;
 import org.wlld.transFormer.FirstDecoderBlock;
+import org.wlld.transFormer.model.LayNormModel;
 import org.wlld.transFormer.nerve.HiddenNerve;
 
 import java.util.HashMap;
@@ -17,15 +18,35 @@ public class LayNorm {//残差与归一化
     private final CodecBlock myEncoderBlock;
     private final int featureDimension;//特征维度
     private List<HiddenNerve> hiddenNerves;//第一层隐层
-    private final int type;//类别层
+    private final int type;//类别层模型需要保存
     private final Map<Long, Matrix> reMatrixMap = new HashMap<>();
     private final FirstDecoderBlock firstDecoderBlock;
-    private Matrix bTa;
-    private Matrix power;
+    private Matrix bTa;//模型需要保存
+    private Matrix power;//模型需要保存
     private Matrix myNormData;//第一步归一化后的数据
     private final double study;//学习率
     private Matrix myFinalError;//从FNN传来的总误差
     private int number;//记录fnn传来的误差次数
+
+    public LayNormModel getModel() {
+        LayNormModel layNormModel = new LayNormModel();
+        layNormModel.setbTa(bTa.getMatrix());
+        layNormModel.setPower(power.getMatrix());
+        return layNormModel;
+    }
+
+    public void insertModel(LayNormModel layNormModel) throws Exception {
+        insertPower(layNormModel.getPower(), power);
+        insertPower(layNormModel.getbTa(), bTa);
+    }
+
+    private void insertPower(double[][] modelPower, Matrix power) throws Exception {
+        for (int i = 0; i < power.getX(); i++) {
+            for (int j = 0; j < power.getY(); j++) {
+                power.setNub(i, j, modelPower[i][j]);
+            }
+        }
+    }
 
     public LayNorm(int type, int featureDimension, CodecBlock myEncoderBlock, FirstDecoderBlock firstDecoderBlock
             , double study) throws Exception {
