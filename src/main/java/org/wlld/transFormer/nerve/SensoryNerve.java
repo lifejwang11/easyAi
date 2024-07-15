@@ -25,16 +25,17 @@ public class SensoryNerve {
     }
 
     /**
-     * @param eventId   唯一的事件id
-     * @param parameter 输入点的数据
-     * @param isStudy   是否是学习 (学习状态没有输出)
-     * @param E         标注
-     * @param outBack   回调结果
+     * @param eventId          唯一的事件id
+     * @param encoderParameter 编码器输入特征
+     * @param decoderParameter 解码器输入特征
+     * @param isStudy          是否是学习 (学习状态没有输出)
+     * @param E                标注
+     * @param outBack          回调结果
      */
-    public void postMessage(long eventId, Matrix parameter, boolean isStudy, List<Integer> E
+    public void postMessage(long eventId, Matrix encoderParameter, Matrix decoderParameter, boolean isStudy, List<Integer> E
             , OutBack outBack) throws Exception {//感知神经元输入
-        firstEncoderBlock.sendInputMatrix(eventId, parameter, isStudy, outBack, E, null);
-        firstDecoderBlock.sendInputMatrix(eventId, parameter, isStudy, outBack, E);
+        firstEncoderBlock.sendInputMatrix(eventId, encoderParameter, isStudy, outBack, E, null);
+        firstDecoderBlock.sendInputMatrix(eventId, decoderParameter, isStudy, outBack, E);
     }
 
 }
