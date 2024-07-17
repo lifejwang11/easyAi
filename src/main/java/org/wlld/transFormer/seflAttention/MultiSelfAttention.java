@@ -215,12 +215,11 @@ public class MultiSelfAttention {//多头自注意力层
             selfAttentions.add(selfAttention);
         }
         powerMatrix = new Matrix(yiZhi, wordVectorDimension);
-        double myYiZhi = Math.sqrt(yiZhi);
         int x = powerMatrix.getX();
         int y = powerMatrix.getY();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                powerMatrix.setNub(i, j, random.nextDouble() / myYiZhi);
+                powerMatrix.setNub(i, j, random.nextDouble() / yiZhi);
             }
         }
     }

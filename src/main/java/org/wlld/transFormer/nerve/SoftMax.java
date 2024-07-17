@@ -32,7 +32,8 @@ public class SoftMax extends Nerve {
                 }
                 Matrix allError = null;
                 for (int i = 0; i < x; i++) {
-                    Mes mes = softMax(eventId, true, feature.getRow(i));//输出值
+                    Matrix row = feature.getRow(i);
+                    Mes mes = softMax(true, row);//输出值
                     int key = E.get(i);
                     if (isShowLog) {
                         System.out.println("softMax==" + key + ",out==" + mes.poi + ",nerveId==" + mes.typeID);
@@ -51,7 +52,7 @@ public class SoftMax extends Nerve {
                 }
             } else {
                 if (outBack != null) {
-                    Mes mes = softMax(eventId, false, feature.getRow(x - 1));//输出值
+                    Mes mes = softMax(false, feature.getRow(x - 1));//输出值
                     outBack.getBack(mes.poi, mes.typeID, eventId);
                 } else {
                     throw new Exception("not find outBack");
@@ -77,7 +78,7 @@ public class SoftMax extends Nerve {
         return matrix;
     }
 
-    private Mes softMax(long eventId, boolean isStudy, Matrix matrix) throws Exception {//计算当前输出结果
+    private Mes softMax(boolean isStudy, Matrix matrix) throws Exception {//计算当前输出结果
         double sigma = 0;
         int id = 0;
         double poi = 0;

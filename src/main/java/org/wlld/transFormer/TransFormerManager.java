@@ -1,5 +1,6 @@
 package org.wlld.transFormer;
 
+import org.wlld.config.TfConfig;
 import org.wlld.transFormer.model.CodecBlockModel;
 import org.wlld.transFormer.model.TransFormerModel;
 import org.wlld.transFormer.nerve.SensoryNerve;
@@ -47,13 +48,17 @@ public class TransFormerManager {
     /**
      * 初始化神经元参数
      *
-     * @param featureDimension 特征维度
-     * @param allDepth         网络深度
-     * @param maxLength        序列最大长度
+     * @param tfConfig 配置参数
      * @throws Exception 如果参数错误则抛异常
      */
-    public TransFormerManager(int maxLength, int multiNumber, int featureDimension, int allDepth, double studyPoint,
-                              int typeNumber, boolean showLog) throws Exception {
+    public TransFormerManager(TfConfig tfConfig) throws Exception {
+        int maxLength = tfConfig.getMaxLength();
+        int multiNumber = tfConfig.getMultiNumber();
+        int featureDimension = tfConfig.getFeatureDimension();
+        int allDepth = tfConfig.getAllDepth();
+        double studyPoint = tfConfig.getStudyPoint();
+        int typeNumber = tfConfig.getTypeNumber();
+        boolean showLog = tfConfig.isShowLog();
         if (multiNumber > 1 && featureDimension > 0 && allDepth > 0 && typeNumber > 1) {
             for (int i = 0; i < allDepth; i++) {
                 CodecBlock encoderBlock = new CodecBlock(maxLength, multiNumber, featureDimension, studyPoint, i + 1, true);
@@ -75,7 +80,7 @@ public class TransFormerManager {
             decoderBlocks.get(0).setFirstDecoderBlock(firstDecoderBlock);
             sensoryNerve = new SensoryNerve(encoderBlocks.get(0), firstDecoderBlock);
         } else {
-            throw new Exception("param is null");
+            throw new Exception("param is null,typeNumber:" + typeNumber + ",featureDimension:" + featureDimension);
         }
     }
 

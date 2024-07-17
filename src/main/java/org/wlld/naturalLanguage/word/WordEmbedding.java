@@ -36,6 +36,10 @@ public class WordEmbedding {
         this.config = config;
     }
 
+    public int getWordVectorDimension() {
+        return wordVectorDimension;
+    }
+
     public void init(SentenceModel sentenceModel, int wordVectorDimension) throws Exception {
         this.wordVectorDimension = wordVectorDimension;
         this.sentenceModel = sentenceModel;
