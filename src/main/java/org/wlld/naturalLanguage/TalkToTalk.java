@@ -19,7 +19,6 @@ public class TalkToTalk {
     private final int maxLength;
     private final int times;
     private TransFormerManager transFormerManager;
-    private int wordVectorDimension;
 
     public TalkToTalk(WordEmbedding wordEmbedding, TfConfig tfConfig) throws Exception {
         this.wordEmbedding = wordEmbedding;
@@ -32,7 +31,7 @@ public class TalkToTalk {
     }
 
     public void init() throws Exception {
-        wordVectorDimension = wordEmbedding.getWordVectorDimension();
+        int wordVectorDimension = wordEmbedding.getWordVectorDimension();
         tfConfig.setFeatureDimension(wordVectorDimension);
         tfConfig.setTypeNumber(wordEmbedding.getWordList().size() + 2);
         transFormerManager = new TransFormerManager(tfConfig);
@@ -101,7 +100,6 @@ public class TalkToTalk {
             int index = 0;
             for (TalkBody talkBody : talkBodies) {
                 index++;
-                System.out.println("训练语句下标:" + index + ",总数量:" + size + ",当前次数：" + k + ",总次数:" + times);
                 String question = talkBody.getQuestion();
                 String answer = talkBody.getAnswer();
                 if (question.length() > maxLength) {
@@ -110,6 +108,7 @@ public class TalkToTalk {
                 if (answer.length() > maxLength) {
                     answer = answer.substring(0, maxLength);
                 }
+                System.out.println("问题:"+question+", 回答:" + answer + ",训练语句下标:" + index + ",总数量:" + size + ",当前次数：" + k + ",总次数:" + times);
                 Matrix qMatrix = wordEmbedding.getEmbedding(question, 1).getFeatureMatrix();
                 Matrix aMatrix = wordEmbedding.getEmbedding(answer, 2).getFeatureMatrix();
                 Matrix myAnswer = insertZero(aMatrix, getMyAvg(qMatrix));//第一行补0

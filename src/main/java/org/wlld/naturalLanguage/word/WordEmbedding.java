@@ -31,8 +31,10 @@ public class WordEmbedding {
     private final List<String> wordList = new ArrayList<>();//单字集合
     private SentenceConfig config;
     private int wordVectorDimension;
+    private int times;
 
     public void setConfig(SentenceConfig config) {
+        times = config.getTimes();
         this.config = config;
     }
 
@@ -108,16 +110,18 @@ public class WordEmbedding {
     public WordTwoVectorModel start() throws Exception {//开始进行词向量训练
         List<String> sentenceList = sentenceModel.getSentenceList();
         int size = sentenceList.size();
-        int index = 0;
         System.out.println("词嵌入训练启动...");
-        for (int i = index; i < size; i++) {
-            long start = System.currentTimeMillis();
-            study(sentenceList.get(i));
-            long end = System.currentTimeMillis() - start;
-            index++;
-            double r = (index / (double) size) * 100;
-            String result = String.format("%.6f", r);
-            System.out.println("size:" + size + ",index:" + index + ",耗时:" + end + ",完成度:" + result + "%");
+        for (int t = 0; t < times; t++) {
+            int index = 0;
+            for (int i = index; i < size; i++) {
+                long start = System.currentTimeMillis();
+                study(sentenceList.get(i));
+                long end = System.currentTimeMillis() - start;
+                index++;
+                double r = ((index * (t + 1)) / (double) (size * times)) * 100;
+                String result = String.format("%.6f", r);
+                System.out.println("size:" + size + ",index:" + index + ",耗时:" + end + ",完成度:" + result + "%");
+            }
         }
         WordTwoVectorModel wordTwoVectorModel = new WordTwoVectorModel();
         wordTwoVectorModel.setModelParameter(nerveManager.getModelParameter());

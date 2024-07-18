@@ -57,20 +57,6 @@ public class SelfAttention {//自注意力层
         return qkvModel;
     }
 
-    private Matrix margeFeature(Matrix matrixFirst, Matrix matrixSecond) throws Exception {//合并前后特征
-        Matrix feature = new Matrix(matrixFirst.getX() + matrixSecond.getX(), wordVectorDimension);
-        for (int i = 0; i < feature.getX(); i++) {
-            for (int j = 0; j < feature.getY(); j++) {
-                if (i == 0) {
-                    feature.setNub(i, j, matrixFirst.getNumber(0, j));
-                } else {
-                    feature.setNub(i, j, matrixSecond.getNumber(i - 1, j));
-                }
-            }
-        }
-        return feature;
-    }
-
 
     public AttentionError backError(Matrix feature, long eventID) throws Exception {//返回误差
         MyFeature featureBody = this.featureMatrix.get(eventID);
