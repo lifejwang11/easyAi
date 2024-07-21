@@ -53,10 +53,26 @@ public class TalkToTalk {
         return matrix;
     }
 
+    private Matrix addTimeCode(Matrix feature) throws Exception {//添加时间编码
+        double timeStep = 1D / maxLength;
+        int x = feature.getX();
+        int y = feature.getY();
+        Matrix matrix = new Matrix(x, y);
+        for (int i = 1; i < x; i++) {
+            double step = i * timeStep;
+            for (int j = 0; j < y; j++) {
+                double value = feature.getNumber(i, j) + step;
+                matrix.setNub(i, j, value);
+            }
+        }
+        return matrix;
+    }
+
     private Matrix getMyAvg(Matrix feature) throws Exception {
-        Matrix myFeature = new Matrix(1, feature.getY());
-        for (int j = 0; j < feature.getY(); j++) {
-            Matrix col = feature.getColumn(j);
+        Matrix matrix = addTimeCode(feature);
+        Matrix myFeature = new Matrix(1, matrix.getY());
+        for (int j = 0; j < matrix.getY(); j++) {
+            Matrix col = matrix.getColumn(j);
             double value = col.getAVG();
             myFeature.setNub(0, j, value);
         }
@@ -108,7 +124,7 @@ public class TalkToTalk {
                 if (answer.length() > maxLength) {
                     answer = answer.substring(0, maxLength);
                 }
-                System.out.println("问题:"+question+", 回答:" + answer + ",训练语句下标:" + index + ",总数量:" + size + ",当前次数：" + k + ",总次数:" + times);
+                System.out.println("问题:" + question + ", 回答:" + answer + ",训练语句下标:" + index + ",总数量:" + size + ",当前次数：" + k + ",总次数:" + times);
                 Matrix qMatrix = wordEmbedding.getEmbedding(question, 1).getFeatureMatrix();
                 Matrix aMatrix = wordEmbedding.getEmbedding(answer, 2).getFeatureMatrix();
                 Matrix myAnswer = insertZero(aMatrix, getMyAvg(qMatrix));//第一行补0
