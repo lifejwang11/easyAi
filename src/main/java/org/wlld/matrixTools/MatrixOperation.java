@@ -16,7 +16,7 @@ public class MatrixOperation {
         }
         return list;
     }
-
+    //重点
     public static Matrix add(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相加
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
             Matrix matrix = new Matrix(matrix1.getX(), matrix1.getY());
@@ -33,7 +33,7 @@ public class MatrixOperation {
         }
     }
 
-    //矩阵相减
+    //矩阵相减 重点
     public static Matrix sub(Matrix matrix1, Matrix matrix2) throws Exception {//
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
             Matrix matrix = new Matrix(matrix1.getX(), matrix1.getY());
@@ -431,7 +431,7 @@ public class MatrixOperation {
         }
         return matrix;
     }
-
+    //重点
     public static double getSdByMatrix(Matrix m, double avg, double e) throws Exception {//计算矩阵元素的标准差
         double var = 0;
         double size = m.getX() * m.getY();
@@ -442,7 +442,7 @@ public class MatrixOperation {
         }
         return Math.sqrt(var / size + e);
     }
-
+    //重重点
     public static Matrix mulMatrix(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘
         if (matrix1.getY() == matrix2.getX()) {
             Matrix matrix = new Matrix(matrix1.getX(), matrix2.getY());
@@ -467,7 +467,7 @@ public class MatrixOperation {
             throw new Exception("row is not equals column");
         }
     }
-
+    //重点
     public static void mathMul(Matrix matrix, double nub) throws Exception {//矩阵数乘
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
@@ -475,7 +475,7 @@ public class MatrixOperation {
             }
         }
     }
-
+    //重点
     public static void mathAdd(Matrix matrix, double nub) throws Exception {//矩阵数加
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
@@ -483,7 +483,7 @@ public class MatrixOperation {
             }
         }
     }
-
+    //重点
     public static void mathSub(Matrix matrix, double nub) throws Exception {//矩阵数减
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
@@ -491,7 +491,7 @@ public class MatrixOperation {
             }
         }
     }
-
+   //重点
     public static void mathDiv(Matrix matrix, double nub) throws Exception {//矩阵数除
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
@@ -554,7 +554,7 @@ public class MatrixOperation {
         }
         // matrix.setNub(index, y - 1, 1);
     }
-
+    //重重点
     public static Matrix im2col(Matrix matrix, int kernLen, int step) throws Exception {//卷积拉平
         int ySize = kernLen * kernLen;
         int x = matrix.getX();
@@ -570,7 +570,7 @@ public class MatrixOperation {
         }
         return myMatrix;
     }
-
+     //重重点
     public static Matrix reverseIm2col(Matrix matrix, int kernLen, int step, int xSize, int ySize) throws Exception {//逆向im2col
         int col = matrix.getY();//核长
         int row = matrix.getX();
