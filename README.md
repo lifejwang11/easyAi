@@ -54,9 +54,9 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * 本软件永久免费商业使用，但作者已拥有本软件相关的知识产权，任何个人与集体不可擅自申请本软件内的技术与代码的知识产权。
 * 目前easyAI只有微信交流群，QQ交流群已经不再拉新，凡是QQ交流群拉进去的，都不是我的群！大家注意！！
 
-### github同步链接
+### gitCode同步链接
 
-https://github.com/lifejwang11/easyAi
+https://gitcode.com/dromara/EasyAi/overview
 
 ## 部署
 * 从Gitee下载项目，打成JAR包后手动引入本地Maven库即可。
