@@ -20,7 +20,7 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * sayOrder是依赖EasyAi进行封装的人工智能客服系统。
 * 它可以分析用户输入的语义，来识别用户的行为，并通过typeID来区分用户意图ID。并通过捕捉其后台设置的关键词类别，来抓出系统关心的用户在语句中包含的内容，比如语句中的时间，地点等。
 * 它还可以与用户自主进行问答交互，进行自主解答疑问或者进行其余意图的交流等。
-* 项目链接地址: <https://gitee.com/dromara/sayOrder>
+* 项目链接地址: <https://gitcode.com/dromara/sayOrder/overview>
 * sayOrder管理后台登录
 <div align=center> <img src="zf/index.png"></div>
 
@@ -54,9 +54,9 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * 本软件永久免费商业使用，但作者已拥有本软件相关的知识产权，任何个人与集体不可擅自申请本软件内的技术与代码的知识产权。
 * 目前easyAI只有微信交流群，QQ交流群已经不再拉新，凡是QQ交流群拉进去的，都不是我的群！大家注意！！
 
-### github同步链接
+### gitCode同步链接
 
-https://github.com/lifejwang11/easyAi
+https://gitcode.com/dromara/EasyAi/overview
 
 ## 部署
 * 从Gitee下载项目，打成JAR包后手动引入本地Maven库即可。
