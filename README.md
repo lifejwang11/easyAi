@@ -1,4 +1,6 @@
-<div align=center> <img src="zf/EasyAi.png" width="220" height="220"></div>
+<div align=center> <img src="zf/EasyAi.png" width="220" height="220">
+<h1>如果您觉得有帮助，请点右上角 "Star" 支持一下，谢谢！</h1>
+</div>
 
 # 前言
 EasyAi对于Java的用处，等同于在JavaWeb领域spring的意义一样——做一个开箱即用，让每一个开发者都可以使用EasyAi，来开发符合自己人工智能业务需求的小微模型，这就是它的使命！
