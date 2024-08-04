@@ -261,7 +261,7 @@ public abstract class Nerve {
             double w = entry.getValue();//接收到编号为KEY的上层隐层神经元的权重
             double bn = list.get(key - 1);//接收到编号为KEY的上层隐层神经元的输入
             double wp = bn * h;
-            double dm = w * h;
+            double dm = w * gradient;
             double regular = regularization(w, param);//正则化抑制权重s
             w = w + regular;
             w = w + wp;
