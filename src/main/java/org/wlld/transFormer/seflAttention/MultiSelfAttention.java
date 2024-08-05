@@ -95,10 +95,9 @@ public class MultiSelfAttention {//多头自注意力层
     }
 
     public void backError(Matrix allErrorMatrix, long eventID) throws Exception {
-        Matrix fMatrix = allErrorMatrix.copy();//复制一份误差矩阵
-        MatrixOperation.mathMul(allErrorMatrix, studyPoint);
+        Matrix error = MatrixOperation.mathMulBySelf(allErrorMatrix, studyPoint);
         //求多头自注意力层权重矩阵的偏导矩阵
-        Matrix subPower = MatrixOperation.matrixMulPd(allErrorMatrix, featureMatrix, powerMatrix, false);
+        Matrix subPower = MatrixOperation.matrixMulPd(error, featureMatrix, powerMatrix, false);
         Matrix subFeature = MatrixOperation.matrixMulPd(allErrorMatrix, featureMatrix, powerMatrix, true);
         powerMatrix = MatrixOperation.add(powerMatrix, subPower);//更新权重矩阵
         List<Matrix> matrixList = splitMatrix(subFeature);//拆分矩阵
@@ -125,7 +124,7 @@ public class MultiSelfAttention {//多头自注意力层
             codecBlock.backLastEncoderError(allLastEncoderError);
         }
         if (codecBlock != null) {
-            codecBlock.backCodecError(allNextFeatureError, eventID, fMatrix);//将下层误差发送
+            codecBlock.backCodecError(allNextFeatureError, eventID, allErrorMatrix);//将下层误差发送
         }
     }
 

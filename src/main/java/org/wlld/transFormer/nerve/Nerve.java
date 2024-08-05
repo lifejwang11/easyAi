@@ -141,15 +141,15 @@ public abstract class Nerve {
 
 
     protected void updatePower(long eventId, Matrix errorMatrix, Matrix allError) throws Exception {//修改阈值
-        MatrixOperation.mathMul(errorMatrix, studyPoint);
-        Matrix error = updateW(errorMatrix);//更新本神经元参数与返回下层误差
+        Matrix myError = MatrixOperation.mathMulBySelf(errorMatrix, studyPoint);
+        Matrix error = updateW(myError, errorMatrix);//更新本神经元参数与返回下层误差
         sigmaW = null;//求和结果归零
         backSendMessage(eventId, error, allError);
     }
 
 
-    private Matrix updateW(Matrix errorMatrix) throws Exception {//
-        Matrix subFeature = MatrixOperation.matrixMulPd(errorMatrix, featureMatrix, powerMatrix, true);
+    private Matrix updateW(Matrix errorMatrix, Matrix error) throws Exception {//
+        Matrix subFeature = MatrixOperation.matrixMulPd(error, featureMatrix, powerMatrix, true);
         Matrix subPower = MatrixOperation.matrixMulPd(errorMatrix, featureMatrix, powerMatrix, false);
         powerMatrix = MatrixOperation.add(powerMatrix, subPower);//更新权重
         return subFeature;
