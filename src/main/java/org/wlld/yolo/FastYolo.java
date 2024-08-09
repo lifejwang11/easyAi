@@ -82,6 +82,7 @@ public class FastYolo {//yolo
             typeModel.setTypeID(typeBody.getTypeID());
             typeModel.setMappingID(typeBody.getMappingID());
             typeModel.setMinHeight(typeBody.getMinHeight());
+            typeModel.setMinWidth(typeBody.getMinWidth());
             typeModel.setMaxWidth(typeBody.getMaxWidth());
             typeModel.setMaxHeight(typeBody.getMaxHeight());
             typeModel.setPositionModel(typeBody.getPositonNerveManager().getConvModel());
