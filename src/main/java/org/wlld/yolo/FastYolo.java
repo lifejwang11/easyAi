@@ -31,7 +31,7 @@ public class FastYolo {//yolo
         heightStep = (int) (winHeight * stepReduce);
         if (stepReduce <= 1 && widthStep > 0 && heightStep > 0) {
             typeNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), yoloConfig.getTypeNub() + 1,
-                    1, new ReLu(), yoloConfig.getLineStudy(), RZ.NOT_RZ, 0);
+                    1, new ReLu(), yoloConfig.getLineStudy(), RZ.L1, yoloConfig.getLineStudy() * yoloConfig.getRegular());
             typeNerveManager.initImageNet(2, yoloConfig.getKernelSize(), winHeight, winWidth,
                     true, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu());
         } else {
