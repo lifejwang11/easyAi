@@ -23,7 +23,7 @@ public class FastYolo {//yolo
     private final int heightStep;
 
     public FastYolo(YoloConfig yoloConfig) throws Exception {
-        double stepReduce = yoloConfig.getStepReduce();
+        double stepReduce = yoloConfig.getCheckStepReduce();
         this.yoloConfig = yoloConfig;
         winHeight = yoloConfig.getWindowHeight();
         winWidth = yoloConfig.getWindowWidth();
@@ -261,8 +261,14 @@ public class FastYolo {//yolo
         NMS nms = new NMS(yoloConfig.getIouTh());
         ThreeChannelMatrix pic = picture.getThreeMatrix(url);
         List<YoloMessage> yoloMessageList = new ArrayList<>();
-        for (int i = 0; i <= pic.getX() - winHeight; i += winHeight / 4) {
-            for (int j = 0; j <= pic.getY() - winWidth; j += winWidth / 4) {
+        double stepReduce = yoloConfig.getStepReduce();
+        int stepX = (int) (winHeight * stepReduce);
+        int stepY = (int) (winWidth * stepReduce);
+        if (stepX < 1 || stepY < 1) {
+            throw new Exception("训练步长收缩后步长必须大于0");
+        }
+        for (int i = 0; i <= pic.getX() - winHeight; i += stepX) {
+            for (int j = 0; j <= pic.getY() - winWidth; j += stepY) {
                 Box testBox = new Box();
                 testBox.setX(i);
                 testBox.setY(j);

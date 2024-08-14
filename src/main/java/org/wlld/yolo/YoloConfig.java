@@ -9,11 +9,13 @@ public class YoloConfig {
     private int kernelSize = 3;//卷积核尺寸
     private boolean showLog = false;//是否打印学习过程中的log
     private double convStudy = 0.01;//卷积层学习率
-    private int enhance = 800;//数据增强
+    private int enhance = 1;//数据增强
     private double iouTh = 0.05;//合并框交并比阈值
     private double containIouTh = 0.15;//是否包含样本交并比阈值
     private double pth = 0.4;//可信概率阈值
-    private double stepReduce = 0.25;//检测步长收缩系数
+    private double stepReduce = 0.25;//训练步长收缩系数
+    private double checkStepReduce = 0.5;//检测步长收缩系数
+    private double regular = 0;//正则系数
 
     public double getStepReduce() {
         return stepReduce;
@@ -21,6 +23,22 @@ public class YoloConfig {
 
     public void setStepReduce(double stepReduce) {
         this.stepReduce = stepReduce;
+    }
+
+    public double getRegular() {
+        return regular;
+    }
+
+    public void setRegular(double regular) {
+        this.regular = regular;
+    }
+
+    public double getCheckStepReduce() {
+        return checkStepReduce;
+    }
+
+    public void setCheckStepReduce(double checkStepReduce) {
+        this.checkStepReduce = checkStepReduce;
     }
 
     public double getPth() {

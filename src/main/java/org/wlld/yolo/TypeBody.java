@@ -25,7 +25,7 @@ public class TypeBody {
 
     public TypeBody(YoloConfig yoloConfig, int minWinWidth, int minWinHeight) throws Exception {
         positonNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), 5, 1,
-                new Tanh(), yoloConfig.getLineStudy(), RZ.NOT_RZ, 0);
+                new Tanh(), yoloConfig.getLineStudy(), RZ.L1, yoloConfig.getLineStudy() * yoloConfig.getRegular());
         positonNerveManager.initImageNet(2, yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
                 false, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu());
     }
