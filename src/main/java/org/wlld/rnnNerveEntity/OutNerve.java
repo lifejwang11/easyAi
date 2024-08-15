@@ -91,7 +91,7 @@ public class OutNerve extends Nerve {
             }
         } else {//卷积层输出
             if (outBack != null) {
-                outBack.getBackMatrix(myMatrix, eventId);
+                outBack.getBackMatrix(myMatrix, getId(), eventId);
             } else {
                 throw new Exception("not find outBack");
             }

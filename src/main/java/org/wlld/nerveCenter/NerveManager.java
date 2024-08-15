@@ -213,7 +213,8 @@ public class NerveManager {
         return sensoryNerves;
     }
 
-    private List<Nerve> initConDepthNerve(int step, int kernLen, int conHiddenDepth, ActiveFunction convFunction) throws Exception {//初始化隐层神经元1
+    private List<Nerve> initConDepthNerve(int step, int kernLen, int conHiddenDepth, ActiveFunction convFunction
+            , int id) throws Exception {//初始化隐层神经元1
         List<Nerve> depthNerves = new ArrayList<>();
         for (int i = 0; i < conHiddenDepth; i++) {//遍历深度
             double studyPoint = this.convStudyPoint;
@@ -226,7 +227,7 @@ public class NerveManager {
                 downNub = hiddenNerveNub;
                 isConvFinish = true;
             }
-            HiddenNerve hiddenNerve = new HiddenNerve(1, i + 1, 1, downNub, studyPoint, initPower, convFunction, true
+            HiddenNerve hiddenNerve = new HiddenNerve(id, i + 1, 1, downNub, studyPoint, initPower, convFunction, true
                     , rzType, lParam, step, kernLen, 0, 0, isConvFinish);
             depthNerves.add(hiddenNerve);
         }
@@ -268,17 +269,18 @@ public class NerveManager {
         }
         return x;
     }
+
     /**
      * 初始化卷积层神经网络
      *
-     * @param step 卷积步长 建议为2
-     * @param kernLen 卷积核大小 建议为3
-     * @param xSize 检测窗口行高
-     * @param ySize 检测窗口行宽
+     * @param step           卷积步长 建议为2
+     * @param kernLen        卷积核大小 建议为3
+     * @param xSize          检测窗口行高
+     * @param ySize          检测窗口行宽
      * @param convStudyPoint 卷积层学习率
-     * @param convFunction 卷积层激活函数
-     * @param isShowLog 是否打印学习参数
-     * @param isSoftMax 最后一层是否用softMax激活
+     * @param convFunction   卷积层激活函数
+     * @param isShowLog      是否打印学习参数
+     * @param isSoftMax      最后一层是否用softMax激活
      */
     public void initImageNet(int step, int kernLen, int xSize, int ySize, boolean isSoftMax
             , boolean isShowLog, double convStudyPoint, ActiveFunction convFunction) throws Exception {
@@ -288,7 +290,7 @@ public class NerveManager {
         List<Nerve> lastNerves = new ArrayList<>();
         sensoryNerveNub = 3;
         for (int i = 0; i < sensoryNerveNub; i++) {
-            List<Nerve> depthNerves = initConDepthNerve(step, kernLen, deep, convFunction);//初始化卷积层隐层
+            List<Nerve> depthNerves = initConDepthNerve(step, kernLen, deep, convFunction, i + 1);//初始化卷积层隐层
             convDepthNerves.add(depthNerves);
             List<Nerve> firstDepthNerves = new ArrayList<>();
             firstDepthNerves.add(depthNerves.get(0));

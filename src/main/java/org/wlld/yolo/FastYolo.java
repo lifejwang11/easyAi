@@ -341,7 +341,7 @@ public class FastYolo {//yolo
                     p = feature.getMatrixB();
                     break;
             }
-            sensoryNerves.get(i).postMatrixMessage(eventID, p, isStudy, E, back);
+            sensoryNerves.get(i).postMatrixMessage(eventID, p, isStudy, E, back, false);
         }
     }
 }

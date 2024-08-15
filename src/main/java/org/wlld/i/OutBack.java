@@ -38,12 +38,13 @@ public interface OutBack {
     void backWord(String word, long eventId);
 
     /**
-     * 回调
+     * 卷积层回调矩阵
      *
      * @param matrix  输出矩阵
      * @param eventId 事件ID
+     * @param id      通道id
      */
-    void getBackMatrix(Matrix matrix, long eventId);
+    void getBackMatrix(Matrix matrix, int id, long eventId);
 
     /**
      * 回调词向量

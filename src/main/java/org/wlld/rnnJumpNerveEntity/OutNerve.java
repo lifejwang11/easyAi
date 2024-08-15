@@ -22,7 +22,7 @@ public class OutNerve extends Nerve {
                     int rzType, double lParam, boolean isSoftMax, int step, int kernLen,
                     int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, int allDepth) throws Exception {
         super(id, "OutNerve", studyPoint, init, activeFunction, isDynamic, rzType, lParam, step, kernLen,
-                sensoryNerveNub, hiddenNerveNub, outNerveNub, allDepth, false,0);
+                sensoryNerveNub, hiddenNerveNub, outNerveNub, allDepth, false, 0);
         this.isShowLog = isShowLog;
         this.isSoftMax = isSoftMax;
     }
@@ -111,7 +111,7 @@ public class OutNerve extends Nerve {
             }
         } else {//卷积层输出
             if (outBack != null) {
-                outBack.getBackMatrix(myMatrix, eventId);
+                outBack.getBackMatrix(myMatrix, getId(), eventId);
             } else {
                 throw new Exception("not find outBack");
             }

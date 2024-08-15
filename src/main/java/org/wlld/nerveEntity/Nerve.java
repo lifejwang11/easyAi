@@ -141,10 +141,10 @@ public abstract class Nerve {
     }
 
     public void sendMatrix(long eventId, Matrix parameter, boolean isStudy,
-                           Map<Integer, Double> E, OutBack outBack) throws Exception {
+                           Map<Integer, Double> E, OutBack outBack, boolean needMatrix) throws Exception {
         if (!son.isEmpty()) {
             for (Nerve nerve : son) {
-                nerve.inputMatrix(eventId, parameter, isStudy, E, outBack);
+                nerve.inputMatrix(eventId, parameter, isStudy, E, outBack, needMatrix);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -191,7 +191,8 @@ public abstract class Nerve {
 
     }
 
-    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy, Map<Integer, Double> E, OutBack outBack) throws Exception {//输入动态矩阵
+    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy, Map<Integer, Double> E,
+                               OutBack outBack, boolean needMatrix) throws Exception {//输入动态矩阵
     }
 
     private void backGetMessage(double parameter, long eventId) throws Exception {//反向传播

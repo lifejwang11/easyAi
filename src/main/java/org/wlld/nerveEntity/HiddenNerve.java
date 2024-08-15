@@ -57,12 +57,15 @@ public class HiddenNerve extends Nerve {
 
     @Override
     protected void inputMatrix(long eventId, Matrix matrix, boolean isStudy
-            , Map<Integer, Double> E, OutBack outBack) throws Exception {
+            , Map<Integer, Double> E, OutBack outBack, boolean needMatrix) throws Exception {
         Matrix myMatrix = conv(matrix);//处理过的矩阵
         if (isConvFinish) {
+            if (!isStudy && needMatrix) {
+                outBack.getBackMatrix(myMatrix, getId(), eventId);
+            }
             sendMatrixList(eventId, MatrixOperation.matrixToList(myMatrix), isStudy, E, outBack);
         } else {
-            sendMatrix(eventId, myMatrix, isStudy, E, outBack);
+            sendMatrix(eventId, myMatrix, isStudy, E, outBack, needMatrix);
         }
     }
 }
