@@ -39,7 +39,7 @@ public class SensoryNerve extends Nerve {
      * @param isKernelStudy 是否是学习 (学习状态没有输出)
      * @param E             标注
      * @param outBack       回调结果
-     * @param justNeedMatrix 仅需要矩阵输出
+     * @param needMatrix 需要矩阵输出
      * @throws Exception
      */
     public void postMatrixMessage(long eventId, Matrix parameter, boolean isKernelStudy
