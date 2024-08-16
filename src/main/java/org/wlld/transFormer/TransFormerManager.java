@@ -59,21 +59,26 @@ public class TransFormerManager {
         double studyPoint = tfConfig.getStudyPoint();
         int typeNumber = tfConfig.getTypeNumber();
         boolean showLog = tfConfig.isShowLog();
+        int regularModel = tfConfig.getRegularModel();
+        double regular = tfConfig.getRegular();
         if (multiNumber > 1 && featureDimension > 0 && allDepth > 0 && typeNumber > 1) {
             for (int i = 0; i < allDepth; i++) {
-                CodecBlock encoderBlock = new CodecBlock(maxLength, multiNumber, featureDimension, studyPoint, i + 1, true);
+                CodecBlock encoderBlock = new CodecBlock(maxLength, multiNumber, featureDimension, studyPoint,
+                        i + 1, true, regularModel, regular);
                 encoderBlocks.add(encoderBlock);
             }
             CodecBlock lastEnCoderBlock = encoderBlocks.get(encoderBlocks.size() - 1);//最后一层编码器
             for (int i = 0; i < allDepth; i++) {
-                CodecBlock decoderBlock = new CodecBlock(maxLength, multiNumber, featureDimension, studyPoint, i + 2, false);
+                CodecBlock decoderBlock = new CodecBlock(maxLength, multiNumber, featureDimension, studyPoint,
+                        i + 2, false, regularModel, regular);
                 decoderBlock.setLastEncoderBlock(lastEnCoderBlock);//放入最优一层编码器
                 decoderBlocks.add(decoderBlock);
             }
             CodecBlock lastDecoderBlock = decoderBlocks.get(decoderBlocks.size() - 1);
             connectCodecBlock(encoderBlocks);
             connectCodecBlock(decoderBlocks);
-            lineBlock = new LineBlock(typeNumber, featureDimension, studyPoint, lastDecoderBlock, showLog);
+            lineBlock = new LineBlock(typeNumber, featureDimension, studyPoint, lastDecoderBlock, showLog, regularModel
+                    , regular);
             lastDecoderBlock.setLineBlock(lineBlock);
             firstDecoderBlock = new FirstDecoderBlock(maxLength, multiNumber, featureDimension, studyPoint, decoderBlocks.get(0));
             firstDecoderBlock.setLastEncoderBlock(lastEnCoderBlock);

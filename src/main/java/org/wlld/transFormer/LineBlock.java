@@ -47,7 +47,8 @@ public class LineBlock {//线性层模块
         }
     }
 
-    public LineBlock(int typeNumber, int featureDimension, double studyPoint, CodecBlock lastCodecBlock, boolean showLog) throws Exception {
+    public LineBlock(int typeNumber, int featureDimension, double studyPoint, CodecBlock lastCodecBlock,
+                     boolean showLog, int regularModel, double regular) throws Exception {
         this.featureDimension = featureDimension;
         this.lastCodecBlock = lastCodecBlock;
         SoftMax softMax = new SoftMax(outNerveList, showLog, typeNumber, typeNumber, typeNumber);
@@ -55,14 +56,15 @@ public class LineBlock {//线性层模块
         List<Nerve> hiddenNerves = new ArrayList<>();
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve = new HiddenNerve(i + 1, 1, studyPoint, new Tanh(), featureDimension,
-                    typeNumber, this);
+                    typeNumber, this, regularModel, regular);
             hiddenNerves.add(hiddenNerve);
             hiddenNerveList.add(hiddenNerve);
         }
         //输出层
         List<Nerve> outNerves = new ArrayList<>();
         for (int i = 0; i < typeNumber; i++) {
-            OutNerve outNerve = new OutNerve(i + 1, studyPoint, featureDimension, featureDimension, typeNumber, softMax);
+            OutNerve outNerve = new OutNerve(i + 1, studyPoint, featureDimension, featureDimension, typeNumber, softMax
+                    , regularModel, regular);
             outNerve.connectFather(hiddenNerves);
             outNerves.add(outNerve);
             outNerveList.add(outNerve);

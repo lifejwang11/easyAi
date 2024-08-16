@@ -9,6 +9,24 @@ public class TfConfig {
     private int typeNumber;
     private boolean showLog = true;
     private int times = 10;//循环增强次数
+    private int regularModel = RZ.NOT_RZ;//正则模式
+    private double regular = 0;//正则系数
+
+    public int getRegularModel() {
+        return regularModel;
+    }
+
+    public void setRegularModel(int regularModel) {
+        this.regularModel = regularModel;
+    }
+
+    public double getRegular() {
+        return regular;
+    }
+
+    public void setRegular(double regular) {
+        this.regular = regular;
+    }
 
     public int getTimes() {
         return times;

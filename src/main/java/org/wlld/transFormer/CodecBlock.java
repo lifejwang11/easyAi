@@ -78,14 +78,15 @@ public class CodecBlock {
         this.beforeEncoderBlock = beforeEncoderBlock;
     }
 
-    public CodecBlock(int maxLength, int multiNumber, int featureDimension, double studyPoint, int depth, boolean encoder) throws Exception {//进行初始化
+    public CodecBlock(int maxLength, int multiNumber, int featureDimension, double studyPoint, int depth,
+                      boolean encoder, int regularModel, double regular) throws Exception {//进行初始化
         this.encoder = encoder;
         attentionLayNorm = new LayNorm(1, featureDimension, this, null, studyPoint);
         lineLayNorm = new LayNorm(2, featureDimension, this, null, studyPoint);
         multiSelfAttention = new MultiSelfAttention(multiNumber, studyPoint, depth, featureDimension, maxLength, encoder, this);
         multiSelfAttention.setLayNorm(attentionLayNorm);
         attentionLayNorm.setMultiSelfAttention(multiSelfAttention);
-        initLine(featureDimension, studyPoint);
+        initLine(featureDimension, studyPoint, regularModel, regular);
         attentionLayNorm.setHiddenNerves(fistHiddenNerves);
         lineLayNorm.setHiddenNerves(secondHiddenNerves);
     }
@@ -141,19 +142,19 @@ public class CodecBlock {
         multiSelfAttention.sendMatrixMessage(eventID, feature, isStudy, outBack, E, encoderFeature);
     }
 
-    private void initLine(int featureDimension, double studyPoint) throws Exception {
+    private void initLine(int featureDimension, double studyPoint, int regularModel, double regular) throws Exception {
         List<Nerve> firstNerves = new ArrayList<>();
         List<Nerve> secondNerves = new ArrayList<>();
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve1 = new HiddenNerve(i + 1, 1, studyPoint, new ReLu(), featureDimension,
-                    featureDimension, null);
+                    featureDimension, null, regularModel, regular);
             fistHiddenNerves.add(hiddenNerve1);
             hiddenNerve1.setAfterLayNorm(attentionLayNorm);
             firstNerves.add(hiddenNerve1);
         }
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve2 = new HiddenNerve(i + 1, 2, studyPoint, null,
-                    featureDimension, 1, null);
+                    featureDimension, 1, null, regularModel, regular);
             hiddenNerve2.setBeforeLayNorm(lineLayNorm);
             secondHiddenNerves.add(hiddenNerve2);
             secondNerves.add(hiddenNerve2);

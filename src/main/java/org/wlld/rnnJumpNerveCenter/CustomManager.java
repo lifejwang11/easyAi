@@ -26,6 +26,7 @@ public class CustomManager {//
     private int times;
     private final double param;
     private final double powerTh;
+    private final int rzModel;
 
     public CustomManager(WordEmbedding wordEmbedding, SentenceConfig config) {
         this.minLength = config.getMinLength();
@@ -37,6 +38,7 @@ public class CustomManager {//
         this.powerTh = config.getSentenceTrustPowerTh();
         this.times = config.getTimes();
         this.param = config.getParam();
+        this.rzModel = config.getRzModel();
         if (this.times < 1) {
             this.times = 1;
         }
@@ -44,7 +46,7 @@ public class CustomManager {//
 
     public void init() throws Exception {
         semanticsManager = new NerveJumpManager(vectorDimension, vectorDimension, wordEmbedding.getWordList().size(), maxFeatureLength + answerMaxLength - 1, new Tanh(), false,
-                studyPoint, RZ.L1, studyPoint * param);
+                studyPoint, rzModel, param);
         semanticsManager.setPowerTh(powerTh);
         semanticsManager.initRnn(true, true, true, true, maxFeatureLength);
         List<NerveCenter> nerveCenterList = semanticsManager.getNerveCenterList();

@@ -47,7 +47,8 @@ public class WordEmbedding {
         this.sentenceModel = sentenceModel;
         wordList.addAll(sentenceModel.getWordSet());
         nerveManager = new NerveManager(wordList.size(), wordVectorDimension, wordList.size()
-                , 1, new Tanh(), false, config.getWeStudyPoint(), RZ.NOT_RZ, 0);
+                , 1, new Tanh(), false, config.getWeStudyPoint(), config.getRzModel(),
+                config.getWeLParam());
         nerveManager.init(true, false, false, true, 0, 0);
     }
 

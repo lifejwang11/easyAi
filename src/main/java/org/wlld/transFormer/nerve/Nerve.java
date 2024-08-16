@@ -38,6 +38,8 @@ public abstract class Nerve {
     protected Matrix outMatrix;
     protected int myUpNumber;//统计参数数量
     protected int depth;//所处深度
+    private int regularModel;//正则模式
+    private double regular;//正则系数
 
     public int getDepth() {
         return depth;
@@ -52,8 +54,10 @@ public abstract class Nerve {
     }
 
     protected Nerve(int id, String name, double studyPoint, ActiveFunction activeFunction, int sensoryNerveNub,
-                    int hiddenNerveNub, int outNerveNub, LineBlock lineBlock) throws Exception {//该神经元在同层神经元中的编号
+                    int hiddenNerveNub, int outNerveNub, LineBlock lineBlock, int regularModel, double regular) throws Exception {//该神经元在同层神经元中的编号
         this.id = id;
+        this.regular = regular;
+        this.regularModel = regularModel;
         this.lineBlock = lineBlock;
         this.hiddenNerveNub = hiddenNerveNub;//隐层神经元个数
         this.sensoryNerveNub = sensoryNerveNub;//输入神经元个数
@@ -147,10 +151,46 @@ public abstract class Nerve {
         backSendMessage(eventId, error, allError);
     }
 
+    private Matrix getRegularizationMatrix() throws Exception {
+        int size = powerMatrix.getX();
+        double sigma = 0;
+        for (int i = 0; i < size; i++) {
+            double value = powerMatrix.getNumber(i, 0);
+            if (regularModel == RZ.L1) {//l1正则化
+                sigma = sigma + Math.abs(value);
+            } else {
+                sigma = sigma + Math.pow(value, 2);
+            }
+        }
+        double param = sigma * regular * studyPoint;
+        Matrix rzMatrix = new Matrix(powerMatrix.getX(), powerMatrix.getY());
+        for (int i = 0; i < size; i++) {
+            double value = powerMatrix.getNumber(i, 0);
+            double re = 0.0;
+            if (regularModel == RZ.L2) {
+                re = param * -value;
+            } else if (regularModel == RZ.L1) {
+                if (value > 0) {
+                    re = -param;
+                } else if (value < 0) {
+                    re = param;
+                }
+            }
+            rzMatrix.setNub(i, 0, re);
+        }
+        return rzMatrix;
+    }
 
     private Matrix updateW(Matrix errorMatrix, Matrix error) throws Exception {//
+        Matrix rzMatrix = null;
+        if (regularModel != RZ.NOT_RZ) {
+            rzMatrix = getRegularizationMatrix();
+        }
         Matrix subFeature = MatrixOperation.matrixMulPd(error, featureMatrix, powerMatrix, true);
         Matrix subPower = MatrixOperation.matrixMulPd(errorMatrix, featureMatrix, powerMatrix, false);
+        if (regularModel != RZ.NOT_RZ) {
+            powerMatrix = MatrixOperation.add(powerMatrix, rzMatrix);//正则化抑制权重
+        }
         powerMatrix = MatrixOperation.add(powerMatrix, subPower);//更新权重
         return subFeature;
     }

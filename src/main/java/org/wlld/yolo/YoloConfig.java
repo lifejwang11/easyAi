@@ -1,5 +1,7 @@
 package org.wlld.yolo;
 
+import org.wlld.config.RZ;
+
 public class YoloConfig {
     private int windowWidth = 90;//检测窗口宽
     private int windowHeight = 140;//检测窗口高
@@ -16,6 +18,15 @@ public class YoloConfig {
     private double stepReduce = 0.25;//训练步长收缩系数
     private double checkStepReduce = 0.5;//检测步长收缩系数
     private double regular = 0;//正则系数
+    private int regularModel = RZ.NOT_RZ;//正则模式
+
+    public int getRegularModel() {
+        return regularModel;
+    }
+
+    public void setRegularModel(int regularModel) {
+        this.regularModel = regularModel;
+    }
 
     public double getStepReduce() {
         return stepReduce;

@@ -16,9 +16,10 @@ import java.util.Map;
 public class OutNerve extends Nerve {
     private final SoftMax softMax;
 
-    public OutNerve(int id, double studyPoint, int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, SoftMax softMax) throws Exception {
+    public OutNerve(int id, double studyPoint, int sensoryNerveNub, int hiddenNerveNub, int outNerveNub,
+                    SoftMax softMax, int regularModel, double regular) throws Exception {
         super(id, "OutNerve", studyPoint, null, sensoryNerveNub,
-                hiddenNerveNub, outNerveNub, null);
+                hiddenNerveNub, outNerveNub, null, regularModel, regular);
         this.softMax = softMax;
     }
 

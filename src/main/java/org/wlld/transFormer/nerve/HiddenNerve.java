@@ -21,9 +21,9 @@ import java.util.Map;
 public class HiddenNerve extends Nerve {
 
     public HiddenNerve(int id, int depth, double studyPoint, ActiveFunction activeFunction, int sensoryNerveNub,
-                       int outNerveNub, LineBlock lineBlock) throws Exception {//隐层神经元
+                       int outNerveNub, LineBlock lineBlock, int regularModel, double regular) throws Exception {//隐层神经元
         super(id, "HiddenNerve", studyPoint, activeFunction, sensoryNerveNub, 0,
-                outNerveNub, lineBlock);
+                outNerveNub, lineBlock, regularModel, regular);
         this.depth = depth;
     }
 

@@ -15,15 +15,24 @@ public class SentenceConfig {
     private int qaWordVectorDimension = 66;//问答模型此项链嵌入维度
     private int maxWordLength = 20;//最长字数
     private double weStudyPoint = 0.01;//词向量学习学习率
-    private double weLParam = 0.001;//词向量正则系数
+    private double weLParam = 0.01;//正则系数
+    private int rzModel = RZ.NOT_RZ;//正则模式
     private boolean showLog = true;
     private int minLength = 5;
     private double trustPowerTh = 0.5;//权重可信任阈值
     private int maxAnswerLength = 20;//最大回答长度
     private double sentenceTrustPowerTh = 0.2;//语句生成可信赖阈值
     private int times = 10;//增加训练数量
-    private double param = 0.4;
+    private double param = 0.01;//线性层正则系数
     private int keyWordNerveDeep = 3;
+
+    public int getRzModel() {
+        return rzModel;
+    }
+
+    public void setRzModel(int rzModel) {
+        this.rzModel = rzModel;
+    }
 
     public int getQaWordVectorDimension() {
         return qaWordVectorDimension;

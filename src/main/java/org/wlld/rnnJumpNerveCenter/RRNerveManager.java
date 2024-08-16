@@ -25,6 +25,8 @@ public class RRNerveManager {
     private boolean showLog;//是否输出学习数据
     private int minLength;//最小长度
     private double trustPowerTh = 0;//可信阈值
+    private int rzModel;//正则模式
+    private double rzParam;//正则系数
 
     public RRNerveManager(WordEmbedding wordEmbedding) {
         this.wordEmbedding = wordEmbedding;
@@ -39,6 +41,8 @@ public class RRNerveManager {
             this.maxFeatureLength = config.getMaxWordLength();
             this.studyPoint = config.getWeStudyPoint();
             this.showLog = config.isShowLog();
+            this.rzModel = config.getRzModel();
+            this.rzParam = config.getParam();
             initNerveManager();
         } else {
             throw new Exception("分类种类数量必须大于0");
@@ -47,8 +51,8 @@ public class RRNerveManager {
 
     private void initNerveManager() throws Exception {
         typeNerveManager = new NerveJumpManager(vectorDimension, vectorDimension, typeNub, maxFeatureLength - 1, new Tanh(), false,
-                studyPoint, RZ.L1, studyPoint * 0.2);
-        typeNerveManager.initRnn(true, showLog,true,false,0);
+                studyPoint, rzModel, rzParam);
+        typeNerveManager.initRnn(true, showLog, true, false, 0);
     }
 
     private int getMappingType(int key) {//通过自增主键查找原映射
