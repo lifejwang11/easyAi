@@ -21,7 +21,7 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 
 ### 人脸面部检测
 * 对人脸及五官进行定位检测：
-<div align=center> <img src="zf/face1.png"><img src="zf/face2.png"></div>
+<div align=center><img src="zf/face2.png"></div>
 
 ### 智能客服部分
 * sayOrder是依赖EasyAi进行封装的人工智能客服系统。
