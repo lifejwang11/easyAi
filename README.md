@@ -19,6 +19,10 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * 使用EasyAi实现图像结算自动贩卖机视觉内核：
 <div align=center> <img src="zf/drink.png"></div>
 
+### 人脸面部检测
+* 对人脸及五官进行定位检测：
+<div align=center> <img src="zf/face1.png"><img src="zf/face2.png"></div>
+
 ### 智能客服部分
 * sayOrder是依赖EasyAi进行封装的人工智能客服系统。
 * 它可以分析用户输入的语义，来识别用户的行为，并通过typeID来区分用户意图ID。并通过捕捉其后台设置的关键词类别，来抓出系统关心的用户在语句中包含的内容，比如语句中的时间，地点等。
