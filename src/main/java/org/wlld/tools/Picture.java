@@ -1,4 +1,5 @@
 package org.wlld.tools;
+
 import org.wlld.matrixTools.Matrix;
 import org.wlld.entity.ThreeChannelMatrix;
 
@@ -21,6 +22,16 @@ public class Picture {
             e.printStackTrace();
         }
         return getImage(bi);
+    }
+
+    public ThreeChannelMatrix getThreeMatrix(File file) throws Exception {
+        BufferedImage bi = null;
+        try {
+            bi = ImageIO.read(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return this.getThreeChannel(bi);
     }
 
     public ThreeChannelMatrix getThreeMatrix(InputStream file) throws Exception {
