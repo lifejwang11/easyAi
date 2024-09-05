@@ -72,7 +72,7 @@ https://gitcode.com/dromara/EasyAi/overview
     <dependency>
     <groupId>com.wlld</groupId>
     <artifactId>easyAi</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.5</version>
     </dependency>
 ```
 
@@ -87,4 +87,4 @@ https://gitcode.com/dromara/EasyAi/overview
 ### 微信交流群
 
 * 加微信技术交流群（目前只有微信交流群，QQ交流群已经不再拉新，凡是QQ交流群拉进去的，都不是我的群！大家注意！！）
-* ![加交流群](./zf/wxt.png)
+* ![加交流群](https://myeasyai.cn/img/erweima.jpg)
