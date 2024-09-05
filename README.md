@@ -1,4 +1,4 @@
-<div align=center> <img src="zf/EasyAi.png" width="220" height="220">
+<div align=center> <img src="https://myeasyai.cn/img/EasyAi.png" width="220" height="220">
 <h3>我爸跟我说，我写这些东西还不如给我找个餐馆，让我去端盘子，或者给我找个超市去干收银。所以大家帮帮我，点击右上角 "Star" 支持一下，我要证明他错了，谢谢帮助！</h3>
 </div>
 
@@ -17,11 +17,11 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 
 ### 图像检测部分
 * 使用EasyAi实现图像结算自动贩卖机视觉内核：
-<div align=center> <img src="zf/drink.png"></div>
+<div align=center> <img src="https://myeasyai.cn/img/drink.png"></div>
 
 ### 人脸面部检测
 * 对人脸及五官进行定位检测：
-<div align=center><img src="zf/face2.png"></div>
+<div align=center><img src="https://myeasyai.cn/img/face2.png"></div>
 
 ### 智能客服部分
 * sayOrder是依赖EasyAi进行封装的人工智能客服系统。
@@ -29,29 +29,29 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * 它还可以与用户自主进行问答交互，进行自主解答疑问或者进行其余意图的交流等。
 * 项目链接地址: https://gitee.com/dromara/sayOrder GitCode同步链接: https://gitcode.com/dromara/sayOrder/overview
 * sayOrder管理后台登录
-<div align=center> <img src="zf/index.png"></div>
+<div align=center> <img src="https://myeasyai.cn/img/index.png"></div>
 
 * 配置业务分类及分类订单必要关键信息
-<div align=center> <img src="zf/admin.png"></div>
+<div align=center> <img src="https://myeasyai.cn/img/admin.png"></div>
 
 * 对分类业务填写训练样本并标注关键信息
-<div align=center> <img src="zf/worker.png"></div>
+<div align=center> <img src="https://myeasyai.cn/img/worker.png"></div>
 
 * 智能聊天/问答训练样本填充
-<div align=center> <img src="zf/qa.png"></div>
+<div align=center> <img src="https://myeasyai.cn/img/qa.png"></div>
 
 ### sayOrder智能客服沟通基本流程演示
 * 用户第一次进行输入表达自己的想法
-<div align=center> <img src="zf/t1.png"></div>
+<div align=center> <img src="https://myeasyai.cn/img/a1.png"></div>
 
 * 信息不足，所以用户接收到sayOrder的反问，用户需要进一步补充的自己的想法
-<div align=center> <img src="zf/t2.png"></div>
+<div align=center> <img src="https://myeasyai.cn/img/a2.png"></div>
 
 * 用户第二次输入信息依然不满足，后台14分类法律咨询的订单关键信息的要求，继续补充信息，最终完成订单信息补充生成订单。
-<div align=center> <img src="zf/t3.png"></div>
+<div align=center> <img src="https://myeasyai.cn/img/a3.png"></div>
 
 * 用户直接输入，理解并返回回答
-<div align=center> <img src="zf/m1.png"></div>
+<div align=center> <img src="https://myeasyai.cn/img/b1.png"></div>
 
 ### 软件说明：
 
