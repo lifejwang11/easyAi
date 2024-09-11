@@ -9,9 +9,8 @@ EasyAi对于Java的用处，等同于在JavaWeb领域spring的意义一样——
 EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先，<strong face="微软雅黑" color=black size=5>它可以Maven一键丝滑引入我们的Java项目，无需任何额外的环境配置与依赖，做到开箱即用。</strong >再者，它既有一些我们已经封装好的图像目标检测及人工智能客服的模块，也提供各种深度学习，机器学习，强化学习，启发式学习，矩阵运算等底层算法工具。开发者可以通过简单的学习，就能完成根据自身业务，深度开发符合自己业务的小微模型。
 
 ## 入门教程：
-* 框架视频教程地址：https://www.bilibili.com/video/BV1W7411J7zr/
-* 人工智能0基础JAVA程序员速成课（基础篇） 本课程为基础篇内容，后续更新还会有图像篇与自然语言篇，三部分构成。
-  地址：https://www.bilibili.com/cheese/play/ss17600
+* 框架视频教程地址，适用于只想调用已封装好的功能人群：https://www.bilibili.com/video/BV1W7411J7zr/
+* 人工智能0基础JAVA程序员速成课,适用于想自定义开发任意ai的人群，地址：https://www.bilibili.com/cheese/play/ss17600
 * 技术文档远程地址： https://www.myeasyai.cn
 * 若对您的学习或生产有帮助，请留下您的STAR，您的一个简单的举动，对我来说却非常重要。
 
