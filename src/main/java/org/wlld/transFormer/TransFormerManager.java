@@ -1,6 +1,7 @@
 package org.wlld.transFormer;
 
 import org.wlld.config.TfConfig;
+import org.wlld.matrixTools.Matrix;
 import org.wlld.transFormer.model.CodecBlockModel;
 import org.wlld.transFormer.model.TransFormerModel;
 import org.wlld.transFormer.nerve.SensoryNerve;
@@ -14,6 +15,7 @@ public class TransFormerManager {
     private final List<CodecBlock> decoderBlocks = new ArrayList<>();//解码器模块
     private final FirstDecoderBlock firstDecoderBlock;//第一个解码器模块
     private final LineBlock lineBlock;//线性分类层
+    private final int maxLength;
 
     public SensoryNerve getSensoryNerve() {
         return sensoryNerve;
@@ -34,6 +36,32 @@ public class TransFormerManager {
         return transFormerModel;
     }
 
+    private Matrix addTimeCode(Matrix feature) throws Exception {//添加时间编码
+        double timeStep = 1D / maxLength;
+        int x = feature.getX();
+        int y = feature.getY();
+        Matrix matrix = new Matrix(x, y);
+        for (int i = 1; i < x; i++) {
+            double step = i * timeStep;
+            for (int j = 0; j < y; j++) {
+                double value = feature.getNumber(i, j) + step;
+                matrix.setNub(i, j, value);
+            }
+        }
+        return matrix;
+    }
+
+    public Matrix getStartMatrix(Matrix feature) throws Exception {
+        Matrix matrix = addTimeCode(feature);
+        Matrix myFeature = new Matrix(1, matrix.getY());
+        for (int j = 0; j < matrix.getY(); j++) {
+            Matrix col = matrix.getColumn(j);
+            double value = col.getAVG();
+            myFeature.setNub(0, j, value);
+        }
+        return myFeature;
+    }
+
     public void insertModel(TransFormerModel transFormerModel) throws Exception {
         List<CodecBlockModel> encoderBlockModels = transFormerModel.getEncoderBlockModels();
         List<CodecBlockModel> decoderBlockModels = transFormerModel.getDecoderBlockModels();
@@ -52,7 +80,7 @@ public class TransFormerManager {
      * @throws Exception 如果参数错误则抛异常
      */
     public TransFormerManager(TfConfig tfConfig) throws Exception {
-        int maxLength = tfConfig.getMaxLength();
+        maxLength = tfConfig.getMaxLength();
         int multiNumber = tfConfig.getMultiNumber();
         int featureDimension = tfConfig.getFeatureDimension();
         int allDepth = tfConfig.getAllDepth();

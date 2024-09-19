@@ -37,7 +37,7 @@ public class TalkToTalk {
         transFormerManager = new TransFormerManager(tfConfig);
     }
 
-    private Matrix insertZero(Matrix feature, Matrix lastFeature) throws Exception {
+    private Matrix insertStart(Matrix feature, Matrix lastFeature) throws Exception {
         Matrix matrix = new Matrix(feature.getX() + 1, feature.getY());
         int x = matrix.getX();
         int y = matrix.getY();
@@ -53,31 +53,6 @@ public class TalkToTalk {
         return matrix;
     }
 
-    private Matrix addTimeCode(Matrix feature) throws Exception {//添加时间编码
-        double timeStep = 1D / maxLength;
-        int x = feature.getX();
-        int y = feature.getY();
-        Matrix matrix = new Matrix(x, y);
-        for (int i = 1; i < x; i++) {
-            double step = i * timeStep;
-            for (int j = 0; j < y; j++) {
-                double value = feature.getNumber(i, j) + step;
-                matrix.setNub(i, j, value);
-            }
-        }
-        return matrix;
-    }
-
-    private Matrix getMyAvg(Matrix feature) throws Exception {
-        Matrix matrix = addTimeCode(feature);
-        Matrix myFeature = new Matrix(1, matrix.getY());
-        for (int j = 0; j < matrix.getY(); j++) {
-            Matrix col = matrix.getColumn(j);
-            double value = col.getAVG();
-            myFeature.setNub(0, j, value);
-        }
-        return myFeature;
-    }
 
     public String getAnswer(String question, long eventID) throws Exception {
         SensoryNerve sensoryNerve = transFormerManager.getSensoryNerve();
@@ -85,7 +60,7 @@ public class TalkToTalk {
             question = question.substring(0, maxLength);
         }
         Matrix qMatrix = wordEmbedding.getEmbedding(question, eventID).getFeatureMatrix();
-        Matrix begin = getMyAvg(qMatrix);
+        Matrix begin = transFormerManager.getStartMatrix(qMatrix);
         WordBack wordBack = new WordBack();
         int id;
         StringBuilder answer = new StringBuilder();
@@ -127,7 +102,7 @@ public class TalkToTalk {
                 System.out.println("问题:" + question + ", 回答:" + answer + ",训练语句下标:" + index + ",总数量:" + size + ",当前次数：" + k + ",总次数:" + times);
                 Matrix qMatrix = wordEmbedding.getEmbedding(question, 1).getFeatureMatrix();
                 Matrix aMatrix = wordEmbedding.getEmbedding(answer, 2).getFeatureMatrix();
-                Matrix myAnswer = insertZero(aMatrix, getMyAvg(qMatrix));//第一行补0
+                Matrix myAnswer = insertStart(aMatrix, transFormerManager.getStartMatrix(qMatrix));//第一行补开始符
                 List<Integer> answerList = new ArrayList<>();
                 for (int i = 0; i < answer.length(); i++) {
                     String word = answer.substring(i, i + 1);
