@@ -15,15 +15,26 @@ public class TypeBody {
     private int maxHeight = 0;//该类别映射的最大高度
     private int minWidth = -1;//该类别最小宽度
     private int minHeight = -1;//该类别最小高度
+    private int winWidth = 0;
+    private int winHeight = 0;
     private final NerveManager positonNerveManager;//定位网络
     private List<YoloBody> yoloBodies = new ArrayList<>();//该类别下所有的数据集合
 
+    public int getWinWidth() {
+        return winWidth;
+    }
+
+    public int getWinHeight() {
+        return winHeight;
+    }
 
     public NerveManager getPositonNerveManager() {
         return positonNerveManager;
     }
 
     public TypeBody(YoloConfig yoloConfig, int minWinWidth, int minWinHeight) throws Exception {
+        winWidth = minWinWidth;
+        winHeight = minWinHeight;
         positonNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), 5, 1,
                 new Tanh(), yoloConfig.getLineStudy(), yoloConfig.getRegularModel(), yoloConfig.getRegular());
         positonNerveManager.initImageNet(2, yoloConfig.getKernelSize(), minWinHeight, minWinWidth,

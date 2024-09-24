@@ -9,8 +9,25 @@ public class TypeModel {
     private int maxHeight;//该类别映射的最大高度
     private int minWidth;//该类别最小宽度
     private int minHeight;//该类别最小高度
+    private int winWidth;//该类别所用检测窗口宽（如果需要的话）
+    private int winHeight;//该类别所用检测窗口高（如果需要的话）
     private ModelParameter positionModel;//该类别位置模型
 
+    public int getWinWidth() {
+        return winWidth;
+    }
+
+    public void setWinWidth(int winWidth) {
+        this.winWidth = winWidth;
+    }
+
+    public int getWinHeight() {
+        return winHeight;
+    }
+
+    public void setWinHeight(int winHeight) {
+        this.winHeight = winHeight;
+    }
 
     public int getTypeID() {
         return typeID;
