@@ -23,15 +23,6 @@ public class SentenceConfig {
     private int times = 10;//增加训练数量
     private double param = 0.01;//线性层正则系数
     private int keyWordNerveDeep = 3;
-    private String splitWord = " ";//词向量默认隔断符，无隔断则会逐字隔断
-
-    public String getSplitWord() {
-        return splitWord;
-    }
-
-    public void setSplitWord(String splitWord) {
-        this.splitWord = splitWord;
-    }
 
     public int getRzModel() {
         return rzModel;
