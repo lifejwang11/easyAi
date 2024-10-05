@@ -16,6 +16,7 @@ public class TransFormerManager {
     private final FirstDecoderBlock firstDecoderBlock;//第一个解码器模块
     private final LineBlock lineBlock;//线性分类层
     private final int maxLength;
+    private final boolean selfTimeCode;//使用自增时间序列编码
 
     public SensoryNerve getSensoryNerve() {
         return sensoryNerve;
@@ -36,7 +37,28 @@ public class TransFormerManager {
         return transFormerModel;
     }
 
-    private Matrix addTimeCode(Matrix feature) throws Exception {//添加时间编码
+    private Matrix addTimeCode(Matrix feature) throws Exception {
+        int x = feature.getX();
+        int y = feature.getY();
+        Matrix matrix = new Matrix(x, y);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                int k = j / 2;
+                double wk = 1 / (Math.pow(10000, 2D * k / y));
+                double pe;
+                if (j % 2 == 0) {//当列数是偶数
+                    pe = Math.sin(wk * i);
+                } else {//当列数是奇数
+                    pe = Math.cos(wk * i);
+                }
+                double value = feature.getNumber(i, j) + pe;
+                matrix.setNub(i, j, value);
+            }
+        }
+        return matrix;
+    }
+
+    private Matrix addTimeCodeBySelf(Matrix feature) throws Exception {//添加时间编码
         double timeStep = 1D / maxLength;
         int x = feature.getX();
         int y = feature.getY();
@@ -52,7 +74,12 @@ public class TransFormerManager {
     }
 
     public Matrix getStartMatrix(Matrix feature) throws Exception {
-        Matrix matrix = addTimeCode(feature);
+        Matrix matrix;
+        if (selfTimeCode) {
+            matrix = addTimeCodeBySelf(feature);
+        } else {
+            matrix = addTimeCode(feature);
+        }
         Matrix myFeature = new Matrix(1, matrix.getY());
         for (int j = 0; j < matrix.getY(); j++) {
             Matrix col = matrix.getColumn(j);
@@ -80,9 +107,13 @@ public class TransFormerManager {
      * @throws Exception 如果参数错误则抛异常
      */
     public TransFormerManager(TfConfig tfConfig) throws Exception {
-        maxLength = tfConfig.getMaxLength();
         int multiNumber = tfConfig.getMultiNumber();
+        maxLength = tfConfig.getMaxLength();
+        selfTimeCode = tfConfig.isSelfTimeCode();
         int featureDimension = tfConfig.getFeatureDimension();
+        if (featureDimension % 2 != 0) {
+            throw new Exception("TransFormer 词向量维度必须为偶数");
+        }
         int allDepth = tfConfig.getAllDepth();
         double studyPoint = tfConfig.getStudyPoint();
         int typeNumber = tfConfig.getTypeNumber();
@@ -91,14 +122,14 @@ public class TransFormerManager {
         double regular = tfConfig.getRegular();
         if (multiNumber > 1 && featureDimension > 0 && allDepth > 0 && typeNumber > 1) {
             for (int i = 0; i < allDepth; i++) {
-                CodecBlock encoderBlock = new CodecBlock(maxLength, multiNumber, featureDimension, studyPoint,
-                        i + 1, true, regularModel, regular);
+                CodecBlock encoderBlock = new CodecBlock(multiNumber, featureDimension, studyPoint,
+                        i + 1, true, regularModel, regular, maxLength, selfTimeCode);
                 encoderBlocks.add(encoderBlock);
             }
             CodecBlock lastEnCoderBlock = encoderBlocks.get(encoderBlocks.size() - 1);//最后一层编码器
             for (int i = 0; i < allDepth; i++) {
-                CodecBlock decoderBlock = new CodecBlock(maxLength, multiNumber, featureDimension, studyPoint,
-                        i + 2, false, regularModel, regular);
+                CodecBlock decoderBlock = new CodecBlock(multiNumber, featureDimension, studyPoint,
+                        i + 2, false, regularModel, regular, maxLength, selfTimeCode);
                 decoderBlock.setLastEncoderBlock(lastEnCoderBlock);//放入最优一层编码器
                 decoderBlocks.add(decoderBlock);
             }
@@ -108,7 +139,8 @@ public class TransFormerManager {
             lineBlock = new LineBlock(typeNumber, featureDimension, studyPoint, lastDecoderBlock, showLog, regularModel
                     , regular);
             lastDecoderBlock.setLineBlock(lineBlock);
-            firstDecoderBlock = new FirstDecoderBlock(maxLength, multiNumber, featureDimension, studyPoint, decoderBlocks.get(0));
+            firstDecoderBlock = new FirstDecoderBlock(multiNumber, featureDimension, studyPoint, decoderBlocks.get(0), maxLength
+                    , selfTimeCode);
             firstDecoderBlock.setLastEncoderBlock(lastEnCoderBlock);
             decoderBlocks.get(0).setFirstDecoderBlock(firstDecoderBlock);
             sensoryNerve = new SensoryNerve(encoderBlocks.get(0), firstDecoderBlock);

@@ -11,6 +11,7 @@ import org.wlld.transFormer.model.TransFormerModel;
 import org.wlld.transFormer.nerve.SensoryNerve;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TalkToTalk {
@@ -18,9 +19,13 @@ public class TalkToTalk {
     private final TfConfig tfConfig;
     private final int maxLength;
     private final int times;
+    private final String splitWord;
     private TransFormerManager transFormerManager;
+    private final boolean splitAnswer;//回答是否带隔断符
 
     public TalkToTalk(WordEmbedding wordEmbedding, TfConfig tfConfig) throws Exception {
+        this.splitWord = tfConfig.getSplitWord();
+        splitAnswer = splitWord != null && !splitWord.isEmpty();
         this.wordEmbedding = wordEmbedding;
         this.tfConfig = tfConfig;
         maxLength = tfConfig.getMaxLength();
@@ -56,23 +61,30 @@ public class TalkToTalk {
 
     public String getAnswer(String question, long eventID) throws Exception {
         SensoryNerve sensoryNerve = transFormerManager.getSensoryNerve();
-        if (question.length() > maxLength) {
-            question = question.substring(0, maxLength);
-        }
-        Matrix qMatrix = wordEmbedding.getEmbedding(question, eventID).getFeatureMatrix();
-        Matrix begin = transFormerManager.getStartMatrix(qMatrix);
+        Matrix qMatrix = wordEmbedding.getEmbedding(question, eventID, false).getFeatureMatrix();
         WordBack wordBack = new WordBack();
         int id;
         StringBuilder answer = new StringBuilder();
         int index = 0;
+        List<String> wordList = new ArrayList<>();
         do {
+            Matrix qcMatrix = qMatrix.copy();
+            Matrix allFeatures = transFormerManager.getStartMatrix(qMatrix);
+            if (!wordList.isEmpty()) {
+                for (String word : wordList) {
+                    Matrix next = wordEmbedding.getEmbedding(word, eventID, true).getFeatureMatrix();
+                    allFeatures = MatrixOperation.pushVector(allFeatures, next, true);
+                }
+            }
             index++;
-            sensoryNerve.postMessage(eventID, qMatrix, begin, false, null, wordBack);
+            sensoryNerve.postMessage(eventID, qcMatrix, allFeatures, false, null, wordBack);
             id = wordBack.getId();
             if (id > 1) {
                 String word = wordEmbedding.getWord(id - 2);
-                Matrix next = wordEmbedding.getEmbedding(word, eventID).getFeatureMatrix();
-                begin = MatrixOperation.pushVector(begin, next, true);
+                wordList.add(word);
+                if (splitAnswer) {
+                    word = word + " ";
+                }
                 answer.append(word);
             }
         } while (id > 1 && index < maxLength);
@@ -83,7 +95,44 @@ public class TalkToTalk {
         transFormerManager.insertModel(transFormerModel);
     }
 
-    //我是好人  begin 我 是 好 人    我 是 好  人 end
+    private AnswerE getSentenceMatrix(String sentence) throws Exception {//返回隔断符后的字符数组
+        Matrix allFeature = null;
+        AnswerE answerE = new AnswerE();
+        List<Integer> answerList = new ArrayList<>();
+        if (splitAnswer) {
+            String[] words = sentence.split(splitWord);
+            if (words.length > maxLength) {
+                words = Arrays.copyOfRange(words, 0, maxLength);
+            }
+            for (String s : words) {
+                int wordID = wordEmbedding.getID(s) + 2;
+                answerList.add(wordID);
+            }
+            for (String word : words) {
+                Matrix feature = wordEmbedding.getEmbedding(word, 3, true).getFeatureMatrix();
+                if (allFeature == null) {
+                    allFeature = feature;
+                } else {
+                    allFeature = MatrixOperation.pushVector(allFeature, feature, true);
+                }
+            }
+        } else {
+            if (sentence.length() > maxLength) {
+                sentence = sentence.substring(0, maxLength);
+            }
+            for (int i = 0; i < sentence.length(); i++) {
+                String word = sentence.substring(i, i + 1);
+                int wordID = wordEmbedding.getID(word) + 2;
+                answerList.add(wordID);
+            }
+            allFeature = wordEmbedding.getEmbedding(sentence, 3, false).getFeatureMatrix();
+        }
+        answerList.add(1);//期望末尾补终止符
+        answerE.answerMatrix = allFeature;
+        answerE.answerList = answerList;
+        return answerE;
+    }
+
     public TransFormerModel study(List<TalkBody> talkBodies) throws Exception {
         SensoryNerve sensoryNerve = transFormerManager.getSensoryNerve();
         int size = talkBodies.size();
@@ -93,26 +142,18 @@ public class TalkToTalk {
                 index++;
                 String question = talkBody.getQuestion();
                 String answer = talkBody.getAnswer();
-                if (question.length() > maxLength) {
-                    question = question.substring(0, maxLength);
-                }
-                if (answer.length() > maxLength) {
-                    answer = answer.substring(0, maxLength);
-                }
                 System.out.println("问题:" + question + ", 回答:" + answer + ",训练语句下标:" + index + ",总数量:" + size + ",当前次数：" + k + ",总次数:" + times);
-                Matrix qMatrix = wordEmbedding.getEmbedding(question, 1).getFeatureMatrix();
-                Matrix aMatrix = wordEmbedding.getEmbedding(answer, 2).getFeatureMatrix();
-                Matrix myAnswer = insertStart(aMatrix, transFormerManager.getStartMatrix(qMatrix));//第一行补开始符
-                List<Integer> answerList = new ArrayList<>();
-                for (int i = 0; i < answer.length(); i++) {
-                    String word = answer.substring(i, i + 1);
-                    int wordID = wordEmbedding.getID(word) + 2;
-                    answerList.add(wordID);
-                }
-                answerList.add(1);
-                sensoryNerve.postMessage(1, qMatrix, myAnswer, true, answerList, null);
+                Matrix qMatrix = wordEmbedding.getEmbedding(question, 1, false).getFeatureMatrix();
+                AnswerE answerE = getSentenceMatrix(answer);
+                Matrix myAnswer = insertStart(answerE.answerMatrix, transFormerManager.getStartMatrix(qMatrix));//第一行补开始符
+                sensoryNerve.postMessage(1, qMatrix, myAnswer, true, answerE.answerList, null);
             }
         }
         return transFormerManager.getModel();
+    }
+
+    static class AnswerE {
+        List<Integer> answerList;
+        Matrix answerMatrix;
     }
 }

@@ -42,7 +42,7 @@ public class NerveCenter {//神经中枢
             if (isFinish) {//输出结果
                 outBack.backWord(myWord, eventId);
             } else {
-                Matrix matrix = wordEmbedding.getEmbedding(nextWord, eventId).getFeatureMatrix();
+                Matrix matrix = wordEmbedding.getEmbedding(nextWord, eventId, false).getFeatureMatrix();
                 featureMatrix = MatrixOperation.pushVector(featureMatrix, matrix, true);
                 go(eventId, featureMatrix, outBack, myWord);
             }

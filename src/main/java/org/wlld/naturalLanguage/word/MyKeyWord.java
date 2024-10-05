@@ -76,7 +76,7 @@ public class MyKeyWord {
             if (nerveLength < word.length()) {
                 times = word.length() - nerveLength + 1;
             }
-            Matrix allFeature = wordEmbedding.getEmbedding(word, eventId).getFeatureMatrix();
+            Matrix allFeature = wordEmbedding.getEmbedding(word, eventId, false).getFeatureMatrix();
             for (int i = 0; i < times; i++) {
                 if (isStudy) {
                     E.clear();

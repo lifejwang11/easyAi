@@ -64,7 +64,7 @@ public class CustomManager {//
         if (question.length() > maxFeatureLength) {
             question = question.substring(0, maxFeatureLength);
         }
-        MyWordFeature myWordFeature = wordEmbedding.getEmbedding(question, eventID);
+        MyWordFeature myWordFeature = wordEmbedding.getEmbedding(question, eventID, false);
         List<Double> featureList = myWordFeature.getFirstFeatureList();
         Matrix featureMatrix = myWordFeature.getFeatureMatrix();
         featureMatrix = insertZero(featureMatrix, featureMatrix.getX());
@@ -92,7 +92,7 @@ public class CustomManager {//
                     answer = answer.substring(0, answerMaxLength);
                 }
                 String word = question + answer;
-                MyWordFeature myWordFeature = wordEmbedding.getEmbedding(word, 1);
+                MyWordFeature myWordFeature = wordEmbedding.getEmbedding(word, 1, false);
                 semanticsStudy(myWordFeature, question, answer, 1, random);
                 double point = (double) index / (double) (wordSize) * 100;
                 String result = String.format("%.6f", point);

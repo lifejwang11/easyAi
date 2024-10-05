@@ -107,7 +107,7 @@ public class RRNerveManager {
         if (sentence.length() > maxFeatureLength) {
             sentence = sentence.substring(0, maxFeatureLength);
         }
-        MyWordFeature myWordFeature = wordEmbedding.getEmbedding(sentence, eventID);
+        MyWordFeature myWordFeature = wordEmbedding.getEmbedding(sentence, eventID, false);
         List<Double> featureList = myWordFeature.getFirstFeatureList();
         Matrix featureMatrix = myWordFeature.getFeatureMatrix();
         int[] storeys = new int[featureMatrix.getX()];
@@ -169,7 +169,7 @@ public class RRNerveManager {
                 if (word.length() > maxFeatureLength) {
                     word = word.substring(0, maxFeatureLength);
                 }
-                randomTypeStudy(wordEmbedding.getEmbedding(word, 1), E);
+                randomTypeStudy(wordEmbedding.getEmbedding(word, 1, false), E);
             }
             index++;
         } while (index < maxNumber);

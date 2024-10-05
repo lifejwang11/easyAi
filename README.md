@@ -69,9 +69,9 @@ https://gitcode.com/dromara/EasyAi/overview
 * 在pom文件引入JAR包
 ```    
     <dependency>
-    <groupId>com.wlld</groupId>
+    <groupId>cn.myeasyai</groupId>
     <artifactId>easyAi</artifactId>
-    <version>1.2.5</version>
+    <version>1.2.6</version>
     </dependency>
 ```
 

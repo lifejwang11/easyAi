@@ -1,6 +1,7 @@
 package org.wlld.naturalLanguage.word;
 
 
+import org.wlld.config.TfConfig;
 import org.wlld.matrixTools.Matrix;
 import org.wlld.matrixTools.MatrixOperation;
 import org.wlld.config.RZ;
@@ -31,6 +32,11 @@ public class WordEmbedding {
     private final List<String> wordList = new ArrayList<>();//单字集合
     private SentenceConfig config;
     private int wordVectorDimension;
+    private int studyTimes = 1;
+
+    public void setStudyTimes(int studyTimes) {
+        this.studyTimes = studyTimes;
+    }
 
     public void setConfig(SentenceConfig config) {
         this.config = config;
@@ -69,13 +75,18 @@ public class WordEmbedding {
         nerveManager.insertModelParameter(wordTwoVectorModel.getModelParameter());
     }
 
-    public MyWordFeature getEmbedding(String word, long eventId) throws Exception {//做截断
+    public MyWordFeature getEmbedding(String word, long eventId, boolean once) throws Exception {//做截断
         MyWordFeature myWordFeature = new MyWordFeature();
         int wordDim = wordVectorDimension;//
         Matrix matrix = null;
         for (int i = 0; i < word.length(); i++) {
             WordMatrix wordMatrix = new WordMatrix(wordDim);
-            String myWord = word.substring(i, i + 1);
+            String myWord;
+            if (!once) {
+                myWord = word.substring(i, i + 1);
+            } else {
+                myWord = word;
+            }
             int index = getID(myWord);
             studyDNN(eventId, index, 0, wordMatrix, true, false);
             if (matrix == null) {
@@ -83,6 +94,9 @@ public class WordEmbedding {
                 matrix = wordMatrix.getVector();
             } else {
                 matrix = MatrixOperation.pushVector(matrix, wordMatrix.getVector(), true);
+            }
+            if (once) {
+                break;
             }
         }
         myWordFeature.setFeatureMatrix(matrix);
@@ -107,16 +121,21 @@ public class WordEmbedding {
 
 
     public WordTwoVectorModel start() throws Exception {//开始进行词向量训练
-        List<String> sentenceList = sentenceModel.getSentenceList();
+        List<String[]> sentenceList = sentenceModel.getSentenceList();
         int size = sentenceList.size();
         System.out.println("词嵌入训练启动...");
-        for (int i = 0; i < size; i++) {
-            long start = System.currentTimeMillis();
-            study(sentenceList.get(i));
-            long end = System.currentTimeMillis() - start;
-            double r = (double) i / size * 100;
-            String result = String.format("%.6f", r);
-            System.out.println("size:" + size + ",index:" + i + ",耗时:" + end + ",完成度:" + result + "%");
+        int allTimes = studyTimes * size;
+        int index = 0;
+        for (int k = 0; k < studyTimes; k++) {
+            for (int i = 0; i < size; i++) {
+                index++;
+                long start = System.currentTimeMillis();
+                study(sentenceList.get(i));
+                long end = System.currentTimeMillis() - start;
+                double r = (double) index / allTimes * 100;
+                String result = String.format("%.6f", r);
+                System.out.println("size:" + size + ",index:" + i + ",耗时:" + end + ",完成度:" + result + "%");
+            }
         }
         WordTwoVectorModel wordTwoVectorModel = new WordTwoVectorModel();
         wordTwoVectorModel.setModelParameter(nerveManager.getModelParameter());
@@ -125,10 +144,10 @@ public class WordEmbedding {
         return wordTwoVectorModel;
     }
 
-    private void study(String word) throws Exception {
-        int[] indexArray = new int[word.length()];
-        for (int i = 0; i < word.length(); i++) {
-            int index = getID(word.substring(i, i + 1));
+    private void study(String[] word) throws Exception {
+        int[] indexArray = new int[word.length];
+        for (int i = 0; i < word.length; i++) {
+            int index = getID(word[i]);
             indexArray[i] = index;
         }
         for (int i = 0; i < indexArray.length; i++) {

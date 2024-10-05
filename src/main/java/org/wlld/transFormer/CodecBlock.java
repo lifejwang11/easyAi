@@ -78,12 +78,13 @@ public class CodecBlock {
         this.beforeEncoderBlock = beforeEncoderBlock;
     }
 
-    public CodecBlock(int maxLength, int multiNumber, int featureDimension, double studyPoint, int depth,
-                      boolean encoder, int regularModel, double regular) throws Exception {//进行初始化
+    public CodecBlock(int multiNumber, int featureDimension, double studyPoint, int depth,
+                      boolean encoder, int regularModel, double regular, int maxLength, boolean selfTimeCode) throws Exception {//进行初始化
         this.encoder = encoder;
         attentionLayNorm = new LayNorm(1, featureDimension, this, null, studyPoint);
         lineLayNorm = new LayNorm(2, featureDimension, this, null, studyPoint);
-        multiSelfAttention = new MultiSelfAttention(multiNumber, studyPoint, depth, featureDimension, maxLength, encoder, this);
+        multiSelfAttention = new MultiSelfAttention(multiNumber, studyPoint, depth, featureDimension, encoder, this, maxLength
+                , selfTimeCode);
         multiSelfAttention.setLayNorm(attentionLayNorm);
         attentionLayNorm.setMultiSelfAttention(multiSelfAttention);
         initLine(featureDimension, studyPoint, regularModel, regular);

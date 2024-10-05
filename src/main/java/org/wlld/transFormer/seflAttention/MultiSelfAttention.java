@@ -21,6 +21,7 @@ public class MultiSelfAttention {//多头自注意力层
     private final int depth;//深度
     private final boolean encoder;
     private final int maxLength;//序列最大长度
+    private final boolean selfTimeCode;//使用自增时间序列编码
 
     public void setLayNorm(LayNorm layNorm) {
         this.layNorm = layNorm;
@@ -169,8 +170,26 @@ public class MultiSelfAttention {//多头自注意力层
         return eventBody;
     }
 
+    private void addTimeCode(Matrix feature) throws Exception {
+        int x = feature.getX();
+        int y = feature.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                int k = j / 2;
+                double wk = 1 / (Math.pow(10000, 2D * k / y));
+                double pe;
+                if (j % 2 == 0) {//当列数是偶数
+                    pe = Math.sin(wk * i);
+                } else {//当列数是奇数
+                    pe = Math.cos(wk * i);
+                }
+                double value = feature.getNumber(i, j) + pe;
+                feature.setNub(i, j, value);
+            }
+        }
+    }
 
-    private void addTimeCode(Matrix feature) throws Exception {//添加时间编码
+    private void addTimeCodeBySelf(Matrix feature) throws Exception {//添加时间编码
         double timeStep = 1D / maxLength;
         int x = feature.getX();
         int y = feature.getY();
@@ -186,7 +205,11 @@ public class MultiSelfAttention {//多头自注意力层
     public void sendMatrixMessage(long eventID, Matrix feature, boolean isStudy
             , OutBack outBack, List<Integer> E, Matrix encoderFeature) throws Exception {//从输入神经元
         if (depth == 1) {//如果是第一层，则添加时间序列参数
-            addTimeCode(feature);
+            if (selfTimeCode) {
+                addTimeCodeBySelf(feature);
+            } else {
+                addTimeCode(feature);
+            }
         }
         List<EventBody> eventBodies = new ArrayList<>();
         for (SelfAttention selfAttention : selfAttentions) {
@@ -198,11 +221,12 @@ public class MultiSelfAttention {//多头自注意力层
     }
 
 
-    public MultiSelfAttention(int multiNumber, double studyPoint, int depth, int wordVectorDimension, int maxLength
-            , boolean encoder, CodecBlock codecBlock) throws Exception {
+    public MultiSelfAttention(int multiNumber, double studyPoint, int depth, int wordVectorDimension, boolean encoder,
+                              CodecBlock codecBlock, int maxLength, boolean selfTimeCode) throws Exception {
         Random random = new Random();
-        this.codecBlock = codecBlock;
+        this.selfTimeCode = selfTimeCode;
         this.maxLength = maxLength;
+        this.codecBlock = codecBlock;
         this.encoder = encoder;
         int yiZhi = wordVectorDimension * multiNumber;
         this.studyPoint = studyPoint;

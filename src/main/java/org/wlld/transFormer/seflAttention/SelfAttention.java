@@ -142,7 +142,7 @@ public class SelfAttention {//自注意力层
         int y = matrix.getY();
         for (int i = 0; i < x; i++) {
             for (int j = i + 1; j < y; j++) {
-                matrix.setNub(i, j, -10000D);
+                matrix.setNub(i, j, -1000D);
             }
         }
     }
