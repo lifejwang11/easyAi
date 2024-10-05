@@ -11,7 +11,7 @@ public class TfConfig {
     private int times = 10;//循环增强次数
     private int regularModel = RZ.NOT_RZ;//正则模式
     private double regular = 0;//正则系数
-    private String splitWord = " ";//词向量默认隔断符，无隔断则会逐字隔断
+    private String splitWord;//词向量默认隔断符，无隔断则会逐字隔断
     private boolean selfTimeCode = true;//使用自增时间序列位置编码
 
     public boolean isSelfTimeCode() {
