@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * 矩阵
  **/
-public class Matrix {
+public class Matrix extends MatrixOperation {
     private double[][] matrix;//矩阵本体
     private int x;//矩阵的行数
     private int y;//矩阵的列数
@@ -241,7 +241,7 @@ public class Matrix {
         if (coordinate.father != null) {
             element = mulFather(coordinate.father, element, div);
         } else {//道路尽头
-            if (invinverse(div)) {//偶排列
+            if (parity(div)) {//偶排列
                 defNub = defNub + element;
             } else {//奇排列
                 defNub = defNub - element;
@@ -271,7 +271,7 @@ public class Matrix {
         return defNub;
     }
 
-    private boolean invinverse(List<Coordinate> list) {//获取排列奇偶性
+    private boolean parity(List<Coordinate> list) {//获取排列奇偶性
         boolean parity = true;//默认是偶排列
         double[] row = new double[list.size()];
         double[] clo = new double[list.size()];
@@ -279,8 +279,8 @@ public class Matrix {
             row[i] = list.get(i).x + 1;
             clo[i] = list.get(i).y + 1;
         }
-        int rowInv = MatrixOperation.inverseNumber(row);
-        int cloInv = MatrixOperation.inverseNumber(clo);
+        int rowInv = inverseNumber(row);
+        int cloInv = inverseNumber(clo);
         int inverserNumber = rowInv + cloInv;
         if (inverserNumber % 2 != 0) {//奇排列
             parity = false;

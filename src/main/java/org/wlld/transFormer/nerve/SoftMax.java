@@ -11,11 +11,12 @@ import java.util.List;
 public class SoftMax extends Nerve {
     private final List<OutNerve> outNerves;
     private final boolean isShowLog;
+    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public SoftMax(List<OutNerve> outNerves, boolean isShowLog
             , int sensoryNerveNub, int hiddenNerveNub, int outNerveNub) throws Exception {
         super(0, "softMax", 0, null, sensoryNerveNub, hiddenNerveNub, outNerveNub,
-                null, 0, 0);
+                null, 0, 0, 1);
         this.outNerves = outNerves;
         this.isShowLog = isShowLog;
     }
@@ -43,7 +44,7 @@ public class SoftMax extends Nerve {
                     if (i == 0) {
                         allError = errors;
                     } else {
-                        allError = MatrixOperation.pushVector(allError, errors, true);
+                        allError = matrixOperation.pushVector(allError, errors, true);
                     }
                 }
                 int size = outNerves.size();

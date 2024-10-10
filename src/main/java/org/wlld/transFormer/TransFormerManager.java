@@ -123,13 +123,15 @@ public class TransFormerManager {
         if (multiNumber > 1 && featureDimension > 0 && allDepth > 0 && typeNumber > 1) {
             for (int i = 0; i < allDepth; i++) {
                 CodecBlock encoderBlock = new CodecBlock(multiNumber, featureDimension, studyPoint,
-                        i + 1, true, regularModel, regular, maxLength, selfTimeCode);
+                        i + 1, true, regularModel, regular, maxLength,
+                        selfTimeCode, tfConfig.getCoreNumber());
                 encoderBlocks.add(encoderBlock);
             }
             CodecBlock lastEnCoderBlock = encoderBlocks.get(encoderBlocks.size() - 1);//最后一层编码器
             for (int i = 0; i < allDepth; i++) {
                 CodecBlock decoderBlock = new CodecBlock(multiNumber, featureDimension, studyPoint,
-                        i + 2, false, regularModel, regular, maxLength, selfTimeCode);
+                        i + 2, false, regularModel, regular, maxLength,
+                        selfTimeCode, tfConfig.getCoreNumber());
                 decoderBlock.setLastEncoderBlock(lastEnCoderBlock);//放入最优一层编码器
                 decoderBlocks.add(decoderBlock);
             }
@@ -137,10 +139,10 @@ public class TransFormerManager {
             connectCodecBlock(encoderBlocks);
             connectCodecBlock(decoderBlocks);
             lineBlock = new LineBlock(typeNumber, featureDimension, studyPoint, lastDecoderBlock, showLog, regularModel
-                    , regular);
+                    , regular, tfConfig.getCoreNumber());
             lastDecoderBlock.setLineBlock(lineBlock);
             firstDecoderBlock = new FirstDecoderBlock(multiNumber, featureDimension, studyPoint, decoderBlocks.get(0), maxLength
-                    , selfTimeCode);
+                    , selfTimeCode, tfConfig.getCoreNumber());
             firstDecoderBlock.setLastEncoderBlock(lastEnCoderBlock);
             decoderBlocks.get(0).setFirstDecoderBlock(firstDecoderBlock);
             sensoryNerve = new SensoryNerve(encoderBlocks.get(0), firstDecoderBlock);

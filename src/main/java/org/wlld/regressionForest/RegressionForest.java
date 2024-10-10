@@ -25,6 +25,7 @@ public class RegressionForest extends Frequency {
     private Matrix pc;//需要映射的基
     private int cosSize = 20;//cos 分成几份
     private TreeMap<Integer, Forest> forestMap = new TreeMap<>();//节点列表
+    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public int getCosSize() {
         return cosSize;
@@ -258,7 +259,7 @@ public class RegressionForest extends Frequency {
     private void regression(Forest forest) throws Exception {//对分段进行线性回归
         Matrix conditionMatrix = forest.getConditionMatrix();
         Matrix resultMatrix = forest.getResultMatrix();
-        Matrix ws = MatrixOperation.getLinearRegression(conditionMatrix, resultMatrix);
+        Matrix ws = matrixOperation.getLinearRegression(conditionMatrix, resultMatrix);
         double[] w = forest.getW();
         for (int i = 0; i < ws.getX(); i++) {
             w[i] = ws.getNumber(i, 0);

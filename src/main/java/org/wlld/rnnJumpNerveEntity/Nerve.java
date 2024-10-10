@@ -48,6 +48,7 @@ public abstract class Nerve {
     protected int allDepth;//总深度
     protected boolean creator;//是否为创建网络
     protected int startDepth;//开始深度
+    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public int getDepth() {
         return depth;
@@ -225,9 +226,9 @@ public abstract class Nerve {
         int x = (xInput - sub) / step;//线性变换后矩阵的行数 （图片长度-（核长-步长））/步长
         int y = (yInput - sub) / step;//线性变换后矩阵的列数
         Matrix myMatrix = new Matrix(x, y);//线性变化后的矩阵
-        im2col = MatrixOperation.im2col(matrix, kernLen, step);
+        im2col = matrixOperation.im2col(matrix, kernLen, step);
         //输出矩阵
-        Matrix matrixOut = MatrixOperation.mulMatrix(im2col, nerveMatrix);
+        Matrix matrixOut = matrixOperation.mulMatrix(im2col, nerveMatrix);
         //输出矩阵重新排序
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
@@ -320,8 +321,8 @@ public abstract class Nerve {
             }
         }
         //计算权重变化量
-        Matrix trx = MatrixOperation.transPosition(im2col);
-        Matrix wSub = MatrixOperation.mulMatrix(trx, yc);
+        Matrix trx = matrixOperation.transPosition(im2col);
+        Matrix wSub = matrixOperation.mulMatrix(trx, yc);
         //给权重变化wSub增加正则项，抑制权重变化量
         //计算x变化量
         x = im2col.getX();
@@ -333,9 +334,9 @@ public abstract class Nerve {
                 im2col.setNub(i, j, k);
             }
         }
-        Matrix gNext = MatrixOperation.reverseIm2col(im2col, kernLen, step, xInput, yInput);
+        Matrix gNext = matrixOperation.reverseIm2col(im2col, kernLen, step, xInput, yInput);
         //更新权重
-        nerveMatrix = MatrixOperation.add(nerveMatrix, wSub);
+        nerveMatrix = matrixOperation.add(nerveMatrix, wSub);
         //将梯度继续回传
         backMatrixMessage(gNext);
     }

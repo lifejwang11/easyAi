@@ -4,14 +4,9 @@ package org.wlld.transFormer.nerve;
 import org.wlld.matrixTools.Matrix;
 import org.wlld.i.ActiveFunction;
 import org.wlld.i.OutBack;
-import org.wlld.matrixTools.MatrixOperation;
 import org.wlld.transFormer.LineBlock;
-import org.wlld.transFormer.seflAttention.MultiSelfAttention;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author lidapeng
@@ -21,9 +16,10 @@ import java.util.Map;
 public class HiddenNerve extends Nerve {
 
     public HiddenNerve(int id, int depth, double studyPoint, ActiveFunction activeFunction, int sensoryNerveNub,
-                       int outNerveNub, LineBlock lineBlock, int regularModel, double regular) throws Exception {//隐层神经元
+                       int outNerveNub, LineBlock lineBlock, int regularModel, double regular
+            , int coreNumber) throws Exception {//隐层神经元
         super(id, "HiddenNerve", studyPoint, activeFunction, sensoryNerveNub, 0,
-                outNerveNub, lineBlock, regularModel, regular);
+                outNerveNub, lineBlock, regularModel, regular, coreNumber);
         this.depth = depth;
     }
 

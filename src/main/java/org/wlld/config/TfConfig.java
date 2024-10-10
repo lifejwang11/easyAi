@@ -13,6 +13,15 @@ public class TfConfig {
     private double regular = 0;//正则系数
     private String splitWord;//词向量默认隔断符，无隔断则会逐字隔断
     private boolean selfTimeCode = true;//使用自增时间序列位置编码
+    private int coreNumber = 1;//是否使用多核并行计算进行提速
+
+    public int getCoreNumber() {
+        return coreNumber;
+    }
+
+    public void setCoreNumber(int coreNumber) {
+        this.coreNumber = coreNumber;
+    }
 
     public boolean isSelfTimeCode() {
         return selfTimeCode;

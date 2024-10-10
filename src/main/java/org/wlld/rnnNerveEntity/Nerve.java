@@ -36,14 +36,15 @@ public abstract class Nerve {
     protected double sigmaW;//对上一层权重与上一层梯度的积进行求和
     private int backNub = 0;//当前节点被反向传播的次数
     protected ActiveFunction activeFunction;
-    private int rzType;//正则化类型，默认不进行正则化
-    private double lParam;//正则参数
-    private int step;//步长
-    private int kernLen;//核长
+    private final int rzType;//正则化类型，默认不进行正则化
+    private final double lParam;//正则参数
+    private final int step;//步长
+    private final int kernLen;//核长
     private Matrix im2col;//输入矩阵
     private int xInput;//输入矩阵的x
     private int yInput;//输入矩阵的y
     private Matrix outMatrix;//输出矩阵
+    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public Map<Integer, Double> getDendrites() {
         return dendrites;
@@ -122,9 +123,9 @@ public abstract class Nerve {
         int x = (xInput - sub) / step;//线性变换后矩阵的行数 （图片长度-（核长-步长））/步长
         int y = (yInput - sub) / step;//线性变换后矩阵的列数
         Matrix myMatrix = new Matrix(x, y);//线性变化后的矩阵
-        im2col = MatrixOperation.im2col(matrix, kernLen, step);
+        im2col = matrixOperation.im2col(matrix, kernLen, step);
         //输出矩阵
-        Matrix matrixOut = MatrixOperation.mulMatrix(im2col, nerveMatrix);
+        Matrix matrixOut = matrixOperation.mulMatrix(im2col, nerveMatrix);
         //输出矩阵重新排序
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
@@ -205,8 +206,8 @@ public abstract class Nerve {
             }
         }
         //计算权重变化量
-        Matrix trx = MatrixOperation.transPosition(im2col);
-        Matrix wSub = MatrixOperation.mulMatrix(trx, yc);
+        Matrix trx = matrixOperation.transPosition(im2col);
+        Matrix wSub = matrixOperation.mulMatrix(trx, yc);
         //给权重变化wSub增加正则项，抑制权重变化量
         //System.out.println(wSub.getString());
         //计算x变化量
@@ -219,9 +220,9 @@ public abstract class Nerve {
                 im2col.setNub(i, j, k);
             }
         }
-        Matrix gNext = MatrixOperation.reverseIm2col(im2col, kernLen, step, xInput, yInput);
+        Matrix gNext = matrixOperation.reverseIm2col(im2col, kernLen, step, xInput, yInput);
         //更新权重
-        nerveMatrix = MatrixOperation.add(nerveMatrix, wSub);
+        nerveMatrix = matrixOperation.add(nerveMatrix, wSub);
         //将梯度继续回传
         backMatrixMessage(gNext);
     }

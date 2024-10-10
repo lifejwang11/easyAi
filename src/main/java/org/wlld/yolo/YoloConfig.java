@@ -19,6 +19,15 @@ public class YoloConfig {
     private double checkStepReduce = 0.5;//检测步长收缩系数
     private double regular = 0;//正则系数
     private int regularModel = RZ.NOT_RZ;//正则模式
+    private int coreNumber = 1;//是否使用多核并行计算进行提速
+
+    public int getCoreNumber() {
+        return coreNumber;
+    }
+
+    public void setCoreNumber(int coreNumber) {
+        this.coreNumber = coreNumber;
+    }
 
     public int getRegularModel() {
         return regularModel;

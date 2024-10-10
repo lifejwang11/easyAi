@@ -15,12 +15,14 @@ import java.util.Map;
  */
 public class HiddenNerve extends Nerve {
     private final boolean isConvFinish;//卷积最后一层
+    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public HiddenNerve(int id, int depth, int upNub, int downNub, double studyPoint,
                        boolean init, ActiveFunction activeFunction, boolean isDynamic, int rzType, double lParam
-            , int step, int kernLen, int matrixX, int matrixY, boolean isConvFinish) throws Exception {//隐层神经元
+            , int step, int kernLen, int matrixX, int matrixY, boolean isConvFinish, int coreNumber) throws Exception {//隐层神经元
         super(id, upNub, "HiddenNerve", downNub, studyPoint,
-                init, activeFunction, isDynamic, rzType, lParam, step, kernLen, depth, matrixX, matrixY);
+                init, activeFunction, isDynamic, rzType, lParam, step, kernLen, depth, matrixX, matrixY
+                , coreNumber);
         this.isConvFinish = isConvFinish;
     }
 
@@ -63,7 +65,7 @@ public class HiddenNerve extends Nerve {
             if (!isStudy && needMatrix) {
                 outBack.getBackMatrix(myMatrix, getId(), eventId);
             }
-            sendMatrixList(eventId, MatrixOperation.matrixToList(myMatrix), isStudy, E, outBack);
+            sendMatrixList(eventId, matrixOperation.matrixToList(myMatrix), isStudy, E, outBack);
         } else {
             sendMatrix(eventId, myMatrix, isStudy, E, outBack, needMatrix);
         }
