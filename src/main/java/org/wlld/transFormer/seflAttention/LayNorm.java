@@ -27,6 +27,7 @@ public class LayNorm {//残差与归一化
     private final double study;//学习率
     private Matrix myFinalError;//从FNN传来的总误差
     private int number;//记录fnn传来的误差次数
+    private final MatrixOperation matrixOperation;
 
     public LayNormModel getModel() {
         LayNormModel layNormModel = new LayNormModel();
@@ -49,12 +50,13 @@ public class LayNorm {//残差与归一化
     }
 
     public LayNorm(int type, int featureDimension, CodecBlock myEncoderBlock, FirstDecoderBlock firstDecoderBlock
-            , double study) throws Exception {
+            , double study, int coreNumber) throws Exception {
         this.study = study;
         this.myEncoderBlock = myEncoderBlock;
         this.type = type;
         this.featureDimension = featureDimension;
         this.firstDecoderBlock = firstDecoderBlock;
+        matrixOperation = new MatrixOperation(coreNumber);
         bTa = new Matrix(1, featureDimension);
         power = new Matrix(featureDimension, featureDimension);
         Random random = new Random();
@@ -72,9 +74,9 @@ public class LayNorm {//残差与归一化
     }
 
     private Matrix back(Matrix errorMatrix, Matrix myData) throws Exception {
-        Matrix subPower = MatrixOperation.matrixMulPd(errorMatrix, myData, power, false);
-        Matrix sub = MatrixOperation.matrixMulPd(errorMatrix, myData, power, true);
-        power = MatrixOperation.add(subPower, power);
+        Matrix subPower = matrixOperation.matrixMulPd(errorMatrix, myData, power, false);
+        Matrix sub = matrixOperation.matrixMulPd(errorMatrix, myData, power, true);
+        power = matrixOperation.add(subPower, power);
         double n = Math.sqrt(sub.getY());
         double nt = -n / (n - 1);
         Matrix subMatrix = new Matrix(1, sub.getY());
@@ -97,13 +99,13 @@ public class LayNorm {//残差与归一化
         if (myFinalError == null) {
             myFinalError = errorMatrix;
         } else {
-            myFinalError = MatrixOperation.add(myFinalError, errorMatrix);
+            myFinalError = matrixOperation.add(myFinalError, errorMatrix);
         }
         if (number == featureDimension) {
             number = 0;
             Matrix error = myFinalError.getSonOfMatrix(0, 0, myFinalError.getX(), myFinalError.getY() - 1);
             myFinalError = null;
-            Matrix myError = MatrixOperation.add(error, allError);//残差误差与FNN回传误差相加
+            Matrix myError = matrixOperation.add(error, allError);//残差误差与FNN回传误差相加
             backErrorFromLine(myError, eventID);
         }
     }
@@ -112,7 +114,7 @@ public class LayNorm {//残差与归一化
         if (myFinalError == null) {
             myFinalError = errorMatrix;
         } else {
-            myFinalError = MatrixOperation.add(myFinalError, errorMatrix);
+            myFinalError = matrixOperation.add(myFinalError, errorMatrix);
         }
     }
 
@@ -123,18 +125,18 @@ public class LayNorm {//残差与归一化
     }
 
     public void backErrorFromLine(Matrix errorMatrix, long eventID) throws Exception {//从线性层后传，类别为2
-        MatrixOperation.mathMul(errorMatrix, study);
+        matrixOperation.mathMul(errorMatrix, study);
         int x = errorMatrix.getX();
         Matrix myError = null;
         for (int i = 0; i < x; i++) {
             Matrix error = errorMatrix.getRow(i);
             Matrix myData = myNormData.getRow(i);
-            bTa = MatrixOperation.add(error, bTa);//更新bTa
+            bTa = matrixOperation.add(error, bTa);//更新bTa
             Matrix myRowError = back(error, myData);
             if (i == 0) {
                 myError = myRowError;
             } else {
-                myError = MatrixOperation.pushVector(myError, myRowError, true);
+                myError = matrixOperation.pushVector(myError, myRowError, true);
             }
         }
         //本模块误差处理完毕继续向后传播 2返回到fnn,1返回注意力
@@ -151,7 +153,7 @@ public class LayNorm {//残差与归一化
 
     public void addNorm(Matrix feature, Matrix outMatrix, long eventID, boolean isStudy
             , OutBack outBack, List<Integer> E, Matrix encoderFeature) throws Exception {//残差及归一化
-        Matrix myMatrix = MatrixOperation.add(feature, outMatrix);//残差相加
+        Matrix myMatrix = matrixOperation.add(feature, outMatrix);//残差相加
         Matrix out = layNorm(myMatrix, isStudy);
         if (type == 1) {
             if (myEncoderBlock != null) {
@@ -169,7 +171,7 @@ public class LayNorm {//残差与归一化
         Matrix matrixFeature;
         if (reMatrixMap.containsKey(eventID)) {
             Matrix myFeature = reMatrixMap.get(eventID);
-            matrixFeature = MatrixOperation.pushVector(myFeature, parameter, false);
+            matrixFeature = matrixOperation.pushVector(myFeature, parameter, false);
         } else {
             matrixFeature = parameter;
         }
@@ -190,7 +192,7 @@ public class LayNorm {//残差与归一化
     private Matrix norm(Matrix row) throws Exception {
         Matrix result = new Matrix(1, row.getY());
         double avg = row.getAVG();//平均值
-        double sd = MatrixOperation.getSdByMatrix(row, avg, 0.00001);//标准差
+        double sd = matrixOperation.getSdByMatrix(row, avg, 0.00001);//标准差
         for (int i = 0; i < row.getY(); i++) {
             double value = (row.getNumber(0, i) - avg) / sd;
             result.setNub(0, i, value);
@@ -210,14 +212,14 @@ public class LayNorm {//残差与归一化
                 if (i == 0) {
                     myNormData = normData;
                 } else {
-                    myNormData = MatrixOperation.pushVector(myNormData, normData, true);
+                    myNormData = matrixOperation.pushVector(myNormData, normData, true);
                 }
             }
-            Matrix want = MatrixOperation.add(MatrixOperation.mulMatrix(normData, power), bTa);
+            Matrix want = matrixOperation.add(matrixOperation.mulMatrix(normData, power), bTa);
             if (i == 0) {
                 out = want;
             } else {
-                out = MatrixOperation.pushVector(out, want, true);
+                out = matrixOperation.pushVector(out, want, true);
             }
         }
         return out;

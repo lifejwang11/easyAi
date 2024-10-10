@@ -11,6 +11,7 @@ public class ThreeChannelMatrix {
     private Matrix H;
     private int x;
     private int y;
+    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public int getX() {
         return x;
@@ -30,9 +31,9 @@ public class ThreeChannelMatrix {
 
     public double getDist(ThreeChannelMatrix th) throws Exception {
         if (th.getX() == x && th.getY() == y) {
-            double subR = Math.abs(MatrixOperation.sub(matrixR, th.getMatrixR()).getAVG());
-            double subG = Math.abs(MatrixOperation.sub(matrixG, th.getMatrixG()).getAVG());
-            double subB = Math.abs(MatrixOperation.sub(matrixB, th.getMatrixB()).getAVG());
+            double subR = Math.abs(matrixOperation.sub(matrixR, th.getMatrixR()).getAVG());
+            double subG = Math.abs(matrixOperation.sub(matrixG, th.getMatrixG()).getAVG());
+            double subB = Math.abs(matrixOperation.sub(matrixB, th.getMatrixB()).getAVG());
             return (subR + subB + subG) / 3;
         } else {
             throw new Exception("图像尺寸大小不匹配，本图像尺寸x是：" + x + ",y:" + y + "。待匹配尺寸图像 x:" + th.getX() +
@@ -42,13 +43,13 @@ public class ThreeChannelMatrix {
 
     public void add(double nub, boolean add) throws Exception {//对rgb矩阵曝光进行处理
         if (add) {//加数值
-            MatrixOperation.mathAdd(matrixR, nub);
-            MatrixOperation.mathAdd(matrixG, nub);
-            MatrixOperation.mathAdd(matrixB, nub);
+            matrixOperation.mathAdd(matrixR, nub);
+            matrixOperation.mathAdd(matrixG, nub);
+            matrixOperation.mathAdd(matrixB, nub);
         } else {//减数值
-            MatrixOperation.mathSub(matrixR, nub);
-            MatrixOperation.mathSub(matrixG, nub);
-            MatrixOperation.mathSub(matrixB, nub);
+            matrixOperation.mathSub(matrixR, nub);
+            matrixOperation.mathSub(matrixG, nub);
+            matrixOperation.mathSub(matrixB, nub);
         }
     }
 

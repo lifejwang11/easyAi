@@ -15,11 +15,12 @@ import java.util.Random;
 public class LVQ {
     private int typeNub;//原型聚类个数,即分类个数(需要模型返回)
     private MatrixBody[] model;//原型向量(需要模型返回)
-    private List<MatrixBody> matrixList = new ArrayList<>();
-    private double studyPoint = 0.01;//量化学习率
+    private final List<MatrixBody> matrixList = new ArrayList<>();
+    private final double studyPoint;//量化学习率
     private int length;//向量长度(需要返回)
     private boolean isReady = false;
-    private int lvqNub;
+    private final int lvqNub;
+    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public void setTypeNub(int typeNub) {
         this.typeNub = typeNub;
@@ -107,18 +108,18 @@ public class LVQ {
 
     //比较两个向量之间的范数差
     public double vectorEqual(Matrix matrix1, Matrix matrix2) throws Exception {
-        Matrix matrix = MatrixOperation.sub(matrix1, matrix2);
-        return MatrixOperation.getNorm(matrix);
+        Matrix matrix = matrixOperation.sub(matrix1, matrix2);
+        return matrixOperation.getNorm(matrix);
     }
 
     private Matrix op(Matrix matrix, Matrix modelMatrix, boolean isRight) throws Exception {
-        Matrix matrix1 = MatrixOperation.sub(matrix, modelMatrix);
-        MatrixOperation.mathMul(matrix1, studyPoint);
+        Matrix matrix1 = matrixOperation.sub(matrix, modelMatrix);
+        matrixOperation.mathMul(matrix1, studyPoint);
         Matrix matrix2;
         if (isRight) {
-            matrix2 = MatrixOperation.add(modelMatrix, matrix1);
+            matrix2 = matrixOperation.add(modelMatrix, matrix1);
         } else {
-            matrix2 = MatrixOperation.sub(modelMatrix, matrix1);
+            matrix2 = matrixOperation.sub(modelMatrix, matrix1);
         }
         return matrix2;
     }

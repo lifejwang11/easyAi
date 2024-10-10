@@ -22,6 +22,7 @@ public class MultiSelfAttention {//多头自注意力层
     private final boolean encoder;
     private final int maxLength;//序列最大长度
     private final boolean selfTimeCode;//使用自增时间序列编码
+    private final MatrixOperation matrixOperation;
 
     public void setLayNorm(LayNorm layNorm) {
         this.layNorm = layNorm;
@@ -96,11 +97,11 @@ public class MultiSelfAttention {//多头自注意力层
     }
 
     public void backError(Matrix allErrorMatrix, long eventID) throws Exception {
-        Matrix error = MatrixOperation.mathMulBySelf(allErrorMatrix, studyPoint);
+        Matrix error = matrixOperation.mathMulBySelf(allErrorMatrix, studyPoint);
         //求多头自注意力层权重矩阵的偏导矩阵
-        Matrix subPower = MatrixOperation.matrixMulPd(error, featureMatrix, powerMatrix, false);
-        Matrix subFeature = MatrixOperation.matrixMulPd(allErrorMatrix, featureMatrix, powerMatrix, true);
-        powerMatrix = MatrixOperation.add(powerMatrix, subPower);//更新权重矩阵
+        Matrix subPower = matrixOperation.matrixMulPd(error, featureMatrix, powerMatrix, false);
+        Matrix subFeature = matrixOperation.matrixMulPd(allErrorMatrix, featureMatrix, powerMatrix, true);
+        powerMatrix = matrixOperation.add(powerMatrix, subPower);//更新权重矩阵
         List<Matrix> matrixList = splitMatrix(subFeature);//拆分矩阵
         Matrix allNextFeatureError = null;
         Matrix allLastEncoderError = null;
@@ -110,14 +111,14 @@ public class MultiSelfAttention {//多头自注意力层
             if (allNextFeatureError == null) {
                 allNextFeatureError = nextFeatureError;
             } else {
-                allNextFeatureError = MatrixOperation.add(allNextFeatureError, nextFeatureError);
+                allNextFeatureError = matrixOperation.add(allNextFeatureError, nextFeatureError);
             }
             if (!encoder && depth > 1) {//深度大于1的解码器
                 Matrix lastEncoderError = attentionError.getLastEncoderError();
                 if (allLastEncoderError == null) {
                     allLastEncoderError = lastEncoderError;
                 } else {
-                    allLastEncoderError = MatrixOperation.add(allLastEncoderError, lastEncoderError);
+                    allLastEncoderError = matrixOperation.add(allLastEncoderError, lastEncoderError);
                 }
             }
         }
@@ -152,7 +153,7 @@ public class MultiSelfAttention {//多头自注意力层
             }
             mergeFeatureMatrix(myMultiFeature, matrix, i);
         }
-        Matrix out = MatrixOperation.mulMatrix(myMultiFeature, powerMatrix);
+        Matrix out = matrixOperation.mulMatrix(myMultiFeature, powerMatrix);
         if (isStudy) {
             featureMatrix = myMultiFeature;//保存训练时输入的特征矩阵
         }
@@ -222,8 +223,9 @@ public class MultiSelfAttention {//多头自注意力层
 
 
     public MultiSelfAttention(int multiNumber, double studyPoint, int depth, int wordVectorDimension, boolean encoder,
-                              CodecBlock codecBlock, int maxLength, boolean selfTimeCode) throws Exception {
+                              CodecBlock codecBlock, int maxLength, boolean selfTimeCode, int coreNumber) throws Exception {
         Random random = new Random();
+        matrixOperation = new MatrixOperation(coreNumber);
         this.selfTimeCode = selfTimeCode;
         this.maxLength = maxLength;
         this.codecBlock = codecBlock;
@@ -234,7 +236,7 @@ public class MultiSelfAttention {//多头自注意力层
         this.multiNumber = multiNumber;
         this.depth = depth;
         for (int k = 0; k < multiNumber; k++) {
-            SelfAttention selfAttention = new SelfAttention(studyPoint, depth, wordVectorDimension, k, encoder);
+            SelfAttention selfAttention = new SelfAttention(studyPoint, depth, wordVectorDimension, k, encoder, coreNumber);
             selfAttentions.add(selfAttention);
         }
         powerMatrix = new Matrix(yiZhi, wordVectorDimension);

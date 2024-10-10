@@ -410,7 +410,7 @@ public class NerveJumpManager {
 
     private void initDepthNerve(boolean isMatrix, int step, int kernLen, boolean creator, int startDepth) throws Exception {//初始化隐层神经元1
         if (isRnn) {
-            NerveCenter nerveCenter = new NerveCenter(0, null, powerTh, outNerveNub, false);
+            NerveCenter nerveCenter = new NerveCenter(0, null, powerTh, false);
             nerveCenterList.add(nerveCenter);
         }
         for (int i = 0; i < hiddenDepth; i++) {//遍历深度
@@ -421,7 +421,7 @@ public class NerveJumpManager {
             }
             if (isRnn) {
                 boolean isFinish = i == hiddenDepth - 1;
-                NerveCenter nerveCenter = new NerveCenter(i + 1, hiddenNerveList, powerTh, outNerveNub, isFinish);
+                NerveCenter nerveCenter = new NerveCenter(i + 1, hiddenNerveList, powerTh, isFinish);
                 nerveCenterList.add(nerveCenter);
             }
             for (int j = 1; j < hiddenNerveNub + 1; j++) {//遍历同级

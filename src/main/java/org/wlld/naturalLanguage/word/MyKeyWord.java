@@ -8,6 +8,7 @@ import org.wlld.entity.KeyWordForSentence;
 import org.wlld.entity.WordBack;
 import org.wlld.function.Tanh;
 import org.wlld.i.OutBack;
+import org.wlld.naturalLanguage.KeyWord;
 import org.wlld.rnnNerveCenter.ModelParameter;
 import org.wlld.rnnNerveCenter.NerveManager;
 import org.wlld.rnnNerveEntity.SensoryNerve;
@@ -16,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MyKeyWord {
+public class MyKeyWord extends MatrixOperation {
     private final WordEmbedding wordEmbedding;
     private final NerveManager typeNerveManager;
     private final int nerveLength;
@@ -94,7 +95,7 @@ public class MyKeyWord {
                 } else {
                     feature = allFeature.getSonOfMatrix(i, 0, nerveLength, allFeature.getY());
                 }
-                List<Double> firstFeature = MatrixOperation.rowVectorToList(feature.getRow(0));//首行特征
+                List<Double> firstFeature = rowVectorToList(feature.getRow(0));//首行特征
                 studyNerve(eventId, typeNerveManager.getSensoryNerves(), firstFeature, feature, E, isStudy, wordBack);
                 if (!isStudy) {//需要返回结果
                     key = wordBack.getId();

@@ -20,6 +20,7 @@ public class LineBlock {//线性层模块
     private Matrix allError;
     private final int featureDimension;
     private int backNumber = 0;//误差返回次数
+    private final MatrixOperation matrixOperation;
 
     public LineBlockModel getModel() {
         LineBlockModel lineBlockModel = new LineBlockModel();
@@ -48,15 +49,16 @@ public class LineBlock {//线性层模块
     }
 
     public LineBlock(int typeNumber, int featureDimension, double studyPoint, CodecBlock lastCodecBlock,
-                     boolean showLog, int regularModel, double regular) throws Exception {
+                     boolean showLog, int regularModel, double regular, int coreNumber) throws Exception {
         this.featureDimension = featureDimension;
         this.lastCodecBlock = lastCodecBlock;
+        matrixOperation = new MatrixOperation(coreNumber);
         SoftMax softMax = new SoftMax(outNerveList, showLog, typeNumber, typeNumber, typeNumber);
         //隐层
         List<Nerve> hiddenNerves = new ArrayList<>();
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve = new HiddenNerve(i + 1, 1, studyPoint, new Tanh(), featureDimension,
-                    typeNumber, this, regularModel, regular);
+                    typeNumber, this, regularModel, regular, coreNumber);
             hiddenNerves.add(hiddenNerve);
             hiddenNerveList.add(hiddenNerve);
         }
@@ -64,7 +66,7 @@ public class LineBlock {//线性层模块
         List<Nerve> outNerves = new ArrayList<>();
         for (int i = 0; i < typeNumber; i++) {
             OutNerve outNerve = new OutNerve(i + 1, studyPoint, featureDimension, featureDimension, typeNumber, softMax
-                    , regularModel, regular);
+                    , regularModel, regular, coreNumber);
             outNerve.connectFather(hiddenNerves);
             outNerves.add(outNerve);
             outNerveList.add(outNerve);
@@ -85,7 +87,7 @@ public class LineBlock {//线性层模块
         if (allError == null) {
             allError = errorMatrix;
         } else {
-            allError = MatrixOperation.add(errorMatrix, allError);
+            allError = matrixOperation.add(errorMatrix, allError);
         }
         if (backNumber == featureDimension) {
             backNumber = 0;

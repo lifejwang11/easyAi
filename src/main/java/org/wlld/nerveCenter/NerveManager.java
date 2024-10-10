@@ -32,6 +32,7 @@ public class NerveManager {
     private final ActiveFunction activeFunction;
     private final int rzType;//正则化类型，默认不进行正则化
     private final double lParam;//正则参数
+    private final int coreNumber;
 
     private Map<String, Double> conversion(Map<Integer, Double> map) {
         Map<String, Double> cMap = new HashMap<>();
@@ -189,11 +190,14 @@ public class NerveManager {
      * @param studyPoint      线性分类器学习率
      * @param rzType          正则函数
      * @param lParam          正则系数
+     * @param coreNumber      并行计算核心数
      * @throws Exception 如果参数错误则抛异常
      */
     public NerveManager(int sensoryNerveNub, int hiddenNerveNub, int outNerveNub
-            , int hiddenDepth, ActiveFunction activeFunction, double studyPoint, int rzType, double lParam) throws Exception {
+            , int hiddenDepth, ActiveFunction activeFunction, double studyPoint, int rzType, double lParam
+            , int coreNumber) throws Exception {
         if (sensoryNerveNub > 0 && hiddenNerveNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
+            this.coreNumber = coreNumber;
             this.hiddenNerveNub = hiddenNerveNub;
             this.sensoryNerveNub = sensoryNerveNub;
             this.outNerveNub = outNerveNub;
@@ -228,7 +232,7 @@ public class NerveManager {
                 isConvFinish = true;
             }
             HiddenNerve hiddenNerve = new HiddenNerve(id, i + 1, 1, downNub, studyPoint, initPower, convFunction, true
-                    , rzType, lParam, step, kernLen, 0, 0, isConvFinish);
+                    , rzType, lParam, step, kernLen, 0, 0, isConvFinish, coreNumber);
             depthNerves.add(hiddenNerve);
         }
         for (int i = 0; i < conHiddenDepth - 1; i++) {//遍历深度
@@ -313,7 +317,8 @@ public class NerveManager {
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
-                    activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0, 0);
+                    activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0, 0
+                    , coreNumber);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFather(lastNerveList);
             outNerves.add(outNerve);
@@ -321,7 +326,7 @@ public class NerveManager {
         }
         //生成softMax层
         if (isSoftMax) {//增加softMax层
-            SoftMax softMax = new SoftMax(outNerveNub, false, myOutNerveList, isShowLog);
+            SoftMax softMax = new SoftMax(outNerveNub, false, myOutNerveList, isShowLog, coreNumber);
             softMaxList.add(softMax);
             for (Nerve nerve : outNerves) {
                 nerve.connect(softMaxList);
@@ -351,7 +356,8 @@ public class NerveManager {
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
-                    activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0, 0);
+                    activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0, 0
+                    , coreNumber);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFather(lastNerveList);
             outNerves.add(outNerve);
@@ -359,7 +365,7 @@ public class NerveManager {
         }
         //生成softMax层
         if (isSoftMax) {//增加softMax层
-            SoftMax softMax = new SoftMax(outNerveNub, false, myOutNerveList, isShowLog);
+            SoftMax softMax = new SoftMax(outNerveNub, false, myOutNerveList, isShowLog, coreNumber);
             softMaxList.add(softMax);
             for (Nerve nerve : outNerves) {
                 nerve.connect(softMaxList);
@@ -409,7 +415,7 @@ public class NerveManager {
                     downNub = hiddenNerveNub;
                 }
                 HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction, false
-                        , rzType, lParam, step, kernLen, myMatrixX, myMatrixY, false);
+                        , rzType, lParam, step, kernLen, myMatrixX, myMatrixY, false, coreNumber);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);

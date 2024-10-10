@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TalkToTalk {
+public class TalkToTalk extends MatrixOperation {
     private final WordEmbedding wordEmbedding;
     private final TfConfig tfConfig;
     private final int maxLength;
@@ -73,7 +73,7 @@ public class TalkToTalk {
             if (!wordList.isEmpty()) {
                 for (String word : wordList) {
                     Matrix next = wordEmbedding.getEmbedding(word, eventID, true).getFeatureMatrix();
-                    allFeatures = MatrixOperation.pushVector(allFeatures, next, true);
+                    allFeatures = pushVector(allFeatures, next, true);
                 }
             }
             index++;
@@ -113,7 +113,7 @@ public class TalkToTalk {
                 if (allFeature == null) {
                     allFeature = feature;
                 } else {
-                    allFeature = MatrixOperation.pushVector(allFeature, feature, true);
+                    allFeature = pushVector(allFeature, feature, true);
                 }
             }
         } else {

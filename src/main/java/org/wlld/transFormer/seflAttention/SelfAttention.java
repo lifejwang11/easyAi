@@ -18,12 +18,15 @@ public class SelfAttention {//自注意力层
     private final double studyPoint;//学习率
     private final int selfID;
     private final boolean encoder;//是否为编码器模块
+    private final MatrixOperation matrixOperation;
 
     public int getSelfID() {
         return selfID;
     }
 
-    public SelfAttention(double studyPoint, int depth, int wordVectorDimension, int selfID, boolean encoder) throws Exception {
+    public SelfAttention(double studyPoint, int depth, int wordVectorDimension, int selfID, boolean encoder
+            , int coreNumber) throws Exception {
+        matrixOperation = new MatrixOperation(coreNumber);
         this.studyPoint = studyPoint;
         this.depth = depth;
         this.encoder = encoder;
@@ -60,17 +63,17 @@ public class SelfAttention {//自注意力层
 
     public AttentionError backError(Matrix feature, long eventID) throws Exception {//返回误差
         MyFeature featureBody = this.featureMatrix.get(eventID);
-        MatrixOperation.mathMul(feature, studyPoint);
+        matrixOperation.mathMul(feature, studyPoint);
         Matrix q = featureBody.q;
         Matrix kt = featureBody.kt;
         Matrix v = featureBody.v;
         Matrix qkt = featureBody.qkt;
-        Matrix errorV = MatrixOperation.matrixMulPd(feature, qkt, v, false);//先求V的偏导
-        Matrix subQktMax = MatrixOperation.matrixMulPd(feature, qkt, v, true);
+        Matrix errorV = matrixOperation.matrixMulPd(feature, qkt, v, false);//先求V的偏导
+        Matrix subQktMax = matrixOperation.matrixMulPd(feature, qkt, v, true);
         Matrix grMatrix = matrixSoftMaxPd(qkt, subQktMax);//对softMax做误差求导
-        Matrix errorKt = MatrixOperation.matrixMulPd(grMatrix, q, kt, false);
-        Matrix errorQ = MatrixOperation.matrixMulPd(grMatrix, q, kt, true);
-        Matrix errorK = MatrixOperation.transPosition(errorKt);
+        Matrix errorKt = matrixOperation.matrixMulPd(grMatrix, q, kt, false);
+        Matrix errorQ = matrixOperation.matrixMulPd(grMatrix, q, kt, true);
+        Matrix errorK = matrixOperation.transPosition(errorKt);
         ErrorFeature QPower = updateError(errorQ, featureBody.allFeature, powerQ);
         Matrix leftMatrix = featureBody.allFeature;
         if (!encoder && depth > 1) {//大于一层的解码器
@@ -86,9 +89,9 @@ public class SelfAttention {//自注意力层
         Matrix lastEncoderError = null;//编码器最后一层误差
         if (!encoder && depth > 1) {//大于一层的解码器
             nextFeatureError = QPower.errorFeatureMatrix;
-            lastEncoderError = MatrixOperation.add(KPower.errorFeatureMatrix, VPower.errorFeatureMatrix);
+            lastEncoderError = matrixOperation.add(KPower.errorFeatureMatrix, VPower.errorFeatureMatrix);
         } else {
-            nextFeatureError = MatrixOperation.add(MatrixOperation.add(QPower.errorFeatureMatrix, KPower.errorFeatureMatrix),
+            nextFeatureError = matrixOperation.add(matrixOperation.add(QPower.errorFeatureMatrix, KPower.errorFeatureMatrix),
                     VPower.errorFeatureMatrix);
         }
         attentionError.setNextFeatureError(nextFeatureError);
@@ -98,9 +101,9 @@ public class SelfAttention {//自注意力层
     }
 
     private ErrorFeature updateError(Matrix errorMatrix, Matrix feature, Matrix powerMatrix) throws Exception {//调整误差
-        Matrix errorPower = MatrixOperation.matrixMulPd(errorMatrix, feature, powerMatrix, false);
-        Matrix featureError = MatrixOperation.matrixMulPd(errorMatrix, feature, powerMatrix, true);
-        Matrix nextPowerMatrix = MatrixOperation.add(powerMatrix, errorPower);
+        Matrix errorPower = matrixOperation.matrixMulPd(errorMatrix, feature, powerMatrix, false);
+        Matrix featureError = matrixOperation.matrixMulPd(errorMatrix, feature, powerMatrix, true);
+        Matrix nextPowerMatrix = matrixOperation.add(powerMatrix, errorPower);
         ErrorFeature errorFeature = new ErrorFeature();
         errorFeature.errorFeatureMatrix = featureError;
         errorFeature.powerMatrix = nextPowerMatrix;
@@ -156,18 +159,18 @@ public class SelfAttention {//自注意力层
         } else {
             kvFeature = featureBody.allFeature;
         }
-        Matrix q = MatrixOperation.mulMatrix(myFeature, powerQ);
-        Matrix k = MatrixOperation.mulMatrix(kvFeature, powerK);
-        Matrix v = MatrixOperation.mulMatrix(kvFeature, powerV);
-        Matrix kt = MatrixOperation.transPosition(k);//k转置
-        Matrix qkt = MatrixOperation.mulMatrix(q, kt);
-        MatrixOperation.mathDiv(qkt, Math.sqrt(wordVectorDimension));
+        Matrix q = matrixOperation.mulMatrix(myFeature, powerQ);
+        Matrix k = matrixOperation.mulMatrix(kvFeature, powerK);
+        Matrix v = matrixOperation.mulMatrix(kvFeature, powerV);
+        Matrix kt = matrixOperation.transPosition(k);//k转置
+        Matrix qkt = matrixOperation.mulMatrix(q, kt);
+        matrixOperation.mathDiv(qkt, Math.sqrt(wordVectorDimension));
         //做蒙版
         if (depth == 1 && !encoder) {//第一层解码器 需要先做蒙版操作
             mask(qkt);
         }
         softMax(qkt);
-        Matrix result = MatrixOperation.mulMatrix(qkt, v);
+        Matrix result = matrixOperation.mulMatrix(qkt, v);
         if (!isStudy) {
             this.featureMatrix.remove(eventID);
         } else {

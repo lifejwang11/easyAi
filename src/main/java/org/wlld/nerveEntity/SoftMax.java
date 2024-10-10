@@ -11,9 +11,9 @@ public class SoftMax extends Nerve {
     private final List<OutNerve> outNerves;
     private final boolean isShowLog;
 
-    public SoftMax(int upNub, boolean isDynamic, List<OutNerve> outNerves, boolean isShowLog) throws Exception {
+    public SoftMax(int upNub, boolean isDynamic, List<OutNerve> outNerves, boolean isShowLog, int coreNumber) throws Exception {
         super(0, upNub, "softMax", 0, 0, false, null, isDynamic
-                , RZ.NOT_RZ, 0, 0, 0, 0, 0, 0);
+                , RZ.NOT_RZ, 0, 0, 0, 0, 0, 0, coreNumber);
         this.outNerves = outNerves;
         this.isShowLog = isShowLog;
     }
@@ -44,7 +44,7 @@ public class SoftMax extends Nerve {
                 destoryParameter(eventId);
                 if (outBack != null) {
                     outBack.getBack(mes.poi, mes.typeID, eventId);
-                    outBack.getSoftMaxBack(eventId,mes.softMax);
+                    outBack.getSoftMaxBack(eventId, mes.softMax);
                 } else {
                     throw new Exception("not find outBack");
                 }

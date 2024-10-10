@@ -3,13 +3,26 @@ package org.wlld.matrixTools;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MatrixOperation {
+    private final int coreNumber;
+    private ExecutorService POOL;//线程池
 
-    private MatrixOperation() {
+    public MatrixOperation() {
+        coreNumber = 1;
     }
 
-    public static List<Double> rowVectorToList(Matrix matrix) throws Exception {
+    public MatrixOperation(int coreNumber) {
+        this.coreNumber = coreNumber;
+        if (coreNumber > 1) {
+            POOL = Executors.newFixedThreadPool(coreNumber);
+        }
+    }
+
+    public List<Double> rowVectorToList(Matrix matrix) throws Exception {
         List<Double> list = new ArrayList<>();
         for (int j = 0; j < matrix.getY(); j++) {
             list.add(matrix.getNumber(0, j));
@@ -18,7 +31,7 @@ public class MatrixOperation {
     }
 
     //重点
-    public static Matrix add(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相加
+    public Matrix add(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相加
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
             Matrix matrix = new Matrix(matrix1.getX(), matrix1.getY());
             int x = matrix1.getX();
@@ -35,7 +48,7 @@ public class MatrixOperation {
     }
 
     //矩阵相减 重点
-    public static Matrix sub(Matrix matrix1, Matrix matrix2) throws Exception {//
+    public Matrix sub(Matrix matrix1, Matrix matrix2) throws Exception {//
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
             Matrix matrix = new Matrix(matrix1.getX(), matrix1.getY());
             int x = matrix1.getX();
@@ -52,14 +65,14 @@ public class MatrixOperation {
     }
 
     //多元线性回归
-    public static Matrix getLinearRegression(Matrix parameter, Matrix out) throws Exception {
+    public Matrix getLinearRegression(Matrix parameter, Matrix out) throws Exception {
         if (parameter.getX() == out.getX() && out.isVector()) {
             //将参数矩阵转置
             Matrix matrix1 = transPosition(parameter);
             //转置的参数矩阵乘以参数矩阵
             Matrix matrix2 = mulMatrix(matrix1, parameter);
             //求上一步的逆矩阵 这一步需要矩阵非奇异,若出现奇异矩阵，则返回0矩阵，意味失败
-            Matrix matrix3 = getInverseMatrixs(matrix2);
+            Matrix matrix3 = getInverseMatrix(matrix2);
             if (matrix3.getX() == 1 && matrix3.getY() == 1) {
                 return matrix3;
             } else {
@@ -73,7 +86,7 @@ public class MatrixOperation {
         }
     }
 
-    public static double getEDistByMatrix(Matrix matrix1, Matrix matrix2) throws Exception {
+    public double getEDistByMatrix(Matrix matrix1, Matrix matrix2) throws Exception {
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
             int x = matrix1.getX();
             int y = matrix1.getY();
@@ -91,7 +104,7 @@ public class MatrixOperation {
     }
 
     //返回两个向量之间的欧氏距离的平方
-    public static double getEDist(Matrix matrix1, Matrix matrix2) throws Exception {
+    public double getEDist(Matrix matrix1, Matrix matrix2) throws Exception {
         if (matrix1.isRowVector() && matrix2.isRowVector() && matrix1.getY() == matrix2.getY()) {
             Matrix matrix = sub(matrix1, matrix2);
             return getNorm(matrix);
@@ -100,7 +113,7 @@ public class MatrixOperation {
         }
     }
 
-    public static double errorNub(Matrix matrix, Matrix avgMatrix) throws Exception {//求均方误差
+    public double errorNub(Matrix matrix, Matrix avgMatrix) throws Exception {//求均方误差
         int y = matrix.getY();
         if (matrix.isRowVector() && avgMatrix.isRowVector() && y == avgMatrix.getY()) {
             double[] subAll = new double[y];
@@ -120,7 +133,7 @@ public class MatrixOperation {
         }
     }
 
-    public static Matrix pushVector(Matrix myMatrix, Matrix matrix, boolean addRow) throws Exception {
+    public Matrix pushVector(Matrix myMatrix, Matrix matrix, boolean addRow) throws Exception {
         //向一个矩阵里合并一个行向量或者列向量到矩阵行或者列的末尾
         if (matrix.getX() == 1 || matrix.getY() == 1) {
             Matrix addMatrix;
@@ -158,7 +171,7 @@ public class MatrixOperation {
         }
     }
 
-    public static Matrix push(Matrix matrix, double nub, boolean isRow) throws Exception {//向一个向量里PUSH一个值
+    public Matrix push(Matrix matrix, double nub, boolean isRow) throws Exception {//向一个向量里PUSH一个值
         if (matrix.getX() == 1 || matrix.getY() == 1) {
             Matrix myMatrix;
             int nubs;
@@ -190,7 +203,7 @@ public class MatrixOperation {
         }
     }
 
-    public static Matrix getPoolVector(Matrix matrix) throws Exception {
+    public Matrix getPoolVector(Matrix matrix) throws Exception {
         if (matrix.getX() == 1 || matrix.getY() == 1) {
             Matrix vector;
             int nub;
@@ -228,15 +241,11 @@ public class MatrixOperation {
 
     }
 
-    private static double getMax(double o1, double o2) {
-        if (o1 > o2) {
-            return o1;
-        } else {
-            return o2;
-        }
+    private double getMax(double o1, double o2) {
+        return Math.max(o1, o2);
     }
 
-    public static Matrix matrixToVector(Matrix matrix, boolean isRow) throws Exception {//将一个矩阵转成行向量
+    public Matrix matrixToVector(Matrix matrix, boolean isRow) throws Exception {//将一个矩阵转成行向量
         int x = matrix.getX();
         int y = matrix.getY();
         Matrix myMatrix;
@@ -259,7 +268,7 @@ public class MatrixOperation {
         return myMatrix;
     }
 
-    public static double innerProduct(Matrix matrix1, Matrix matrix2) throws Exception {//两个向量内积
+    public double innerProduct(Matrix matrix1, Matrix matrix2) throws Exception {//两个向量内积
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
             double sigma = 0;
             for (int i = 0; i < matrix1.getX(); i++) {
@@ -273,7 +282,7 @@ public class MatrixOperation {
         }
     }
 
-    public static double getNorm(Matrix matrix) throws Exception {//求向量范数
+    public double getNorm(Matrix matrix) throws Exception {//求向量范数
         if (matrix.getY() == 1 || matrix.getX() == 1) {
             double nub = 0;
             for (int i = 0; i < matrix.getX(); i++) {
@@ -287,13 +296,13 @@ public class MatrixOperation {
         }
     }
 
-    public static double getNormCos(Matrix matrix1, Matrix matrix2) throws Exception {//求两个向量之间的余弦
+    public double getNormCos(Matrix matrix1, Matrix matrix2) throws Exception {//求两个向量之间的余弦
         double inner = innerProduct(matrix1, matrix2);
         double mulNorm = getNorm(matrix1) * getNorm(matrix2);
         return inner / mulNorm;
     }
 
-    public static Matrix transPosition(Matrix matrix) throws Exception {//矩阵转置
+    public Matrix transPosition(Matrix matrix) throws Exception {//矩阵转置
         Matrix myMatrix = new Matrix(matrix.getY(), matrix.getX());
         for (int i = 0; i < matrix.getY(); i++) {
             Matrix matrixColumn = matrix.getColumn(i);
@@ -305,7 +314,7 @@ public class MatrixOperation {
         return myMatrix;
     }
 
-    public static double convolution(Matrix matrix, Matrix kernel, int x, int y) throws Exception {//计算卷积
+    public double convolution(Matrix matrix, Matrix kernel, int x, int y) throws Exception {//计算卷积
         double allNub = 0;
         int xr = 0;
         int yr = 0;
@@ -322,7 +331,7 @@ public class MatrixOperation {
         return allNub;
     }
 
-    public static double getKernelNub(Matrix matrix, Matrix kernel) throws Exception {
+    public double getKernelNub(Matrix matrix, Matrix kernel) throws Exception {
         double allNub = 0;
         int x = matrix.getX();
         int y = matrix.getY();
@@ -334,7 +343,7 @@ public class MatrixOperation {
         return allNub;
     }
 
-    public static int inverseNumber(double[] myInverse) {//逆序数奇偶性判定
+    public int inverseNumber(double[] myInverse) {//逆序数奇偶性判定
         int size = myInverse.length;
         int inverserNumber = 0;
         for (int i = 0; i < size; i++) {
@@ -348,7 +357,7 @@ public class MatrixOperation {
         return inverserNumber;
     }
 
-    public static Matrix getInverseMatrixs(Matrix matrix) throws Exception {//矩阵求逆
+    public Matrix getInverseMatrix(Matrix matrix) throws Exception {//矩阵求逆
         double def = matrix.getDet();
         if (def != 0) {
             def = 1 / def;
@@ -362,7 +371,7 @@ public class MatrixOperation {
         }
     }
 
-    public static Matrix adjointMatrix(Matrix matrix) throws Exception {//求伴随矩阵
+    public Matrix adjointMatrix(Matrix matrix) throws Exception {//求伴随矩阵
         Matrix myMatrix = new Matrix(matrix.getX(), matrix.getY());
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
@@ -373,7 +382,7 @@ public class MatrixOperation {
         return transPosition(myMatrix);
     }
 
-    public static double algebraicCofactor(Matrix matrix, int row, int column) throws Exception {//获取代数余子式
+    public double algebraicCofactor(Matrix matrix, int row, int column) throws Exception {//获取代数余子式
         if (row >= 0 && column >= 0 && row < matrix.getX() && column < matrix.getY()) {
             int x = matrix.getX() - 1;
             int y = matrix.getY() - 1;
@@ -407,7 +416,7 @@ public class MatrixOperation {
         }
     }
 
-    public static Matrix matrixPointDiv(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵点除
+    public Matrix matrixPointDiv(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵点除
         int x = matrix1.getX();
         int y = matrix1.getY();
         Matrix matrix = new Matrix(x, y);
@@ -423,7 +432,7 @@ public class MatrixOperation {
         return matrix;
     }
 
-    public static Matrix matrixMulPd(Matrix errorMatrix, Matrix first, Matrix second, boolean isFirstPd) throws Exception {//对两个相乘的矩阵求偏导
+    public Matrix matrixMulPd(Matrix errorMatrix, Matrix first, Matrix second, boolean isFirstPd) throws Exception {//对两个相乘的矩阵求偏导
         Matrix matrix;
         if (isFirstPd) {//对相乘的前矩阵进行求导
             matrix = mulMatrix(errorMatrix, transPosition(second));
@@ -434,7 +443,7 @@ public class MatrixOperation {
     }
 
     //重点
-    public static double getSdByMatrix(Matrix m, double avg, double e) throws Exception {//计算矩阵元素的标准差
+    public double getSdByMatrix(Matrix m, double avg, double e) throws Exception {//计算矩阵元素的标准差
         double var = 0;
         double size = m.getX() * m.getY();
         for (int i = 0; i < m.getX(); i++) {
@@ -445,8 +454,7 @@ public class MatrixOperation {
         return Math.sqrt(var / size + e);
     }
 
-    //重重点
-    public static Matrix mulMatrix(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘
+    private Matrix mulMatrixOne(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘单进程
         if (matrix1.getY() == matrix2.getX()) {
             Matrix matrix = new Matrix(matrix1.getX(), matrix2.getY());
             for (int i = 0; i < matrix1.getX(); i++) {
@@ -457,8 +465,6 @@ public class MatrixOperation {
                     for (int h = 0; h < matrixColumn.getX(); h++) {
                         double columnNumber = matrixColumn.getNumber(h, 0);
                         double rowNumber = matrixRow.getNumber(0, h);
-                        //double nowNumber = ArithUtil.mul(columnNumber, rowNumber);
-                        //columnAllNumber = ArithUtil.add(columnAllNumber, nowNumber);
                         double nowNumber = columnNumber * rowNumber;
                         columnAllNumber = columnAllNumber + nowNumber;
                     }
@@ -470,8 +476,38 @@ public class MatrixOperation {
             throw new Exception("row is not equals column");
         }
     }
+
+    private Matrix mulMatrixMany(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘多进程
+        if (matrix1.getY() == matrix2.getX()) {
+            Matrix matrix = new Matrix(matrix1.getX(), matrix2.getY());
+            CountDownLatch countDownLatch = new CountDownLatch(matrix1.getX() * matrix2.getY());
+            int x = matrix1.getX();
+            int y = matrix2.getY();
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    MatrixMulAccelerate matrixMulAccelerate = new MatrixMulAccelerate(matrix1, matrix2
+                            , matrix, i, j, countDownLatch);
+                    POOL.execute(matrixMulAccelerate);
+                }
+            }
+            countDownLatch.await();
+            return matrix;
+        } else {
+            throw new Exception("row is not equals column");
+        }
+    }
+
     //重重点
-    public static Matrix mathMulBySelf(Matrix matrix, double nub) throws Exception {//矩阵数乘并返回新矩阵
+    public Matrix mulMatrix(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘
+        if (coreNumber > 1) {
+            return mulMatrixMany(matrix1, matrix2);
+        } else {
+            return mulMatrixOne(matrix1, matrix2);
+        }
+    }
+
+    //重重点
+    public Matrix mathMulBySelf(Matrix matrix, double nub) throws Exception {//矩阵数乘并返回新矩阵
         int x = matrix.getX();
         int y = matrix.getY();
         Matrix myMatrix = new Matrix(x, y);
@@ -484,7 +520,7 @@ public class MatrixOperation {
     }
 
     //重点
-    public static void mathMul(Matrix matrix, double nub) throws Exception {//矩阵数乘
+    public void mathMul(Matrix matrix, double nub) throws Exception {//矩阵数乘
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 matrix.setNub(i, j, matrix.getNumber(i, j) * nub);
@@ -493,7 +529,7 @@ public class MatrixOperation {
     }
 
     //重点
-    public static void mathAdd(Matrix matrix, double nub) throws Exception {//矩阵数加
+    public void mathAdd(Matrix matrix, double nub) throws Exception {//矩阵数加
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 matrix.setNub(i, j, matrix.getNumber(i, j) + nub);
@@ -502,7 +538,7 @@ public class MatrixOperation {
     }
 
     //重点
-    public static void mathSub(Matrix matrix, double nub) throws Exception {//矩阵数减
+    public void mathSub(Matrix matrix, double nub) throws Exception {//矩阵数减
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 matrix.setNub(i, j, matrix.getNumber(i, j) - nub);
@@ -511,7 +547,7 @@ public class MatrixOperation {
     }
 
     //重点
-    public static void mathDiv(Matrix matrix, double nub) throws Exception {//矩阵数除
+    public void mathDiv(Matrix matrix, double nub) throws Exception {//矩阵数除
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 matrix.setNub(i, j, matrix.getNumber(i, j) / nub);
@@ -520,7 +556,7 @@ public class MatrixOperation {
     }
 
     //矩阵转LIST
-    public static List<Double> matrixToList(Matrix matrix) throws Exception {
+    public List<Double> matrixToList(Matrix matrix) throws Exception {
         List<Double> list = new ArrayList<>();
         int x = matrix.getX();
         int y = matrix.getY();
@@ -533,7 +569,7 @@ public class MatrixOperation {
     }
 
     //list转矩阵
-    public static Matrix ListToMatrix(List<Double> list, int matrixX, int matrixY) throws Exception {
+    public Matrix ListToMatrix(List<Double> list, int matrixX, int matrixY) throws Exception {
         Matrix matrix = new Matrix(matrixX, matrixY);
         for (int i = 0; i < matrixX; i++) {
             for (int j = 0; j < matrixY; j++) {
@@ -545,7 +581,7 @@ public class MatrixOperation {
     }
 
     //list转行向量
-    public static Matrix listToRowVector(List<Double> list) throws Exception {
+    public Matrix listToRowVector(List<Double> list) throws Exception {
         Matrix matrix = new Matrix(1, list.size());
         for (int i = 0; i < list.size(); i++) {
             matrix.setNub(0, i, list.get(i));
@@ -554,7 +590,7 @@ public class MatrixOperation {
     }
 
     //list转行向量定长
-    public static Matrix listToRowVector(List<Double> list, int nub) throws Exception {
+    public Matrix listToRowVector(List<Double> list, int nub) throws Exception {
         Matrix matrix = new Matrix(1, nub);
         for (int i = 0; i < nub; i++) {
             double n = 0;
@@ -566,7 +602,7 @@ public class MatrixOperation {
         return matrix;
     }
 
-    private static void inputVector(Matrix matrix, Matrix feature, int index, int kenLen) throws Exception {
+    private void inputVector(Matrix matrix, Matrix feature, int index, int kenLen) throws Exception {
         int y = matrix.getY();
         for (int i = 0; i < y - 1; i++) {
             matrix.setNub(index, i, feature.getNumber(i / kenLen, i % kenLen));
@@ -575,7 +611,7 @@ public class MatrixOperation {
     }
 
     //重重点
-    public static Matrix im2col(Matrix matrix, int kernLen, int step) throws Exception {//卷积拉平
+    public Matrix im2col(Matrix matrix, int kernLen, int step) throws Exception {//卷积拉平
         int ySize = kernLen * kernLen;
         int x = matrix.getX();
         int y = matrix.getY();
@@ -592,7 +628,7 @@ public class MatrixOperation {
     }
 
     //重重点
-    public static Matrix reverseIm2col(Matrix matrix, int kernLen, int step, int xSize, int ySize) throws Exception {//逆向im2col
+    public Matrix reverseIm2col(Matrix matrix, int kernLen, int step, int xSize, int ySize) throws Exception {//逆向im2col
         int col = matrix.getY();//核长
         int row = matrix.getX();
         int sub = kernLen - step;

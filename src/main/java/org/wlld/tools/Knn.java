@@ -5,10 +5,10 @@ import org.wlld.matrixTools.MatrixOperation;
 
 import java.util.*;
 
-public class Knn {//KNN分类器
+public class Knn extends MatrixOperation {//KNN分类器
     private Map<Integer, List<Matrix>> featureMap = new HashMap<>();
     private int length;//向量长度(需要返回)
-    private int nub;//选择几个人投票
+    private final int nub;//选择几个人投票
 
     public Knn(int nub) {
         this.nub = nub;
@@ -100,7 +100,7 @@ public class Knn {//KNN分类器
             int type = entry.getKey();
             List<Matrix> matrices = entry.getValue();
             for (Matrix matrix : matrices) {
-                double dist = MatrixOperation.getEDist(matrix, vector);
+                double dist = getEDist(matrix, vector);
                 compare(dists, types, dist, type);
             }
         }

@@ -7,10 +7,9 @@ import org.wlld.naturalLanguage.word.WordEmbedding;
 
 import java.util.List;
 
-public class NerveCenter {//神经中枢
+public class NerveCenter extends MatrixOperation {//神经中枢
     private final int depth;//该神经中枢的深度
     private final double powerTh;//权重阈值
-    private final int outNumber;//输出神经元数量
     private final List<Nerve> nerveList;//该神经中枢控制的对应隐层神经元集合
     private WordEmbedding wordEmbedding;//词嵌入
     private final boolean isFinish;//是否是最后一层
@@ -19,11 +18,10 @@ public class NerveCenter {//神经中枢
         return depth;
     }
 
-    public NerveCenter(int depth, List<Nerve> nerveList, double powerTh, int outNumber, boolean isFinish) {
+    public NerveCenter(int depth, List<Nerve> nerveList, double powerTh, boolean isFinish) {
         this.depth = depth;
         this.nerveList = nerveList;
         this.powerTh = powerTh;
-        this.outNumber = outNumber;
         this.isFinish = isFinish;
     }
 
@@ -43,7 +41,7 @@ public class NerveCenter {//神经中枢
                 outBack.backWord(myWord, eventId);
             } else {
                 Matrix matrix = wordEmbedding.getEmbedding(nextWord, eventId, false).getFeatureMatrix();
-                featureMatrix = MatrixOperation.pushVector(featureMatrix, matrix, true);
+                featureMatrix = pushVector(featureMatrix, matrix, true);
                 go(eventId, featureMatrix, outBack, myWord);
             }
         } else {//停止继续传播 进行输出

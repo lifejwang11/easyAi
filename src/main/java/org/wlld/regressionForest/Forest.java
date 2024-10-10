@@ -30,11 +30,12 @@ public class Forest extends Frequency {
     private Matrix matrixAll;//全矩阵
     private double gNorm;//新维度的摸
     private Forest father;//父级
-    private Map<Integer, Forest> forestMap;//尽头列表
+    private final Map<Integer, Forest> forestMap;//尽头列表
     private int id;//本节点的id
     private boolean isRemove = false;//是否已经被移除了
     private boolean notRemovable = false;//不可移除
-    private int minGrain;//最小粒度
+    private final int minGrain;//最小粒度
+    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public Forest(int featureSize, double shrinkParameter, Matrix pc, Map<Integer, Forest> forestMap
             , int id, int minGrain) {
@@ -108,7 +109,7 @@ public class Forest extends Frequency {
         double max = 0;
         for (int i = 0; i < x; i++) {
             Matrix g = pc.getRow(i);
-            double gNorm = MatrixOperation.getNorm(g);
+            double gNorm = matrixOperation.getNorm(g);
             double[] var = new double[xSize];
             for (int j = 0; j < xSize; j++) {
                 Matrix parameter = matrixAll.getRow(j);
@@ -133,7 +134,7 @@ public class Forest extends Frequency {
 
     private double transG(Matrix g, Matrix parameter, double gNorm) throws Exception {//将数据映射到新基
         //先求内积
-        double innerProduct = MatrixOperation.innerProduct(g, parameter);
+        double innerProduct = matrixOperation.innerProduct(g, parameter);
         return innerProduct / gNorm;
     }
 
@@ -152,7 +153,7 @@ public class Forest extends Frequency {
             }
         } else {//使用转换基
             int x = matrixAll.getX();
-            gNorm = MatrixOperation.getNorm(pc1);
+            gNorm = matrixOperation.getNorm(pc1);
             for (int i = 0; i < x; i++) {
                 Matrix parameter = matrixAll.getRow(i);
                 double dist = transG(pc1, parameter, gNorm);

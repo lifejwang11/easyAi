@@ -19,6 +19,7 @@ public class LinearRegression {
     private int xIndex = 0;//记录插入数量
     private boolean isRegression = false;//是否进行了回归
     private double avg;//结果平均值
+    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public LinearRegression(int size) {//初始化rgb矩阵
         XY = new Matrix(size, 3);
@@ -55,12 +56,12 @@ public class LinearRegression {
         matrix.setNub(0, 0, w1);
         matrix.setNub(0, 1, w2);
         matrix.setNub(0, 2, b);
-        return MatrixOperation.getNormCos(matrix, vector);
+        return matrixOperation.getNormCos(matrix, vector);
     }
 
     public void regression() throws Exception {//开始进行回归
         if (xIndex > 0) {
-            Matrix ws = MatrixOperation.getLinearRegression(XY, NormSequence);
+            Matrix ws = matrixOperation.getLinearRegression(XY, NormSequence);
             if (ws.getX() == 1 && ws.getY() == 1) {//矩阵奇异
                 isRegression = false;
                 for (int i = 0; i < xIndex; i++) {

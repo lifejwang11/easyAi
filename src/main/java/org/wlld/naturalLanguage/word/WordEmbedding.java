@@ -1,7 +1,6 @@
 package org.wlld.naturalLanguage.word;
 
 
-import org.wlld.config.TfConfig;
 import org.wlld.matrixTools.Matrix;
 import org.wlld.matrixTools.MatrixOperation;
 import org.wlld.config.RZ;
@@ -26,7 +25,7 @@ import java.util.Map;
  * @Author LiDaPeng
  * @Description 词嵌入向量训练
  */
-public class WordEmbedding {
+public class WordEmbedding extends MatrixOperation {
     private NerveManager nerveManager;
     private SentenceModel sentenceModel;
     private final List<String> wordList = new ArrayList<>();//单字集合
@@ -93,7 +92,7 @@ public class WordEmbedding {
                 myWordFeature.setFirstFeatureList(wordMatrix.getList());
                 matrix = wordMatrix.getVector();
             } else {
-                matrix = MatrixOperation.pushVector(matrix, wordMatrix.getVector(), true);
+                matrix = pushVector(matrix, wordMatrix.getVector(), true);
             }
             if (once) {
                 break;

@@ -36,7 +36,8 @@ public class TypeBody {
         winWidth = minWinWidth;
         winHeight = minWinHeight;
         positonNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), 5, 1,
-                new Tanh(), yoloConfig.getLineStudy(), yoloConfig.getRegularModel(), yoloConfig.getRegular());
+                new Tanh(), yoloConfig.getLineStudy(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
+                , yoloConfig.getCoreNumber());
         positonNerveManager.initImageNet(2, yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
                 false, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu());
     }

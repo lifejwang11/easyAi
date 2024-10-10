@@ -29,6 +29,8 @@ public class CodecBlock {
     private final boolean encoder;//是否为编码器
     private LineBlock lineBlock;//解码器最后的线性分类器
     private FirstDecoderBlock firstDecoderBlock;//解码器第一层
+    private final MatrixOperation matrixOperation;
+    private final int coreNumber;
 
     public CodecBlockModel getModel() {
         List<double[][]> firstNerveModel = new ArrayList<>();
@@ -79,12 +81,15 @@ public class CodecBlock {
     }
 
     public CodecBlock(int multiNumber, int featureDimension, double studyPoint, int depth,
-                      boolean encoder, int regularModel, double regular, int maxLength, boolean selfTimeCode) throws Exception {//进行初始化
+                      boolean encoder, int regularModel, double regular, int maxLength, boolean selfTimeCode
+            , int coreNumber) throws Exception {//进行初始化
+        matrixOperation = new MatrixOperation(coreNumber);
         this.encoder = encoder;
-        attentionLayNorm = new LayNorm(1, featureDimension, this, null, studyPoint);
-        lineLayNorm = new LayNorm(2, featureDimension, this, null, studyPoint);
+        this.coreNumber = coreNumber;
+        attentionLayNorm = new LayNorm(1, featureDimension, this, null, studyPoint, coreNumber);
+        lineLayNorm = new LayNorm(2, featureDimension, this, null, studyPoint, coreNumber);
         multiSelfAttention = new MultiSelfAttention(multiNumber, studyPoint, depth, featureDimension, encoder, this, maxLength
-                , selfTimeCode);
+                , selfTimeCode, coreNumber);
         multiSelfAttention.setLayNorm(attentionLayNorm);
         attentionLayNorm.setMultiSelfAttention(multiSelfAttention);
         initLine(featureDimension, studyPoint, regularModel, regular);
@@ -116,7 +121,7 @@ public class CodecBlock {
     }
 
     public void backCodecError(Matrix errorMatrix, long eventID, Matrix allFeature) throws Exception {//本层最终误差返回
-        Matrix error = MatrixOperation.add(errorMatrix, allFeature);
+        Matrix error = matrixOperation.add(errorMatrix, allFeature);
         if (afterEncoderBlock != null) {
             afterEncoderBlock.backError(eventID, error);
         } else if (firstDecoderBlock != null) {//将误差反给第一层解码器
@@ -148,14 +153,14 @@ public class CodecBlock {
         List<Nerve> secondNerves = new ArrayList<>();
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve1 = new HiddenNerve(i + 1, 1, studyPoint, new ReLu(), featureDimension,
-                    featureDimension, null, regularModel, regular);
+                    featureDimension, null, regularModel, regular, coreNumber);
             fistHiddenNerves.add(hiddenNerve1);
             hiddenNerve1.setAfterLayNorm(attentionLayNorm);
             firstNerves.add(hiddenNerve1);
         }
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve2 = new HiddenNerve(i + 1, 2, studyPoint, null,
-                    featureDimension, 1, null, regularModel, regular);
+                    featureDimension, 1, null, regularModel, regular, coreNumber);
             hiddenNerve2.setBeforeLayNorm(lineLayNorm);
             secondHiddenNerves.add(hiddenNerve2);
             secondNerves.add(hiddenNerve2);

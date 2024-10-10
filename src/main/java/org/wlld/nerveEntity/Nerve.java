@@ -44,6 +44,7 @@ public abstract class Nerve {
     protected final int depth;//所处深度
     protected final int matrixX;//卷积输出行数列数
     protected final int matrixY;//卷积输出矩阵列数
+    private final MatrixOperation matrixOperation;
 
     public Map<Integer, Double> getDendrites() {
         return dendrites;
@@ -72,7 +73,8 @@ public abstract class Nerve {
     protected Nerve(int id, int upNub, String name, int downNub,
                     double studyPoint, boolean init, ActiveFunction activeFunction
             , boolean isDynamic, int rzType, double lParam, int step, int kernLen, int depth
-            , int matrixX, int matrixY) throws Exception {//该神经元在同层神经元中的编号
+            , int matrixX, int matrixY, int coreNumber) throws Exception {//该神经元在同层神经元中的编号
+        matrixOperation = new MatrixOperation(coreNumber);
         this.matrixX = matrixX;
         this.matrixY = matrixY;
         this.id = id;
@@ -111,12 +113,12 @@ public abstract class Nerve {
         int x = (xInput - sub) / step;//线性变换后矩阵的行数 （图片长度-（核长-步长））/步长
         int y = (yInput - sub) / step;//线性变换后矩阵的列数
         Matrix myMatrix = new Matrix(x, y);//线性变化后的矩阵
-        im2col = MatrixOperation.im2col(matrix, kernLen, step);
+        im2col = matrixOperation.im2col(matrix, kernLen, step);
         //System.out.println("=================================");
         //System.out.println(matrix.getString());
         //System.out.println(im2col.getString());
         //输出矩阵
-        Matrix matrixOut = MatrixOperation.mulMatrix(im2col, nerveMatrix);
+        Matrix matrixOut = matrixOperation.mulMatrix(im2col, nerveMatrix);
         //输出矩阵重新排序
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
@@ -162,7 +164,7 @@ public abstract class Nerve {
                     for (int j = startIndex; j < endIndex; j++) {
                         list.add(wg.get(j + 1));
                     }
-                    Matrix errorMatrix = MatrixOperation.ListToMatrix(list, matrixX, matrixY);
+                    Matrix errorMatrix = matrixOperation.ListToMatrix(list, matrixX, matrixY);
                     father.get(i).backMatrix(errorMatrix);
                 }
             } else {
@@ -210,7 +212,7 @@ public abstract class Nerve {
         if (sigmaMatrix == null) {
             sigmaMatrix = t;
         } else {
-            sigmaMatrix = MatrixOperation.add(t, sigmaMatrix);
+            sigmaMatrix = matrixOperation.add(t, sigmaMatrix);
         }
         if (backNub == downNub) {
             backNub = 0;
@@ -232,8 +234,8 @@ public abstract class Nerve {
                 }
             }
             //计算权重变化量
-            Matrix trx = MatrixOperation.transPosition(im2col);
-            Matrix wSub = MatrixOperation.mulMatrix(trx, yc);
+            Matrix trx = matrixOperation.transPosition(im2col);
+            Matrix wSub = matrixOperation.mulMatrix(trx, yc);
             //给权重变化wSub增加正则项，抑制权重变化量
             //System.out.println(wSub.getString());
             //计算x变化量
@@ -246,9 +248,9 @@ public abstract class Nerve {
                     im2col.setNub(i, j, k);
                 }
             }
-            Matrix gNext = MatrixOperation.reverseIm2col(im2col, kernLen, step, xInput, yInput);
+            Matrix gNext = matrixOperation.reverseIm2col(im2col, kernLen, step, xInput, yInput);
             //更新权重
-            nerveMatrix = MatrixOperation.add(nerveMatrix, wSub);
+            nerveMatrix = matrixOperation.add(nerveMatrix, wSub);
             sigmaMatrix = null;
             //将梯度继续回传
             backMatrixMessage(gNext);

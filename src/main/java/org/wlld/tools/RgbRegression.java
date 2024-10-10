@@ -10,7 +10,7 @@ import org.wlld.matrixTools.MatrixOperation;
  * @Author LiDaPeng
  * @Description rgb回归 Y = r *wr + g * wg + b* wb
  */
-public class RgbRegression {
+public class RgbRegression extends MatrixOperation {
     private double wr;
     private double wg;
     private double b;
@@ -106,7 +106,7 @@ public class RgbRegression {
 
     public boolean regression() throws Exception {//开始进行回归
         if (xIndex > 0) {
-            Matrix ws = MatrixOperation.getLinearRegression(RG, B);
+            Matrix ws = getLinearRegression(RG, B);
             if (ws.getX() == 1 && ws.getY() == 1) {//矩阵奇异
                 isRegression = false;
             } else {

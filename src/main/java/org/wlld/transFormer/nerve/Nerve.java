@@ -38,8 +38,9 @@ public abstract class Nerve {
     protected Matrix outMatrix;
     protected int myUpNumber;//统计参数数量
     protected int depth;//所处深度
-    private int regularModel;//正则模式
-    private double regular;//正则系数
+    private final int regularModel;//正则模式
+    private final double regular;//正则系数
+    private final MatrixOperation matrixOperation;
 
     public int getDepth() {
         return depth;
@@ -54,8 +55,10 @@ public abstract class Nerve {
     }
 
     protected Nerve(int id, String name, double studyPoint, ActiveFunction activeFunction, int sensoryNerveNub,
-                    int hiddenNerveNub, int outNerveNub, LineBlock lineBlock, int regularModel, double regular) throws Exception {//该神经元在同层神经元中的编号
+                    int hiddenNerveNub, int outNerveNub, LineBlock lineBlock, int regularModel,
+                    double regular, int coreNumber) throws Exception {//该神经元在同层神经元中的编号
         this.id = id;
+        matrixOperation = new MatrixOperation(coreNumber);
         this.regular = regular;
         this.regularModel = regularModel;
         this.lineBlock = lineBlock;
@@ -128,7 +131,7 @@ public abstract class Nerve {
         if (sigmaW == null) {
             sigmaW = parameter;
         } else {
-            sigmaW = MatrixOperation.add(sigmaW, parameter);
+            sigmaW = matrixOperation.add(sigmaW, parameter);
         }
         if (backNub == outNerveNub) {//进行新的梯度计算
             backNub = 0;
@@ -145,7 +148,7 @@ public abstract class Nerve {
 
 
     protected void updatePower(long eventId, Matrix errorMatrix, Matrix allError) throws Exception {//修改阈值
-        Matrix myError = MatrixOperation.mathMulBySelf(errorMatrix, studyPoint);
+        Matrix myError = matrixOperation.mathMulBySelf(errorMatrix, studyPoint);
         Matrix error = updateW(myError, errorMatrix);//更新本神经元参数与返回下层误差
         sigmaW = null;//求和结果归零
         backSendMessage(eventId, error, allError);
@@ -186,12 +189,12 @@ public abstract class Nerve {
         if (regularModel != RZ.NOT_RZ) {
             rzMatrix = getRegularizationMatrix();
         }
-        Matrix subFeature = MatrixOperation.matrixMulPd(error, featureMatrix, powerMatrix, true);
-        Matrix subPower = MatrixOperation.matrixMulPd(errorMatrix, featureMatrix, powerMatrix, false);
+        Matrix subFeature = matrixOperation.matrixMulPd(error, featureMatrix, powerMatrix, true);
+        Matrix subPower = matrixOperation.matrixMulPd(errorMatrix, featureMatrix, powerMatrix, false);
         if (regularModel != RZ.NOT_RZ) {
-            powerMatrix = MatrixOperation.add(powerMatrix, rzMatrix);//正则化抑制权重
+            powerMatrix = matrixOperation.add(powerMatrix, rzMatrix);//正则化抑制权重
         }
-        powerMatrix = MatrixOperation.add(powerMatrix, subPower);//更新权重
+        powerMatrix = matrixOperation.add(powerMatrix, subPower);//更新权重
         return subFeature;
     }
 
@@ -200,7 +203,7 @@ public abstract class Nerve {
         Matrix feature;
         if (reMatrixFeatures.containsKey(eventID)) {
             Matrix myFeature = reMatrixFeatures.get(eventID);
-            feature = MatrixOperation.pushVector(myFeature, matrix, false);
+            feature = matrixOperation.pushVector(myFeature, matrix, false);
         } else {
             feature = matrix;
         }
@@ -218,8 +221,8 @@ public abstract class Nerve {
         for (int i = 0; i < th.getX(); i++) {
             th.setNub(i, 0, 1D);
         }
-        Matrix matrix = MatrixOperation.pushVector(feature, th, false);
-        Matrix sigma = MatrixOperation.mulMatrix(matrix, powerMatrix);
+        Matrix matrix = matrixOperation.pushVector(feature, th, false);
+        Matrix sigma = matrixOperation.mulMatrix(matrix, powerMatrix);
         if (activeFunction != null) {
             for (int i = 0; i < sigma.getX(); i++) {
                 double value = activeFunction.function(sigma.getNumber(i, 0));
