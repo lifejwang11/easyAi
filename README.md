@@ -71,7 +71,7 @@ https://gitcode.com/dromara/EasyAi/overview
     <dependency>
     <groupId>cn.myeasyai</groupId>
     <artifactId>easyAi</artifactId>
-    <version>1.2.6</version>
+    <version>1.2.7</version>
     </dependency>
 ```
 
