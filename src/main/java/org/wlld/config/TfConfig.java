@@ -14,6 +14,15 @@ public class TfConfig {
     private String splitWord;//词向量默认隔断符，无隔断则会逐字隔断
     private boolean selfTimeCode = true;//使用自增时间序列位置编码
     private int coreNumber = 1;//是否使用多核并行计算进行提速
+    private boolean outAllPro = false;//是否输出全概率，注意，若输出全概率只能用来分类概率,否则将消耗大量内存
+    
+    public boolean isOutAllPro() {
+        return outAllPro;
+    }
+
+    public void setOutAllPro(boolean outAllPro) {
+        this.outAllPro = outAllPro;
+    }
 
     public int getCoreNumber() {
         return coreNumber;

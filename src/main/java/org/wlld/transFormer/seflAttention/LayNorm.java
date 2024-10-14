@@ -152,22 +152,22 @@ public class LayNorm {//残差与归一化
     }
 
     public void addNorm(Matrix feature, Matrix outMatrix, long eventID, boolean isStudy
-            , OutBack outBack, List<Integer> E, Matrix encoderFeature) throws Exception {//残差及归一化
+            , OutBack outBack, List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {//残差及归一化
         Matrix myMatrix = matrixOperation.add(feature, outMatrix);//残差相加
         Matrix out = layNorm(myMatrix, isStudy);
         if (type == 1) {
             if (myEncoderBlock != null) {
-                sendHiddenParameter(out, eventID, isStudy, outBack, E, encoderFeature);//发送线性第一层
+                sendHiddenParameter(out, eventID, isStudy, outBack, E, encoderFeature, outAllPro);//发送线性第一层
             } else if (firstDecoderBlock != null) {//解码器第一层//输出
-                firstDecoderBlock.sendOutputMatrix(eventID, out, isStudy, outBack, E);
+                firstDecoderBlock.sendOutputMatrix(eventID, out, isStudy, outBack, E, outAllPro);
             }
         } else {//输出矩阵
-            myEncoderBlock.sendOutputMatrix(eventID, out, isStudy, outBack, E, encoderFeature);
+            myEncoderBlock.sendOutputMatrix(eventID, out, isStudy, outBack, E, encoderFeature, outAllPro);
         }
     }
 
     public void addNormFromNerve(long eventID, boolean isStudy, Matrix parameter, Matrix allFeature,
-                                 OutBack outBack, List<Integer> E, Matrix encoderFeature) throws Exception {
+                                 OutBack outBack, List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {
         Matrix matrixFeature;
         if (reMatrixMap.containsKey(eventID)) {
             Matrix myFeature = reMatrixMap.get(eventID);
@@ -178,14 +178,14 @@ public class LayNorm {//残差与归一化
         reMatrixMap.put(eventID, matrixFeature);
         if (matrixFeature.getY() == featureDimension) {//执行残差
             reMatrixMap.remove(eventID);
-            addNorm(matrixFeature, allFeature, eventID, isStudy, outBack, E, encoderFeature);
+            addNorm(matrixFeature, allFeature, eventID, isStudy, outBack, E, encoderFeature, outAllPro);
         }
     }
 
     private void sendHiddenParameter(Matrix feature, long eventId, boolean isStudy
-            , OutBack outBack, List<Integer> E, Matrix encoderFeature) throws Exception {//hiddenNerves
+            , OutBack outBack, List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {//hiddenNerves
         for (HiddenNerve hiddenNerve : hiddenNerves) {
-            hiddenNerve.receive(feature, eventId, isStudy, outBack, E, encoderFeature);
+            hiddenNerve.receive(feature, eventId, isStudy, outBack, E, encoderFeature, outAllPro);
         }
     }
 

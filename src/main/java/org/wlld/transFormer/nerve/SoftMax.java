@@ -22,7 +22,7 @@ public class SoftMax extends Nerve {
     }
 
     @Override
-    protected void toOut(long eventId, Matrix parameter, boolean isStudy, OutBack outBack, List<Integer> E) throws Exception {
+    protected void toOut(long eventId, Matrix parameter, boolean isStudy, OutBack outBack, List<Integer> E, boolean outAllPro) throws Exception {
         boolean allReady = insertMatrixParameter(eventId, parameter);
         if (allReady) {
             Matrix feature = reMatrixFeatures.get(eventId);//特征
@@ -35,7 +35,7 @@ public class SoftMax extends Nerve {
                 Matrix allError = null;
                 for (int i = 0; i < x; i++) {
                     Matrix row = feature.getRow(i);
-                    Mes mes = softMax(true, row);//输出值
+                    Mes mes = softMax(true, row, false);//输出值
                     int key = E.get(i);
                     if (isShowLog) {
                         System.out.println("softMax==" + key + ",out==" + mes.poi + ",nerveId==" + mes.typeID);
@@ -54,8 +54,11 @@ public class SoftMax extends Nerve {
                 }
             } else {
                 if (outBack != null) {
-                    Mes mes = softMax(false, feature.getRow(x - 1));//输出值
+                    Mes mes = softMax(false, feature.getRow(x - 1), outAllPro);//输出值
                     outBack.getBack(mes.poi, mes.typeID, eventId);
+                    if (outAllPro) {
+                        outBack.getSoftMaxBack(eventId, mes.softMax);
+                    }
                 } else {
                     throw new Exception("not find outBack");
                 }
@@ -80,7 +83,7 @@ public class SoftMax extends Nerve {
         return matrix;
     }
 
-    private Mes softMax(boolean isStudy, Matrix matrix) throws Exception {//计算当前输出结果
+    private Mes softMax(boolean isStudy, Matrix matrix, boolean outAllPro) throws Exception {//计算当前输出结果
         double sigma = 0;
         int id = 0;
         double poi = 0;
@@ -94,7 +97,7 @@ public class SoftMax extends Nerve {
         for (int i = 0; i < size; i++) {
             double eSelf = Math.exp(matrix.getNumber(0, i));
             double value = eSelf / sigma;
-            if (isStudy) {
+            if (isStudy || outAllPro) {
                 softMax.add(value);
             }
             if (value > poi) {

@@ -77,7 +77,7 @@ public class TalkToTalk extends MatrixOperation {
                 }
             }
             index++;
-            sensoryNerve.postMessage(eventID, qcMatrix, allFeatures, false, null, wordBack);
+            sensoryNerve.postMessage(eventID, qcMatrix, allFeatures, false, null, wordBack, false);
             id = wordBack.getId();
             if (id > 1) {
                 String word = wordEmbedding.getWord(id - 2);
@@ -146,7 +146,7 @@ public class TalkToTalk extends MatrixOperation {
                 Matrix qMatrix = wordEmbedding.getEmbedding(question, 1, false).getFeatureMatrix();
                 AnswerE answerE = getSentenceMatrix(answer);
                 Matrix myAnswer = insertStart(answerE.answerMatrix, transFormerManager.getStartMatrix(qMatrix));//第一行补开始符
-                sensoryNerve.postMessage(1, qMatrix, myAnswer, true, answerE.answerList, null);
+                sensoryNerve.postMessage(1, qMatrix, myAnswer, true, answerE.answerList, null, false);
             }
         }
         return transFormerManager.getModel();

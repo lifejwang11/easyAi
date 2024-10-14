@@ -33,9 +33,9 @@ public class SensoryNerve {
      * @param outBack          回调结果
      */
     public void postMessage(long eventId, Matrix encoderParameter, Matrix decoderParameter, boolean isStudy, List<Integer> E
-            , OutBack outBack) throws Exception {//感知神经元输入
-        firstEncoderBlock.sendInputMatrix(eventId, encoderParameter, isStudy, outBack, E, null);
-        firstDecoderBlock.sendInputMatrix(eventId, decoderParameter, isStudy, outBack, E);
+            , OutBack outBack, boolean outAllPro) throws Exception {//感知神经元输入
+        firstEncoderBlock.sendInputMatrix(eventId, encoderParameter, isStudy, outBack, E, null, outAllPro);
+        firstDecoderBlock.sendInputMatrix(eventId, decoderParameter, isStudy, outBack, E, outAllPro);
     }
 
 }
