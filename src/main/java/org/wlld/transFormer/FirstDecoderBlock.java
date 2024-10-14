@@ -48,14 +48,14 @@ public class FirstDecoderBlock {//解码器模块
         lastEncoderBlock.encoderBackStart(eventID);
     }
 
-    public void sendOutputMatrix(long eventID, Matrix out, boolean isStudy, OutBack outBack, List<Integer> E) throws Exception {
+    public void sendOutputMatrix(long eventID, Matrix out, boolean isStudy, OutBack outBack, List<Integer> E, boolean outAllPro) throws Exception {
         Matrix c = lastEncoderBlock.getOutMatrix(eventID);
         lastEncoderBlock.removeOutMatrix(eventID);
-        codecBlock.sendInputMatrix(eventID, out, isStudy, outBack, E, c);
+        codecBlock.sendInputMatrix(eventID, out, isStudy, outBack, E, c, outAllPro);
     }
 
     //Decoder 参数正向入口
-    public void sendInputMatrix(long eventID, Matrix feature, boolean isStudy, OutBack outBack, List<Integer> E) throws Exception {
-        multiSelfAttention.sendMatrixMessage(eventID, feature, isStudy, outBack, E, null);
+    public void sendInputMatrix(long eventID, Matrix feature, boolean isStudy, OutBack outBack, List<Integer> E, boolean outAllPro) throws Exception {
+        multiSelfAttention.sendMatrixMessage(eventID, feature, isStudy, outBack, E, null, outAllPro);
     }
 }

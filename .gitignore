@@ -9,6 +9,7 @@ __pycache__
 *.so
 .DS_Store
 .idea/
+pom.xml
 # Distribution / packaging
 .Python
 build/

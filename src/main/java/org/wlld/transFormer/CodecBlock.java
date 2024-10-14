@@ -110,13 +110,13 @@ public class CodecBlock {
     }
 
     public void sendOutputMatrix(long eventID, Matrix out, boolean isStudy, OutBack outBack,
-                                 List<Integer> E, Matrix encoderFeature) throws Exception {//参数正向出口
+                                 List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {//参数正向出口
         if (beforeEncoderBlock != null) {
-            beforeEncoderBlock.sendInputMatrix(eventID, out, isStudy, outBack, E, encoderFeature);
+            beforeEncoderBlock.sendInputMatrix(eventID, out, isStudy, outBack, E, encoderFeature, outAllPro);
         } else if (encoder) {//编码器走到末尾 保存输出矩阵
             outMatrixMap.put(eventID, out);
         } else {//解码器走到头了 输出线性分类层
-            lineBlock.sendParameter(eventID, out, isStudy, outBack, E);
+            lineBlock.sendParameter(eventID, out, isStudy, outBack, E, outAllPro);
         }
     }
 
@@ -144,8 +144,8 @@ public class CodecBlock {
 
     //Encoder 参数正向入口
     public void sendInputMatrix(long eventID, Matrix feature, boolean isStudy, OutBack outBack, List<Integer> E
-            , Matrix encoderFeature) throws Exception {
-        multiSelfAttention.sendMatrixMessage(eventID, feature, isStudy, outBack, E, encoderFeature);
+            , Matrix encoderFeature, boolean outAllPro) throws Exception {
+        multiSelfAttention.sendMatrixMessage(eventID, feature, isStudy, outBack, E, encoderFeature, outAllPro);
     }
 
     private void initLine(int featureDimension, double studyPoint, int regularModel, double regular) throws Exception {

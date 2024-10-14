@@ -29,12 +29,12 @@ public class OutNerve extends Nerve {
 
 
     @Override
-    protected void toOut(long eventId, Matrix parameter, boolean isStudy, OutBack outBack, List<Integer> E) throws Exception {
+    protected void toOut(long eventId, Matrix parameter, boolean isStudy, OutBack outBack, List<Integer> E, boolean outAllPro) throws Exception {
         boolean allReady = insertMatrixParameter(eventId, parameter);
         if (allReady) {
             Matrix out = opMatrix(reMatrixFeatures.get(eventId), isStudy);
             reMatrixFeatures.remove(eventId);
-            softMax.toOut(eventId, out, isStudy, outBack, E);
+            softMax.toOut(eventId, out, isStudy, outBack, E, outAllPro);
         }
     }
 }

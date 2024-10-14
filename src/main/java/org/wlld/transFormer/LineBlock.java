@@ -76,9 +76,9 @@ public class LineBlock {//线性层模块
         }
     }
 
-    public void sendParameter(long eventID, Matrix feature, boolean isStudy, OutBack outBack, List<Integer> E) throws Exception {
+    public void sendParameter(long eventID, Matrix feature, boolean isStudy, OutBack outBack, List<Integer> E, boolean outAllPro) throws Exception {
         for (HiddenNerve hiddenNerve : hiddenNerveList) {
-            hiddenNerve.postMessage(eventID, feature, isStudy, outBack, E);
+            hiddenNerve.postMessage(eventID, feature, isStudy, outBack, E, outAllPro);
         }
     }
 

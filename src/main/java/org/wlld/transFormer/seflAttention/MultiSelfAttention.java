@@ -204,7 +204,7 @@ public class MultiSelfAttention {//多头自注意力层
     }
 
     public void sendMatrixMessage(long eventID, Matrix feature, boolean isStudy
-            , OutBack outBack, List<Integer> E, Matrix encoderFeature) throws Exception {//从输入神经元
+            , OutBack outBack, List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {//从输入神经元
         if (depth == 1) {//如果是第一层，则添加时间序列参数
             if (selfTimeCode) {
                 addTimeCodeBySelf(feature);
@@ -218,7 +218,7 @@ public class MultiSelfAttention {//多头自注意力层
             eventBodies.add(eventBody);
         }
         Matrix matrix = countMultiSelfAttention(eventBodies, isStudy);//多头输出
-        layNorm.addNorm(feature, matrix, eventID, isStudy, outBack, E, encoderFeature);//进第一个残差层
+        layNorm.addNorm(feature, matrix, eventID, isStudy, outBack, E, encoderFeature, outAllPro);//进第一个残差层
     }
 
 

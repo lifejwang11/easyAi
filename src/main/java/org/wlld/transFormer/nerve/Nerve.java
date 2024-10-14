@@ -84,10 +84,10 @@ public abstract class Nerve {
     }
 
     protected void sendMessage(long eventId, Matrix parameter, boolean isStudy, Matrix allFeature, OutBack outBack,
-                               List<Integer> E, Matrix encoderFeature) throws Exception {
+                               List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {
         if (!son.isEmpty()) {
             for (Nerve nerve : son) {
-                nerve.input(eventId, parameter, isStudy, allFeature, outBack, E, encoderFeature);
+                nerve.input(eventId, parameter, isStudy, allFeature, outBack, E, encoderFeature, outAllPro);
             }
         }
 
@@ -110,18 +110,18 @@ public abstract class Nerve {
     }
 
     protected void input(long eventId, Matrix parameter, boolean isStudy, Matrix allFeature, OutBack outBack,
-                         List<Integer> E, Matrix encoderFeature) throws Exception {//输入参数
+                         List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {//输入参数
 
     }
 
-    protected void toOut(long eventId, Matrix parameter, boolean isStudy, OutBack outBack, List<Integer> E) throws Exception {
+    protected void toOut(long eventId, Matrix parameter, boolean isStudy, OutBack outBack, List<Integer> E, boolean outAllPro) throws Exception {
 
     }
 
-    protected void sendOutMessage(long eventId, Matrix parameter, boolean isStudy, OutBack outBack, List<Integer> E) throws Exception {
+    protected void sendOutMessage(long eventId, Matrix parameter, boolean isStudy, OutBack outBack, List<Integer> E, boolean outAllPro) throws Exception {
         if (!son.isEmpty()) {
             for (Nerve nerve : son) {
-                nerve.toOut(eventId, parameter, isStudy, outBack, E);
+                nerve.toOut(eventId, parameter, isStudy, outBack, E, outAllPro);
             }
         }
     }
