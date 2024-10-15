@@ -18,7 +18,13 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
-
+    <developers>
+        <developer>
+            <id>lidapeng</id>
+            <name>lidapeng</name>
+            <email>794757862@qq.com</email>
+        </developer>
+    </developers>
 
 
     <distributionManagement>
