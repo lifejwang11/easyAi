@@ -38,7 +38,7 @@ public class TalkToTalk extends MatrixOperation {
     public void init() throws Exception {
         int wordVectorDimension = wordEmbedding.getWordVectorDimension();
         tfConfig.setFeatureDimension(wordVectorDimension);
-        tfConfig.setTypeNumber(wordEmbedding.getWordList().size() + 2);
+        tfConfig.setTypeNumber(wordEmbedding.getWordList().size() + 1);
         transFormerManager = new TransFormerManager(tfConfig);
     }
 

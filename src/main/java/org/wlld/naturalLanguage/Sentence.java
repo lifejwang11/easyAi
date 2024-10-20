@@ -11,10 +11,9 @@ import java.util.List;
  */
 public class Sentence {
     private Word firstWord;
-    private List<Word> waitWords = new ArrayList<>();//词
+    private final List<Word> waitWords = new ArrayList<>();//词
     private List<String> keyWords;//分词结果下标按照时间序列排序
-    private List<Integer> features = new ArrayList<>();//时序特征
-    private int key;
+    private final List<Integer> features = new ArrayList<>();//时序特征
 
     public List<Integer> getFeatures() {
         return features;
@@ -38,20 +37,6 @@ public class Sentence {
 
     public Sentence() {
 
-    }
-
-    public Sentence(int key) {
-        if (key > -1) {
-            this.key = key;
-        }
-    }
-
-    public int getKey() {
-        return key;
-    }
-
-    public void setKey(int key) {
-        this.key = key;
     }
 
     private void lineWord(Word word, Word wordSon) {//给词连线

@@ -7,7 +7,6 @@ public class WorldBody {
     private int wordFrequency;//词频
     private List<WorldBody> worldBodies;//辐射集合
     private Word word;
-    private int type = 0;
 
     public String getWordName() {
         return wordName;
@@ -21,10 +20,7 @@ public class WorldBody {
         return wordFrequency;
     }
 
-    public void addNub(int type) {
-        if (this.type != 0) {
-            this.type = type;
-        }
+    public void addNub() {
         wordFrequency++;
     }
 
