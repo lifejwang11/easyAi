@@ -139,7 +139,7 @@ public class TransFormerManager {
             connectCodecBlock(encoderBlocks);
             connectCodecBlock(decoderBlocks);
             lineBlock = new LineBlock(typeNumber, featureDimension, studyPoint, lastDecoderBlock, showLog, regularModel
-                    , regular, tfConfig.getCoreNumber());
+                    , regular, tfConfig.getCoreNumber(), tfConfig.getTimePunValue());
             lastDecoderBlock.setLineBlock(lineBlock);
             firstDecoderBlock = new FirstDecoderBlock(multiNumber, featureDimension, studyPoint, decoderBlocks.get(0), maxLength
                     , selfTimeCode, tfConfig.getCoreNumber());

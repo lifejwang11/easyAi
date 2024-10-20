@@ -65,6 +65,16 @@ public class Matrix extends MatrixOperation {
         }
     }
 
+    public double getSigma() {
+        double sigma = 0;
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                sigma = sigma + matrix[i][j];
+            }
+        }
+        return sigma;
+    }
+
     /**
      * 计算全矩阵元素平均值
      *

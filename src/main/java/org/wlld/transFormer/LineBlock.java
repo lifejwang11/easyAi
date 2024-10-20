@@ -49,11 +49,11 @@ public class LineBlock {//线性层模块
     }
 
     public LineBlock(int typeNumber, int featureDimension, double studyPoint, CodecBlock lastCodecBlock,
-                     boolean showLog, int regularModel, double regular, int coreNumber) throws Exception {
+                     boolean showLog, int regularModel, double regular, int coreNumber, double timePunValue) throws Exception {
         this.featureDimension = featureDimension;
         this.lastCodecBlock = lastCodecBlock;
         matrixOperation = new MatrixOperation(coreNumber);
-        SoftMax softMax = new SoftMax(outNerveList, showLog, typeNumber, typeNumber, typeNumber);
+        SoftMax softMax = new SoftMax(outNerveList, showLog, typeNumber, typeNumber, typeNumber, timePunValue);
         //隐层
         List<Nerve> hiddenNerves = new ArrayList<>();
         for (int i = 0; i < featureDimension; i++) {

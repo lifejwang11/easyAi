@@ -1,8 +1,5 @@
 package org.wlld.naturalLanguage;
 
-import org.wlld.entity.WordOfShop;
-import org.wlld.randomForest.DataTable;
-import org.wlld.randomForest.RandomForest;
 import org.wlld.tools.ArithUtil;
 import org.wlld.tools.Frequency;
 
@@ -14,164 +11,27 @@ import java.util.*;
  * @date 7:42 上午 2020/2/23
  */
 public class Tokenizer extends Frequency {
-    private List<Sentence> sentences;//所有断句
-    private List<WorldBody> allWorld;//所有词集合
-    private List<List<String>> wordTimes;//所有词编号
-    private Word nowWord;//上一次出现的关键字
-    private WordTemple wordTemple;
-    private List<WordOfShop> wordOfShopList = new ArrayList<>();
-
-    public List<WordOfShop> getWordOfShopList() {
-        return wordOfShopList;
-    }
+    private final List<Sentence> sentences;//所有断句
+    private final List<WorldBody> allWorld;//所有词集合
+    private final double wordNoise;
 
     public Tokenizer(WordTemple wordTemple) {
-        this.wordTemple = wordTemple;
         sentences = wordTemple.getSentences();//所有断句
         allWorld = wordTemple.getAllWorld();//所有词集合
-        wordTimes = wordTemple.getWordTimes();//所有词编号
+        wordNoise = wordTemple.getWordNoise();
     }
 
-    public void start(Map<Integer, List<String>> model) throws Exception {
+    public void start(List<String> st) throws Exception {
         //model的主键是类别，值是该类别语句的集合
-        for (Map.Entry<Integer, List<String>> mod : model.entrySet()) {
-            if (mod.getKey() != 0) {
-                List<String> st = mod.getValue();//语句
-                int key = mod.getKey();//类别
-                for (String sentence : st) {//遍历每个类别的每个语句
-                    Sentence sentenceWords = new Sentence(key);
-                    catchSentence(sentence, sentenceWords);
-                    Word word = sentenceWords.getFirstWord();
-                    if (word != null) {
-                        worldMuch(word, allWorld, key);//构建句子内的层级关系并添加词频
-                    }
-                }
+        for (String sentence : st) {//遍历每个类别的每个语句
+            Sentence sentenceWords = new Sentence();
+            catchSentence(sentence, sentenceWords);
+            Word word = sentenceWords.getFirstWord();
+            if (word != null) {
+                worldMuch(word, allWorld);//构建句子内的层级关系并添加词频
             }
         }
         restructure();//对集合中的词进行词频统计
-        //这里分词已经结束,对词进行编号
-        if (!wordTemple.isSplitWord()) {
-            number();
-            //进入随机森林进行学习
-            study();
-        } else {//只进行分词
-            Map<String, WordOfShop> wordOfShopMap = new HashMap<>();
-            int size = sentences.size();
-            for (int i = 0; i < size; i++) {
-                Sentence sentence = sentences.get(i);//一句话
-                List<String> keyWords = sentence.getKeyWords();//关键词
-                int key = sentence.getKey();//id
-                for (String keyWord : keyWords) {
-                    if (wordOfShopMap.containsKey(keyWord)) {//存在当前词
-                        WordOfShop wordOfShop = wordOfShopMap.get(keyWord);
-                        wordOfShop.getShops().add(key);
-                    } else {//不存在
-                        WordOfShop wordOfShop = new WordOfShop();
-                        int index = wordOfShopMap.size() + 1;
-                        wordOfShop.setWord(keyWord);
-                        wordOfShop.setId(index);
-                        wordOfShop.getShops().add(key);
-                        wordOfShopMap.put(keyWord, wordOfShop);
-                    }
-                }
-            }
-            for (Map.Entry<String, WordOfShop> entry : wordOfShopMap.entrySet()) {
-                wordOfShopList.add(entry.getValue());
-            }
-        }
-    }
-
-    private int getKey(List<String> words, String testWord) {
-        int nub = 0;
-        int size = words.size();
-        for (int i = 0; i < size; i++) {
-            String word = words.get(i);
-            if (testWord.hashCode() == word.hashCode() && testWord.equals(word)) {
-                nub = i + 1;
-                break;
-            }
-        }
-        if (nub == 0) {
-            words.add(testWord);
-            nub = words.size();
-        }
-        return nub;
-    }
-
-    private void number() {//分词编号
-        System.out.println("开始编码:" + (sentences.size() + 1));
-        for (Sentence sentence : sentences) {
-            List<Integer> features = sentence.getFeatures();
-            List<String> sentenceList = sentence.getKeyWords();
-            //System.out.println("关键词==="+sentenceList);
-            int size = sentenceList.size();//时间序列的深度
-            for (int i = 0; i < size; i++) {
-                if (wordTimes.size() < i + 1) {
-                    wordTimes.add(new ArrayList<>());
-                }
-                String word = sentenceList.get(i);//当前关键字
-                List<String> list = wordTimes.get(i);
-                int nub = getKey(list, word);
-                features.add(nub);
-            }
-        }
-    }
-
-    private void study() throws Exception {
-        Set<String> column = new HashSet<>();
-        for (int i = 0; i < 8; i++) {
-            int t = i + 1;
-            column.add("a" + t);
-        }
-        column.add("key");
-        DataTable dataTable = new DataTable(column);
-        dataTable.setKey("key");//确认结果集主键
-        //初始化随机森林
-        RandomForest randomForest = new RandomForest(wordTemple.getTreeNub());
-        randomForest.setTrustTh(wordTemple.getTrustTh());
-        randomForest.setTrustPunishment(wordTemple.getTrustPunishment());
-        wordTemple.setRandomForest(randomForest);//保存随机森林到模版
-        randomForest.init(dataTable);
-        for (Sentence sentence : sentences) {
-            LangBody langBody = new LangBody();
-            List<Integer> features = sentence.getFeatures();
-            langBody.setKey(sentence.getKey());
-            for (int i = 0; i < 8; i++) {
-                int nub = 0;
-                if (features.size() > i) {
-                    nub = features.get(i);
-                }
-                int t = i + 1;
-                switch (t) {
-                    case 1:
-                        langBody.setA1(nub);
-                        break;
-                    case 2:
-                        langBody.setA2(nub);
-                        break;
-                    case 3:
-                        langBody.setA3(nub);
-                        break;
-                    case 4:
-                        langBody.setA4(nub);
-                        break;
-                    case 5:
-                        langBody.setA5(nub);
-                        break;
-                    case 6:
-                        langBody.setA6(nub);
-                        break;
-                    case 7:
-                        langBody.setA7(nub);
-                        break;
-                    case 8:
-                        langBody.setA8(nub);
-                        break;
-                }
-            }
-            randomForest.insert(langBody);
-        }
-        randomForest.study();
     }
 
     private void restructure() {//对句子里面的Word进行词频统计
@@ -192,7 +52,8 @@ public class Tokenizer extends Frequency {
 
     public void radiation(Sentence sentenceWords) {//对句子中的词开始辐射延伸
         //首先词与它自己的右节点和左节点进行比较
-        nowWord = null;
+        //上一次出现的关键字
+        Word nowWord = null;
         Word firstWord = sentenceWords.getFirstWord();
         KeyWord word = new KeyWord();
         word.setWord(firstWord);
@@ -237,12 +98,12 @@ public class Tokenizer extends Frequency {
             if (word.getSon() != null) {
                 double db = wordEnd(word, new ArrayList<>(), 0);//计算身前平均值
                 //与它儿子词频的差要小于辐射向前的词频差的平均值
-                boolean isAvgOk = (ArithUtil.mul(word.getWordFrequency() - word.getSon().getWordFrequency(), WordConst.Word_Noise)) <= db;
+                boolean isAvgOk = (ArithUtil.mul(word.getWordFrequency() - word.getSon().getWordFrequency(), wordNoise)) <= db;
                 if (isAvgOk) {//平均值检测
                     diff = getDiff(diff, word.getSon());
                     right = dc(diff);
                     if (dm > -1) {
-                        if (ArithUtil.mul(right, WordConst.Word_Noise) <= dm) {//继续向下探索
+                        if (ArithUtil.mul(right, wordNoise) <= dm) {//继续向下探索
                             words.setOk(false);
                             words.setWord(word.getSon());
                             words = keyWord(right, words, diff);
@@ -300,35 +161,35 @@ public class Tokenizer extends Frequency {
         sentences.add(sentenceWords);
     }
 
-    private void worldMuch(Word word, List<WorldBody> worldBodies, int type) {//分类词频处理
+    private void worldMuch(Word word, List<WorldBody> worldBodies) {//分类词频处理
         boolean bm = false;
         String check = word.getWord();
         for (WorldBody myWorld : worldBodies) {
             String waitCheck = myWorld.getWordName();
             if (waitCheck.hashCode() == check.hashCode() && waitCheck.equals(check)) {
                 bm = true;
-                myWorld.addNub(type);
+                myWorld.addNub();
                 if (word.getSon() != null) {//没有找到最后一级了
-                    worldMuch(word.getSon(), myWorld.getWorldBodies(), type);
+                    worldMuch(word.getSon(), myWorld.getWorldBodies());
                 }
                 break;
             }
         }
         if (!bm) {//找不到了
-            saveList(word, worldBodies, type);
+            saveList(word, worldBodies);
         }
     }
 
-    private void saveList(Word word, List<WorldBody> myWorld, int type) {//保存新词
+    private void saveList(Word word, List<WorldBody> myWorld) {//保存新词
         WorldBody body = new WorldBody();
         List<WorldBody> list = new ArrayList<>();
         body.setWordName(word.getWord());
-        body.addNub(type);
+        body.addNub();
         body.setWorldBodies(list);
         body.setWord(word);
         myWorld.add(body);
         if (word.getSon() != null) {
-            saveList(word.getSon(), list, type);
+            saveList(word.getSon(), list);
         }
     }
 }
