@@ -41,6 +41,38 @@ public class ThreeChannelMatrix {
         }
     }
 
+    public ThreeChannelMatrix scale(boolean scaleWidth, double size) throws Exception {//缩放图像
+        double value;
+        if (scaleWidth) {//将宽度等比缩放至指定尺寸
+            value = y / size;
+        } else {//将高度等比缩放至指定尺寸
+            value = x / size;
+        }
+        int narrowX = (int) (x / value);
+        int narrowY = (int) (y / value);
+        ThreeChannelMatrix scaleMatrix = new ThreeChannelMatrix();
+        scaleMatrix.setX(narrowX);
+        scaleMatrix.setY(narrowY);
+        Matrix matrixCR = new Matrix(narrowX, narrowY);
+        Matrix matrixCG = new Matrix(narrowX, narrowY);
+        Matrix matrixCB = new Matrix(narrowX, narrowY);
+        Matrix matrixCH = new Matrix(narrowX, narrowY);
+        scaleMatrix.setMatrixR(matrixCR);
+        scaleMatrix.setMatrixG(matrixCG);
+        scaleMatrix.setMatrixB(matrixCB);
+        scaleMatrix.setH(matrixCH);
+        for (int i = 0; i < narrowX; i++) {
+            for (int j = 0; j < narrowY; j++) {
+                int indexX = (int) (i * value);
+                int indexY = (int) (j * value);
+                matrixCR.setNub(i, j, matrixR.getNumber(indexX, indexY));
+                matrixCG.setNub(i, j, matrixG.getNumber(indexX, indexY));
+                matrixCB.setNub(i, j, matrixB.getNumber(indexX, indexY));
+            }
+        }
+        return scaleMatrix;
+    }
+
     public void add(double nub, boolean add) throws Exception {//对rgb矩阵曝光进行处理
         if (add) {//加数值
             matrixOperation.mathAdd(matrixR, nub);
