@@ -10,9 +10,9 @@ import java.util.*;
  * @date 10:25 上午 2022/9/12
  */
 public class DynamicProgramming {
-    private List<DynamicState> dynamicStateList = new ArrayList<>();//状态集合
-    private Map<Integer, Action> actionMap = new HashMap<>();//动作列表
-    private List<Integer> bestStrategy = new ArrayList<>();//最佳策略
+    private final List<DynamicState> dynamicStateList = new ArrayList<>();//状态集合
+    private final Map<Integer, Action> actionMap = new HashMap<>();//动作列表
+    private final List<Integer> bestStrategy = new ArrayList<>();//最佳策略
     private double gaMa = 0.5;//贴现因子
     private double valueTh = 0.0001;//价值阈值
     private int maxTimes = 500;//策略改进最大迭代次数
