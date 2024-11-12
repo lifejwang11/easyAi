@@ -31,9 +31,9 @@ public class ThreeChannelMatrix {
 
     public double getDist(ThreeChannelMatrix th) throws Exception {
         if (th.getX() == x && th.getY() == y) {
-            double subR = Math.abs(matrixOperation.sub(matrixR, th.getMatrixR()).getAVG());
-            double subG = Math.abs(matrixOperation.sub(matrixG, th.getMatrixG()).getAVG());
-            double subB = Math.abs(matrixOperation.sub(matrixB, th.getMatrixB()).getAVG());
+            double subR = matrixOperation.getEDistByMatrix(matrixR, th.getMatrixR());
+            double subG = matrixOperation.getEDistByMatrix(matrixG, th.getMatrixG());
+            double subB = matrixOperation.getEDistByMatrix(matrixB, th.getMatrixB());
             return (subR + subB + subG) / 3;
         } else {
             throw new Exception("图像尺寸大小不匹配，本图像尺寸x是：" + x + ",y:" + y + "。待匹配尺寸图像 x:" + th.getX() +
