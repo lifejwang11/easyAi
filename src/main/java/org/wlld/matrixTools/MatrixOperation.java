@@ -47,6 +47,48 @@ public class MatrixOperation {
         }
     }
 
+    public void center(Matrix matrix) throws Exception {//将矩阵中心化
+        double avgValue = matrix.getAVG();
+        mathSub(matrix, avgValue);
+    }
+
+    public double getCrossEntropy(Matrix matrix1, Matrix matrix2) throws Exception {//两个概率矩阵的交叉熵
+        double sigMod = 0;
+        int x = matrix1.getX();
+        int y = matrix1.getY();
+        if (x == matrix2.getX() && y == matrix2.getY()) {
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    sigMod = sigMod + matrix2.getNumber(i, j) * Math.log(matrix1.getNumber(i, j));
+                }
+            }
+            return -sigMod;
+        } else {
+            throw new Exception("matrix is not equals");
+        }
+    }
+
+    public Matrix softMaxByMatrix(Matrix feature) throws Exception {
+        double sigma = 0;
+        int x = feature.getX();
+        int y = feature.getY();
+        Matrix softMaxMatrix = new Matrix(x, y);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double value = feature.getNumber(i, j);
+                sigma = Math.exp(value) + sigma;
+            }
+        }
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double eSelf = Math.exp(feature.getNumber(i, j));
+                double value = eSelf / sigma;
+                softMaxMatrix.setNub(i, j, value);
+            }
+        }
+        return softMaxMatrix;
+    }
+
     //矩阵相减 重点
     public Matrix sub(Matrix matrix1, Matrix matrix2) throws Exception {//
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
