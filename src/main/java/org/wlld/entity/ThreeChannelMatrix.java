@@ -85,6 +85,17 @@ public class ThreeChannelMatrix {
         }
     }
 
+    public void center() throws Exception {
+        center(matrixR);
+        center(matrixG);
+        center(matrixB);
+    }
+
+    private void center(Matrix matrix) throws Exception {
+        double avg = matrix.getAVG();
+        matrixOperation.mathSub(matrix, avg);
+    }
+
     public ThreeChannelMatrix copy() throws Exception {//复制当前的三通道矩阵并返回
         ThreeChannelMatrix copyThreeChannelMatrix = new ThreeChannelMatrix();
         copyThreeChannelMatrix.setX(this.x);
