@@ -41,6 +41,60 @@ public class ThreeChannelMatrix {
         }
     }
 
+    private int getLBPValue(Matrix matrix) throws Exception {
+        int value = 0;
+        double avg = matrix.getAVG();
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (i != 1 || j != 1) {
+                    value = value << 1;
+                    if (matrix.getNumber(i, j) > avg) {
+                        value = value | 1;
+                    }
+                }
+            }
+        }
+        return value;
+    }
+
+    public Matrix getLBPMatrix() throws Exception {
+        Matrix addMatrix = matrixOperation.add(matrixOperation.add(matrixR, matrixG), matrixB);
+        Matrix matrix = new Matrix(x / 3, y / 3);
+        for (int i = 0; i <= x - 3; i += 3) {
+            for (int j = 0; j <= y - 3; j += 3) {
+                Matrix aMatrix = addMatrix.getSonOfMatrix(i, j, 3, 3);
+                int lbp = getLBPValue(aMatrix);
+                matrix.setNub(i / 3, j / 3, lbp);
+            }
+        }
+        return matrix;
+    }
+
+    public void standardization() throws Exception {//标准化
+        standardizationMatrix(matrixR);
+        standardizationMatrix(matrixG);
+        standardizationMatrix(matrixB);
+    }
+
+    private void standardizationMatrix(Matrix matrix) throws Exception {
+        double avg = matrix.getAVG();
+        double sigma = 0;
+        double size = x * y;
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                sigma = sigma + Math.pow(matrix.getNumber(i, j) - avg, 2);
+            }
+        }
+        sigma = sigma / size;//方差
+        double b = Math.sqrt(sigma);//标准差
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double value = (matrix.getNumber(i, j) - avg) / b;
+                matrix.setNub(i, j, value);
+            }
+        }
+    }
+
     public ThreeChannelMatrix scale(boolean scaleWidth, double size) throws Exception {//缩放图像
         double value;
         if (scaleWidth) {//将宽度等比缩放至指定尺寸
