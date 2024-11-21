@@ -1,0 +1,65 @@
+package org.dromara.entity;
+
+
+import org.dromara.matrixTools.Matrix;
+import org.dromara.i.OutBack;
+
+import java.util.List;
+
+/**
+ * @param
+ * @DATA
+ * @Author LiDaPeng
+ * @Description
+ */
+public class RegionBack implements OutBack {
+    private int id;
+    private double point = -2;
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void clear() {
+        id = 0;
+        point = -2;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public double getPoint() {
+        return point;
+    }
+
+    @Override
+    public void getBack(double out, int id, long eventId) {
+        if (out > point) {
+            point = out;
+            this.id = id;
+        }
+    }
+
+    @Override
+    public void getSoftMaxBack(long eventId, List<Double> softMax) {
+
+    }
+
+
+    @Override
+    public void backWord(String word, long eventId) {
+
+    }
+
+
+    @Override
+    public void getBackMatrix(Matrix matrix, int id, long eventId) {
+
+    }
+
+    @Override
+    public void getWordVector(int id, double w) {
+
+    }
+}
