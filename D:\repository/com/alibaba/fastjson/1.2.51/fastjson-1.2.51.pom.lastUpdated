@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Wed Sep 11 13:56:34 CST 2024
+@default-central-https\://repo.maven.apache.org/maven2/.lastUpdated=1726034194286
+https\://repo.maven.apache.org/maven2/.error=Could not transfer artifact com.alibaba\:fastjson\:pom\:1.2.51 from/to central (https\://repo.maven.apache.org/maven2)\: Connect to repo.maven.apache.org\:443 [repo.maven.apache.org/146.75.112.215, repo.maven.apache.org/2a04\:4e42\:1a\:0\:0\:0\:0\:215] failed\: No route to host (connect failed)
