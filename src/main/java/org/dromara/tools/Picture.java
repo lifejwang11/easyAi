@@ -11,6 +11,11 @@ import java.io.InputStream;
 public class Picture {
     private int pictureWidth;
     private int pictureHeight;
+    private boolean vertical = false;
+
+    public void vertical() {//强制竖向图
+        vertical = true;
+    }
 
     //从本地文件拿出图像矩阵
     public Matrix getImageMatrixByLocal(String fileURL) throws Exception {
@@ -85,6 +90,12 @@ public class Picture {
     private ThreeChannelMatrix getThreeChannel(BufferedImage bi) throws Exception {
         int width = bi.getWidth();//最大宽度
         int height = bi.getHeight();//最大高度
+        boolean rotate = false;
+        if (vertical && width > height) {
+            rotate = true;
+            width = bi.getHeight();//最大宽度
+            height = bi.getWidth();//最大高度
+        }
         ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
         threeChannelMatrix.setX(height);
         threeChannelMatrix.setY(width);
@@ -98,7 +109,12 @@ public class Picture {
         threeChannelMatrix.setH(matrixH);
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                int pixel = bi.getRGB(j, i);// 下面三行代码将一个数字转换为RGB数字
+                int pixel;// 下面三行代码将一个数字转换为RGB数字
+                if (rotate) {
+                    pixel = bi.getRGB(i, j);// 下面三行代码将一个数字转换为RGB数字
+                } else {
+                    pixel = bi.getRGB(j, i);
+                }
                 int r = (pixel & 0xff0000) >> 16;//R
                 int g = (pixel & 0xff00) >> 8;//G
                 int b = (pixel & 0xff);//B
