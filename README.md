@@ -25,9 +25,10 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 
 <div align=center> <img src="https://myeasyai.cn/img/drink.png"></div>
 
-### 人脸面部检测
-
-* 对人脸及五官进行定位检测：
+### 人脸识别
+* 人脸识别是对人的脸部进行定位后进行识别，是常用的人工智能图像项目
+* seeFace是基于EasyAi框架开发的开源社区级人脸识别
+* 算法源码地址：https://gitee.com/ldp_dpsmax/see-face
 
 <div align=center><img src="https://myeasyai.cn/img/face2.png"></div>
 
@@ -88,10 +89,10 @@ https://gitcode.com/dromara/EasyAi/overview
 * 在pom文件中引入以下JAR包即可(若最新版本中央库还没更新，则直接下载发行版，自行安装到本地库)
 
 ```    
-          <dependency>
-            <groupId>cn.myeasyai</groupId>
-            <artifactId>easyAi</artifactId>
-            <version>1.2.9</version>
+        <dependency>
+             <groupId>cn.myeasyai</groupId>
+             <artifactId>easyAi</artifactId>
+             <version>1.2.9</version>
         </dependency>
 ```
 
