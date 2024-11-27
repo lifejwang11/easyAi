@@ -11,9 +11,13 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.List;
 
+/**
+ * 图片输出工具类
+ * @author lidapeng
+ */
 public class ImageTools {
 
-    public void writeImage(ThreeChannelMatrix img, String url) {
+    public static void writeImage(ThreeChannelMatrix img, String url) {
         ByteArrayOutputStream b = null;
         FileOutputStream fileOutputStream = null;
         try {
@@ -36,7 +40,7 @@ public class ImageTools {
         }
     }
 
-    public void drawBox(String fileURL, List<OutBox> borderFoods, String outFileName, int fontSize) throws Exception {
+    public static void drawBox(String fileURL, List<OutBox> borderFoods, String outFileName, int fontSize) throws Exception {
         File file = new File(fileURL);
         BufferedImage image2 = ImageIO.read(file);
         int width = image2.getWidth();
@@ -55,7 +59,7 @@ public class ImageTools {
         ImageIO.write(bi, "jpg", new FileOutputStream(outFileName));
     }
 
-    public ByteArrayOutputStream drawImage(ThreeChannelMatrix img) throws Exception {
+    public static ByteArrayOutputStream drawImage(ThreeChannelMatrix img) throws Exception {
         Matrix matrixR = img.getMatrixR();
         Matrix matrixG = img.getMatrixG();
         Matrix matrixB = img.getMatrixB();
