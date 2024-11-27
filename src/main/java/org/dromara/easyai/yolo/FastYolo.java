@@ -258,9 +258,8 @@ public class FastYolo {//yolo
         List<YoloBody> yoloBodies = yoloSample.getYoloBodies();//集合
         List<Box> boxes = getBoxes(yoloBodies);
         String url = yoloSample.getLocationURL();//地址
-        Picture picture = new Picture();
         NMS nms = new NMS(yoloConfig.getIouTh());
-        ThreeChannelMatrix pic = picture.getThreeMatrix(url);
+        ThreeChannelMatrix pic = Picture.getThreeMatrix(url, false);
         List<YoloMessage> yoloMessageList = new ArrayList<>();
         double stepReduce = yoloConfig.getStepReduce();
         int stepX = (int) (winHeight * stepReduce);

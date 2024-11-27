@@ -11,9 +11,14 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.List;
 
+/**
+ * 图片输出工具类
+ *
+ * @author lidapeng
+ */
 public class ImageTools {
 
-    public void writeImage(ThreeChannelMatrix img, String url) {
+    public static void writeImage(ThreeChannelMatrix img, String url) {
         ByteArrayOutputStream b = null;
         FileOutputStream fileOutputStream = null;
         try {
@@ -36,7 +41,7 @@ public class ImageTools {
         }
     }
 
-    public void drawBox(String fileURL, List<OutBox> borderFoods, String outFileName, int fontSize) throws Exception {
+    public static void drawBox(String fileURL, List<OutBox> borderFoods, String outFileName, int fontSize) throws Exception {
         File file = new File(fileURL);
         BufferedImage image2 = ImageIO.read(file);
         int width = image2.getWidth();
@@ -55,7 +60,21 @@ public class ImageTools {
         ImageIO.write(bi, "jpg", new FileOutputStream(outFileName));
     }
 
-    public ByteArrayOutputStream drawImage(ThreeChannelMatrix img) throws Exception {
+    public static ByteArrayOutputStream drawImage(ThreeChannelMatrix img) throws Exception {
+        final BufferedImage bufferedImage = getBufferedImage(img);
+        ByteArrayOutputStream ar = new ByteArrayOutputStream();
+        ImageIO.write(bufferedImage, "PNG", ar);
+        return ar;
+    }
+
+    public static File drawImage(ThreeChannelMatrix img, String imageName) throws Exception {
+        final BufferedImage bufferedImage = getBufferedImage(img);
+        File ar = new File(imageName);
+        ImageIO.write(bufferedImage, "PNG", ar);
+        return ar;
+    }
+
+    private static BufferedImage getBufferedImage(ThreeChannelMatrix img) throws Exception {
         Matrix matrixR = img.getMatrixR();
         Matrix matrixG = img.getMatrixG();
         Matrix matrixB = img.getMatrixB();
@@ -70,19 +89,25 @@ public class ImageTools {
                 int b = (int) (matrixB.getNumber(i, j) * 255D);
                 if (r > 255) {
                     r = 255;
+                } else if (r < 0) {
+                    r = 0;
                 }
                 if (g > 255) {
                     g = 255;
+                } else if (g < 0) {
+                    g = 0;
                 }
                 if (b > 255) {
                     b = 255;
+                } else if (b < 0) {
+                    b = 0;
                 }
                 g2.setColor(new Color(r, g, b));
                 g2.drawRect(j, i, 1, 1);
             }
         }
-        ByteArrayOutputStream ar = new ByteArrayOutputStream();
-        ImageIO.write(bi, "PNG", ar);
-        return ar;
+        return bi;
     }
+
+
 }

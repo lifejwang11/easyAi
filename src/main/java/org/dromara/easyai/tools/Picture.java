@@ -8,17 +8,20 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
 
+/**
+ * @author lidapeng
+ * 图片工具类
+ */
 public class Picture {
-    private int pictureWidth;
-    private int pictureHeight;
-    private boolean vertical = false;
 
-    public void vertical() {//强制竖向图
-        vertical = true;
-    }
-
-    //从本地文件拿出图像矩阵
-    public Matrix getImageMatrixByLocal(String fileURL) throws Exception {
+    /**
+     * 从本地文件拿出图像矩阵
+     *
+     * @param fileURL 图片本地地址
+     * @return Matrix
+     * @throws Exception
+     */
+    public static Matrix getImageMatrixByLocal(String fileURL) throws Exception {
         File file = new File(fileURL);
         BufferedImage bi = null;
         try {
@@ -29,27 +32,45 @@ public class Picture {
         return getImage(bi);
     }
 
-    public ThreeChannelMatrix getThreeMatrix(File file) throws Exception {
+    public static Matrix getImageMatrixByFile(File file) throws Exception {
         BufferedImage bi = null;
         try {
             bi = ImageIO.read(file);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return this.getThreeChannel(bi);
+        return getImage(bi);
     }
 
-    public ThreeChannelMatrix getThreeMatrix(InputStream file) throws Exception {
+    /**
+     * 获取图片的RGB三通道矩阵
+     *
+     * @param file     文件
+     * @param vertical 是否强制竖直
+     * @return threeChannelMatrix
+     * @throws Exception
+     */
+    public static ThreeChannelMatrix getThreeMatrix(File file, boolean vertical) throws Exception {
         BufferedImage bi = null;
         try {
             bi = ImageIO.read(file);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return this.getThreeChannel(bi);
+        return getThreeChannel(bi, vertical);
     }
 
-    public ThreeChannelMatrix getThreeMatrix(String fileURL) throws Exception {
+    public static ThreeChannelMatrix getThreeMatrix(InputStream file, boolean vertical) throws Exception {
+        BufferedImage bi = null;
+        try {
+            bi = ImageIO.read(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return getThreeChannel(bi, vertical);
+    }
+
+    public static ThreeChannelMatrix getThreeMatrix(String fileURL, boolean vertical) throws Exception {
         File file = new File(fileURL);
         BufferedImage bi = null;
         try {
@@ -57,11 +78,11 @@ public class Picture {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return getThreeChannel(bi);
+        return getThreeChannel(bi, vertical);
     }
 
     //
-    public Matrix getImageMatrixByIo(InputStream inputStream) throws Exception {
+    public static Matrix getImageMatrixByIo(InputStream inputStream) throws Exception {
         BufferedImage bi = null;
         try {
             bi = ImageIO.read(inputStream);
@@ -71,11 +92,9 @@ public class Picture {
         return getImage(bi);
     }
 
-    private Matrix getImage(BufferedImage bi) throws Exception {
+    private static Matrix getImage(BufferedImage bi) throws Exception {
         int width = bi.getWidth();//最大宽度
         int height = bi.getHeight();//最大高度
-        pictureWidth = width;
-        pictureHeight = height;
         Matrix matrix = new Matrix(height, width);//行，列
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
@@ -87,21 +106,26 @@ public class Picture {
         return matrix;
     }
 
-    private ThreeChannelMatrix getThreeChannel(BufferedImage bi) throws Exception {
-        int width = bi.getWidth();//最大宽度
-        int height = bi.getHeight();//最大高度
+    private static ThreeChannelMatrix getThreeChannel(BufferedImage bi, boolean vertical) throws Exception {
+        //最大宽度
+        int width = bi.getWidth();
+        //最大高度
+        int height = bi.getHeight();
         boolean rotate = false;
         if (vertical && width > height) {
             rotate = true;
-            width = bi.getHeight();//最大宽度
-            height = bi.getWidth();//最大高度
+            //最大宽度
+            width = bi.getHeight();
+            //最大高度
+            height = bi.getWidth();
         }
         ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
         threeChannelMatrix.setX(height);
         threeChannelMatrix.setY(width);
-        Matrix matrixR = new Matrix(height, width);//行，列
-        Matrix matrixG = new Matrix(height, width);//行，列
-        Matrix matrixB = new Matrix(height, width);//行，列
+        //行，列
+        Matrix matrixR = new Matrix(height, width);
+        Matrix matrixG = new Matrix(height, width);
+        Matrix matrixB = new Matrix(height, width);
         Matrix matrixH = new Matrix(height, width);
         threeChannelMatrix.setMatrixR(matrixR);
         threeChannelMatrix.setMatrixG(matrixG);
@@ -109,15 +133,17 @@ public class Picture {
         threeChannelMatrix.setH(matrixH);
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                int pixel;// 下面三行代码将一个数字转换为RGB数字
+                // 下面三行代码将一个数字转换为RGB数字
+                int pixel;
                 if (rotate) {
-                    pixel = bi.getRGB(i, j);// 下面三行代码将一个数字转换为RGB数字
+                    // 下面三行代码将一个数字转换为RGB数字
+                    pixel = bi.getRGB(i, j);
                 } else {
                     pixel = bi.getRGB(j, i);
                 }
-                int r = (pixel & 0xff0000) >> 16;//R
-                int g = (pixel & 0xff00) >> 8;//G
-                int b = (pixel & 0xff);//B
+                int r = (pixel & 0xff0000) >> 16;
+                int g = (pixel & 0xff00) >> 8;
+                int b = (pixel & 0xff);
                 matrixR.setNub(i, j, r / 255D);
                 matrixG.setNub(i, j, g / 255D);
                 matrixB.setNub(i, j, b / 255D);
@@ -127,7 +153,7 @@ public class Picture {
         return threeChannelMatrix;
     }
 
-    private double dimensionReduction(int pixel) {//提取灰度进行降维
+    private static double dimensionReduction(int pixel) {//提取灰度进行降维
         int r = (pixel & 0xff0000) >> 16;//R
         int g = (pixel & 0xff00) >> 8;//G
         int b = (pixel & 0xff);//B
@@ -135,19 +161,5 @@ public class Picture {
         return gray;
     }
 
-    public int getPictureWidth() {
-        return pictureWidth;
-    }
 
-    public void setPictureWidth(int pictureWidth) {
-        this.pictureWidth = pictureWidth;
-    }
-
-    public int getPictureHeight() {
-        return pictureHeight;
-    }
-
-    public void setPictureHeight(int pictureHeight) {
-        this.pictureHeight = pictureHeight;
-    }
 }

@@ -106,6 +106,36 @@ public class MatrixOperation {
         }
     }
 
+    private int getLBPValue(Matrix matrix) throws Exception {
+        int value = 0;
+        double avg = matrix.getAVG();
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (i != 1 || j != 1) {
+                    value = value << 1;
+                    if (matrix.getNumber(i, j) > avg) {
+                        value = value | 1;
+                    }
+                }
+            }
+        }
+        return value;
+    }
+
+    public Matrix lbpMatrix(Matrix addMatrix) throws Exception {
+        int x = addMatrix.getX();
+        int y = addMatrix.getY();
+        Matrix matrix = new Matrix(x / 3, y / 3);
+        for (int i = 0; i <= x - 3; i += 3) {
+            for (int j = 0; j <= y - 3; j += 3) {
+                Matrix aMatrix = addMatrix.getSonOfMatrix(i, j, 3, 3);
+                int lbp = getLBPValue(aMatrix);
+                matrix.setNub(i / 3, j / 3, lbp);
+            }
+        }
+        return matrix;
+    }
+
     //多元线性回归
     public Matrix getLinearRegression(Matrix parameter, Matrix out) throws Exception {
         if (parameter.getX() == out.getX() && out.isVector()) {
