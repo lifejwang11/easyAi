@@ -16,6 +16,7 @@ public class Picture {
 
     /**
      * 从本地文件拿出图像矩阵
+     *
      * @param fileURL 图片本地地址
      * @return Matrix
      * @throws Exception
@@ -43,42 +44,33 @@ public class Picture {
 
     /**
      * 获取图片的RGB三通道矩阵
-     * @param file 文件，原图，不强制转换
-     * @return
-     * @throws Exception
-     */
-    public ThreeChannelMatrix getThreeMatrix(File file) throws Exception {
-        return getThreeMatrix(file,false);
-    }
-
-    /**
-     * 获取图片的RGB三通道矩阵
-     * @param file 文件
+     *
+     * @param file     文件
      * @param vertical 是否强制竖直
      * @return threeChannelMatrix
      * @throws Exception
      */
-    public ThreeChannelMatrix getThreeMatrix(File file,boolean vertical) throws Exception {
+    public static ThreeChannelMatrix getThreeMatrix(File file, boolean vertical) throws Exception {
         BufferedImage bi = null;
         try {
             bi = ImageIO.read(file);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return getThreeChannel(bi,vertical);
+        return getThreeChannel(bi, vertical);
     }
 
-    public static ThreeChannelMatrix getThreeMatrix(InputStream file) throws Exception {
+    public static ThreeChannelMatrix getThreeMatrix(InputStream file, boolean vertical) throws Exception {
         BufferedImage bi = null;
         try {
             bi = ImageIO.read(file);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return getThreeChannel(bi);
+        return getThreeChannel(bi, vertical);
     }
 
-    public static ThreeChannelMatrix getThreeMatrix(String fileURL) throws Exception {
+    public static ThreeChannelMatrix getThreeMatrix(String fileURL, boolean vertical) throws Exception {
         File file = new File(fileURL);
         BufferedImage bi = null;
         try {
@@ -86,7 +78,7 @@ public class Picture {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return getThreeChannel(bi);
+        return getThreeChannel(bi, vertical);
     }
 
     //
@@ -114,11 +106,7 @@ public class Picture {
         return matrix;
     }
 
-    private static ThreeChannelMatrix getThreeChannel(BufferedImage bi) throws Exception {
-        return getThreeChannel(bi,false);
-    }
-
-    private static ThreeChannelMatrix getThreeChannel(BufferedImage bi,boolean vertical) throws Exception {
+    private static ThreeChannelMatrix getThreeChannel(BufferedImage bi, boolean vertical) throws Exception {
         //最大宽度
         int width = bi.getWidth();
         //最大高度

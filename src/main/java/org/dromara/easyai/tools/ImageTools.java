@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * 图片输出工具类
+ *
  * @author lidapeng
  */
 public class ImageTools {
@@ -65,7 +66,8 @@ public class ImageTools {
         ImageIO.write(bufferedImage, "PNG", ar);
         return ar;
     }
-    public static File drawImage(ThreeChannelMatrix img,String imageName) throws Exception {
+
+    public static File drawImage(ThreeChannelMatrix img, String imageName) throws Exception {
         final BufferedImage bufferedImage = getBufferedImage(img);
         File ar = new File(imageName);
         ImageIO.write(bufferedImage, "PNG", ar);
@@ -87,12 +89,18 @@ public class ImageTools {
                 int b = (int) (matrixB.getNumber(i, j) * 255D);
                 if (r > 255) {
                     r = 255;
+                } else if (r < 0) {
+                    r = 0;
                 }
                 if (g > 255) {
                     g = 255;
+                } else if (g < 0) {
+                    g = 0;
                 }
                 if (b > 255) {
                     b = 255;
+                } else if (b < 0) {
+                    b = 0;
                 }
                 g2.setColor(new Color(r, g, b));
                 g2.drawRect(j, i, 1, 1);
@@ -100,7 +108,6 @@ public class ImageTools {
         }
         return bi;
     }
-
 
 
 }

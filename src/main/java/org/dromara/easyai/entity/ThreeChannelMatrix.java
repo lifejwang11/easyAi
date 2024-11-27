@@ -41,33 +41,15 @@ public class ThreeChannelMatrix {
         }
     }
 
-    private int getLBPValue(Matrix matrix) throws Exception {
-        int value = 0;
-        double avg = matrix.getAVG();
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (i != 1 || j != 1) {
-                    value = value << 1;
-                    if (matrix.getNumber(i, j) > avg) {
-                        value = value | 1;
-                    }
-                }
-            }
-        }
-        return value;
-    }
-
     public Matrix getLBPMatrix() throws Exception {
-        Matrix addMatrix = matrixOperation.add(matrixOperation.add(matrixR, matrixG), matrixB);
-        Matrix matrix = new Matrix(x / 3, y / 3);
-        for (int i = 0; i <= x - 3; i += 3) {
-            for (int j = 0; j <= y - 3; j += 3) {
-                Matrix aMatrix = addMatrix.getSonOfMatrix(i, j, 3, 3);
-                int lbp = getLBPValue(aMatrix);
-                matrix.setNub(i / 3, j / 3, lbp);
+        Matrix addMatrix = new Matrix(x, y);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double value = matrixR.getNumber(i, j) + matrixG.getNumber(i, j) + matrixB.getNumber(i, j);
+                addMatrix.setNub(i, j, value);
             }
         }
-        return matrix;
+        return matrixOperation.lbpMatrix(addMatrix);
     }
 
     public void standardization() throws Exception {//标准化
