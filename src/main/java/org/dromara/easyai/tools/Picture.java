@@ -31,6 +31,16 @@ public class Picture {
         return getImage(bi);
     }
 
+    public static Matrix getImageMatrixByFile(File file) throws Exception {
+        BufferedImage bi = null;
+        try {
+            bi = ImageIO.read(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return getImage(bi);
+    }
+
     /**
      * 获取图片的RGB三通道矩阵
      * @param file 文件，原图，不强制转换

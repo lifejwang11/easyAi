@@ -60,6 +60,19 @@ public class ImageTools {
     }
 
     public static ByteArrayOutputStream drawImage(ThreeChannelMatrix img) throws Exception {
+        final BufferedImage bufferedImage = getBufferedImage(img);
+        ByteArrayOutputStream ar = new ByteArrayOutputStream();
+        ImageIO.write(bufferedImage, "PNG", ar);
+        return ar;
+    }
+    public static File drawImage(ThreeChannelMatrix img,String imageName) throws Exception {
+        final BufferedImage bufferedImage = getBufferedImage(img);
+        File ar = new File(imageName);
+        ImageIO.write(bufferedImage, "PNG", ar);
+        return ar;
+    }
+
+    private static BufferedImage getBufferedImage(ThreeChannelMatrix img) throws Exception {
         Matrix matrixR = img.getMatrixR();
         Matrix matrixG = img.getMatrixG();
         Matrix matrixB = img.getMatrixB();
@@ -85,8 +98,9 @@ public class ImageTools {
                 g2.drawRect(j, i, 1, 1);
             }
         }
-        ByteArrayOutputStream ar = new ByteArrayOutputStream();
-        ImageIO.write(bi, "PNG", ar);
-        return ar;
+        return bi;
     }
+
+
+
 }
