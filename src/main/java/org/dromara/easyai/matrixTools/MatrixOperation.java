@@ -718,4 +718,57 @@ public class MatrixOperation {
         }
         return myMatrix;
     }
+
+    private void insertVectorValue(Matrix matrix, Matrix vector, int col) throws Exception {//向一个矩阵指定行注入一个向量
+        int x = matrix.getX();
+        int y = matrix.getY();
+        if (x == vector.getX() && vector.isVector() && y > col) {//矩阵为行向量
+            for (int i = 0; i < x; i++) {
+                matrix.setNub(i, col, vector.getNumber(i, 0));
+            }
+        } else {
+            throw new Exception("注入向量异常，注入的必须为向量，且矩阵的列数必须与向量的列数相等，且行数没有溢出");
+        }
+    }
+
+    public QRMatrix qrd(Matrix matrix) throws Exception {//返回qr分解
+        int x = matrix.getX();
+        int y = matrix.getY();
+        if (x == y) {
+            Matrix schMatrix = new Matrix(x, y);
+            Matrix R = new Matrix(x, x);//R矩阵
+            Matrix normMatrix = new Matrix(x, x);
+            for (int i = 0; i < y; i++) {
+                Matrix xn = matrix.getColumn(i);
+                R.setNub(i, i, 1D);
+                if (i > 0) {
+                    for (int k = 0; k < i; k++) {
+                        Matrix vn = schMatrix.getColumn(k);
+                        double value = innerProduct(xn, vn) / innerProduct(vn, vn);
+                        R.setNub(k, i, value);
+                        mathMul(vn, value);
+                        xn = sub(xn, vn);
+                    }
+                }
+                double norm = getNorm(xn);//范数
+                normMatrix.setNub(i, i, norm);
+                insertVectorValue(schMatrix, xn, i);
+            }
+            R = mulMatrix(normMatrix, R);
+            for (int i = 0; i < x; i++) {
+                double norm = normMatrix.getNumber(i, i);
+                for (int j = 0; j < y; j++) {
+                    double value = schMatrix.getNumber(j, i) / norm;
+                    schMatrix.setNub(j, i, value);
+                }
+            }
+            QRMatrix qrMatrix = new QRMatrix();
+            qrMatrix.setR(R);
+            qrMatrix.setQ(schMatrix);
+            return qrMatrix;
+        } else {
+            throw new Exception("请将矩阵先处理为方阵才可以进行QR分解");
+        }
+    }
+
 }
