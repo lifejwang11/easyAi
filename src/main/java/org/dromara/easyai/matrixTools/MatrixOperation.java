@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.ZipInputStream;
 
 public class MatrixOperation {
     private final int coreNumber;
@@ -718,4 +719,124 @@ public class MatrixOperation {
         }
         return myMatrix;
     }
+
+    private void insertVectorValue(Matrix matrix, Matrix vector, int col) throws Exception {//向一个矩阵指定行注入一个向量
+        int x = matrix.getX();
+        int y = matrix.getY();
+        if (x == vector.getX() && vector.isVector() && y > col) {//矩阵为行向量
+            for (int i = 0; i < x; i++) {
+                matrix.setNub(i, col, vector.getNumber(i, 0));
+            }
+        } else {
+            throw new Exception("注入向量异常，注入的必须为向量，且矩阵的列数必须与向量的列数相等，且行数没有溢出");
+        }
+    }
+
+    private void matrixSqrt(Matrix matrix) throws Exception {
+        int x = matrix.getX();
+        int y = matrix.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                if (i == j) {
+                    double value = Math.sqrt(matrix.getNumber(i, j));
+                    matrix.setNub(i, j, value);
+                }
+            }
+        }
+    }
+
+    public SVDBody svd(Matrix matrix, int time, int featureSize) throws Exception {//svd分解
+        Matrix tMatrix = transPosition(matrix);//转制矩阵
+        Matrix UA = mulMatrix(matrix, tMatrix);
+        Matrix VA = mulMatrix(tMatrix, matrix);
+        FeatureDe featureU = qrIteration(UA, time);
+        FeatureDe featureV = qrIteration(VA, time);
+        Matrix uValue = featureU.getFeatureValue();//特征值
+        Matrix U = featureU.getFeatureMatrix();
+        Matrix VT = transPosition(featureV.getFeatureMatrix());
+        if (featureSize <= U.getY() && featureSize <= VT.getX()) {
+            SVDBody svdBody = new SVDBody();
+            Matrix rU = U.getSonOfMatrix(0, 0, U.getX(), featureSize);
+            Matrix rVT = VT.getSonOfMatrix(0, 0, featureSize, VT.getY());
+            Matrix feature = uValue.getSonOfMatrix(0, 0, featureSize, featureSize);
+            matrixSqrt(feature);
+            svdBody.setMatrixU(rU);
+            svdBody.setMatrixVT(rVT);
+            svdBody.setFeature(feature);
+            return svdBody;
+        } else {
+            throw new Exception("指定尺寸过大");
+        }
+    }
+
+    public FeatureDe qrIteration(Matrix matrix, int time) throws Exception {//QR迭代求特征值
+        Matrix V = null;
+        Matrix featureValue = matrix.copy();
+        for (int i = 0; i < time; i++) {
+            QRMatrix qrMatrix = qrd(featureValue);
+            Matrix matrixQ = qrMatrix.getQ();
+            Matrix matrixR = qrMatrix.getR();
+            if (V == null) {
+                V = matrixQ;
+            } else {
+                V = mulMatrix(V, matrixQ);
+            }
+            featureValue = mulMatrix(matrixR, matrixQ);
+        }
+        int x = featureValue.getX();
+        int y = featureValue.getY();
+        Matrix featureMatrix = new Matrix(x, y);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                if (i == j) {
+                    featureMatrix.setNub(i, j, featureValue.getNumber(i, j));
+                }
+            }
+        }
+        FeatureDe featureDe = new FeatureDe();
+        featureDe.setFeatureValue(featureMatrix);
+        featureDe.setFeatureMatrix(V);
+        return featureDe;
+    }
+
+    public QRMatrix qrd(Matrix matrix) throws Exception {//返回qr分解
+        int x = matrix.getX();
+        int y = matrix.getY();
+        if (x == y) {
+            Matrix schMatrix = new Matrix(x, y);
+            Matrix R = new Matrix(x, x);//R矩阵
+            Matrix normMatrix = new Matrix(x, x);
+            for (int i = 0; i < y; i++) {
+                Matrix xn = matrix.getColumn(i);
+                R.setNub(i, i, 1D);
+                if (i > 0) {
+                    for (int k = 0; k < i; k++) {
+                        Matrix vn = schMatrix.getColumn(k);
+                        double value = innerProduct(xn, vn) / innerProduct(vn, vn);
+                        R.setNub(k, i, value);
+                        mathMul(vn, value);
+                        xn = sub(xn, vn);
+                    }
+                }
+                double norm = getNorm(xn);//范数
+                normMatrix.setNub(i, i, norm);
+                insertVectorValue(schMatrix, xn, i);
+            }
+            R = mulMatrix(normMatrix, R);
+            for (int i = 0; i < x; i++) {
+                double norm = normMatrix.getNumber(i, i);
+                for (int j = 0; j < y; j++) {
+                    double value = schMatrix.getNumber(j, i) / norm;
+                    schMatrix.setNub(j, i, value);
+                }
+            }
+            QRMatrix qrMatrix = new QRMatrix();
+            qrMatrix.setR(R);
+            qrMatrix.setQ(schMatrix);
+            return qrMatrix;
+        } else {
+            throw new Exception("请将矩阵先处理为方阵才可以进行QR分解");
+        }
+    }
+
 }
