@@ -73,6 +73,18 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 
 <div align=center> <img src="https://myeasyai.cn/img/b1.png"></div>
 
+## 获得荣誉
+
+* 华为云年度杰出开源开发者
+<div><img src="https://myeasyai.cn/img/cup1.jpg" width="400",height="400" alt="huawei"></div>
+
+* Gitee GVP最有价值开源项目
+<div><img src="https://myeasyai.cn/img/cup3.jpg" width="400",height="400" alt="Gitee"></div>
+
+* GitCode G-Star毕业项目
+<div><img src="https://myeasyai.cn/img/cup2.jpg" width="400",height="400" alt="Gitee"></div>
+
+
 ### 软件说明：
 
 * 本软件对物体在图像中进行训练及识别，切割，定位的轻量级，面向小白的框架。
