@@ -745,6 +745,15 @@ public class MatrixOperation {
         }
     }
 
+    public Matrix pca(Matrix feature, Matrix avgMatrix, int time, int featureSize) throws Exception {
+        if (feature.getX() == avgMatrix.getX() && feature.getY() == avgMatrix.getY()) {
+            Matrix myMatrix = sub(feature, avgMatrix);
+            return svd(myMatrix, time, featureSize).getMatrixU();
+        } else {
+            throw new Exception("特征矩阵与平均值矩阵大小不相等");
+        }
+    }
+
     public SVDBody svd(Matrix matrix, int time, int featureSize) throws Exception {//svd分解
         Matrix tMatrix = transPosition(matrix);//转制矩阵
         Matrix UA = mulMatrix(matrix, tMatrix);
