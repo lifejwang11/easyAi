@@ -105,7 +105,7 @@ https://gitcode.com/dromara/EasyAi/overview
         <dependency>
              <groupId>org.dromara.easyai</groupId>
              <artifactId>easyAi</artifactId>
-             <version>1.2.92</version>
+             <version>1.2.93</version>
         </dependency>
 ```
 
