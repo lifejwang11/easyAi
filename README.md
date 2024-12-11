@@ -73,18 +73,6 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 
 <div align=center> <img src="https://myeasyai.cn/img/b1.png"></div>
 
-## 获得荣誉
-
-* 华为云年度杰出开源开发者
-<div><img src="https://myeasyai.cn/img/cup1.jpg" width="400",height="400" alt="huawei"></div>
-
-* Gitee GVP最有价值开源项目
-<div><img src="https://myeasyai.cn/img/cup3.jpg" width="400",height="400" alt="Gitee"></div>
-
-* GitCode G-Star毕业项目
-<div><img src="https://myeasyai.cn/img/cup2.jpg" width="400",height="400" alt="Gitee"></div>
-
-
 ### 软件说明：
 
 * 本软件对物体在图像中进行训练及识别，切割，定位的轻量级，面向小白的框架。
@@ -109,12 +97,16 @@ https://gitcode.com/dromara/EasyAi/overview
         </dependency>
 ```
 
-### 目前拥有的核心功能（若对您的学习或生产有帮助，请留下您的STAR）
+## 获得荣誉
 
-* 对图片中得物体进行识别与定位。
-* 对中文语言进行分类语义识别,判断用户说话的语义是什么，关键词抓取，以及要做什么
-* 游戏内交互策略机器人
-* 若有想扩充的功能请进群提意见，若是通用场景我会陆续补充，微信技术交流群：thenk008
+* 华为云年度杰出开源开发者
+<div><img src="https://myeasyai.cn/img/cup1.jpg" width="400",height="400" alt="huawei"></div>
+
+* Gitee GVP最有价值开源项目
+<div><img src="https://myeasyai.cn/img/cup3.jpg" width="400",height="400" alt="Gitee"></div>
+
+* GitCode G-Star毕业项目
+<div><img src="https://myeasyai.cn/img/cup2.jpg" width="400",height="400" alt="Gitee"></div>
 
 ### 微信交流群
 
