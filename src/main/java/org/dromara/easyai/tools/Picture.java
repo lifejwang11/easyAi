@@ -106,7 +106,7 @@ public class Picture {
         return matrix;
     }
 
-    private static ThreeChannelMatrix getThreeChannel(BufferedImage bi, boolean vertical) throws Exception {
+    public static ThreeChannelMatrix getThreeChannel(BufferedImage bi, boolean vertical) throws Exception {
         //最大宽度
         int width = bi.getWidth();
         //最大高度
