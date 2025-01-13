@@ -44,6 +44,7 @@ public abstract class Nerve {
     private int xInput;//输入矩阵的x
     private int yInput;//输入矩阵的y
     private Matrix outMatrix;//输出矩阵
+    private Map<Long, Integer> embeddingIndex = new HashMap<>();//记录词向量下标位置
     private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public Map<Integer, Double> getDendrites() {
@@ -283,7 +284,7 @@ public abstract class Nerve {
         features.remove(eventId); //清空当前上层输入参数参数
     }
 
-    protected boolean insertParameter(long eventId, double parameter) {//添加参数
+    protected boolean insertParameter(long eventId, double parameter, boolean embedding) {//添加参数
         boolean allReady = false;
         List<Double> featuresList;
         if (features.containsKey(eventId)) {
@@ -291,6 +292,9 @@ public abstract class Nerve {
         } else {
             featuresList = new ArrayList<>();
             features.put(eventId, featuresList);
+        }
+        if (embedding && parameter > 0.5) {
+            embeddingIndex.put(eventId, featuresList.size());
         }
         featuresList.add(parameter);
         if (featuresList.size() >= upNub) {
@@ -304,26 +308,23 @@ public abstract class Nerve {
     }
 
     protected double getWOne(long eventId) {
-        List<Double> featuresList = features.get(eventId);
-        double wt = 0;
-        for (int i = 0; i < featuresList.size(); i++) {
-            double value = featuresList.get(i);
-            double w = dendrites.get(i + 1);//当value不为0的时候把w取出来
-            if (value > 0.5) {
-                wt = w;
-                break;
-            }
-        }
-        return wt;
+        int index = embeddingIndex.get(eventId);
+        return dendrites.get(index + 1);
     }
 
-    protected double calculation(long eventId) {//计算当前输出结果
+    protected double calculation(long eventId, boolean isEmbedding) {//计算当前输出结果
         double sigma = 0;
         List<Double> featuresList = features.get(eventId);
-        for (int i = 0; i < featuresList.size(); i++) {
-            double value = featuresList.get(i);
-            double w = dendrites.get(i + 1);//当value不为0的时候把w取出来
-            sigma = w * value + sigma;
+        if (!isEmbedding) {
+            for (int i = 0; i < featuresList.size(); i++) {
+                double value = featuresList.get(i);
+                double w = dendrites.get(i + 1);//当value不为0的时候把w取出来
+                sigma = w * value + sigma;
+            }
+        } else {
+            int index = embeddingIndex.get(eventId);
+            sigma = featuresList.get(index) * dendrites.get(index + 1);
+            embeddingIndex.remove(eventId);
         }
         return sigma - threshold;//ArithUtil.sub(sigma, threshold);
     }
