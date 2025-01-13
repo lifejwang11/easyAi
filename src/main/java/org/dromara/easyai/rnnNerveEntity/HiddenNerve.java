@@ -25,13 +25,13 @@ public class HiddenNerve extends Nerve {
     @Override
     public void input(long eventId, double parameter, boolean isKernelStudy, Map<Integer, Double> E
             , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix) throws Exception {//接收上一层的输入
-        boolean allReady = insertParameter(eventId, parameter);
+        boolean allReady = insertParameter(eventId, parameter, isEmbedding);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
-            if (isEmbedding) {
+            if (isEmbedding && !isKernelStudy) {
                 outBack.getWordVector(getId(), getWOne(eventId));
                 destoryParameter(eventId);
             } else {
-                double sigma = calculation(eventId);
+                double sigma = calculation(eventId, isEmbedding);
                 double out = activeFunction.function(sigma);//激活函数输出数值
                 if (rnnMatrix != null) {//rnn 1改输出值，2查看是否需要转向
                     out = out + rnnMatrix.getNumber(depth, getId() - 1);

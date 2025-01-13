@@ -22,7 +22,7 @@ public class SoftMax extends Nerve {
     @Override
     protected void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E, OutBack outBack, boolean isEmbedding
             , Matrix rnnMatrix) throws Exception {
-        boolean allReady = insertParameter(eventId, parameter);
+        boolean allReady = insertParameter(eventId, parameter, false);
         if (allReady) {
             Mes mes = softMax(eventId, isStudy);//输出值
             int key = 0;
@@ -46,7 +46,7 @@ public class SoftMax extends Nerve {
                 destoryParameter(eventId);
                 if (outBack != null) {
                     outBack.getBack(mes.poi, mes.typeID, eventId);
-                    outBack.getSoftMaxBack(eventId,mes.softMax);
+                    outBack.getSoftMaxBack(eventId, mes.softMax);
                 } else {
                     throw new Exception("not find outBack");
                 }

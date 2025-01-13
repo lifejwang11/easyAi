@@ -87,7 +87,7 @@ public class WordEmbedding extends MatrixOperation {
                 myWord = word;
             }
             int index = getID(myWord);
-            studyDNN(eventId, index, 0, wordMatrix, true, false);
+            studyDNN(eventId, index, 0, wordMatrix, false);
             if (matrix == null) {
                 myWordFeature.setFirstFeatureList(wordMatrix.getList());
                 matrix = wordMatrix.getVector();
@@ -102,7 +102,7 @@ public class WordEmbedding extends MatrixOperation {
         return myWordFeature;
     }
 
-    private void studyDNN(long eventId, int featureIndex, int resIndex, OutBack outBack, boolean isEmbedding, boolean isStudy) throws Exception {
+    private void studyDNN(long eventId, int featureIndex, int resIndex, OutBack outBack, boolean isStudy) throws Exception {
         List<SensoryNerve> sensoryNerves = nerveManager.getSensoryNerves();
         int size = sensoryNerves.size();
         Map<Integer, Double> map = new HashMap<>();
@@ -114,7 +114,7 @@ public class WordEmbedding extends MatrixOperation {
             if (i == featureIndex) {
                 feature = 1;
             }
-            sensoryNerves.get(i).postMessage(eventId, feature, isStudy, map, outBack, isEmbedding, null);
+            sensoryNerves.get(i).postMessage(eventId, feature, isStudy, map, outBack, true, null);
         }
     }
 
@@ -154,7 +154,7 @@ public class WordEmbedding extends MatrixOperation {
             for (int j = 0; j < indexArray.length; j++) {
                 if (i != j) {
                     int resIndex = indexArray[j];
-                    studyDNN(1, index, resIndex, null, false, true);
+                    studyDNN(1, index, resIndex, null, true);
                 }
             }
         }

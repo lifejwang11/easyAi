@@ -37,9 +37,9 @@ public class OutNerve extends Nerve {
     @Override
     public void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
             , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix) throws Exception {
-        boolean allReady = insertParameter(eventId, parameter);
+        boolean allReady = insertParameter(eventId, parameter, false);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
-            double sigma = calculation(eventId);
+            double sigma = calculation(eventId, false);
             if (isSoftMax) {
                 if (!isStudy) {
                     destoryParameter(eventId);
