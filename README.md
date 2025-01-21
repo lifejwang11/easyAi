@@ -88,13 +88,13 @@ https://gitcode.com/dromara/EasyAi/overview
 
 ## 部署
 
-* 在pom文件中引入以下JAR包即可(若最新版本中央库还没更新，则直接下载发行版，自行安装到本地库)
+* 在pom文件中引入以下JAR包即可(若最新版本中央库还没更新，则直接下载发行版，自行安装到本地库。或者安装上一个版本1.3.0)
 
 ```    
         <dependency>
              <groupId>org.dromara.easyai</groupId>
              <artifactId>easyAi</artifactId>
-             <version>1.3.0</version>
+             <version>1.3.1</version>
         </dependency>
 ```
 
