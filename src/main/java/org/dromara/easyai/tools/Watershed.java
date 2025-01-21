@@ -35,6 +35,9 @@ public class Watershed {
     public Watershed(ThreeChannelMatrix matrix, WaterConfig config) throws Exception {
         if (matrix != null) {
             th = config.getTh();
+            if (th < 0) {
+                throw new Exception("落差不能小于0");
+            }
             cutMaxXSize = config.getCutMaxXSize();
             cutMaxYSize = config.getCutMaxYSize();
             cutMinXSize = config.getMinXSizeTh() + 2;
