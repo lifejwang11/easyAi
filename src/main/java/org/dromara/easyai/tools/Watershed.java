@@ -30,30 +30,18 @@ public class Watershed {
     private final int cutMinYSize;//分水岭切割最小取样Y
     private final int cutMaxXSize;//分水岭切割最大取样X
     private final int cutMaxYSize;//分水岭切割最大取样Y
-    private final double high;//高曝阈值
-    private final Matrix matrixR;
-    private final Matrix matrixG;
-    private final Matrix matrixB;
-    private final double myR;
-    private final double myG;
-    private final double myB;
+    private final double th;//落差阈值阈值
 
     public Watershed(ThreeChannelMatrix matrix, WaterConfig config) throws Exception {
         if (matrix != null) {
-            high = config.getHigh();
+            th = config.getTh();
             cutMaxXSize = config.getCutMaxXSize();
             cutMaxYSize = config.getCutMaxYSize();
             cutMinXSize = config.getMinXSizeTh() + 2;
             cutMinYSize = config.getMinYSizeTh() + 2;
-            myR = config.getMyR();
-            myG = config.getMyG();
-            myB = config.getMyB();
             rainTh = config.getRainTh();//降雨密度图
             regionNub = config.getRegionNub();//区域大小
             this.matrix = matrix.getH();
-            matrixR = matrix.getMatrixR();
-            matrixG = matrix.getMatrixG();
-            matrixB = matrix.getMatrixB();
             xSize = this.matrix.getX() / regionNub;
             ySize = this.matrix.getY() / regionNub;
             rainfallMap = new Matrix(this.matrix.getX(), this.matrix.getY());
@@ -63,14 +51,6 @@ public class Watershed {
         } else {
             throw new Exception("matrix is null");
         }
-    }
-
-    private boolean backGround(int x, int y) throws Exception {
-        double r = matrixR.getNumber(x, y);
-        double g = matrixG.getNumber(x, y);
-        double b = matrixB.getNumber(x, y);
-        double dist = (Math.abs(r - myR) + Math.abs(g - myG) + Math.abs(b - myB)) / 3;
-        return dist < high;
     }
 
     private double[] getPixels(int x, int y) throws Exception {
@@ -104,61 +84,29 @@ public class Watershed {
             rightBottom = 1;
         }
         if (top == -1 && rainfallMap.getNumber(x - 1, y) == 0) {
-            if (backGround(x - 1, y)) {
-                top = 1;
-            } else {
-                top = matrix.getNumber(x - 1, y);
-            }
+            top = matrix.getNumber(x - 1, y);
         }
         if (left == -1 && rainfallMap.getNumber(x, y - 1) == 0) {
-            if (backGround(x, y - 1)) {
-                left = 1;
-            } else {
-                left = matrix.getNumber(x, y - 1);
-            }
+            left = matrix.getNumber(x, y - 1);
         }
         if (bottom == -1 && rainfallMap.getNumber(x + 1, y) == 0) {
-            if (backGround(x + 1, y)) {
-                bottom = 1;
-            } else {
-                bottom = matrix.getNumber(x + 1, y);
-            }
+            bottom = matrix.getNumber(x + 1, y);
 
         }
         if (right == -1 && rainfallMap.getNumber(x, y + 1) == 0) {
-            if (backGround(x, y + 1)) {
-                right = 1;
-            } else {
-                right = matrix.getNumber(x, y + 1);
-            }
+            right = matrix.getNumber(x, y + 1);
         }
         if (leftTop == -1 && rainfallMap.getNumber(x - 1, y - 1) == 0) {
-            if (backGround(x - 1, y - 1)) {
-                leftTop = 1;
-            } else {
-                leftTop = matrix.getNumber(x - 1, y - 1);
-            }
+            leftTop = matrix.getNumber(x - 1, y - 1);
         }
         if (leftBottom == -1 && rainfallMap.getNumber(x + 1, y - 1) == 0) {
-            if (backGround(x + 1, y - 1)) {
-                leftBottom = 1;
-            } else {
-                leftBottom = matrix.getNumber(x + 1, y - 1);
-            }
+            leftBottom = matrix.getNumber(x + 1, y - 1);
         }
         if (rightTop == -1 && rainfallMap.getNumber(x - 1, y + 1) == 0) {
-            if (backGround(x - 1, y + 1)) {
-                rightTop = 1;
-            } else {
-                rightTop = matrix.getNumber(x - 1, y + 1);
-            }
+            rightTop = matrix.getNumber(x - 1, y + 1);
         }
         if (rightBottom == -1 && rainfallMap.getNumber(x + 1, y + 1) == 0) {
-            if (backGround(x + 1, y + 1)) {
-                rightBottom = 1;
-            } else {
-                rightBottom = matrix.getNumber(x + 1, y + 1);
-            }
+            rightBottom = matrix.getNumber(x + 1, y + 1);
         }
         return new double[]{top, left, bottom, right, leftTop, leftBottom, rightBottom, rightTop};
     }
@@ -363,7 +311,8 @@ public class Watershed {
         int minIdx = 0;
         for (int i = 0; i < array.length; i++) {
             double nub = array[i];
-            if (nub > -1 && nub < mySelf) {
+            double sub = mySelf - nub;
+            if (nub > -1 && sub > th) {
                 minIdx = minIdx | (1 << i);
             }
         }
