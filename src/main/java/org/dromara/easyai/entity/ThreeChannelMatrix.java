@@ -41,6 +41,94 @@ public class ThreeChannelMatrix {
         }
     }
 
+    public void grayscaleScale(double toR, double toG, double toB) throws Exception {//灰度缩放
+        MatrixOperation matrixOperation = new MatrixOperation();
+        double avgR = matrixR.getAVG();
+        double avgG = matrixG.getAVG();
+        double avgB = matrixB.getAVG();
+        double rk = toR / avgR;
+        double gk = toG / avgG;
+        double bk = toB / avgB;
+        matrixOperation.mathMul(matrixR, rk);
+        matrixOperation.mathMul(matrixG, gk);
+        matrixOperation.mathMul(matrixB, bk);
+    }
+
+    //生成一个高斯核
+    private Matrix createGaussianKern(double sd, int kerSize) throws Exception {
+        double a = 1 / (2 * Math.PI * Math.pow(sd, 2));
+        Matrix matrix = new Matrix(kerSize, kerSize);
+        int half = kerSize / 2;
+        for (int i = 0; i < kerSize; i++) {
+            for (int j = 0; j < kerSize; j++) {
+                int xIndex = i - half;
+                int yIndex = j - half;
+                double b = Math.exp(-(Math.pow(xIndex, 2) + Math.pow(yIndex, 2)) / (2 * Math.pow(sd, 2)));
+                matrix.setNub(i, j, a * b);
+            }
+        }
+        double sigma = matrix.getSigma();
+        matrixOperation.mathDiv(matrix, sigma);
+        return matrix;
+    }
+
+    public Matrix CalculateAvgGrayscale() throws Exception {//计算均值灰度
+        Matrix matrix = new Matrix(x, y);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double value = (matrixR.getNumber(i, j) + matrixG.getNumber(i, j) + matrixB.getNumber(i, j)) / 3D;
+                matrix.setNub(i, j, value);
+            }
+        }
+        return matrix;
+    }
+
+    public ThreeChannelMatrix gaussianVague(double sd, int kerSize, boolean scaleWidth, double scaleSize) throws Exception {//高斯模糊
+        ThreeChannelMatrix threeChannelMatrix = scale(scaleWidth, scaleSize);
+        Matrix matrixR = threeChannelMatrix.getMatrixR();
+        Matrix matrixG = threeChannelMatrix.getMatrixG();
+        Matrix matrixB = threeChannelMatrix.getMatrixB();
+        Matrix gaussianMatrix = createGaussianKern(sd, kerSize);
+        Matrix gr = conv(matrixR, gaussianMatrix, kerSize);
+        Matrix gg = conv(matrixG, gaussianMatrix, kerSize);
+        Matrix gb = conv(matrixB, gaussianMatrix, kerSize);
+        ThreeChannelMatrix vague = new ThreeChannelMatrix();
+        vague.setX(gr.getX());
+        vague.setY(gr.getY());
+        vague.setMatrixR(gr);
+        vague.setMatrixG(gg);
+        vague.setMatrixB(gb);
+        return vague;
+    }
+
+    private double getConv(Matrix conv, Matrix gaussianMatrix) throws Exception {
+        int x = gaussianMatrix.getX();
+        int y = gaussianMatrix.getY();
+        double sigma = 0;
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double value = conv.getNumber(i, j) * gaussianMatrix.getNumber(i, j);
+                sigma = sigma + value;
+            }
+        }
+        return sigma;
+    }
+
+    private Matrix conv(Matrix matrix, Matrix gaussianMatrix, int kerSize) throws Exception {
+        int x = matrix.getX();
+        int y = matrix.getY();
+        int half = kerSize / 2;
+        Matrix convMatrix = new Matrix(x - half * 2, y - half * 2);
+        for (int i = half; i < x - half; i++) {
+            for (int j = half; j < y - half; j++) {
+                Matrix conv = matrix.getSonOfMatrix(i - half, j - half, kerSize, kerSize);
+                double value = getConv(conv, gaussianMatrix);
+                convMatrix.setNub(i - half, j - half, value);
+            }
+        }
+        return convMatrix;
+    }
+
     public Matrix getLBPMatrix() throws Exception {
         Matrix addMatrix = new Matrix(x, y);
         for (int i = 0; i < x; i++) {
