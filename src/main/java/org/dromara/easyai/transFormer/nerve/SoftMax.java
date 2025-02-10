@@ -78,6 +78,7 @@ public class SoftMax extends Nerve {
                     Matrix row = getSigmaByColum(feature);
                     Mes mes = softMax(false, row, outAllPro);//输出值
                     outBack.getBack(mes.poi, mes.typeID, eventId);
+                    outBack.getBackMatrix(row, 1, eventId);
                     if (outAllPro) {
                         outBack.getSoftMaxBack(eventId, mes.softMax);
                     }

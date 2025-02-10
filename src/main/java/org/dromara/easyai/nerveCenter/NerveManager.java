@@ -277,22 +277,23 @@ public class NerveManager {
     /**
      * 初始化卷积层神经网络
      *
-     * @param step           卷积步长 建议为2
-     * @param kernLen        卷积核大小 建议为3
-     * @param xSize          检测窗口行高
-     * @param ySize          检测窗口行宽
-     * @param convStudyPoint 卷积层学习率
-     * @param convFunction   卷积层激活函数
-     * @param isShowLog      是否打印学习参数
-     * @param isSoftMax      最后一层是否用softMax激活
+     * @param channelNo       特征通道数量
+     * @param step            卷积步长 建议为2
+     * @param kernLen         卷积核大小 建议为3
+     * @param xSize           检测窗口行高
+     * @param ySize           检测窗口行宽
+     * @param convStudyPoint  卷积层学习率
+     * @param convFunction    卷积层激活函数
+     * @param isShowLog       是否打印学习参数
+     * @param isSoftMax       最后一层是否用softMax激活
      */
-    public void initImageNet(int step, int kernLen, int xSize, int ySize, boolean isSoftMax
+    public void initImageNet(int channelNo, int step, int kernLen, int xSize, int ySize, boolean isSoftMax
             , boolean isShowLog, double convStudyPoint, ActiveFunction convFunction) throws Exception {
         this.initPower = true;//convDepthNerves
         this.convStudyPoint = convStudyPoint;
         int deep = getConvMyDep(xSize, ySize, step, kernLen);//卷积层深度
         List<Nerve> lastNerves = new ArrayList<>();
-        sensoryNerveNub = 3;
+        this.sensoryNerveNub = channelNo;
         for (int i = 0; i < sensoryNerveNub; i++) {
             List<Nerve> depthNerves = initConDepthNerve(step, kernLen, deep, convFunction, i + 1);//初始化卷积层隐层
             convDepthNerves.add(depthNerves);
