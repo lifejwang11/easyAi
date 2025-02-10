@@ -293,6 +293,7 @@ public class NerveManager {
         this.convStudyPoint = convStudyPoint;
         int deep = getConvMyDep(xSize, ySize, step, kernLen);//卷积层深度
         List<Nerve> lastNerves = new ArrayList<>();
+        this.sensoryNerveNub = sensoryNerveNub;
         for (int i = 0; i < sensoryNerveNub; i++) {
             List<Nerve> depthNerves = initConDepthNerve(step, kernLen, deep, convFunction, i + 1);//初始化卷积层隐层
             convDepthNerves.add(depthNerves);
