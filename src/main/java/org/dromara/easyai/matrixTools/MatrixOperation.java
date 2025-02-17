@@ -489,6 +489,56 @@ public class MatrixOperation {
         }
     }
 
+    public Matrix matrixSoftMaxPd(Matrix qkt, Matrix errorMatrix, double wordVectorDimension) throws Exception {//重重点
+        double param = Math.sqrt(wordVectorDimension);
+        int x = qkt.getX();
+        int y = qkt.getY();
+        Matrix grMatrix = new Matrix(x, y);
+        for (int i = 0; i < x; i++) {
+            Matrix qr = qkt.getRow(i);//该行的行向量
+            for (int j = 0; j < y; j++) {
+                double jValue = qr.getNumber(0, j);//遍历qr每一个元素，分别对他们求偏导
+                int z = qr.getY();
+                double sigma = 0;
+                for (int k = 0; k < z; k++) {
+                    double kValue = qr.getNumber(0, k);//遍历qr每一个元素，分别对他们求偏导
+                    double error = errorMatrix.getNumber(i, k);
+                    double er;
+                    if (k != j) {
+                        er = -error * kValue * jValue;
+                    } else {
+                        er = jValue * (1 - jValue) * error;
+                    }
+                    sigma = sigma + er;
+                }
+                double gr = sigma / param;//该位置梯度
+                grMatrix.setNub(i, j, gr);
+            }
+        }
+        return grMatrix;
+    }
+
+    public void softMax(Matrix matrix) throws Exception {//重重点
+        for (int i = 0; i < matrix.getX(); i++) {
+            Matrix row = matrix.getRow(i);
+            double sigma = getRowSoftMaxSigma(row);
+            for (int j = 0; j < matrix.getY(); j++) {
+                double self = row.getNumber(0, j);
+                double eSelf = Math.exp(self);
+                matrix.setNub(i, j, eSelf / sigma);
+            }
+        }
+    }
+
+    private double getRowSoftMaxSigma(Matrix row) throws Exception {
+        double sigma = 0;
+        for (int i = 0; i < row.getY(); i++) {
+            double value = row.getNumber(0, i);
+            sigma = Math.exp(value) + sigma;
+        }
+        return sigma;
+    }
+
     public Matrix matrixPointDiv(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵点除
         int x = matrix1.getX();
         int y = matrix1.getY();

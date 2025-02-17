@@ -84,6 +84,9 @@ public class ThreeChannelMatrix {
     }
 
     public ThreeChannelMatrix gaussianVague(double sd, int kerSize, boolean scaleWidth, double scaleSize) throws Exception {//高斯模糊
+        if (kerSize % 2 != 1) {
+            throw new Exception("高斯核大小必须为奇数");
+        }
         ThreeChannelMatrix threeChannelMatrix = scale(scaleWidth, scaleSize);
         Matrix matrixR = threeChannelMatrix.getMatrixR();
         Matrix matrixG = threeChannelMatrix.getMatrixG();

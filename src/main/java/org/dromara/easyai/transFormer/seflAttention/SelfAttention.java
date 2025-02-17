@@ -70,7 +70,7 @@ public class SelfAttention {//自注意力层
         Matrix qkt = featureBody.qkt;
         Matrix errorV = matrixOperation.matrixMulPd(feature, qkt, v, false);//先求V的偏导
         Matrix subQktMax = matrixOperation.matrixMulPd(feature, qkt, v, true);
-        Matrix grMatrix = matrixSoftMaxPd(qkt, subQktMax);//对softMax做误差求导
+        Matrix grMatrix = matrixOperation.matrixSoftMaxPd(qkt, subQktMax, wordVectorDimension);//对softMax做误差求导
         Matrix errorKt = matrixOperation.matrixMulPd(grMatrix, q, kt, false);
         Matrix errorQ = matrixOperation.matrixMulPd(grMatrix, q, kt, true);
         Matrix errorK = matrixOperation.transPosition(errorKt);
@@ -110,36 +110,6 @@ public class SelfAttention {//自注意力层
         return errorFeature;
     }
 
-    private Matrix matrixSoftMaxPd(Matrix qkt, Matrix errorMatrix) throws Exception {//对矩阵的softMax求导
-        double param = Math.sqrt(wordVectorDimension);
-        int x = qkt.getX();
-        int y = qkt.getY();
-        Matrix grMatrix = new Matrix(x, y);
-        for (int i = 0; i < x; i++) {
-            Matrix qr = qkt.getRow(i);//该行的行向量
-            for (int j = 0; j < y; j++) {
-                double jValue = qr.getNumber(0, j);//遍历qr每一个元素，分别对他们求偏导
-                int z = qr.getY();
-                double sigma = 0;
-                for (int k = 0; k < z; k++) {
-                    double kValue = qr.getNumber(0, k);//遍历qr每一个元素，分别对他们求偏导
-                    double error = errorMatrix.getNumber(i, k);
-                    double er;
-                    if (k != j) {
-                        er = -error * kValue * jValue;
-                    } else {
-                        er = jValue * (1 - jValue) * error;
-                    }
-                    sigma = sigma + er;
-                }
-                double gr = sigma / param;//该位置梯度
-                grMatrix.setNub(i, j, gr);
-            }
-        }
-        return grMatrix;
-    }
-
-
     private void mask(Matrix matrix) throws Exception {
         int x = matrix.getX();
         int y = matrix.getY();
@@ -169,7 +139,7 @@ public class SelfAttention {//自注意力层
         if (depth == 1 && !encoder) {//第一层解码器 需要先做蒙版操作
             mask(qkt);
         }
-        softMax(qkt);
+        matrixOperation.softMax(qkt);
         Matrix result = matrixOperation.mulMatrix(qkt, v);
         if (!isStudy) {
             this.featureMatrix.remove(eventID);
