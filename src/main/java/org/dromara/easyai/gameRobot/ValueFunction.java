@@ -2,7 +2,7 @@ package org.dromara.easyai.gameRobot;
 
 public class ValueFunction {//价值函数
     private int[] stateId;//状态id
-    private double value;//价值
+    private float value;//价值
 
     public int[] getStateId() {
         return stateId;
@@ -12,11 +12,11 @@ public class ValueFunction {//价值函数
         this.stateId = stateId;
     }
 
-    public double getValue() {
+    public float getValue() {
         return value;
     }
 
-    public void setValue(double value) {
+    public void setValue(float value) {
         this.value = value;
     }
 }

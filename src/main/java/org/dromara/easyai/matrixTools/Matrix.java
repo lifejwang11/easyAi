@@ -7,68 +7,31 @@ import java.util.List;
  * 矩阵
  **/
 public class Matrix extends MatrixOperation {
-    private double[][] matrix;//矩阵本体
-    private double[] cudaMatrix;//cudaMatrix结构
+    private float[] matrix;//矩阵本体(列主序)
     private int x;//矩阵的行数
     private int y;//矩阵的列数
     private boolean isRowVector = false;//是否是单行矩阵
     private boolean isVector = false;//是否是向量
     private boolean isZero = false;//是否是单元素矩阵
-    private boolean cuda = false;//cuda模式
-    private boolean rowFirst = false;//是否为行序列矩阵
-
     /**
-     * 返回是否为行序列矩阵
-     *
-     * @return 返回是否为行序列矩阵
+     * 获取Cuda列主序一维数组
+     * @return 获取Cuda列主序一维数组
      */
-    public boolean isRowFirst() {
-        return rowFirst;
+    public float[] getCudaMatrix() {//获取cudaMatrix
+        return matrix;
     }
 
     /**
-     * 返回是否为cuda一维矩阵
-     *
-     * @return 返回是否为cuda一维矩阵
-     */
-    public boolean isCuda() {
-        return cuda;
-    }
-
-    /**
-     * 注入Cuda一维数组
+     * 注入Cuda一维数组(列主序)
      *
      * @param cudaMatrix 注入数组本体
-     * @param rowNum     行数
-     * @param colNum     列数
-     * @param rowFirst   是否为行主序
+     * @param x          行数
+     * @param y          列数
      */
-    public void setCudaMatrix(double[] cudaMatrix, int rowNum, int colNum, boolean rowFirst) {
-        this.cudaMatrix = cudaMatrix;
-        this.x = rowNum;
-        this.y = colNum;
-        this.rowFirst = rowFirst;
-        cuda = true;
-    }
-
-    /**
-     * 初始化Cuda矩阵
-     *
-     * @param x        行数
-     * @param y        列数
-     * @param rowFirst 是否为行序列
-     */
-    public Matrix(int x, int y, boolean rowFirst) {
-        this.cudaMatrix = new double[x * y];
+    public void setCudaMatrix(float[] cudaMatrix, int x, int y) {
+        this.matrix = cudaMatrix;
         this.x = x;
         this.y = y;
-        this.rowFirst = rowFirst;
-        cuda = true;
-        setState(x, y);
-    }
-
-    public double[] getCudaMatrix() {//返回cuda一维数组
-        return cudaMatrix;
     }
 
     /**
@@ -96,7 +59,7 @@ public class Matrix extends MatrixOperation {
      * @param y 列数
      */
     public Matrix(int x, int y) {
-        matrix = new double[x][y];
+        matrix = new float[x * y];
         this.x = x;
         this.y = y;
         setState(x, y);
@@ -118,8 +81,8 @@ public class Matrix extends MatrixOperation {
         }
     }
 
-    public double getSigma() throws Exception {
-        double sigma = 0;
+    public float getSigma() throws Exception {
+        float sigma = 0;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 sigma = sigma + getNumber(i, j);
@@ -133,8 +96,8 @@ public class Matrix extends MatrixOperation {
      *
      * @return 返回当前矩阵全部元素的平均值
      */
-    public double getAVG() throws Exception {
-        double sigma = 0;
+    public float getAVG() throws Exception {
+        float sigma = 0;
         int s = x * y;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
@@ -145,7 +108,13 @@ public class Matrix extends MatrixOperation {
         return sigma;
     }
 
-    public double[][] getMatrix() {
+    public float[][] getMatrix() throws Exception {
+        float[][] matrix = new float[x][y];
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                matrix[i][j] = getNumber(i, j);
+            }
+        }
         return matrix;
     }
 
@@ -181,11 +150,7 @@ public class Matrix extends MatrixOperation {
      * 清除矩阵数据
      **/
     public void clear() {
-        if (!cuda) {
-            matrix = new double[x][y];
-        } else {
-            cudaMatrix = new double[x * y];
-        }
+        matrix = new float[x * y];
     }
 
     /**
@@ -197,7 +162,7 @@ public class Matrix extends MatrixOperation {
      * @throws Exception
      */
     public Matrix(int x, int y, String matr) throws Exception {
-        matrix = new double[x][y];
+        matrix = new float[x * y];
         this.x = x;
         this.y = y;
         setState(x, y);
@@ -220,7 +185,7 @@ public class Matrix extends MatrixOperation {
     }
 
     private List<Coordinate> coordinateRoot;
-    private double defNub = 0;//行列式计算结果
+    private float defNub = 0;//行列式计算结果
 
     private boolean isDo(Coordinate coordinates, int i, int j) {
         boolean isOk = false;
@@ -302,7 +267,7 @@ public class Matrix extends MatrixOperation {
         }
     }
 
-    private double mulFather(Coordinate coordinate, double element, List<Coordinate> div) throws Exception {
+    private float mulFather(Coordinate coordinate, float element, List<Coordinate> div) throws Exception {
         div.add(coordinate);
         element = getNumber(coordinate.x, coordinate.y) * element;
         if (coordinate.father != null) {
@@ -325,7 +290,7 @@ public class Matrix extends MatrixOperation {
      * @return 计算后的值
      * @throws Exception 如果矩阵不是一个方阵抛出异常
      */
-    public double getDet() throws Exception {//求矩阵的行列式
+    public float getDet() throws Exception {//求矩阵的行列式
         if (x == y) {
             coordinateRoot = new ArrayList<>();
             for (int i = 0; i < x; i++) {
@@ -340,8 +305,8 @@ public class Matrix extends MatrixOperation {
 
     private boolean parity(List<Coordinate> list) {//获取排列奇偶性
         boolean parity = true;//默认是偶排列
-        double[] row = new double[list.size()];
-        double[] clo = new double[list.size()];
+        float[] row = new float[list.size()];
+        float[] clo = new float[list.size()];
         for (int i = 0; i < list.size(); i++) {
             row[i] = list.get(i).x + 1;
             clo[i] = list.get(i).y + 1;
@@ -370,7 +335,7 @@ public class Matrix extends MatrixOperation {
                 if (y == me.length) {
                     y = me.length;
                     for (int j = 0; j < y; j++) {
-                        matrix[i][j] = Double.parseDouble(me[j]);
+                        setNub(i, j, Float.parseFloat(me[j]));
                     }
                 } else {
                     matrix = null;
@@ -392,12 +357,7 @@ public class Matrix extends MatrixOperation {
      * @return 返回分块后的矩阵
      */
     public Matrix getSonOfMatrix(int x, int y, int xSize, int ySize) {
-        Matrix myMatrix;
-        if (cuda) {
-            myMatrix = new Matrix(xSize, ySize, rowFirst);
-        } else {
-            myMatrix = new Matrix(xSize, ySize);
-        }
+        Matrix myMatrix = new Matrix(xSize, ySize);
         int xr = 0;
         int yr = 0;
         try {
@@ -427,12 +387,7 @@ public class Matrix extends MatrixOperation {
      * @throws Exception 超出矩阵范围抛出异常
      */
     public Matrix getRow(int x) throws Exception {
-        Matrix myMatrix;
-        if (cuda) {
-            myMatrix = new Matrix(1, y, rowFirst);
-        } else {
-            myMatrix = new Matrix(1, y);
-        }
+        Matrix myMatrix = new Matrix(1, y);
         for (int i = 0; i < y; i++) {
             myMatrix.setNub(0, i, getNumber(x, i));
         }
@@ -448,12 +403,7 @@ public class Matrix extends MatrixOperation {
      * @throws Exception 超出矩阵范围抛出异常
      */
     public Matrix getColumn(int y) throws Exception {//获取列向量
-        Matrix myMatrix;
-        if (cuda) {
-            myMatrix = new Matrix(x, 1, rowFirst);
-        } else {
-            myMatrix = new Matrix(x, 1);
-        }
+        Matrix myMatrix = new Matrix(x, 1);
         for (int i = 0; i < x; i++) {
             myMatrix.setNub(i, 0, getNumber(i, y));
         }
@@ -470,7 +420,7 @@ public class Matrix extends MatrixOperation {
         for (int i = 0; i < x; i++) {
             builder.append(i + ":[");
             for (int j = 0; j < y; j++) {
-                double number = getNumber(i, j);
+                float number = getNumber(i, j);
                 if (j == 0) {
                     builder.append(number);
                 } else {
@@ -492,7 +442,7 @@ public class Matrix extends MatrixOperation {
         for (int i = 0; i < x; i++) {
             builder.append(i + ":[");
             for (int j = 0; j < y; j++) {
-                double number = getNumber(i, j);
+                float number = getNumber(i, j);
                 if (j == 0) {
                     builder.append(number);
                 } else {
@@ -512,31 +462,16 @@ public class Matrix extends MatrixOperation {
      * @param number 要设置的值
      * @throws Exception 超出矩阵范围抛出
      */
-    public void setNub(int x, int y, double number) throws Exception {
+    public void setNub(int x, int y, float number) throws Exception {
         if (this.x > x && this.y > y && x >= 0 && y >= 0) {
-            if (!cuda) {
-                matrix[x][y] = number;
-            } else {
-                int index;
-                if (rowFirst) {//行主序一维数组
-                    index = x * this.y + y;
-                } else {//列主序一维数组
-                    index = y * this.x + x;
-                }
-                cudaMatrix[index] = number;
-            }
+            matrix[y * this.x + x] = number;
         } else {
             throw new Exception("setNub matrix length too little x:" + x + ",y:" + y);
         }
     }
 
     public Matrix copy() throws Exception {//复制一个矩阵
-        Matrix myMatrix;
-        if (cuda) {
-            myMatrix = new Matrix(this.x, this.y, rowFirst);
-        } else {
-            myMatrix = new Matrix(this.x, this.y);
-        }
+        Matrix myMatrix = new Matrix(this.x, this.y);
         for (int i = 0; i < this.x; i++) {
             for (int j = 0; j < this.y; j++) {
                 myMatrix.setNub(i, j, getNumber(i, j));
@@ -553,19 +488,9 @@ public class Matrix extends MatrixOperation {
      * @return 返回指定坐标的数值
      * @throws Exception 超出矩阵范围抛出
      */
-    public double getNumber(int x, int y) throws Exception {//从矩阵中拿值
+    public float getNumber(int x, int y) throws Exception {//从矩阵中拿值
         if (this.x > x && this.y > y && x >= 0 && y >= 0) {
-            if (!cuda) {
-                return matrix[x][y];
-            } else {
-                int index;
-                if (rowFirst) {//行主序一维数组
-                    index = x * this.y + y;
-                } else {//列主序一维数组
-                    index = y * this.x + x;
-                }
-                return cudaMatrix[index];
-            }
+            return matrix[y * this.x + x];
         } else {
             System.out.println("x==" + x + ",y==" + y + ",maxX:" + this.x + ",maxY:" + this.y);
             throw new Exception("getNumber matrix length too little x:" + x + ",y:" + y);
@@ -580,8 +505,8 @@ public class Matrix extends MatrixOperation {
      * @return 返回指定向量所有元素的和
      * @throws Exception 超出矩阵范围抛出
      */
-    public double getSigmaByVector(boolean isRow, int index) throws Exception {
-        double sigma = 0;
+    public float getSigmaByVector(boolean isRow, int index) throws Exception {
+        float sigma = 0;
         if (index >= 0 && ((isRow && x > index) || (!isRow && y > index))) {
             if (isRow) {//取行向量
                 for (int i = 0; i < y; i++) {

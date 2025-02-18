@@ -6,34 +6,34 @@ import org.dromara.easyai.i.OutBack;
 import java.util.List;
 
 public class PositionBack implements OutBack {
-    private double distX;
-    private double distY;
-    private double width;
-    private double height;
-    private double trust;
+    private float distX;
+    private float distY;
+    private float width;
+    private float height;
+    private float trust;
 
-    public double getTrust() {
+    public float getTrust() {
         return trust;
     }
 
-    public double getWidth() {
+    public float getWidth() {
         return width;
     }
 
-    public double getHeight() {
+    public float getHeight() {
         return height;
     }
 
-    public double getDistX() {
+    public float getDistX() {
         return distX;
     }
 
-    public double getDistY() {
+    public float getDistY() {
         return distY;
     }
 
     @Override
-    public void getBack(double out, int id, long eventId) {
+    public void getBack(float out, int id, long eventId) {
         switch (id) {
             case 1:
                 distX = out;
@@ -54,7 +54,7 @@ public class PositionBack implements OutBack {
     }
 
     @Override
-    public void getSoftMaxBack(long eventId, List<Double> softMax) {
+    public void getSoftMaxBack(long eventId, List<Float> softMax) {
 
     }
 
@@ -70,7 +70,7 @@ public class PositionBack implements OutBack {
     }
 
     @Override
-    public void getWordVector(int id, double w) {
+    public void getWordVector(int id, float w) {
 
     }
 }

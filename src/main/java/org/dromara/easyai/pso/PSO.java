@@ -13,19 +13,19 @@ import java.util.Random;
  * @Description 粒子群
  */
 public class PSO {
-    private double globalValue = -1;//当前全局最优值
+    private float globalValue = -1;//当前全局最优值
     private int times;//迭代次数
     private List<Particle> allPar = new ArrayList<>();//全部粒子集合
     private PsoFunction psoFunction;//粒子群执行函数
-    private double inertialFactor = 0.5;//惯性因子
-    private double selfStudyFactor = 2;//个体学习因子
-    private double socialStudyFactor = 2;//社会学习因子
+    private float inertialFactor = 0.5f;//惯性因子
+    private float selfStudyFactor = 2;//个体学习因子
+    private float socialStudyFactor = 2;//社会学习因子
     private boolean isMax;//取最大值还是最小值
-    private double[] allBest;//全局最佳位置
+    private float[] allBest;//全局最佳位置
     private Random random = new Random();
-    private double[] minBorder, maxBorder;
-    private double maxSpeed;
-    private double initSpeed;//初始速度
+    private float[] minBorder, maxBorder;
+    private float maxSpeed;
+    private float initSpeed;//初始速度
     /**
      * 初始化
      *
@@ -43,15 +43,15 @@ public class PSO {
      * @param initSpeed 初始速度
      * @throws Exception
      */
-    public PSO(int dimensionNub, double[] minBorder, double[] maxBorder,
+    public PSO(int dimensionNub, float[] minBorder, float[] maxBorder,
                int times, int particleNub, PsoFunction psoFunction,
-               double inertialFactor, double selfStudyFactor, double socialStudyFactor
-            , boolean isMax, double maxSpeed, double initSpeed) {
+               float inertialFactor, float selfStudyFactor, float socialStudyFactor
+            , boolean isMax, float maxSpeed, float initSpeed) {
         this.initSpeed = initSpeed;
         this.times = times;
         this.psoFunction = psoFunction;
         this.isMax = isMax;
-        allBest = new double[dimensionNub];
+        allBest = new float[dimensionNub];
         this.minBorder = minBorder;
         this.maxBorder = maxBorder;
         this.maxSpeed = maxSpeed;
@@ -71,7 +71,7 @@ public class PSO {
 
     }
 
-    public double[] getAllBest() {
+    public float[] getAllBest() {
         return allBest;
     }
 
@@ -91,10 +91,10 @@ public class PSO {
     }
 
     private void move(Particle particle, int id) throws Exception {//粒子群开始移动
-        double[] parameter = particle.getParameter();//当前粒子的位置
+        float[] parameter = particle.getParameter();//当前粒子的位置
         BestData[] bestData = particle.bestDataArray;//该粒子的信息
-        double value = psoFunction.getResult(parameter, id);
-        double selfValue = particle.selfBestValue;//局部最佳值
+        float value = psoFunction.getResult(parameter, id);
+        float selfValue = particle.selfBestValue;//局部最佳值
         if (isMax) {//取最大值
             if (value > globalValue) {//更新全局最大值
                 globalValue = value;
@@ -128,14 +128,14 @@ public class PSO {
         }
         //先更新粒子每个维度的速度
         for (int i = 0; i < bestData.length; i++) {
-            double speed = bestData[i].speed;//当前维度的速度
-            double pid = bestData[i].selfBestPosition;//当前自己的最佳位置
-            double selfPosition = parameter[i];//当前自己的位置
-            double pgd = allBest[i];//当前维度的全局最佳位置
+            float speed = bestData[i].speed;//当前维度的速度
+            float pid = bestData[i].selfBestPosition;//当前自己的最佳位置
+            float selfPosition = parameter[i];//当前自己的位置
+            float pgd = allBest[i];//当前维度的全局最佳位置
             //当前维度更新后的速度
-            speed = inertialFactor * speed + selfStudyFactor * random.nextDouble() * (pid - selfPosition)
-                    + socialStudyFactor * random.nextDouble() * (pgd - selfPosition);
-            if (Math.abs(speed) > maxSpeed) {
+            speed = inertialFactor * speed + selfStudyFactor * random.nextFloat() * (pid - selfPosition)
+                    + socialStudyFactor * random.nextFloat() * (pgd - selfPosition);
+            if ((float)Math.abs(speed) > maxSpeed) {
                 if (speed > 0) {
                     speed = maxSpeed;
                 } else {
@@ -144,7 +144,7 @@ public class PSO {
             }
             bestData[i].speed = speed;
             //更新该粒子该维度新的位置
-            double position = selfPosition + speed;
+            float position = selfPosition + speed;
             if (minBorder != null) {
                 if (position < minBorder[i]) {
                     position = minBorder[i];
@@ -159,10 +159,10 @@ public class PSO {
 
     class Particle {//粒子
         private BestData[] bestDataArray;
-        private double selfBestValue = -1;//自身最优的值
+        private float selfBestValue = -1;//自身最优的值
 
-        private double[] getParameter() {//获取粒子位置信息
-            double[] parameter = new double[bestDataArray.length];
+        private float[] getParameter() {//获取粒子位置信息
+            float[] parameter = new float[bestDataArray.length];
             for (int i = 0; i < parameter.length; i++) {
                 parameter[i] = bestDataArray[i].selfPosition;
             }
@@ -172,14 +172,14 @@ public class PSO {
         protected Particle(int dimensionNub) {//初始化随机位置
             bestDataArray = new BestData[dimensionNub];
             for (int i = 0; i < dimensionNub; i++) {
-                double position;
+                float position;
                 if (minBorder != null && maxBorder != null) {
-                    double min = minBorder[i];
-                    double max = maxBorder[i];
-                    double region = max - min + 1;
+                    float min = minBorder[i];
+                    float max = maxBorder[i];
+                    float region = max - min + 1;
                     position = random.nextInt((int) region) + min;//初始化该维度的位置
                 } else {
-                    position = random.nextDouble();
+                    position = random.nextFloat();
                 }
                 bestDataArray[i] = new BestData(position, initSpeed);
             }
@@ -188,14 +188,14 @@ public class PSO {
 
     class BestData {//数据保存
 
-        private BestData(double selfPosition, double initSpeed) {
+        private BestData(float selfPosition, float initSpeed) {
             this.selfBestPosition = selfPosition;
             this.selfPosition = selfPosition;
             speed = initSpeed;
         }
 
-        private double speed;//该粒子当前维度的速度
-        private double selfBestPosition;//当前维度自身最优的历史位置/自己最优位置的值
-        private double selfPosition;//当前维度自己现在的位置/也就是当前维度自己的值
+        private float speed;//该粒子当前维度的速度
+        private float selfBestPosition;//当前维度自身最优的历史位置/自己最优位置的值
+        private float selfPosition;//当前维度自己现在的位置/也就是当前维度自己的值
     }
 }

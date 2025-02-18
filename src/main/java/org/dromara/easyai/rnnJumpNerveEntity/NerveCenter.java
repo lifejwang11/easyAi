@@ -9,7 +9,7 @@ import java.util.List;
 
 public class NerveCenter extends MatrixOperation {//神经中枢
     private final int depth;//该神经中枢的深度
-    private final double powerTh;//权重阈值
+    private final float powerTh;//权重阈值
     private final List<Nerve> nerveList;//该神经中枢控制的对应隐层神经元集合
     private WordEmbedding wordEmbedding;//词嵌入
     private final boolean isFinish;//是否是最后一层
@@ -18,7 +18,7 @@ public class NerveCenter extends MatrixOperation {//神经中枢
         return depth;
     }
 
-    public NerveCenter(int depth, List<Nerve> nerveList, double powerTh, boolean isFinish) {
+    public NerveCenter(int depth, List<Nerve> nerveList, float powerTh, boolean isFinish) {
         this.depth = depth;
         this.nerveList = nerveList;
         this.powerTh = powerTh;
@@ -29,7 +29,7 @@ public class NerveCenter extends MatrixOperation {//神经中枢
         this.wordEmbedding = wordEmbedding;
     }
 
-    public void backType(long eventId, double parameter, int id, Matrix featureMatrix, OutBack outBack, String myWord) throws Exception {
+    public void backType(long eventId, float parameter, int id, Matrix featureMatrix, OutBack outBack, String myWord) throws Exception {
         if (id > 0 && parameter > powerTh) {//增加新特征继续传播
             String nextWord = wordEmbedding.getWord(id - 1);
             if (myWord == null) {

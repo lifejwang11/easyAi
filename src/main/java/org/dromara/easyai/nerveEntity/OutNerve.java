@@ -14,9 +14,9 @@ public class OutNerve extends Nerve {
     private final boolean isShowLog;
     private final boolean isSoftMax;
 
-    public OutNerve(int id, int upNub, int downNub, double studyPoint, boolean init,
+    public OutNerve(int id, int upNub, int downNub, float studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic, boolean isShowLog,
-                    int rzType, double lParam, boolean isSoftMax, int step, int kernLen, int coreNumber) throws Exception {
+                    int rzType, float lParam, boolean isSoftMax, int step, int kernLen, int coreNumber) throws Exception {
         super(id, upNub, "OutNerve", downNub, studyPoint, init,
                 activeFunction, isDynamic, rzType, lParam, step, kernLen, 0, 0, 0
                 , coreNumber);
@@ -24,25 +24,25 @@ public class OutNerve extends Nerve {
         this.isSoftMax = isSoftMax;
     }
 
-    void getGBySoftMax(double g, long eventId) throws Exception {//接收softMax层回传梯度
+    void getGBySoftMax(float g, long eventId) throws Exception {//接收softMax层回传梯度
         gradient = g;
         updatePower(eventId);
     }
 
 
     @Override
-    public void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
+    public void input(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E
             , OutBack outBack) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
-            double sigma = calculation(eventId);
+            float sigma = calculation(eventId);
             if (isSoftMax) {
                 if (!isStudy) {
                     destoryParameter(eventId);
                 }
                 sendMessage(eventId, sigma, isStudy, E, outBack);
             } else {
-                double out = activeFunction.function(sigma);
+                float out = activeFunction.function(sigma);
                 if (isStudy) {//输出结果并进行BP调整权重及阈值
                     outNub = out;
                     if (E.containsKey(getId())) {
@@ -68,7 +68,7 @@ public class OutNerve extends Nerve {
         }
     }
 
-    private double outGradient() {//生成输出层神经元梯度变化
+    private float outGradient() {//生成输出层神经元梯度变化
         //上层神经元输入值 * 当前神经元梯度*学习率 =该上层输入的神经元权重变化
         //当前梯度神经元梯度变化 *学习旅 * -1 = 当前神经元阈值变化
         return activeFunction.functionG(outNub) * (E - outNub);

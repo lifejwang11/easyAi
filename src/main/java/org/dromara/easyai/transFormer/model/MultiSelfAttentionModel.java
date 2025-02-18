@@ -3,7 +3,7 @@ package org.dromara.easyai.transFormer.model;
 import java.util.List;
 
 public class MultiSelfAttentionModel {
-    private double[][] powerModel;
+    private float[][] powerModel;
     private List<QKVModel> qkvModelList;
     private int depth;
 
@@ -15,11 +15,11 @@ public class MultiSelfAttentionModel {
         this.depth = depth;
     }
 
-    public double[][] getPowerModel() {
+    public float[][] getPowerModel() {
         return powerModel;
     }
 
-    public void setPowerModel(double[][] powerModel) {
+    public void setPowerModel(float[][] powerModel) {
         this.powerModel = powerModel;
     }
 

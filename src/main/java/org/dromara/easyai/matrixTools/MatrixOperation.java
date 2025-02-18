@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.zip.ZipInputStream;
 
 public class MatrixOperation {
     private final int coreNumber;
@@ -23,8 +22,8 @@ public class MatrixOperation {
         }
     }
 
-    public List<Double> rowVectorToList(Matrix matrix) throws Exception {
-        List<Double> list = new ArrayList<>();
+    public List<Float> rowVectorToList(Matrix matrix) throws Exception {
+        List<Float> list = new ArrayList<>();
         for (int j = 0; j < matrix.getY(); j++) {
             list.add(matrix.getNumber(0, j));
         }
@@ -49,18 +48,18 @@ public class MatrixOperation {
     }
 
     public void center(Matrix matrix) throws Exception {//将矩阵中心化
-        double avgValue = matrix.getAVG();
+        float avgValue = matrix.getAVG();
         mathSub(matrix, avgValue);
     }
 
-    public double getCrossEntropy(Matrix matrix1, Matrix matrix2) throws Exception {//两个概率矩阵的交叉熵
-        double sigMod = 0;
+    public float getCrossEntropy(Matrix matrix1, Matrix matrix2) throws Exception {//两个概率矩阵的交叉熵
+        float sigMod = 0;
         int x = matrix1.getX();
         int y = matrix1.getY();
         if (x == matrix2.getX() && y == matrix2.getY()) {
             for (int i = 0; i < x; i++) {
                 for (int j = 0; j < y; j++) {
-                    sigMod = sigMod + matrix2.getNumber(i, j) * Math.log(matrix1.getNumber(i, j));
+                    sigMod = sigMod + matrix2.getNumber(i, j) * (float) Math.log(matrix1.getNumber(i, j));
                 }
             }
             return -sigMod;
@@ -70,20 +69,20 @@ public class MatrixOperation {
     }
 
     public Matrix softMaxByMatrix(Matrix feature) throws Exception {
-        double sigma = 0;
+        float sigma = 0;
         int x = feature.getX();
         int y = feature.getY();
         Matrix softMaxMatrix = new Matrix(x, y);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                double value = feature.getNumber(i, j);
-                sigma = Math.exp(value) + sigma;
+                float value = feature.getNumber(i, j);
+                sigma = (float) Math.exp(value) + sigma;
             }
         }
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                double eSelf = Math.exp(feature.getNumber(i, j));
-                double value = eSelf / sigma;
+                float eSelf = (float) Math.exp(feature.getNumber(i, j));
+                float value = (float) (eSelf / sigma);
                 softMaxMatrix.setNub(i, j, value);
             }
         }
@@ -109,7 +108,7 @@ public class MatrixOperation {
 
     private int getLBPValue(Matrix matrix) throws Exception {
         int value = 0;
-        double avg = matrix.getAVG();
+        float avg = matrix.getAVG();
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 if (i != 1 || j != 1) {
@@ -159,15 +158,15 @@ public class MatrixOperation {
         }
     }
 
-    public double getEDistByMatrix(Matrix matrix1, Matrix matrix2) throws Exception {
+    public float getEDistByMatrix(Matrix matrix1, Matrix matrix2) throws Exception {
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
             int x = matrix1.getX();
             int y = matrix1.getY();
-            double sigma = 0;
+            float sigma = 0;
             for (int i = 0; i < x; i++) {
                 for (int j = 0; j < y; j++) {
-                    double sub = matrix1.getNumber(i, j) - matrix2.getNumber(i, j);
-                    sigma = sigma + Math.pow(sub, 2);
+                    float sub = matrix1.getNumber(i, j) - matrix2.getNumber(i, j);
+                    sigma = sigma + (float) Math.pow(sub, 2);
                 }
             }
             return sigma / (x * y);
@@ -177,7 +176,7 @@ public class MatrixOperation {
     }
 
     //返回两个向量之间的欧氏距离的平方
-    public double getEDist(Matrix matrix1, Matrix matrix2) throws Exception {
+    public float getEDist(Matrix matrix1, Matrix matrix2) throws Exception {
         if (matrix1.isRowVector() && matrix2.isRowVector() && matrix1.getY() == matrix2.getY()) {
             Matrix matrix = sub(matrix1, matrix2);
             return getNorm(matrix);
@@ -186,17 +185,17 @@ public class MatrixOperation {
         }
     }
 
-    public double errorNub(Matrix matrix, Matrix avgMatrix) throws Exception {//求均方误差
+    public float errorNub(Matrix matrix, Matrix avgMatrix) throws Exception {//求均方误差
         int y = matrix.getY();
         if (matrix.isRowVector() && avgMatrix.isRowVector() && y == avgMatrix.getY()) {
-            double[] subAll = new double[y];
+            float[] subAll = new float[y];
             for (int j = 0; j < y; j++) {
-                double mySelf = matrix.getNumber(0, j);
-                double avg = avgMatrix.getNumber(0, j);
-                double sub = Math.pow(avg - mySelf, 2);
+                float mySelf = matrix.getNumber(0, j);
+                float avg = avgMatrix.getNumber(0, j);
+                float sub = (float) Math.pow(avg - mySelf, 2);
                 subAll[j] = sub;
             }
-            double sigma = 0;
+            float sigma = 0;
             for (int i = 0; i < y; i++) {
                 sigma = sigma + subAll[i];
             }
@@ -244,7 +243,7 @@ public class MatrixOperation {
         }
     }
 
-    public Matrix push(Matrix matrix, double nub, boolean isRow) throws Exception {//向一个向量里PUSH一个值
+    public Matrix push(Matrix matrix, float nub, boolean isRow) throws Exception {//向一个向量里PUSH一个值
         if (matrix.getX() == 1 || matrix.getY() == 1) {
             Matrix myMatrix;
             int nubs;
@@ -291,7 +290,7 @@ public class MatrixOperation {
             }
             int k = 0;
             for (int i = 0; i < nub * 4 - 3; i += 4) {
-                double max = 0;
+                float max = 0;
                 if (isRow) {
                     max = matrix.getNumber(0, i);
                     max = getMax(max, matrix.getNumber(0, i + 1));
@@ -314,8 +313,8 @@ public class MatrixOperation {
 
     }
 
-    private double getMax(double o1, double o2) {
-        return Math.max(o1, o2);
+    private float getMax(float o1, float o2) {
+        return (float) Math.max(o1, o2);
     }
 
     public Matrix matrixToVector(Matrix matrix, boolean isRow) throws Exception {//将一个矩阵转成行向量
@@ -341,9 +340,9 @@ public class MatrixOperation {
         return myMatrix;
     }
 
-    public double innerProduct(Matrix matrix1, Matrix matrix2) throws Exception {//两个向量内积
+    public float innerProduct(Matrix matrix1, Matrix matrix2) throws Exception {//两个向量内积
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {
-            double sigma = 0;
+            float sigma = 0;
             for (int i = 0; i < matrix1.getX(); i++) {
                 for (int j = 0; j < matrix1.getY(); j++) {
                     sigma = sigma + matrix1.getNumber(i, j) * matrix2.getNumber(i, j);
@@ -355,23 +354,23 @@ public class MatrixOperation {
         }
     }
 
-    public double getNorm(Matrix matrix) throws Exception {//求向量范数
+    public float getNorm(Matrix matrix) throws Exception {//求向量范数
         if (matrix.getY() == 1 || matrix.getX() == 1) {
-            double nub = 0;
+            float nub = 0;
             for (int i = 0; i < matrix.getX(); i++) {
                 for (int j = 0; j < matrix.getY(); j++) {
-                    nub = Math.pow(matrix.getNumber(i, j), 2) + nub;
+                    nub = (float) Math.pow(matrix.getNumber(i, j), 2) + nub;
                 }
             }
-            return Math.sqrt(nub);
+            return (float) Math.sqrt(nub);
         } else {
             throw new Exception("this matrix is not vector");
         }
     }
 
-    public double getNormCos(Matrix matrix1, Matrix matrix2) throws Exception {//求两个向量之间的余弦
-        double inner = innerProduct(matrix1, matrix2);
-        double mulNorm = getNorm(matrix1) * getNorm(matrix2);
+    public float getNormCos(Matrix matrix1, Matrix matrix2) throws Exception {//求两个向量之间的余弦
+        float inner = innerProduct(matrix1, matrix2);
+        float mulNorm = getNorm(matrix1) * getNorm(matrix2);
         return inner / mulNorm;
     }
 
@@ -380,15 +379,15 @@ public class MatrixOperation {
         for (int i = 0; i < matrix.getY(); i++) {
             Matrix matrixColumn = matrix.getColumn(i);
             for (int j = 0; j < matrixColumn.getX(); j++) {
-                double myNode = matrixColumn.getNumber(j, 0);
+                float myNode = matrixColumn.getNumber(j, 0);
                 myMatrix.setNub(i, j, myNode);
             }
         }
         return myMatrix;
     }
 
-    public double convolution(Matrix matrix, Matrix kernel, int x, int y) throws Exception {//计算卷积
-        double allNub = 0;
+    public float convolution(Matrix matrix, Matrix kernel, int x, int y) throws Exception {//计算卷积
+        float allNub = 0;
         int xr = 0;
         int yr = 0;
         int kxMax = kernel.getX();
@@ -404,8 +403,8 @@ public class MatrixOperation {
         return allNub;
     }
 
-    public double getKernelNub(Matrix matrix, Matrix kernel) throws Exception {
-        double allNub = 0;
+    public float getKernelNub(Matrix matrix, Matrix kernel) throws Exception {
+        float allNub = 0;
         int x = matrix.getX();
         int y = matrix.getY();
         for (int i = 0; i < x; i++) {
@@ -416,11 +415,11 @@ public class MatrixOperation {
         return allNub;
     }
 
-    public int inverseNumber(double[] myInverse) {//逆序数奇偶性判定
+    public int inverseNumber(float[] myInverse) {//逆序数奇偶性判定
         int size = myInverse.length;
         int inverserNumber = 0;
         for (int i = 0; i < size; i++) {
-            double element = myInverse[i];
+            float element = myInverse[i];
             for (int j = (i + 1); j < size; j++) {
                 if (myInverse[j] < element) {
                     inverserNumber++;
@@ -431,7 +430,7 @@ public class MatrixOperation {
     }
 
     public Matrix getInverseMatrix(Matrix matrix) throws Exception {//矩阵求逆
-        double def = matrix.getDet();
+        float def = matrix.getDet();
         if (def != 0) {
             def = 1 / def;
             Matrix myMatrix = adjointMatrix(matrix);//伴随矩阵
@@ -455,7 +454,7 @@ public class MatrixOperation {
         return transPosition(myMatrix);
     }
 
-    public double algebraicCofactor(Matrix matrix, int row, int column) throws Exception {//获取代数余子式
+    public float algebraicCofactor(Matrix matrix, int row, int column) throws Exception {//获取代数余子式
         if (row >= 0 && column >= 0 && row < matrix.getX() && column < matrix.getY()) {
             int x = matrix.getX() - 1;
             int y = matrix.getY() - 1;
@@ -479,7 +478,7 @@ public class MatrixOperation {
                 oldX++;
                 oldY = 0;
             }
-            double dm = myMatrix.getDet();
+            float dm = myMatrix.getDet();
             if ((ij % 2) != 0) {//ij是奇数
                 dm = -dm;
             }
@@ -489,21 +488,21 @@ public class MatrixOperation {
         }
     }
 
-    public Matrix matrixSoftMaxPd(Matrix qkt, Matrix errorMatrix, double wordVectorDimension) throws Exception {//重重点
-        double param = Math.sqrt(wordVectorDimension);
+    public Matrix matrixSoftMaxPd(Matrix qkt, Matrix errorMatrix, float wordVectorDimension) throws Exception {//重重点
+        float param = (float) Math.sqrt(wordVectorDimension);
         int x = qkt.getX();
         int y = qkt.getY();
         Matrix grMatrix = new Matrix(x, y);
         for (int i = 0; i < x; i++) {
             Matrix qr = qkt.getRow(i);//该行的行向量
             for (int j = 0; j < y; j++) {
-                double jValue = qr.getNumber(0, j);//遍历qr每一个元素，分别对他们求偏导
+                float jValue = qr.getNumber(0, j);//遍历qr每一个元素，分别对他们求偏导
                 int z = qr.getY();
-                double sigma = 0;
+                float sigma = 0;
                 for (int k = 0; k < z; k++) {
-                    double kValue = qr.getNumber(0, k);//遍历qr每一个元素，分别对他们求偏导
-                    double error = errorMatrix.getNumber(i, k);
-                    double er;
+                    float kValue = qr.getNumber(0, k);//遍历qr每一个元素，分别对他们求偏导
+                    float error = errorMatrix.getNumber(i, k);
+                    float er;
                     if (k != j) {
                         er = -error * kValue * jValue;
                     } else {
@@ -511,7 +510,7 @@ public class MatrixOperation {
                     }
                     sigma = sigma + er;
                 }
-                double gr = sigma / param;//该位置梯度
+                float gr = (float) (sigma / param);//该位置梯度
                 grMatrix.setNub(i, j, gr);
             }
         }
@@ -521,20 +520,20 @@ public class MatrixOperation {
     public void softMax(Matrix matrix) throws Exception {//重重点
         for (int i = 0; i < matrix.getX(); i++) {
             Matrix row = matrix.getRow(i);
-            double sigma = getRowSoftMaxSigma(row);
+            float sigma = getRowSoftMaxSigma(row);
             for (int j = 0; j < matrix.getY(); j++) {
-                double self = row.getNumber(0, j);
-                double eSelf = Math.exp(self);
+                float self = row.getNumber(0, j);
+                float eSelf = (float) Math.exp(self);
                 matrix.setNub(i, j, eSelf / sigma);
             }
         }
     }
 
-    private double getRowSoftMaxSigma(Matrix row) throws Exception {
-        double sigma = 0;
+    private float getRowSoftMaxSigma(Matrix row) throws Exception {
+        float sigma = 0;
         for (int i = 0; i < row.getY(); i++) {
-            double value = row.getNumber(0, i);
-            sigma = Math.exp(value) + sigma;
+            float value = row.getNumber(0, i);
+            sigma = (float) Math.exp(value) + sigma;
         }
         return sigma;
     }
@@ -566,15 +565,15 @@ public class MatrixOperation {
     }
 
     //重点
-    public double getSdByMatrix(Matrix m, double avg, double e) throws Exception {//计算矩阵元素的标准差
-        double var = 0;
-        double size = m.getX() * m.getY();
+    public float getSdByMatrix(Matrix m, float avg, float e) throws Exception {//计算矩阵元素的标准差
+        float var = 0;
+        float size = m.getX() * m.getY();
         for (int i = 0; i < m.getX(); i++) {
             for (int j = 0; j < m.getY(); j++) {
-                var = var + Math.pow(m.getNumber(i, j) - avg, 2);
+                var = var + (float) Math.pow(m.getNumber(i, j) - avg, 2);
             }
         }
-        return Math.sqrt(var / size + e);
+        return (float) Math.sqrt(var / size + e);
     }
 
     private Matrix mulMatrixOne(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘单进程
@@ -584,11 +583,11 @@ public class MatrixOperation {
                 Matrix matrixRow = matrix1.getRow(i);//行向量
                 for (int j = 0; j < matrix2.getY(); j++) {
                     Matrix matrixColumn = matrix2.getColumn(j);
-                    double columnAllNumber = 0;//对每一项的乘积求和
+                    float columnAllNumber = 0;//对每一项的乘积求和
                     for (int h = 0; h < matrixColumn.getX(); h++) {
-                        double columnNumber = matrixColumn.getNumber(h, 0);
-                        double rowNumber = matrixRow.getNumber(0, h);
-                        double nowNumber = columnNumber * rowNumber;
+                        float columnNumber = matrixColumn.getNumber(h, 0);
+                        float rowNumber = matrixRow.getNumber(0, h);
+                        float nowNumber = columnNumber * rowNumber;
                         columnAllNumber = columnAllNumber + nowNumber;
                     }
                     matrix.setNub(i, j, columnAllNumber);
@@ -630,7 +629,7 @@ public class MatrixOperation {
     }
 
     //重重点
-    public Matrix mathMulBySelf(Matrix matrix, double nub) throws Exception {//矩阵数乘并返回新矩阵
+    public Matrix mathMulBySelf(Matrix matrix, float nub) throws Exception {//矩阵数乘并返回新矩阵
         int x = matrix.getX();
         int y = matrix.getY();
         Matrix myMatrix = new Matrix(x, y);
@@ -643,7 +642,7 @@ public class MatrixOperation {
     }
 
     //重点
-    public void mathMul(Matrix matrix, double nub) throws Exception {//矩阵数乘
+    public void mathMul(Matrix matrix, float nub) throws Exception {//矩阵数乘
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 matrix.setNub(i, j, matrix.getNumber(i, j) * nub);
@@ -652,7 +651,7 @@ public class MatrixOperation {
     }
 
     //重点
-    public void mathAdd(Matrix matrix, double nub) throws Exception {//矩阵数加
+    public void mathAdd(Matrix matrix, float nub) throws Exception {//矩阵数加
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 matrix.setNub(i, j, matrix.getNumber(i, j) + nub);
@@ -661,7 +660,7 @@ public class MatrixOperation {
     }
 
     //重点
-    public void mathSub(Matrix matrix, double nub) throws Exception {//矩阵数减
+    public void mathSub(Matrix matrix, float nub) throws Exception {//矩阵数减
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 matrix.setNub(i, j, matrix.getNumber(i, j) - nub);
@@ -670,7 +669,7 @@ public class MatrixOperation {
     }
 
     //重点
-    public void mathDiv(Matrix matrix, double nub) throws Exception {//矩阵数除
+    public void mathDiv(Matrix matrix, float nub) throws Exception {//矩阵数除
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 matrix.setNub(i, j, matrix.getNumber(i, j) / nub);
@@ -679,8 +678,8 @@ public class MatrixOperation {
     }
 
     //矩阵转LIST
-    public List<Double> matrixToList(Matrix matrix) throws Exception {
-        List<Double> list = new ArrayList<>();
+    public List<Float> matrixToList(Matrix matrix) throws Exception {
+        List<Float> list = new ArrayList<>();
         int x = matrix.getX();
         int y = matrix.getY();
         for (int i = 0; i < x; i++) {
@@ -692,7 +691,7 @@ public class MatrixOperation {
     }
 
     //list转矩阵
-    public Matrix ListToMatrix(List<Double> list, int matrixX, int matrixY) throws Exception {
+    public Matrix ListToMatrix(List<Float> list, int matrixX, int matrixY) throws Exception {
         Matrix matrix = new Matrix(matrixX, matrixY);
         for (int i = 0; i < matrixX; i++) {
             for (int j = 0; j < matrixY; j++) {
@@ -704,7 +703,7 @@ public class MatrixOperation {
     }
 
     //list转行向量
-    public Matrix listToRowVector(List<Double> list) throws Exception {
+    public Matrix listToRowVector(List<Float> list) throws Exception {
         Matrix matrix = new Matrix(1, list.size());
         for (int i = 0; i < list.size(); i++) {
             matrix.setNub(0, i, list.get(i));
@@ -713,10 +712,10 @@ public class MatrixOperation {
     }
 
     //list转行向量定长
-    public Matrix listToRowVector(List<Double> list, int nub) throws Exception {
+    public Matrix listToRowVector(List<Float> list, int nub) throws Exception {
         Matrix matrix = new Matrix(1, nub);
         for (int i = 0; i < nub; i++) {
-            double n = 0;
+            float n = 0;
             if (list.size() > i) {
                 n = list.get(i);
             }
@@ -763,7 +762,7 @@ public class MatrixOperation {
             for (int j = 0; j < col; j++) {
                 int xr = j / kernLen + xz;
                 int yr = j % kernLen + yz;
-                double value = myMatrix.getNumber(xr, yr) + matrix.getNumber(i, j);
+                float value = myMatrix.getNumber(xr, yr) + matrix.getNumber(i, j);
                 myMatrix.setNub(xr, yr, value);
             }
         }
@@ -788,8 +787,8 @@ public class MatrixOperation {
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 if (i == j) {
-                    double value = Math.sqrt(matrix.getNumber(i, j));
-                    matrix.setNub(i, j, value);
+                    float value = (float) Math.sqrt(matrix.getNumber(i, j));
+                    matrix.setNub(i, j, (float) value);
                 }
             }
         }
@@ -867,25 +866,25 @@ public class MatrixOperation {
             Matrix normMatrix = new Matrix(x, x);
             for (int i = 0; i < y; i++) {
                 Matrix xn = matrix.getColumn(i);
-                R.setNub(i, i, 1D);
+                R.setNub(i, i, 1F);
                 if (i > 0) {
                     for (int k = 0; k < i; k++) {
                         Matrix vn = schMatrix.getColumn(k);
-                        double value = innerProduct(xn, vn) / innerProduct(vn, vn);
+                        float value = innerProduct(xn, vn) / innerProduct(vn, vn);
                         R.setNub(k, i, value);
                         mathMul(vn, value);
                         xn = sub(xn, vn);
                     }
                 }
-                double norm = getNorm(xn);//范数
+                float norm = getNorm(xn);//范数
                 normMatrix.setNub(i, i, norm);
                 insertVectorValue(schMatrix, xn, i);
             }
             R = mulMatrix(normMatrix, R);
             for (int i = 0; i < x; i++) {
-                double norm = normMatrix.getNumber(i, i);
+                float norm = normMatrix.getNumber(i, i);
                 for (int j = 0; j < y; j++) {
-                    double value = schMatrix.getNumber(j, i) / norm;
+                    float value = schMatrix.getNumber(j, i) / norm;
                     schMatrix.setNub(j, i, value);
                 }
             }

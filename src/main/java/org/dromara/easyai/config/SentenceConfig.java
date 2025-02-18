@@ -12,16 +12,16 @@ public class SentenceConfig {
     private int wordVectorDimension = 21;//语义分类网络词向量嵌入维度
     private int qaWordVectorDimension = 66;//问答模型此项链嵌入维度
     private int maxWordLength = 20;//最长字数
-    private double weStudyPoint = 0.01;//词向量学习学习率
-    private double weLParam = 0.01;//正则系数
+    private float weStudyPoint = 0.01f;//词向量学习学习率
+    private float weLParam = 0.01f;//正则系数
     private int rzModel = RZ.NOT_RZ;//正则模式
     private boolean showLog = true;
     private int minLength = 5;
-    private double trustPowerTh = 0.5;//权重可信任阈值
+    private float trustPowerTh = 0.5f;//权重可信任阈值
     private int maxAnswerLength = 20;//最大回答长度
-    private double sentenceTrustPowerTh = 0.2;//语句生成可信赖阈值
+    private float sentenceTrustPowerTh = 0.2f;//语句生成可信赖阈值
     private int times = 10;//增加训练数量
-    private double param = 0.01;//线性层正则系数
+    private float param = 0.01f;//线性层正则系数
     private int keyWordNerveDeep = 3;
 
     public int getRzModel() {
@@ -48,11 +48,11 @@ public class SentenceConfig {
         this.keyWordNerveDeep = keyWordNerveDeep;
     }
 
-    public double getParam() {
+    public float getParam() {
         return param;
     }
 
-    public void setParam(double param) {
+    public void setParam(float param) {
         this.param = param;
     }
 
@@ -64,11 +64,11 @@ public class SentenceConfig {
         this.times = times;
     }
 
-    public double getSentenceTrustPowerTh() {
+    public float getSentenceTrustPowerTh() {
         return sentenceTrustPowerTh;
     }
 
-    public void setSentenceTrustPowerTh(double sentenceTrustPowerTh) {
+    public void setSentenceTrustPowerTh(float sentenceTrustPowerTh) {
         this.sentenceTrustPowerTh = sentenceTrustPowerTh;
     }
 
@@ -80,11 +80,11 @@ public class SentenceConfig {
         this.maxAnswerLength = maxAnswerLength;
     }
 
-    public double getTrustPowerTh() {
+    public float getTrustPowerTh() {
         return trustPowerTh;
     }
 
-    public void setTrustPowerTh(double trustPowerTh) {
+    public void setTrustPowerTh(float trustPowerTh) {
         this.trustPowerTh = trustPowerTh;
     }
 
@@ -128,19 +128,19 @@ public class SentenceConfig {
         this.wordVectorDimension = wordVectorDimension;
     }
 
-    public double getWeStudyPoint() {
+    public float getWeStudyPoint() {
         return weStudyPoint;
     }
 
-    public void setWeStudyPoint(double weStudyPoint) {
+    public void setWeStudyPoint(float weStudyPoint) {
         this.weStudyPoint = weStudyPoint;
     }
 
-    public double getWeLParam() {
+    public float getWeLParam() {
         return weLParam;
     }
 
-    public void setWeLParam(double weLParam) {
+    public void setWeLParam(float weLParam) {
         this.weLParam = weLParam;
     }
 }

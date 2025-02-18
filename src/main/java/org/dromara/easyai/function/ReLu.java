@@ -9,7 +9,7 @@ import org.dromara.easyai.i.ActiveFunction;
  */
 public class ReLu implements ActiveFunction {
     @Override
-    public double function(double x) {
+    public float function(float x) {
         if (x > 0) {
             return x;
         } else {
@@ -18,7 +18,7 @@ public class ReLu implements ActiveFunction {
     }
 
     @Override
-    public double functionG(double out) {
+    public float functionG(float out) {
         if (out > 0) {
             return 1;
         } else {

@@ -67,9 +67,9 @@ public class Knn extends MatrixOperation {//KNN分类器
         }
     }
 
-    private void compare(double[] values, int[] types, double value, int type) {
+    private void compare(float[] values, int[] types, float value, int type) {
         for (int i = 0; i < values.length; i++) {
-            double val = values[i];
+            float val = values[i];
             if (val < 0) {
                 values[i] = value;
                 types[i] = type;
@@ -90,7 +90,7 @@ public class Knn extends MatrixOperation {//KNN分类器
 
     public int getType(Matrix vector) throws Exception {//识别分类
         int ty = 0;
-        double[] dists = new double[nub];
+        float[] dists = new float[nub];
         // System.out.println("测试：" + vector.getString());
         int[] types = new int[nub];
         for (int i = 0; i < nub; i++) {
@@ -100,7 +100,7 @@ public class Knn extends MatrixOperation {//KNN分类器
             int type = entry.getKey();
             List<Matrix> matrices = entry.getValue();
             for (Matrix matrix : matrices) {
-                double dist = getEDist(matrix, vector);
+                float dist = getEDist(matrix, vector);
                 compare(dists, types, dist, type);
             }
         }

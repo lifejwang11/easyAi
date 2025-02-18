@@ -6,23 +6,23 @@ import org.dromara.easyai.i.OutBack;
 import java.util.List;
 
 public class CodeBack implements OutBack {
-    private double[] myFeature;
+    private float[] myFeature;
 
-    public double[] getMyFeature() {
+    public float[] getMyFeature() {
         return myFeature;
     }
 
-    public void setMyFeature(double[] myFeature) {
+    public void setMyFeature(float[] myFeature) {
         this.myFeature = myFeature;
     }
 
     @Override
-    public void getBack(double out, int id, long eventId) {
+    public void getBack(float out, int id, long eventId) {
         myFeature[id - 1] = out;
     }
 
     @Override
-    public void getSoftMaxBack(long eventId, List<Double> softMax) {
+    public void getSoftMaxBack(long eventId, List<Float> softMax) {
 
     }
 
@@ -39,7 +39,7 @@ public class CodeBack implements OutBack {
     }
 
     @Override
-    public void getWordVector(int id, double w) {
+    public void getWordVector(int id, float w) {
 
     }
 }

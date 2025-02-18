@@ -5,23 +5,23 @@ public class TfConfig {
     private int multiNumber = 8;//多头数量
     private int featureDimension = 50;//词向量维度
     private int allDepth = 1;//深度
-    private double studyPoint = 0.01;
+    private float studyPoint = 0.01f;
     private int typeNumber;
     private boolean showLog = true;
     private int times = 10;//循环增强次数
     private int regularModel = RZ.NOT_RZ;//正则模式
-    private double regular = 0;//正则系数
+    private float regular = 0;//正则系数
     private String splitWord;//词向量默认隔断符，无隔断则会逐字隔断
     private boolean selfTimeCode = false;//使用对称三角函数位置编码
     private int coreNumber = 1;//是否使用多核并行计算进行提速
     private boolean outAllPro = false;//是否输出全概率，注意，若输出全概率只能用来分类概率,否则将消耗大量内存
-    private double timePunValue = 0.7;//时间惩罚系数
+    private float timePunValue = 0.7f;//时间惩罚系数
 
-    public double getTimePunValue() {
+    public float getTimePunValue() {
         return timePunValue;
     }
 
-    public void setTimePunValue(double timePunValue) {
+    public void setTimePunValue(float timePunValue) {
         this.timePunValue = timePunValue;
     }
 
@@ -65,11 +65,11 @@ public class TfConfig {
         this.regularModel = regularModel;
     }
 
-    public double getRegular() {
+    public float getRegular() {
         return regular;
     }
 
-    public void setRegular(double regular) {
+    public void setRegular(float regular) {
         this.regular = regular;
     }
 
@@ -113,11 +113,11 @@ public class TfConfig {
         this.allDepth = allDepth;
     }
 
-    public double getStudyPoint() {
+    public float getStudyPoint() {
         return studyPoint;
     }
 
-    public void setStudyPoint(double studyPoint) {
+    public void setStudyPoint(float studyPoint) {
         this.studyPoint = studyPoint;
     }
 

@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class RegionBack implements OutBack {
     private int id;
-    private double point = -2;
+    private float point = -2;
 
     public void setId(int id) {
         this.id = id;
@@ -29,12 +29,12 @@ public class RegionBack implements OutBack {
         return id;
     }
 
-    public double getPoint() {
+    public float getPoint() {
         return point;
     }
 
     @Override
-    public void getBack(double out, int id, long eventId) {
+    public void getBack(float out, int id, long eventId) {
         if (out > point) {
             point = out;
             this.id = id;
@@ -42,7 +42,7 @@ public class RegionBack implements OutBack {
     }
 
     @Override
-    public void getSoftMaxBack(long eventId, List<Double> softMax) {
+    public void getSoftMaxBack(long eventId, List<Float> softMax) {
 
     }
 
@@ -59,7 +59,7 @@ public class RegionBack implements OutBack {
     }
 
     @Override
-    public void getWordVector(int id, double w) {
+    public void getWordVector(int id, float w) {
 
     }
 }

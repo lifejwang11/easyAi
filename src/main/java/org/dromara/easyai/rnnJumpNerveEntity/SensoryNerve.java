@@ -28,12 +28,12 @@ public class SensoryNerve extends Nerve {
      * @param E         标注
      * @param outBack   回调结果
      */
-    public void postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
+    public void postMessage(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E
             , OutBack outBack, Matrix rnnMatrix, int[] storeys, int questionLength) throws Exception {//感知神经元输出
         sendMessage(eventId, parameter, isStudy, E, outBack, rnnMatrix, storeys, 0, questionLength);
     }
 
-//    public void postPowerMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack) throws Exception {
+//    public void postPowerMessage(long eventId, float parameter, Matrix featureMatrix, OutBack outBack) throws Exception {
 //        sendTestMessage(eventId, parameter, featureMatrix, outBack, null);
 //    }
 

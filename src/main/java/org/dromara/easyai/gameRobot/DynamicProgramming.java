@@ -13,19 +13,19 @@ public class DynamicProgramming {
     private final List<DynamicState> dynamicStateList = new ArrayList<>();//状态集合
     private final Map<Integer, Action> actionMap = new HashMap<>();//动作列表
     private final List<Integer> bestStrategy = new ArrayList<>();//最佳策略
-    private double gaMa = 0.5;//贴现因子
-    private double valueTh = 0.0001;//价值阈值
+    private float gaMa = 0.5F; //贴现因子
+    private float valueTh = 0.0001f;//价值阈值
     private int maxTimes = 500;//策略改进最大迭代次数
 
     public void setMaxTimes(int maxTimes) {
         this.maxTimes = maxTimes;
     }
 
-    public void setValueTh(double valueTh) {
+    public void setValueTh(float valueTh) {
         this.valueTh = valueTh;
     }
 
-    public void setGaMa(double gaMa) {
+    public void setGaMa(float gaMa) {
         this.gaMa = gaMa;
     }
 
@@ -95,7 +95,7 @@ public class DynamicProgramming {
         for (int i = 0; i < size; i++) {
             DynamicState dynamicState = dynamicStateList.get(i);
             int[] stateId = dynamicState.getStateId();
-            double value = dynamicState.getValue();
+            float value = dynamicState.getValue();
             matrix.setNub(stateId[1], stateId[0], value);
         }
         return matrix;
@@ -119,14 +119,14 @@ public class DynamicProgramming {
         DynamicState state = getStateByStateId(stateId);//当前的环境
         if (state != null) {
             Map<Integer, List<DynamicState>> sonStatesMap = state.getSonStatesMap();
-            double maxValue = 0;//最大价值
+            float maxValue = 0;//最大价值
             boolean isFirstOne = true;
             for (Map.Entry<Integer, List<DynamicState>> entry : sonStatesMap.entrySet()) {
                 List<DynamicState> sonStates = entry.getValue();//子状态
-                double maxValue2 = 0;//actionId 的最大价值
+                float maxValue2 = 0;//actionId 的最大价值
                 boolean isFirstTwo = true;
                 for (DynamicState dynamicState : sonStates) {
-                    double myValue = dynamicState.getValue();
+                    float myValue = dynamicState.getValue();
                     if (myValue > maxValue2 || isFirstTwo) {
                         isFirstTwo = false;
                         maxValue2 = myValue;
@@ -226,12 +226,12 @@ public class DynamicProgramming {
 
     private int getBestStrategyByPro(DynamicState dynamicState) throws Exception {//通过概率获取当前状态下的最佳策略
         Map<Integer, List<DynamicState>> sonStatesMap = dynamicState.getSonStatesMap();//动作-子状态集合
-        double maxValue = 0;//最大价值
+        float maxValue = 0;//最大价值
         boolean isFirst = true;
         int bestActionId = 0;//最佳动作
         for (Map.Entry<Integer, List<DynamicState>> entry : sonStatesMap.entrySet()) {
             int actionId = entry.getKey();//动作id
-            double value = getValueByAction(dynamicState, actionId);//该动作的价值
+            float value = getValueByAction(dynamicState, actionId);//该动作的价值
             if (value > maxValue || isFirst) {
                 isFirst = false;
                 maxValue = value;
@@ -243,12 +243,12 @@ public class DynamicProgramming {
     }
 
     private void strategyEvaluation() throws Exception {//策略评估
-        double maxSub;//最大差值
+        float maxSub;//最大差值
         do {
             maxSub = 0;
             for (DynamicState dynamicState : dynamicStateList) {//当前状态
                 if (!dynamicState.isFinish()) {//非终结态
-                    double sub = valueEvaluation(dynamicState);//返回一个差
+                    float sub = valueEvaluation(dynamicState);//返回一个差
                     if (sub > maxSub) {
                         maxSub = sub;
                     }
@@ -257,26 +257,26 @@ public class DynamicProgramming {
         } while (maxSub >= valueTh);
     }
 
-    private double getValueByAction(DynamicState dynamicState, int actionId) throws Exception {//通过动作获取价值
+    private float getValueByAction(DynamicState dynamicState, int actionId) throws Exception {//通过动作获取价值
         Map<Integer, List<DynamicState>> sonStatesMap = dynamicState.getSonStatesMap();//动作-子状态集合
         List<DynamicState> sonStateListByAction = sonStatesMap.get(actionId);//当前状态最优策略动作下的子状态集合
         if (sonStateListByAction == null) {
             throw new Exception("该状态无下一步动作！可能该状态属于终结态，但并没有设置为终结态！");
         }
-        double number = dynamicState.getNumber();//当前状态被执行的次数即所有子状态被执行的总数
-        double updateValue = 0;//更新价值
+        float number = dynamicState.getNumber();//当前状态被执行的次数即所有子状态被执行的总数
+        float updateValue = 0;//更新价值
         for (DynamicState sonState : sonStateListByAction) {
             Map<Integer, Integer> profitMap = sonState.getProfitMap();//子状态收益集合
-            double sonNumber = sonState.getNumber();//该子状态执行的次数即该子状态所有收益被执行的总次数
-            double sonPro = sonNumber / number;//当前子状态在当前最优策略动作下被执行的概率
-            double value = sonState.getValue() * gaMa;//该子状态的价值
+            float sonNumber = sonState.getNumber();//该子状态执行的次数即该子状态所有收益被执行的总次数
+            float sonPro = sonNumber / number;//当前子状态在当前最优策略动作下被执行的概率
+            float value = sonState.getValue() * gaMa;//该子状态的价值
             //先对r求和
-            double sigmaR = 0;
+            float sigmaR = 0;
             for (Map.Entry<Integer, Integer> entryProfit : profitMap.entrySet()) {
-                double profit = entryProfit.getKey();//--获取profit的收益
-                double profitNumber = entryProfit.getValue();//--获取profit收益的次数
-                double profitPro = (profitNumber / sonNumber) * sonPro;//在当前策略动作下产生的环境，产生profit收益的概率
-                double v = (value + profit) * profitPro;//价值
+                float profit = entryProfit.getKey();//--获取profit的收益
+                float profitNumber = entryProfit.getValue();//--获取profit收益的次数
+                float profitPro = (profitNumber / sonNumber) * sonPro;//在当前策略动作下产生的环境，产生profit收益的概率
+                float v = (value + profit) * profitPro;//价值
                 sigmaR = sigmaR + v;
             }
             updateValue = updateValue + sigmaR;
@@ -284,12 +284,12 @@ public class DynamicProgramming {
         return updateValue;
     }
 
-    private double valueEvaluation(DynamicState dynamicState) throws Exception {//价值评估
-        double myValue = dynamicState.getValue();//当前价值
+    private float valueEvaluation(DynamicState dynamicState) throws Exception {//价值评估
+        float myValue = dynamicState.getValue();//当前价值
         int bestActionId = dynamicState.getBestActionId();//当前最优策略选择的动作
-        double updateValue = getValueByAction(dynamicState, bestActionId);
+        float updateValue = getValueByAction(dynamicState, bestActionId);
         dynamicState.setValue(updateValue);//更新价值
-        return Math.abs(myValue - updateValue);
+        return (float)Math.abs(myValue - updateValue);
     }
     //策略迭代
     //状态是当前环境的向量主键与价值函数

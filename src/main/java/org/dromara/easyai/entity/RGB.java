@@ -5,37 +5,37 @@ public class RGB {
 
     }
 
-    public RGB(double r, double g, double b) {
+    public RGB(float r, float g, float b) {
         this.r = r;
         this.g = g;
         this.b = b;
     }
 
-    private double r;
-    private double g;
-    private double b;
+    private float r;
+    private float g;
+    private float b;
 
-    public double getR() {
+    public float getR() {
         return r;
     }
 
-    public void setR(double r) {
+    public void setR(float r) {
         this.r = r;
     }
 
-    public double getG() {
+    public float getG() {
         return g;
     }
 
-    public void setG(double g) {
+    public void setG(float g) {
         this.g = g;
     }
 
-    public double getB() {
+    public float getB() {
         return b;
     }
 
-    public void setB(double b) {
+    public void setB(float b) {
         this.b = b;
     }
 }

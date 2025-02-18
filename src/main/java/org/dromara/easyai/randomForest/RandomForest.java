@@ -12,22 +12,22 @@ import java.util.*;
 public class RandomForest {
     private Random random = new Random();
     private Tree[] forest;
-    private double trustTh = 0.1;//信任阈值
-    private double trustPunishment = 0.1;//信任惩罚
+    private float trustTh = 0.1F;//信任阈值
+    private float trustPunishment = 0.1F;//信任惩罚
 
-    public double getTrustPunishment() {
+    public float getTrustPunishment() {
         return trustPunishment;
     }
 
-    public void setTrustPunishment(double trustPunishment) {
+    public void setTrustPunishment(float trustPunishment) {
         this.trustPunishment = trustPunishment;
     }
 
-    public double getTrustTh() {
+    public float getTrustTh() {
         return trustTh;
     }
 
-    public void setTrustTh(double trustTh) {
+    public void setTrustTh(float trustTh) {
         this.trustTh = trustTh;
     }
 
@@ -54,23 +54,23 @@ public class RandomForest {
     }
 
     public int forest(Object object) throws Exception {//随机森林识别
-        Map<Integer, Double> map = new HashMap<>();
+        Map<Integer, Float> map = new HashMap<>();
         for (int i = 0; i < forest.length; i++) {
             Tree tree = forest[i];
             TreeWithTrust treeWithTrust = tree.judge(object);
             int type = treeWithTrust.getType();
             //System.out.println(type);
-            double trust = treeWithTrust.getTrust();
+            float trust = treeWithTrust.getTrust();
             if (map.containsKey(type)) {
-                map.put(type, ArithUtil.add(map.get(type), trust));
+                map.put(type, map.get(type) + trust);
             } else {
                 map.put(type, trust);
             }
         }
         int type = 0;
-        double nub = 0;
-        for (Map.Entry<Integer, Double> entry : map.entrySet()) {
-            double myNub = entry.getValue();
+        float nub = 0;
+        for (Map.Entry<Integer, Float> entry : map.entrySet()) {
+            float myNub = entry.getValue();
             //System.out.println("type==" + entry.getKey() + ",nub==" + myNub);
             if (myNub > nub) {
                 type = entry.getKey();
@@ -87,7 +87,7 @@ public class RandomForest {
     public void init(DataTable dataTable) throws Exception {
         //一棵树属性的数量
         if (dataTable.getSize() > 4) {
-            int kNub = (int) ArithUtil.div(Math.log(dataTable.getSize()), Math.log(2));
+            int kNub = (int) ((int) (float)Math.log(dataTable.getSize()) / (float)Math.log(2));
             //int kNub = dataTable.getSize() / 2;
             // System.out.println("knNub==" + kNub);
             for (int i = 0; i < forest.length; i++) {

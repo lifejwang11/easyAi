@@ -7,7 +7,7 @@ import java.util.List;
 
 public class MyWordFeature {
     private Matrix featureMatrix;
-    private List<Double> firstFeatureList;
+    private List<Float> firstFeatureList;
 
     public Matrix getFeatureMatrix() {
         return featureMatrix;
@@ -17,11 +17,11 @@ public class MyWordFeature {
         this.featureMatrix = featureMatrix;
     }
 
-    public List<Double> getFirstFeatureList() {
+    public List<Float> getFirstFeatureList() {
         return firstFeatureList;
     }
 
-    public void setFirstFeatureList(List<Double> firstFeatureList) {
+    public void setFirstFeatureList(List<Float> firstFeatureList) {
         this.firstFeatureList = firstFeatureList;
     }
 }

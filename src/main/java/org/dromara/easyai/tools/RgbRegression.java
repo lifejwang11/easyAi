@@ -11,9 +11,9 @@ import org.dromara.easyai.matrixTools.MatrixOperation;
  * @Description rgb回归 Y = r *wr + g * wg + b* wb
  */
 public class RgbRegression extends MatrixOperation {
-    private double wr;
-    private double wg;
-    private double b;
+    private float wr;
+    private float wg;
+    private float b;
     private Matrix RG;//rg矩阵
     private Matrix B;//b矩阵
     private Matrix RGB;//rgb矩阵
@@ -67,15 +67,15 @@ public class RgbRegression extends MatrixOperation {
         this.regionNub = regionNub;
     }
 
-    public double getWr() {
+    public float getWr() {
         return wr;
     }
 
-    public double getWg() {
+    public float getWg() {
         return wg;
     }
 
-    public double getB() {
+    public float getB() {
         return b;
     }
 
@@ -87,7 +87,7 @@ public class RgbRegression extends MatrixOperation {
         xIndex = 0;
     }
 
-    public void insertRGB(double[] rgb) throws Exception {//rgb插入矩阵
+    public void insertRGB(float[] rgb) throws Exception {//rgb插入矩阵
         if (rgb.length == 3) {
             RGB.setNub(xIndex, 0, rgb[0]);
             RGB.setNub(xIndex, 1, rgb[1]);
@@ -95,7 +95,7 @@ public class RgbRegression extends MatrixOperation {
 
             RG.setNub(xIndex, 0, rgb[0]);
             RG.setNub(xIndex, 1, rgb[1]);
-            RG.setNub(xIndex, 2, 1.0);
+            RG.setNub(xIndex, 2, 1F);
 
             B.setNub(xIndex, 0, rgb[2]);
             xIndex++;

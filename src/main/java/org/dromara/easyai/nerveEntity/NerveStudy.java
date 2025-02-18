@@ -9,22 +9,22 @@ import java.util.Map;
  * @date 3:36 下午 2020/1/8
  */
 public class NerveStudy {
-    private Map<String, Double> dendrites = new HashMap<>();//上一层权重(需要取出)
-    private double threshold;//此神经元的阈值需要取出
+    private Map<String, Float> dendrites = new HashMap<>();//上一层权重(需要取出)
+    private float threshold;//此神经元的阈值需要取出
 
-    public Map<String, Double> getDendrites() {
+    public Map<String, Float> getDendrites() {
         return dendrites;
     }
 
-    public void setDendrites(Map<String, Double> dendrites) {
+    public void setDendrites(Map<String, Float> dendrites) {
         this.dendrites = dendrites;
     }
 
-    public double getThreshold() {
+    public float getThreshold() {
         return threshold;
     }
 
-    public void setThreshold(double threshold) {
+    public void setThreshold(float threshold) {
         this.threshold = threshold;
     }
 }

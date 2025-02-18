@@ -11,12 +11,12 @@ import org.dromara.easyai.i.ActiveFunction;
  */
 public class Sigmoid implements ActiveFunction {
     @Override
-    public double function(double x) {
-        return 1 / (1 + Math.exp(-x));
+    public float function(float x) {
+        return 1 / (1 + (float)Math.exp(-x));
     }
 
     @Override
-    public double functionG(double out) {
+    public float functionG(float out) {
         return out * (1 - out);
     }
 }

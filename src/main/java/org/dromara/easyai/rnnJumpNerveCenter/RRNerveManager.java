@@ -20,12 +20,12 @@ public class RRNerveManager {
     private int typeNub;//分类数量
     private int vectorDimension;//特征纵向维度
     private int maxFeatureLength;//特征最长长度
-    private double studyPoint;//词向量学习学习率
+    private float studyPoint;//词向量学习学习率
     private boolean showLog;//是否输出学习数据
     private int minLength;//最小长度
-    private double trustPowerTh = 0;//可信阈值
+    private float trustPowerTh = 0;//可信阈值
     private int rzModel;//正则模式
-    private double rzParam;//正则系数
+    private float rzParam;//正则系数
 
     public RRNerveManager(WordEmbedding wordEmbedding) {
         this.wordEmbedding = wordEmbedding;
@@ -91,7 +91,7 @@ public class RRNerveManager {
         return maxNumber;
     }
 
-    private void studyNerve(long eventId, List<SensoryNerve> sensoryNerves, List<Double> featureList, Matrix rnnMatrix, Map<Integer, Double> E, boolean isStudy, OutBack convBack, int[] storeys) throws Exception {
+    private void studyNerve(long eventId, List<SensoryNerve> sensoryNerves, List<Float> featureList, Matrix rnnMatrix, Map<Integer, Float> E, boolean isStudy, OutBack convBack, int[] storeys) throws Exception {
         if (sensoryNerves.size() == featureList.size()) {
             for (int i = 0; i < sensoryNerves.size(); i++) {
                 sensoryNerves.get(i).postMessage(eventId, featureList.get(i), isStudy, E, convBack, rnnMatrix, storeys, 0);
@@ -107,7 +107,7 @@ public class RRNerveManager {
             sentence = sentence.substring(0, maxFeatureLength);
         }
         MyWordFeature myWordFeature = wordEmbedding.getEmbedding(sentence, eventID, false);
-        List<Double> featureList = myWordFeature.getFirstFeatureList();
+        List<Float> featureList = myWordFeature.getFirstFeatureList();
         Matrix featureMatrix = myWordFeature.getFeatureMatrix();
         int[] storeys = new int[featureMatrix.getX()];
         for (int i = 0; i < storeys.length; i++) {
@@ -156,14 +156,14 @@ public class RRNerveManager {
 
     private void myStudy(int maxNumber, Map<Integer, List<String>> model, int time) throws Exception {
         int index = 0;
-        Map<Integer, Double> E = new HashMap<>();
+        Map<Integer, Float> E = new HashMap<>();
         do {
             for (Map.Entry<Integer, List<String>> entry : model.entrySet()) {
                 System.out.println("index======" + index + "," + time + "次");
                 E.clear();
                 List<String> sentence = entry.getValue();
                 int key = mapping.get(entry.getKey());
-                E.put(key, 1D);
+                E.put(key, 1f);
                 String word = sentence.get(index);
                 if (word.length() > maxFeatureLength) {
                     word = word.substring(0, maxFeatureLength);
@@ -174,9 +174,9 @@ public class RRNerveManager {
         } while (index < maxNumber);
     }
 
-    private void randomTypeStudy(MyWordFeature myWordFeature, Map<Integer, Double> E) throws Exception {
+    private void randomTypeStudy(MyWordFeature myWordFeature, Map<Integer, Float> E) throws Exception {
         Matrix featureMatrix = myWordFeature.getFeatureMatrix();
-        List<Double> firstFeatureList = myWordFeature.getFirstFeatureList();
+        List<Float> firstFeatureList = myWordFeature.getFirstFeatureList();
         int len = featureMatrix.getX();//文字长度
         Random random = new Random();
         if (len > 1) {//长度大于1才可以进行训练
@@ -191,7 +191,7 @@ public class RRNerveManager {
                 for (int i = 1; i < len; i++) {
                     list.add(i);
                 }
-                int myLen = (int) (minLength + Math.random() * (len - minLength + 1));
+                int myLen = (int) (minLength + (float)Math.random() * (len - minLength + 1));
                 storeys = new int[myLen];
                 for (int i = 1; i < myLen; i++) {
                     int index = random.nextInt(list.size());

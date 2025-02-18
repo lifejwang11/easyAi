@@ -11,14 +11,14 @@ import org.dromara.easyai.matrixTools.MatrixOperation;
  * @Description rgb回归 Y = r *wr + g * wg + b* wb
  */
 public class LinearRegression {
-    private double w1;
-    private double w2;
-    private double b;
+    private float w1;
+    private float w2;
+    private float b;
     private Matrix XY;//坐标矩阵
     private Matrix NormSequence;//内积序列矩阵
     private int xIndex = 0;//记录插入数量
     private boolean isRegression = false;//是否进行了回归
-    private double avg;//结果平均值
+    private float avg;//结果平均值
     private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public LinearRegression(int size) {//初始化rgb矩阵
@@ -32,11 +32,11 @@ public class LinearRegression {
 
     }
 
-    public void insertXY(double[] xy, double sequence) throws Exception {//rgb插入矩阵
+    public void insertXY(float[] xy, float sequence) throws Exception {//rgb插入矩阵
         if (xy.length == 2) {
             XY.setNub(xIndex, 0, xy[0]);
             XY.setNub(xIndex, 1, xy[1]);
-            XY.setNub(xIndex, 2, 1.0);
+            XY.setNub(xIndex, 2, 1.0f);
             NormSequence.setNub(xIndex, 0, sequence);
             xIndex++;
         } else {
@@ -44,14 +44,14 @@ public class LinearRegression {
         }
     }
 
-    public double getValue(double x, double y) {//获取值
+    public float getValue(float x, float y) {//获取值
         if (isRegression) {
             return w1 * x + w2 * y + b;
         }
         return avg;
     }
 
-    public double getCos(Matrix vector) throws Exception {//获取该直线与指定向量之间的余弦
+    public float getCos(Matrix vector) throws Exception {//获取该直线与指定向量之间的余弦
         Matrix matrix = new Matrix(1, 3);
         matrix.setNub(0, 0, w1);
         matrix.setNub(0, 1, w2);
@@ -80,27 +80,27 @@ public class LinearRegression {
         }
     }
 
-    public double getW1() {
+    public float getW1() {
         return w1;
     }
 
-    public void setW1(double w1) {
+    public void setW1(float w1) {
         this.w1 = w1;
     }
 
-    public double getW2() {
+    public float getW2() {
         return w2;
     }
 
-    public void setW2(double w2) {
+    public void setW2(float w2) {
         this.w2 = w2;
     }
 
-    public double getB() {
+    public float getB() {
         return b;
     }
 
-    public void setB(double b) {
+    public void setB(float b) {
         this.b = b;
     }
 }

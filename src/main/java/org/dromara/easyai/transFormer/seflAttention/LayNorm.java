@@ -24,12 +24,12 @@ public class LayNorm {//残差与归一化
     private Matrix bTa;//模型需要保存
     private Matrix power;//模型需要保存
     private Matrix myNormData;//第一步归一化后的数据
-    private final double study;//学习率
+    private final float study;//学习率
     private Matrix myFinalError;//从FNN传来的总误差
     private int number;//记录fnn传来的误差次数
     private final MatrixOperation matrixOperation;
 
-    public LayNormModel getModel() {
+    public LayNormModel getModel() throws Exception {
         LayNormModel layNormModel = new LayNormModel();
         layNormModel.setbTa(bTa.getMatrix());
         layNormModel.setPower(power.getMatrix());
@@ -41,7 +41,7 @@ public class LayNorm {//残差与归一化
         insertPower(layNormModel.getbTa(), bTa);
     }
 
-    private void insertPower(double[][] modelPower, Matrix power) throws Exception {
+    private void insertPower(float[][] modelPower, Matrix power) throws Exception {
         for (int i = 0; i < power.getX(); i++) {
             for (int j = 0; j < power.getY(); j++) {
                 power.setNub(i, j, modelPower[i][j]);
@@ -50,7 +50,7 @@ public class LayNorm {//残差与归一化
     }
 
     public LayNorm(int type, int featureDimension, CodecBlock myEncoderBlock, FirstDecoderBlock firstDecoderBlock
-            , double study, int coreNumber) throws Exception {
+            , float study, int coreNumber) throws Exception {
         this.study = study;
         this.myEncoderBlock = myEncoderBlock;
         this.type = type;
@@ -60,14 +60,14 @@ public class LayNorm {//残差与归一化
         bTa = new Matrix(1, featureDimension);
         power = new Matrix(featureDimension, featureDimension);
         Random random = new Random();
-        double sh = Math.sqrt(featureDimension);
+        float sh = (float)Math.sqrt(featureDimension);
         for (int i = 0; i < featureDimension; i++) {
-            double value = random.nextDouble() / sh;
+            float value = random.nextFloat() / sh;
             bTa.setNub(0, i, value);
         }
         for (int i = 0; i < featureDimension; i++) {
             for (int j = 0; j < featureDimension; j++) {
-                double value = random.nextDouble() / sh;
+                float value = random.nextFloat() / sh;
                 power.setNub(i, j, value);
             }
         }
@@ -77,16 +77,16 @@ public class LayNorm {//残差与归一化
         Matrix subPower = matrixOperation.matrixMulPd(errorMatrix, myData, power, false);
         Matrix sub = matrixOperation.matrixMulPd(errorMatrix, myData, power, true);
         power = matrixOperation.add(subPower, power);
-        double n = Math.sqrt(sub.getY());
-        double nt = -n / (n - 1);
+        float n = (float)Math.sqrt(sub.getY());
+        float nt = -n / (n - 1);
         Matrix subMatrix = new Matrix(1, sub.getY());
         for (int i = 0; i < sub.getY(); i++) {
-            double subValue = sub.getNumber(0, i);
-            double value = subValue * n * study + subMatrix.getNumber(0, i);
+            float subValue = sub.getNumber(0, i);
+            float value = subValue * n * study + subMatrix.getNumber(0, i);
             subMatrix.setNub(0, i, value);
             for (int j = 0; j < sub.getY(); j++) {
                 if (i != j) {
-                    double otherValue = subValue * nt * study + subMatrix.getNumber(0, j);
+                    float otherValue = subValue * nt * study + subMatrix.getNumber(0, j);
                     subMatrix.setNub(0, j, otherValue);
                 }
             }
@@ -191,10 +191,10 @@ public class LayNorm {//残差与归一化
 
     private Matrix norm(Matrix row) throws Exception {
         Matrix result = new Matrix(1, row.getY());
-        double avg = row.getAVG();//平均值
-        double sd = matrixOperation.getSdByMatrix(row, avg, 0.00001);//标准差
+        float avg = row.getAVG();//平均值
+        float sd = matrixOperation.getSdByMatrix(row, avg, 0.00001f);//标准差
         for (int i = 0; i < row.getY(); i++) {
-            double value = (row.getNumber(0, i) - avg) / sd;
+            float value = (row.getNumber(0, i) - avg) / sd;
             result.setNub(0, i, value);
         }
         return result;

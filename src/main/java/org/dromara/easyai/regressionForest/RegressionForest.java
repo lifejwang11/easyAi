@@ -13,15 +13,15 @@ import java.util.*;
  * @Description 回归森林
  */
 public class RegressionForest extends Frequency {
-    private double[] w;
+    private float[] w;
     private Matrix conditionMatrix;//条件矩阵
     private Matrix resultMatrix;//结果矩阵
     private Forest forest;
     private int featureNub;//特征数量
     private int xIndex = 0;//记录插入位置
-    private double[] results;//结果数组
-    private double min;//结果最小值
-    private double max;//结果最大值
+    private float[] results;//结果数组
+    private float min;//结果最小值
+    private float max;//结果最大值
     private Matrix pc;//需要映射的基
     private int cosSize = 20;//cos 分成几份
     private TreeMap<Integer, Forest> forestMap = new TreeMap<>();//节点列表
@@ -35,11 +35,11 @@ public class RegressionForest extends Frequency {
         this.cosSize = cosSize;
     }
 
-    public RegressionForest(int size, int featureNub, double shrinkParameter, int minGrain) throws Exception {//初始化
+    public RegressionForest(int size, int featureNub, float shrinkParameter, int minGrain) throws Exception {//初始化
         if (size > 0 && featureNub > 0) {
             this.featureNub = featureNub;
-            w = new double[featureNub];
-            results = new double[size];
+            w = new float[featureNub];
+            results = new float[size];
             conditionMatrix = new Matrix(size, featureNub);
             resultMatrix = new Matrix(size, 1);
             createG();
@@ -53,13 +53,13 @@ public class RegressionForest extends Frequency {
         }
     }
 
-    public double getDist(Matrix featureMatrix, double result) throws Exception {//获取特征误差结果
+    public float getDist(Matrix featureMatrix, float result) throws Exception {//获取特征误差结果
         Forest forestFinish = getRegion(forest, featureMatrix);
         //计算误差
-        double[] w = forestFinish.getW();
-        double sigma = 0;
+        float[] w = forestFinish.getW();
+        float sigma = 0;
         for (int i = 0; i < w.length; i++) {
-            double nub;
+            float nub;
             if (i < w.length - 1) {
                 nub = w[i] * featureMatrix.getNumber(0, i);
             } else {
@@ -67,12 +67,12 @@ public class RegressionForest extends Frequency {
             }
             sigma = sigma + nub;
         }
-        return Math.abs(result - sigma);
+        return (float)Math.abs(result - sigma);
     }
 
     private Forest getRegion(Forest forest, Matrix matrix) throws Exception {
-        double median = forest.getMedian();
-        double result = forest.getMappingFeature(matrix);
+        float median = forest.getMedian();
+        float result = forest.getMappingFeature(matrix);
         if (result > median && forest.getForestRight() != null) {//向右走
             forest = forest.getForestRight();
         } else if (result <= median && forest.getForestLeft() != null) {//向左走
@@ -98,19 +98,19 @@ public class RegressionForest extends Frequency {
     }
 
     private void createG() throws Exception {//生成新基
-        double[] cg = new double[featureNub - 1];
+        float[] cg = new float[featureNub - 1];
         Random random = new Random();
-        double sigma = 0;
+        float sigma = 0;
         for (int i = 0; i < featureNub - 1; i++) {
-            double rm = random.nextDouble();
+            float rm = random.nextFloat();
             cg[i] = rm;
-            sigma = sigma + Math.pow(rm, 2);
+            sigma = sigma + (float)Math.pow(rm, 2);
         }
-        double cosOne = 1.0D / cosSize;
-        double[] ag = new double[cosSize - 1];//装一个维度内所有角度的余弦值
+        float cosOne = 1.0f / cosSize;
+        float[] ag = new float[cosSize - 1];//装一个维度内所有角度的余弦值
         for (int i = 0; i < cosSize - 1; i++) {
-            double cos = cosOne * (i + 1);
-            ag[i] = Math.sqrt(sigma / (1 / Math.pow(cos, 2) - 1));
+            float cos = cosOne * (i + 1);
+            ag[i] = (float)Math.sqrt(sigma / (1 / (float)Math.pow(cos, 2) - 1));
         }
         int x = (cosSize - 1) * featureNub;
         pc = new Matrix(x, featureNub);
@@ -153,14 +153,14 @@ public class RegressionForest extends Frequency {
         }
     }
 
-    public void insertFeature(double[] feature, double result) throws Exception {//插入数据
+    public void insertFeature(float[] feature, float result) throws Exception {//插入数据
         if (feature.length == featureNub - 1) {
             for (int i = 0; i < featureNub; i++) {
                 if (i < featureNub - 1) {
                     conditionMatrix.setNub(xIndex, i, feature[i]);
                 } else {
                     results[xIndex] = result;
-                    conditionMatrix.setNub(xIndex, i, 1.0);
+                    conditionMatrix.setNub(xIndex, i, 1.0f);
                     resultMatrix.setNub(xIndex, 0, result);
                 }
             }
@@ -174,7 +174,7 @@ public class RegressionForest extends Frequency {
         if (forest != null) {
             //计算方差
             forest.setResultVariance(variance(results));
-            double[] limit = getLimit(results);
+            float[] limit = getLimit(results);
             min = limit[0];
             max = limit[1];
             start(forest);
@@ -200,8 +200,8 @@ public class RegressionForest extends Frequency {
     private void pruning() {//剪枝
         //先获取当前最大id
         int max = forestMap.lastKey();
-        int layersNub = (int) (Math.log(max) / Math.log(2));//当前的层数
-        int lastMin = (int) Math.pow(2, layersNub);//最后一层最小的id
+        int layersNub = (int) ((float)Math.log(max) / (float)Math.log(2));//当前的层数
+        int lastMin = (int) (float)Math.pow(2, layersNub);//最后一层最小的id
         if (layersNub > 1) {//先遍历最后一层
             for (Map.Entry<Integer, Forest> entry : forestMap.entrySet()) {
                 if (entry.getKey() >= lastMin) {
@@ -212,8 +212,8 @@ public class RegressionForest extends Frequency {
         }
         //每一层从下到上进行剪枝
         for (int i = layersNub - 1; i > 0; i--) {
-            int min = (int) Math.pow(2, i);//最后一层最小的id
-            int maxNub = (int) Math.pow(2, i + 1);
+            int min = (int) (float)Math.pow(2, i);//最后一层最小的id
+            int maxNub = (int) (float)Math.pow(2, i + 1);
             for (Map.Entry<Integer, Forest> entry : forestMap.entrySet()) {
                 int key = entry.getKey();
                 if (key >= min && key < maxNub) {//在范围内，进行剪枝
@@ -260,7 +260,7 @@ public class RegressionForest extends Frequency {
         Matrix conditionMatrix = forest.getConditionMatrix();
         Matrix resultMatrix = forest.getResultMatrix();
         Matrix ws = matrixOperation.getLinearRegression(conditionMatrix, resultMatrix);
-        double[] w = forest.getW();
+        float[] w = forest.getW();
         for (int i = 0; i < ws.getX(); i++) {
             w[i] = ws.getNumber(i, 0);
         }

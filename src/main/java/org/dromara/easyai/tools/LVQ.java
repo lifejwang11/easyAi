@@ -16,7 +16,7 @@ public class LVQ {
     private int typeNub;//原型聚类个数,即分类个数(需要模型返回)
     private MatrixBody[] model;//原型向量(需要模型返回)
     private final List<MatrixBody> matrixList = new ArrayList<>();
-    private final double studyPoint;//量化学习率
+    private final float studyPoint;//量化学习率
     private int length;//向量长度(需要返回)
     private boolean isReady = false;
     private final int lvqNub;
@@ -50,7 +50,7 @@ public class LVQ {
         return length;
     }
 
-    public LVQ(int typeNub, int lvqNub, double studyPoint) {
+    public LVQ(int typeNub, int lvqNub, float studyPoint) {
         this.typeNub = typeNub;
         this.lvqNub = lvqNub;
         this.studyPoint = studyPoint;
@@ -86,13 +86,13 @@ public class LVQ {
         for (MatrixBody matrixBody : matrixList) {
             Matrix matrix = matrixBody.getMatrix();//特征向量
             long type = matrixBody.getId();//类别
-            double distEnd = 0;
+            float distEnd = 0;
             int id = 0;
             for (int i = 0; i < typeNub; i++) {
                 MatrixBody modelBody = model[i];
                 Matrix modelMatrix = modelBody.getMatrix();
                 //修正矩阵与原矩阵的范数差
-                double dist = vectorEqual(modelMatrix, matrix);
+                float dist = vectorEqual(modelMatrix, matrix);
                 if (distEnd == 0 || dist < distEnd) {
                     id = modelBody.getId();
                     distEnd = dist;
@@ -107,7 +107,7 @@ public class LVQ {
     }
 
     //比较两个向量之间的范数差
-    public double vectorEqual(Matrix matrix1, Matrix matrix2) throws Exception {
+    public float vectorEqual(Matrix matrix1, Matrix matrix2) throws Exception {
         Matrix matrix = matrixOperation.sub(matrix1, matrix2);
         return matrixOperation.getNorm(matrix);
     }
@@ -132,7 +132,7 @@ public class LVQ {
             matrixBody.setMatrix(matrix);
             matrixBody.setId(i);
             for (int j = 0; j < length; j++) {
-                matrix.setNub(0, j, random.nextDouble());
+                matrix.setNub(0, j, random.nextFloat());
             }
             model[i] = matrixBody;
         }

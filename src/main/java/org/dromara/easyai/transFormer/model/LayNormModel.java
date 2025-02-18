@@ -2,22 +2,22 @@ package org.dromara.easyai.transFormer.model;
 
 
 public class LayNormModel {
-    private double[][] bTa;//模型需要保存
-    private double[][] power;//模型需要保存
+    private float[][] bTa;//模型需要保存
+    private float[][] power;//模型需要保存
 
-    public double[][] getbTa() {
+    public float[][] getbTa() {
         return bTa;
     }
 
-    public void setbTa(double[][] bTa) {
+    public void setbTa(float[][] bTa) {
         this.bTa = bTa;
     }
 
-    public double[][] getPower() {
+    public float[][] getPower() {
         return power;
     }
 
-    public void setPower(double[][] power) {
+    public void setPower(float[][] power) {
         this.power = power;
     }
 }

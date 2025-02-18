@@ -1,9 +1,9 @@
 package org.dromara.easyai.transFormer.model;
 
 public class QKVModel {
-    private double[][] Q;
-    private double[][] K;
-    private double[][] V;
+    private float[][] Q;
+    private float[][] K;
+    private float[][] V;
     private int selfID;
 
     public int getSelfID() {
@@ -14,27 +14,27 @@ public class QKVModel {
         this.selfID = selfID;
     }
 
-    public double[][] getQ() {
+    public float[][] getQ() {
         return Q;
     }
 
-    public void setQ(double[][] q) {
+    public void setQ(float[][] q) {
         Q = q;
     }
 
-    public double[][] getK() {
+    public float[][] getK() {
         return K;
     }
 
-    public void setK(double[][] k) {
+    public void setK(float[][] k) {
         K = k;
     }
 
-    public double[][] getV() {
+    public float[][] getV() {
         return V;
     }
 
-    public void setV(double[][] v) {
+    public void setV(float[][] v) {
         V = v;
     }
 }

@@ -15,7 +15,7 @@ public class SelfAttention {//自注意力层
     private Matrix powerV;//v权重矩阵
     private final int wordVectorDimension;//特征矩阵维度
     private final int depth;//深度
-    private final double studyPoint;//学习率
+    private final float studyPoint;//学习率
     private final int selfID;
     private final boolean encoder;//是否为编码器模块
     private final MatrixOperation matrixOperation;
@@ -24,7 +24,7 @@ public class SelfAttention {//自注意力层
         return selfID;
     }
 
-    public SelfAttention(double studyPoint, int depth, int wordVectorDimension, int selfID, boolean encoder
+    public SelfAttention(float studyPoint, int depth, int wordVectorDimension, int selfID, boolean encoder
             , int coreNumber) throws Exception {
         matrixOperation = new MatrixOperation(coreNumber);
         this.studyPoint = studyPoint;
@@ -43,7 +43,7 @@ public class SelfAttention {//自注意力层
         insertPower(qkvModel.getV(), powerV);
     }
 
-    private void insertPower(double[][] modelPower, Matrix power) throws Exception {
+    private void insertPower(float[][] modelPower, Matrix power) throws Exception {
         for (int i = 0; i < power.getX(); i++) {
             for (int j = 0; j < power.getY(); j++) {
                 power.setNub(i, j, modelPower[i][j]);
@@ -51,7 +51,7 @@ public class SelfAttention {//自注意力层
         }
     }
 
-    public QKVModel getModel() {
+    public QKVModel getModel() throws Exception {
         QKVModel qkvModel = new QKVModel();
         qkvModel.setQ(powerQ.getMatrix());
         qkvModel.setK(powerK.getMatrix());
@@ -115,7 +115,7 @@ public class SelfAttention {//自注意力层
         int y = matrix.getY();
         for (int i = 0; i < x; i++) {
             for (int j = i + 1; j < y; j++) {
-                matrix.setNub(i, j, -1000D);
+                matrix.setNub(i, j, -1000f);
             }
         }
     }
@@ -134,7 +134,7 @@ public class SelfAttention {//自注意力层
         Matrix v = matrixOperation.mulMatrix(kvFeature, powerV);
         Matrix kt = matrixOperation.transPosition(k);//k转置
         Matrix qkt = matrixOperation.mulMatrix(q, kt);
-        matrixOperation.mathDiv(qkt, Math.sqrt(wordVectorDimension));
+        matrixOperation.mathDiv(qkt, (float)Math.sqrt(wordVectorDimension));
         //做蒙版
         if (depth == 1 && !encoder) {//第一层解码器 需要先做蒙版操作
             mask(qkt);
@@ -150,27 +150,6 @@ public class SelfAttention {//自注意力层
             featureBody.qkt = qkt;
         }
         return result;
-    }
-
-    private double getRowSoftMaxSigma(Matrix row) throws Exception {
-        double sigma = 0;
-        for (int i = 0; i < row.getY(); i++) {
-            double value = row.getNumber(0, i);
-            sigma = Math.exp(value) + sigma;
-        }
-        return sigma;
-    }
-
-    private void softMax(Matrix matrix) throws Exception {//进行softMax处理
-        for (int i = 0; i < matrix.getX(); i++) {
-            Matrix row = matrix.getRow(i);
-            double sigma = getRowSoftMaxSigma(row);
-            for (int j = 0; j < matrix.getY(); j++) {
-                double self = row.getNumber(0, j);
-                double eSelf = Math.exp(self);
-                matrix.setNub(i, j, eSelf / sigma);
-            }
-        }
     }
 
     public EventBody sendMatrixFeature(long eventID, boolean isStudy, Matrix feature, Matrix encoderFeature) throws Exception {
@@ -191,7 +170,7 @@ public class SelfAttention {//自注意力层
         Matrix power = new Matrix(wordVectorDimension, wordVectorDimension);
         for (int i = 0; i < wordVectorDimension; i++) {
             for (int j = 0; j < wordVectorDimension; j++) {
-                power.setNub(i, j, random.nextDouble() / wordVectorDimension);
+                power.setNub(i, j, random.nextFloat() / wordVectorDimension);
             }
         }
         return power;

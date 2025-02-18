@@ -99,7 +99,7 @@ public class Picture {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 int pixel = bi.getRGB(j, i);// 下面三行代码将一个数字转换为RGB数字
-                double grab = dimensionReduction(pixel);//抽取灰度
+                float grab = dimensionReduction(pixel);//抽取灰度
                 matrix.setNub(i, j, grab);
             }
         }
@@ -144,20 +144,20 @@ public class Picture {
                 int r = (pixel & 0xff0000) >> 16;
                 int g = (pixel & 0xff00) >> 8;
                 int b = (pixel & 0xff);
-                matrixR.setNub(i, j, r / 255D);
-                matrixG.setNub(i, j, g / 255D);
-                matrixB.setNub(i, j, b / 255D);
-                matrixH.setNub(i, j, ((r * 38 + g * 75 + b * 15) >> 7) / 255D);
+                matrixR.setNub(i, j, r / 255f);
+                matrixG.setNub(i, j, g / 255f);
+                matrixB.setNub(i, j, b / 255f);
+                matrixH.setNub(i, j, ((r * 38 + g * 75 + b * 15) >> 7) / 255f);
             }
         }
         return threeChannelMatrix;
     }
 
-    private static double dimensionReduction(int pixel) {//提取灰度进行降维
+    private static float dimensionReduction(int pixel) {//提取灰度进行降维
         int r = (pixel & 0xff0000) >> 16;//R
         int g = (pixel & 0xff00) >> 8;//G
         int b = (pixel & 0xff);//B
-        double gray = (r * 38 + g * 75 + b * 15) >> 7;
+        float gray = (r * 38 + g * 75 + b * 15) >> 7;
         return gray;
     }
 

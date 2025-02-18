@@ -2,7 +2,7 @@ package org.dromara.easyai.recommend;
 
 public class CodeBody {
     private int id;
-    private double power;
+    private float power;
 
     public int getId() {
         return id;
@@ -12,11 +12,11 @@ public class CodeBody {
         this.id = id;
     }
 
-    public double getPower() {
+    public float getPower() {
         return power;
     }
 
-    public void setPower(double power) {
+    public void setPower(float power) {
         this.power = power;
     }
 }

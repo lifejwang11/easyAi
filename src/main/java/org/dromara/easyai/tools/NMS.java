@@ -11,9 +11,9 @@ import java.util.*;
  * @Description
  */
 public class NMS {
-    private final double iouTh;//iou阈值
+    private final float iouTh;//iou阈值
 
-    public NMS(double iouTh) {
+    public NMS(float iouTh) {
         this.iouTh = iouTh;
     }
 
@@ -29,7 +29,7 @@ public class NMS {
         return pixels;
     }
 
-    public double getSRatio(Box box1, Box box2, boolean first) {
+    public float getSRatio(Box box1, Box box2, boolean first) {
         IouMessage iouMessage = getMyIou(box1, box2);
         if (first) {
             return iouMessage.intersectS / iouMessage.s1;
@@ -42,22 +42,22 @@ public class NMS {
         int minY1 = box1.getY();
         int maxX1 = minX1 + box1.getxSize();
         int maxY1 = minY1 + box1.getySize();
-        double s1 = box1.getxSize() * box1.getySize();
+        float s1 = box1.getxSize() * box1.getySize();
         int minX2 = box2.getX();
         int minY2 = box2.getY();
         int maxX2 = minX2 + box2.getxSize();
         int maxY2 = minY2 + box2.getySize();
-        double s2 = box2.getxSize() * box2.getySize();
-        double[] row = new double[]{minX1, maxX1, minX2, maxX2};
-        double[] col = new double[]{minY1, maxY1, minY2, maxY2};
+        float s2 = box2.getxSize() * box2.getySize();
+        float[] row = new float[]{minX1, maxX1, minX2, maxX2};
+        float[] col = new float[]{minY1, maxY1, minY2, maxY2};
         Arrays.sort(row);
         Arrays.sort(col);
-        double rowSub = row[3] - row[0];
-        double colSub = col[3] - col[0];
-        double width = box1.getySize() + box2.getySize();
-        double height = box1.getxSize() + box2.getxSize();
-        double widthSub = width - colSub;
-        double heightSub = height - rowSub;
+        float rowSub = row[3] - row[0];
+        float colSub = col[3] - col[0];
+        float width = box1.getySize() + box2.getySize();
+        float height = box1.getxSize() + box2.getxSize();
+        float widthSub = width - colSub;
+        float heightSub = height - rowSub;
         if (widthSub < 0) {
             widthSub = 0;
         }
@@ -71,11 +71,11 @@ public class NMS {
         return iouMessage;
     }
 
-    private boolean isOne(Box box1, Box box2, double iouTh) {
+    private boolean isOne(Box box1, Box box2, float iouTh) {
         boolean isOne = false;
         IouMessage iouMessage = getMyIou(box1, box2);
-        double mergeS = iouMessage.s1 + iouMessage.s2 - iouMessage.intersectS;
-        double iou = iouMessage.intersectS / mergeS;
+        float mergeS = iouMessage.s1 + iouMessage.s2 - iouMessage.intersectS;
+        float iou = iouMessage.intersectS / mergeS;
         if (iou > iouTh) {
             isOne = true;
         }
@@ -111,8 +111,8 @@ public class NMS {
     }
 
     static class IouMessage {
-        double intersectS;
-        double s1;
-        double s2;
+        float intersectS;
+        float s1;
+        float s2;
     }
 }

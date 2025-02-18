@@ -14,14 +14,14 @@ import java.util.List;
  */
 public class WordBack implements OutBack {
     private int id;
-    private double out = -2;
+    private float out = -2;
 
     public void clear() {
         out = -2;
         id = 0;
     }
 
-    public double getOut() {
+    public float getOut() {
         return out;
     }
 
@@ -30,7 +30,7 @@ public class WordBack implements OutBack {
     }
 
     @Override
-    public void getBack(double out, int id, long eventId) {
+    public void getBack(float out, int id, long eventId) {
         if (out > this.out) {
             this.out = out;
             this.id = id;
@@ -38,7 +38,7 @@ public class WordBack implements OutBack {
     }
 
     @Override
-    public void getSoftMaxBack(long eventId, List<Double> softMax) {
+    public void getSoftMaxBack(long eventId, List<Float> softMax) {
 
     }
 
@@ -54,6 +54,6 @@ public class WordBack implements OutBack {
     }
 
     @Override
-    public void getWordVector(int id, double w) {
+    public void getWordVector(int id, float w) {
     }
 }

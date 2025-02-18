@@ -4,7 +4,7 @@ import java.util.List;
 
 public class Trust {
     private List<Integer> keys;//结果id
-    private double trust;//信任度
+    private float trust;//信任度
 
     public List<Integer> getKeys() {
         return keys;
@@ -14,11 +14,11 @@ public class Trust {
         this.keys = keys;
     }
 
-    public double getTrust() {
+    public float getTrust() {
         return trust;
     }
 
-    public void setTrust(double trust) {
+    public void setTrust(float trust) {
         this.trust = trust;
     }
 }

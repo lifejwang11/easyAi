@@ -29,11 +29,11 @@ public class ThreeChannelMatrix {
         this.y = y;
     }
 
-    public double getDist(ThreeChannelMatrix th) throws Exception {
+    public float getDist(ThreeChannelMatrix th) throws Exception {
         if (th.getX() == x && th.getY() == y) {
-            double subR = matrixOperation.getEDistByMatrix(matrixR, th.getMatrixR());
-            double subG = matrixOperation.getEDistByMatrix(matrixG, th.getMatrixG());
-            double subB = matrixOperation.getEDistByMatrix(matrixB, th.getMatrixB());
+            float subR = matrixOperation.getEDistByMatrix(matrixR, th.getMatrixR());
+            float subG = matrixOperation.getEDistByMatrix(matrixG, th.getMatrixG());
+            float subB = matrixOperation.getEDistByMatrix(matrixB, th.getMatrixB());
             return (subR + subB + subG) / 3;
         } else {
             throw new Exception("图像尺寸大小不匹配，本图像尺寸x是：" + x + ",y:" + y + "。待匹配尺寸图像 x:" + th.getX() +
@@ -41,33 +41,33 @@ public class ThreeChannelMatrix {
         }
     }
 
-    public void grayscaleScale(double toR, double toG, double toB) throws Exception {//灰度缩放
+    public void grayscaleScale(float toR, float toG, float toB) throws Exception {//灰度缩放
         MatrixOperation matrixOperation = new MatrixOperation();
-        double avgR = matrixR.getAVG();
-        double avgG = matrixG.getAVG();
-        double avgB = matrixB.getAVG();
-        double rk = toR / avgR;
-        double gk = toG / avgG;
-        double bk = toB / avgB;
+        float avgR = matrixR.getAVG();
+        float avgG = matrixG.getAVG();
+        float avgB = matrixB.getAVG();
+        float rk = toR / avgR;
+        float gk = toG / avgG;
+        float bk = toB / avgB;
         matrixOperation.mathMul(matrixR, rk);
         matrixOperation.mathMul(matrixG, gk);
         matrixOperation.mathMul(matrixB, bk);
     }
 
     //生成一个高斯核
-    private Matrix createGaussianKern(double sd, int kerSize) throws Exception {
-        double a = 1 / (2 * Math.PI * Math.pow(sd, 2));
+    private Matrix createGaussianKern(float sd, int kerSize) throws Exception {
+        float a = (float) (1 / (2 * (float)Math.PI * (float)Math.pow(sd, 2)));
         Matrix matrix = new Matrix(kerSize, kerSize);
         int half = kerSize / 2;
         for (int i = 0; i < kerSize; i++) {
             for (int j = 0; j < kerSize; j++) {
                 int xIndex = i - half;
                 int yIndex = j - half;
-                double b = Math.exp(-(Math.pow(xIndex, 2) + Math.pow(yIndex, 2)) / (2 * Math.pow(sd, 2)));
+                float b = (float)Math.exp(-((float)Math.pow(xIndex, 2) + (float)Math.pow(yIndex, 2)) / (2 * (float)Math.pow(sd, 2)));
                 matrix.setNub(i, j, a * b);
             }
         }
-        double sigma = matrix.getSigma();
+        float sigma = matrix.getSigma();
         matrixOperation.mathDiv(matrix, sigma);
         return matrix;
     }
@@ -76,14 +76,14 @@ public class ThreeChannelMatrix {
         Matrix matrix = new Matrix(x, y);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                double value = (matrixR.getNumber(i, j) + matrixG.getNumber(i, j) + matrixB.getNumber(i, j)) / 3D;
+                float value = (matrixR.getNumber(i, j) + matrixG.getNumber(i, j) + matrixB.getNumber(i, j)) / 3F;
                 matrix.setNub(i, j, value);
             }
         }
         return matrix;
     }
 
-    public ThreeChannelMatrix gaussianVague(double sd, int kerSize, boolean scaleWidth, double scaleSize) throws Exception {//高斯模糊
+    public ThreeChannelMatrix gaussianVague(float sd, int kerSize, boolean scaleWidth, float scaleSize) throws Exception {//高斯模糊
         if (kerSize % 2 != 1) {
             throw new Exception("高斯核大小必须为奇数");
         }
@@ -104,13 +104,13 @@ public class ThreeChannelMatrix {
         return vague;
     }
 
-    private double getConv(Matrix conv, Matrix gaussianMatrix) throws Exception {
+    private float getConv(Matrix conv, Matrix gaussianMatrix) throws Exception {
         int x = gaussianMatrix.getX();
         int y = gaussianMatrix.getY();
-        double sigma = 0;
+        float sigma = 0;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                double value = conv.getNumber(i, j) * gaussianMatrix.getNumber(i, j);
+                float value = conv.getNumber(i, j) * gaussianMatrix.getNumber(i, j);
                 sigma = sigma + value;
             }
         }
@@ -125,7 +125,7 @@ public class ThreeChannelMatrix {
         for (int i = half; i < x - half; i++) {
             for (int j = half; j < y - half; j++) {
                 Matrix conv = matrix.getSonOfMatrix(i - half, j - half, kerSize, kerSize);
-                double value = getConv(conv, gaussianMatrix);
+                float value = getConv(conv, gaussianMatrix);
                 convMatrix.setNub(i - half, j - half, value);
             }
         }
@@ -136,7 +136,7 @@ public class ThreeChannelMatrix {
         Matrix addMatrix = new Matrix(x, y);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                double value = matrixR.getNumber(i, j) + matrixG.getNumber(i, j) + matrixB.getNumber(i, j);
+                float value = matrixR.getNumber(i, j) + matrixG.getNumber(i, j) + matrixB.getNumber(i, j);
                 addMatrix.setNub(i, j, value);
             }
         }
@@ -150,26 +150,26 @@ public class ThreeChannelMatrix {
     }
 
     private void standardizationMatrix(Matrix matrix) throws Exception {
-        double avg = matrix.getAVG();
-        double sigma = 0;
-        double size = x * y;
+        float avg = matrix.getAVG();
+        float sigma = 0;
+        float size = x * y;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                sigma = sigma + Math.pow(matrix.getNumber(i, j) - avg, 2);
+                sigma = sigma + (float)Math.pow(matrix.getNumber(i, j) - avg, 2);
             }
         }
         sigma = sigma / size;//方差
-        double b = Math.sqrt(sigma);//标准差
+        float b = (float)Math.sqrt(sigma);//标准差
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                double value = (matrix.getNumber(i, j) - avg) / b;
+                float value = (matrix.getNumber(i, j) - avg) / b;
                 matrix.setNub(i, j, value);
             }
         }
     }
 
-    public ThreeChannelMatrix scale(boolean scaleWidth, double size) throws Exception {//缩放图像
-        double value;
+    public ThreeChannelMatrix scale(boolean scaleWidth, float size) throws Exception {//缩放图像
+        float value;
         if (scaleWidth) {//将宽度等比缩放至指定尺寸
             value = y / size;
         } else {//将高度等比缩放至指定尺寸
@@ -200,7 +200,7 @@ public class ThreeChannelMatrix {
         return scaleMatrix;
     }
 
-    public void add(double nub, boolean add) throws Exception {//对rgb矩阵曝光进行处理
+    public void add(float nub, boolean add) throws Exception {//对rgb矩阵曝光进行处理
         if (add) {//加数值
             matrixOperation.mathAdd(matrixR, nub);
             matrixOperation.mathAdd(matrixG, nub);
@@ -219,7 +219,7 @@ public class ThreeChannelMatrix {
     }
 
     private void center(Matrix matrix) throws Exception {
-        double avg = matrix.getAVG();
+        float avg = matrix.getAVG();
         matrixOperation.mathSub(matrix, avg);
     }
 

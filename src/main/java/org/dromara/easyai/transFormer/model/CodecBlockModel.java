@@ -6,8 +6,8 @@ import java.util.List;
 public class CodecBlockModel {
     private MultiSelfAttentionModel multiSelfAttentionModel;//注意力层model
     private LayNormModel attentionLayNormModel;//残差1层model
-    private List<double[][]> fistNervesModel;//FNN层第一层model
-    private List<double[][]> secondNervesModel;//FNN层第二层model
+    private List<float[][]> fistNervesModel;//FNN层第一层model
+    private List<float[][]> secondNervesModel;//FNN层第二层model
     private LayNormModel lineLayNormModel;//残差层最后2层model
 
     public MultiSelfAttentionModel getMultiSelfAttentionModel() {
@@ -26,19 +26,19 @@ public class CodecBlockModel {
         this.attentionLayNormModel = attentionLayNormModel;
     }
 
-    public List<double[][]> getFistNervesModel() {
+    public List<float[][]> getFistNervesModel() {
         return fistNervesModel;
     }
 
-    public void setFistNervesModel(List<double[][]> fistNervesModel) {
+    public void setFistNervesModel(List<float[][]> fistNervesModel) {
         this.fistNervesModel = fistNervesModel;
     }
 
-    public List<double[][]> getSecondNervesModel() {
+    public List<float[][]> getSecondNervesModel() {
         return secondNervesModel;
     }
 
-    public void setSecondNervesModel(List<double[][]> secondNervesModel) {
+    public void setSecondNervesModel(List<float[][]> secondNervesModel) {
         this.secondNervesModel = secondNervesModel;
     }
 

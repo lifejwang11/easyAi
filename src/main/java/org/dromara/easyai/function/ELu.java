@@ -10,23 +10,23 @@ import org.dromara.easyai.i.ActiveFunction;
  * @Description
  */
 public class ELu implements ActiveFunction {
-    private final double a;
+    private final float a;
 
-    public ELu(double a) {
+    public ELu(float a) {
         this.a = a;
     }
 
     @Override
-    public double function(double x) {
+    public float function(float x) {
         if (x > 0) {
             return x;
         } else {
-            return a * (Math.exp(x) - 1);
+            return (float) (a * ((float)Math.exp(x) - 1));
         }
     }
 
     @Override
-    public double functionG(double out) {
+    public float functionG(float out) {
         if (out > 0) {
             return 1;
         } else {

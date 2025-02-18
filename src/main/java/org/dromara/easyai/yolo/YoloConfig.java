@@ -7,17 +7,17 @@ public class YoloConfig {
     private int windowHeight = 140;//检测窗口高
     private int typeNub = 10;//类别数量
     private int hiddenNerveNub = 16;//线性层隐层神经元数量
-    private double lineStudy = 0.01;//线性层学习率
+    private float lineStudy = 0.01f;//线性层学习率
     private int kernelSize = 3;//卷积核尺寸
     private boolean showLog = false;//是否打印学习过程中的log
-    private double convStudy = 0.01;//卷积层学习率
+    private float convStudy = 0.01f;//卷积层学习率
     private int enhance = 1;//数据增强
-    private double iouTh = 0.05;//合并框交并比阈值
-    private double containIouTh = 0.15;//是否包含样本交并比阈值
-    private double pth = 0.4;//可信概率阈值
-    private double stepReduce = 0.25;//训练步长收缩系数
-    private double checkStepReduce = 0.5;//检测步长收缩系数
-    private double regular = 0;//正则系数
+    private float iouTh = 0.05f;//合并框交并比阈值
+    private float containIouTh = 0.15f;//是否包含样本交并比阈值
+    private float pth = 0.4f;//可信概率阈值
+    private float stepReduce = 0.25f;//训练步长收缩系数
+    private float checkStepReduce = 0.5f;//检测步长收缩系数
+    private float regular = 0;//正则系数
     private int regularModel = RZ.NOT_RZ;//正则模式
     private int coreNumber = 1;//是否使用多核并行计算进行提速
 
@@ -37,51 +37,51 @@ public class YoloConfig {
         this.regularModel = regularModel;
     }
 
-    public double getStepReduce() {
+    public float getStepReduce() {
         return stepReduce;
     }
 
-    public void setStepReduce(double stepReduce) {
+    public void setStepReduce(float stepReduce) {
         this.stepReduce = stepReduce;
     }
 
-    public double getRegular() {
+    public float getRegular() {
         return regular;
     }
 
-    public void setRegular(double regular) {
+    public void setRegular(float regular) {
         this.regular = regular;
     }
 
-    public double getCheckStepReduce() {
+    public float getCheckStepReduce() {
         return checkStepReduce;
     }
 
-    public void setCheckStepReduce(double checkStepReduce) {
+    public void setCheckStepReduce(float checkStepReduce) {
         this.checkStepReduce = checkStepReduce;
     }
 
-    public double getPth() {
+    public float getPth() {
         return pth;
     }
 
-    public void setPth(double pth) {
+    public void setPth(float pth) {
         this.pth = pth;
     }
 
-    public double getContainIouTh() {
+    public float getContainIouTh() {
         return containIouTh;
     }
 
-    public void setContainIouTh(double containIouTh) {
+    public void setContainIouTh(float containIouTh) {
         this.containIouTh = containIouTh;
     }
 
-    public double getIouTh() {
+    public float getIouTh() {
         return iouTh;
     }
 
-    public void setIouTh(double iouTh) {
+    public void setIouTh(float iouTh) {
         this.iouTh = iouTh;
     }
 
@@ -134,11 +134,11 @@ public class YoloConfig {
         this.hiddenNerveNub = hiddenNerveNub;
     }
 
-    public double getLineStudy() {
+    public float getLineStudy() {
         return lineStudy;
     }
 
-    public void setLineStudy(double lineStudy) {
+    public void setLineStudy(float lineStudy) {
         this.lineStudy = lineStudy;
     }
 
@@ -150,11 +150,11 @@ public class YoloConfig {
         this.showLog = showLog;
     }
 
-    public double getConvStudy() {
+    public float getConvStudy() {
         return convStudy;
     }
 
-    public void setConvStudy(double convStudy) {
+    public void setConvStudy(float convStudy) {
         this.convStudy = convStudy;
     }
 }

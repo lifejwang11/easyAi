@@ -4,11 +4,11 @@ package org.dromara.easyai.yolo;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 
 public class YoloMessage {
-    private double distX;
-    private double distY;
-    private double width;
-    private double height;
-    private double trust;
+    private float distX;
+    private float distY;
+    private float width;
+    private float height;
+    private float trust;
     private int mappingID;
     private ThreeChannelMatrix pic;
     private TypeBody typeBody;
@@ -46,43 +46,43 @@ public class YoloMessage {
         this.pic = pic;
     }
 
-    public double getTrust() {
+    public float getTrust() {
         return trust;
     }
 
-    public void setTrust(double trust) {
+    public void setTrust(float trust) {
         this.trust = trust;
     }
 
-    public double getWidth() {
+    public float getWidth() {
         return width;
     }
 
-    public void setWidth(double width) {
+    public void setWidth(float width) {
         this.width = width;
     }
 
-    public double getHeight() {
+    public float getHeight() {
         return height;
     }
 
-    public void setHeight(double height) {
+    public void setHeight(float height) {
         this.height = height;
     }
 
-    public double getDistX() {
+    public float getDistX() {
         return distX;
     }
 
-    public void setDistX(double distX) {
+    public void setDistX(float distX) {
         this.distX = distX;
     }
 
-    public double getDistY() {
+    public float getDistY() {
         return distY;
     }
 
-    public void setDistY(double distY) {
+    public void setDistY(float distY) {
         this.distY = distY;
     }
 }

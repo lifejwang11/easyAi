@@ -13,10 +13,10 @@ import java.util.List;
  * @Description
  */
 public class WordMatrix implements OutBack {
-    private final double[] vector;
+    private final float[] vector;
 
     public WordMatrix(int size) {
-        vector = new double[size];
+        vector = new float[size];
     }
 
     public Matrix getVector() throws Exception {
@@ -27,21 +27,21 @@ public class WordMatrix implements OutBack {
         return matrix;
     }
 
-    public List<Double> getList() {
-        List<Double> list = new ArrayList<>();
-        for (double v : vector) {
+    public List<Float> getList() {
+        List<Float> list = new ArrayList<>();
+        for (float v : vector) {
             list.add(v);
         }
         return list;
     }
 
     @Override
-    public void getBack(double out, int id, long eventId) {
+    public void getBack(float out, int id, long eventId) {
 
     }
 
     @Override
-    public void getSoftMaxBack(long eventId, List<Double> softMax) {
+    public void getSoftMaxBack(long eventId, List<Float> softMax) {
 
     }
 
@@ -58,7 +58,7 @@ public class WordMatrix implements OutBack {
     }
 
     @Override
-    public void getWordVector(int id, double w) {
+    public void getWordVector(int id, float w) {
         vector[id - 1] = w;
     }
 }

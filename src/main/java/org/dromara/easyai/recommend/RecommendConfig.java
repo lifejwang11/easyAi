@@ -1,14 +1,14 @@
 package org.dromara.easyai.recommend;
 
 public class RecommendConfig {
-    private double studyTh = 0.5;//进行互相学习的阈值
+    private float studyTh = 0.5f;//进行互相学习的阈值
     private int dimension = 10;//隐层神经元维度
 
-    public double getStudyTh() {
+    public float getStudyTh() {
         return studyTh;
     }
 
-    public void setStudyTh(double studyTh) {
+    public void setStudyTh(float studyTh) {
         this.studyTh = studyTh;
     }
 
