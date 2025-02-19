@@ -15,7 +15,7 @@ import java.util.Map;
 public class SensoryNerve extends Nerve {
 
     public SensoryNerve(int id, int upNub) throws Exception {
-        super(id, upNub, "SensoryNerve", 0, 0.1, false,
+        super(id, upNub, "SensoryNerve", 0, 0.1f, false,
                 null, false, 0, 0, 0, 0, 0);
     }
 
@@ -27,7 +27,7 @@ public class SensoryNerve extends Nerve {
      * @param outBack   回调结果
      * @throws Exception
      */
-    public void postMessage(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
+    public void postMessage(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E
             , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix) throws Exception {//感知神经元输出
 
         sendMessage(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix);

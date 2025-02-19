@@ -58,27 +58,27 @@ public class FastPictureExcerpt {//图片摘要id生成
         int size = (x / iSize) * (y / iSize);
         LinearRegression linearRegression = new LinearRegression(size);
         int cPoint = iSize / 2 + 1;
-        double maxXSize = (double) x / iSize;
-        double maxYSize = (double) y / iSize;
-        double[] xy = new double[2];
+        float maxXSize = (float) x / iSize;
+        float maxYSize = (float) y / iSize;
+        float[] xy = new float[2];
         for (int i = 0; i <= x - iSize; i += iSize) {
             for (int j = 0; j <= y - iSize; j += iSize) {
-                double value = h.getSonOfMatrix(i, j, iSize, iSize).getNumber(cPoint, cPoint);//灰度值
-                double px = i / (double) iSize / maxXSize;
-                double py = j / (double) iSize / maxYSize;
+                float value = h.getSonOfMatrix(i, j, iSize, iSize).getNumber(cPoint, cPoint);//灰度值
+                float px = i / (float) iSize / maxXSize;
+                float py = j / (float) iSize / maxYSize;
                 xy[0] = px;
                 xy[1] = py;
                 linearRegression.insertXY(xy, value);
             }
         }
         linearRegression.regression();
-        double myCos = linearRegression.getCos(vector);//余弦
-        double oneSize = 1 / (double) regionSize;//分几个区间
+        float myCos = linearRegression.getCos(vector);//余弦
+        float oneSize = 1 / (float) regionSize;//分几个区间
         int index = 0;
-        double minSub = -1;
+        float minSub = -1;
         for (int i = 0; i < regionSize; i++) {
-            double cos = Math.cos(Math.PI * oneSize * i);
-            double sub = Math.abs(cos - myCos);
+            float cos = (float)Math.cos((float)Math.PI * oneSize * i);
+            float sub = (float)Math.abs(cos - myCos);
             if (minSub == -1 || sub < minSub) {
                 minSub = sub;
                 index = i;

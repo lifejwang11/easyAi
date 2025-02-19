@@ -14,8 +14,8 @@ import java.util.List;
 public class OutNerve extends Nerve {
     private final SoftMax softMax;
 
-    public OutNerve(int id, double studyPoint, int sensoryNerveNub, int hiddenNerveNub, int outNerveNub,
-                    SoftMax softMax, int regularModel, double regular, int coreNumber) throws Exception {
+    public OutNerve(int id, float studyPoint, int sensoryNerveNub, int hiddenNerveNub, int outNerveNub,
+                    SoftMax softMax, int regularModel, float regular, int coreNumber) throws Exception {
         super(id, "OutNerve", studyPoint, null, sensoryNerveNub,
                 hiddenNerveNub, outNerveNub, null, regularModel, regular, coreNumber);
         this.softMax = softMax;

@@ -23,7 +23,7 @@ public class FastYolo {//yolo
     private final int heightStep;
 
     public FastYolo(YoloConfig yoloConfig) throws Exception {
-        double stepReduce = yoloConfig.getCheckStepReduce();
+        float stepReduce = yoloConfig.getCheckStepReduce();
         this.yoloConfig = yoloConfig;
         winHeight = yoloConfig.getWindowHeight();
         winWidth = yoloConfig.getWindowWidth();
@@ -94,10 +94,10 @@ public class FastYolo {//yolo
     }
 
     private Box getBox(int i, int j, int maxX, int maxY, PositionBack positionBack, TypeBody typeBody) throws Exception {
-        double zhou = winHeight + winWidth;
+        float zhou = winHeight + winWidth;
         Box box = new Box();
-        double centerX = i - positionBack.getDistX() * zhou;
-        double centerY = j - positionBack.getDistY() * zhou;
+        float centerX = i - positionBack.getDistX() * zhou;
+        float centerY = j - positionBack.getDistY() * zhou;
         int width = (int) typeBody.getRealWidth(positionBack.getWidth());
         int height = (int) typeBody.getRealHeight(positionBack.getHeight());
         int realX = (int) (centerX - height / 2);
@@ -142,7 +142,7 @@ public class FastYolo {//yolo
         int y = th.getY();
         List<Box> boxes = new ArrayList<>();
         NMS nms = new NMS(yoloConfig.getIouTh());
-        double pth = yoloConfig.getPth();
+        float pth = yoloConfig.getPth();
         for (int i = 0; i <= x - winHeight; i += heightStep) {
             for (int j = 0; j <= y - winWidth; j += widthStep) {
                 YoloTypeBack yoloTypeBack = new YoloTypeBack();
@@ -195,12 +195,12 @@ public class FastYolo {//yolo
     }
 
     private YoloMessage containSample(List<Box> boxes, Box testBox, NMS nms, int i, int j) {
-        double containIouTh = yoloConfig.getContainIouTh();
-        double maxIou = 0;
+        float containIouTh = yoloConfig.getContainIouTh();
+        float maxIou = 0;
         Box myBox = null;
         YoloMessage yoloMessage = new YoloMessage();
         for (Box box : boxes) {
-            double iou = nms.getSRatio(testBox, box, false);
+            float iou = nms.getSRatio(testBox, box, false);
             if (iou > containIouTh && iou > maxIou) {//有相交
                 maxIou = iou;
                 myBox = box;
@@ -209,13 +209,13 @@ public class FastYolo {//yolo
         if (myBox != null) {
             int centerX = myBox.getX() + myBox.getxSize() / 2;
             int centerY = myBox.getY() + myBox.getySize() / 2;
-            double zhou = winHeight + winWidth;
-            double distX = (double) (i - centerX) / zhou;
-            double distY = (double) (j - centerY) / zhou;
+            float zhou = winHeight + winWidth;
+            float distX = (float) (i - centerX) / zhou;
+            float distY = (float) (j - centerY) / zhou;
             TypeBody typeBody = getTypeBodyByTypeID(myBox.getTypeID());
-            double height = typeBody.getOneHeight(myBox.getxSize());
-            double width = typeBody.getOneWidth(myBox.getySize());
-            double trust = 0;
+            float height = typeBody.getOneHeight(myBox.getxSize());
+            float width = typeBody.getOneWidth(myBox.getySize());
+            float trust = 0;
             if (centerX >= i && centerX <= (i + winHeight) && centerY >= j && centerY <= (j + winWidth)) {
                 trust = 1;
             }
@@ -261,7 +261,7 @@ public class FastYolo {//yolo
         NMS nms = new NMS(yoloConfig.getIouTh());
         ThreeChannelMatrix pic = Picture.getThreeMatrix(url, false);
         List<YoloMessage> yoloMessageList = new ArrayList<>();
-        double stepReduce = yoloConfig.getStepReduce();
+        float stepReduce = yoloConfig.getStepReduce();
         int stepX = (int) (winHeight * stepReduce);
         int stepY = (int) (winWidth * stepReduce);
         if (stepX < 1 || stepY < 1) {
@@ -308,13 +308,13 @@ public class FastYolo {//yolo
 
     private void studyImage(List<YoloMessage> yoloMessageList) throws Exception {
         for (YoloMessage yoloMessage : yoloMessageList) {
-            Map<Integer, Double> typeE = new HashMap<>();
+            Map<Integer, Float> typeE = new HashMap<>();
             ThreeChannelMatrix small = yoloMessage.getPic();
             int mappingID = yoloMessage.getMappingID();
-            typeE.put(mappingID, 1D);
+            typeE.put(mappingID, 1f);
             study(1, typeNerveManager.getSensoryNerves(), small, true, typeE, null);
             if (!yoloMessage.isBackGround()) {
-                Map<Integer, Double> positionE = new HashMap<>();
+                Map<Integer, Float> positionE = new HashMap<>();
                 positionE.put(1, yoloMessage.getDistX());
                 positionE.put(2, yoloMessage.getDistY());
                 positionE.put(3, yoloMessage.getWidth());
@@ -327,7 +327,7 @@ public class FastYolo {//yolo
 
     }
 
-    private void study(long eventID, List<SensoryNerve> sensoryNerves, ThreeChannelMatrix feature, boolean isStudy, Map<Integer, Double> E, OutBack back) throws Exception {
+    private void study(long eventID, List<SensoryNerve> sensoryNerves, ThreeChannelMatrix feature, boolean isStudy, Map<Integer, Float> E, OutBack back) throws Exception {
         for (int i = 0; i < sensoryNerves.size(); i++) {
             Matrix p;
             switch (i) {

@@ -19,13 +19,13 @@ public class SoftMax extends Nerve {
     }
 
     @Override
-    protected void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E, OutBack outBack) throws Exception {
+    protected void input(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E, OutBack outBack) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {
-            Mes mes = softMax(eventId, isStudy);//输出值
+            Mes mes = softMax(eventId);//输出值
             int key = 0;
             if (isStudy) {//学习
-                for (Map.Entry<Integer, Double> entry : E.entrySet()) {
+                for (Map.Entry<Integer, Float> entry : E.entrySet()) {
                     if (entry.getValue() > 0.9) {
                         key = entry.getKey();
                         break;
@@ -34,7 +34,7 @@ public class SoftMax extends Nerve {
                 if (isShowLog) {
                     System.out.println("softMax==" + key + ",out==" + mes.poi + ",nerveId==" + mes.typeID);
                 }
-                List<Double> errors = error(mes, key);
+                List<Float> errors = error(mes, key);
                 features.remove(eventId); //清空当前上层输入参数参数
                 int size = outNerves.size();
                 for (int i = 0; i < size; i++) {
@@ -52,13 +52,13 @@ public class SoftMax extends Nerve {
         }
     }
 
-    private List<Double> error(Mes mes, int key) {
+    private List<Float> error(Mes mes, int key) {
         int t = key - 1;
-        List<Double> softMax = mes.softMax;
-        List<Double> error = new ArrayList<>();
+        List<Float> softMax = mes.softMax;
+        List<Float> error = new ArrayList<>();
         for (int i = 0; i < softMax.size(); i++) {
-            double self = softMax.get(i);
-            double myError;
+            float self = softMax.get(i);
+            float myError;
             if (i != t) {
                 myError = -self;
             } else {
@@ -69,19 +69,19 @@ public class SoftMax extends Nerve {
         return error;
     }
 
-    private Mes softMax(long eventId, boolean isStudy) {//计算当前输出结果
-        double sigma = 0;
+    private Mes softMax(long eventId) {//计算当前输出结果
+        float sigma = 0;
         int id = 0;
-        double poi = 0;
+        float poi = 0;
         Mes mes = new Mes();
-        List<Double> featuresList = features.get(eventId);
-        for (double value : featuresList) {
-            sigma = Math.exp(value) + sigma;
+        List<Float> featuresList = features.get(eventId);
+        for (float value : featuresList) {
+            sigma = (float)Math.exp(value) + sigma;
         }
-        List<Double> softMax = new ArrayList<>();
+        List<Float> softMax = new ArrayList<>();
         for (int i = 0; i < featuresList.size(); i++) {
-            double eSelf = Math.exp(featuresList.get(i));
-            double value = eSelf / sigma;
+            float eSelf = (float)Math.exp(featuresList.get(i));
+            float value = eSelf / sigma;
             softMax.add(value);
             if (value > poi) {
                 poi = value;
@@ -96,7 +96,7 @@ public class SoftMax extends Nerve {
 
     static class Mes {
         int typeID;
-        double poi;
-        List<Double> softMax;
+        float poi;
+        List<Float> softMax;
     }
 }

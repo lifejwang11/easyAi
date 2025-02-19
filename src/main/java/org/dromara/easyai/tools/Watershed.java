@@ -21,7 +21,7 @@ public class Watershed {
     private final Matrix regionMap;//分区图
     private final int xSize;//单元高度
     private final int ySize;//单元宽度
-    private final double rainTh;//灰度阈值
+    private final float rainTh;//灰度阈值
     private final int regionNub;//一张图分多少份
     private final Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
     private final int xMax;
@@ -30,7 +30,7 @@ public class Watershed {
     private final int cutMinYSize;//分水岭切割最小取样Y
     private final int cutMaxXSize;//分水岭切割最大取样X
     private final int cutMaxYSize;//分水岭切割最大取样Y
-    private final double th;//落差阈值阈值
+    private final float th;//落差阈值阈值
 
     public Watershed(ThreeChannelMatrix matrix, WaterConfig config) throws Exception {
         if (matrix != null) {
@@ -56,16 +56,16 @@ public class Watershed {
         }
     }
 
-    private double[] getPixels(int x, int y) throws Exception {
+    private float[] getPixels(int x, int y) throws Exception {
         //八方向取值
-        double left = -1;//左边
-        double leftTop = -1;//左上
-        double leftBottom = -1;//左下
-        double right = -1;//右边
-        double rightTop = -1;//右上
-        double rightBottom = -1;//右下
-        double top = -1;//上边
-        double bottom = -1;//下边
+        float left = -1;//左边
+        float leftTop = -1;//左上
+        float leftBottom = -1;//左下
+        float right = -1;//右边
+        float rightTop = -1;//右上
+        float rightBottom = -1;//右下
+        float top = -1;//上边
+        float bottom = -1;//下边
         if (x == 0) {
             top = 1;
             leftTop = 1;
@@ -111,14 +111,14 @@ public class Watershed {
         if (rightBottom == -1 && rainfallMap.getNumber(x + 1, y + 1) == 0) {
             rightBottom = matrix.getNumber(x + 1, y + 1);
         }
-        return new double[]{top, left, bottom, right, leftTop, leftBottom, rightBottom, rightTop};
+        return new float[]{top, left, bottom, right, leftTop, leftBottom, rightBottom, rightTop};
     }
 
     private int[] rain(int x, int y) throws Exception {//先往下降，直到不能再降了为止
         //有两种情况停止：1，最小值是自身。2，周围已经灌满水了,包括自身
-        double[] pixels = getPixels(x, y);
+        float[] pixels = getPixels(x, y);
         int[] point = new int[8];
-        double mySelf;
+        float mySelf;
         mySelf = matrix.getNumber(x, y);
         int index = getMinIndex(pixels, mySelf);//最低点下标
         int row;
@@ -299,7 +299,7 @@ public class Watershed {
                         }
                     }
                 }
-                double cover = (double) sigma / (double) size;//降雨率产生剧烈波动时则出现坐标
+                float cover = (float) sigma / (float) size;//降雨率产生剧烈波动时则出现坐标
                 if (cover > rainTh) {//降雨密度图
                     regionMap.setNub(i / xSize, j / ySize, 1);
                 }
@@ -310,11 +310,11 @@ public class Watershed {
         merge();//合并候选区
     }
 
-    private int getMinIndex(double[] array, double mySelf) {//获取最小值
+    private int getMinIndex(float[] array, float mySelf) {//获取最小值
         int minIdx = 0;
         for (int i = 0; i < array.length; i++) {
-            double nub = array[i];
-            double sub = mySelf - nub;
+            float nub = array[i];
+            float sub = mySelf - nub;
             if (nub > -1 && sub > th) {
                 minIdx = minIdx | (1 << i);
             }

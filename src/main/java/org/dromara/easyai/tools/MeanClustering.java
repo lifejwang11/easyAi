@@ -9,7 +9,7 @@ import java.util.Random;
 
 //K均值聚类
 public class MeanClustering {
-    protected List<double[]> matrixList = new ArrayList<>();//聚类集合
+    protected List<float[]> matrixList = new ArrayList<>();//聚类集合
     private int length;//向量长度(模型需要返回)
     protected int speciesQuantity;//种类数量(模型需要返回)
     private final int maxTimes;//最大迭代次数
@@ -19,13 +19,13 @@ public class MeanClustering {
         return matrices;
     }
 
-    public double[] getResultByNorm() {
+    public float[] getResultByNorm() {
         MeanSort meanSort = new MeanSort();
-        double[] dm = new double[matrices.size() * length];
+        float[] dm = new float[matrices.size() * length];
         matrices.sort(meanSort);
         for (int i = 0; i < matrices.size(); i++) {
             RGBNorm rgbNorm = matrices.get(i);
-            double[] rgb = rgbNorm.getRgb();
+            float[] rgb = rgbNorm.getRgb();
             for (int j = 0; j < rgb.length; j++) {
                 dm[i * rgb.length + j] = rgb[j];
             }
@@ -38,7 +38,7 @@ public class MeanClustering {
         this.maxTimes = maxTimes;
     }
 
-    public void setFeature(double[] feature) throws Exception {
+    public void setFeature(float[] feature) throws Exception {
         if (matrixList.isEmpty()) {
             matrixList.add(feature);
             length = feature.length;
@@ -52,12 +52,12 @@ public class MeanClustering {
     }
 
     private void averageMatrix() {
-        for (double[] rgb : matrixList) {//遍历当前集合
-            double min = -1;
+        for (float[] rgb : matrixList) {//遍历当前集合
+            float min = -1;
             int id = 0;
             for (int i = 0; i < speciesQuantity; i++) {
                 RGBNorm rgbNorm = matrices.get(i);
-                double dist = rgbNorm.getEDist(rgb);
+                float dist = rgbNorm.getEDist(rgb);
                 if (min == -1 || dist < min) {
                     min = dist;
                     id = i;
@@ -95,7 +95,7 @@ public class MeanClustering {
             Random random = new Random();
             for (int i = 0; i < speciesQuantity; i++) {//初始化均值向量
                 int index = random.nextInt(matrixList.size());
-                double[] rgb = matrixList.get(index);
+                float[] rgb = matrixList.get(index);
                 RGBNorm rgbNorm = new RGBNorm(rgb, length);
                 //要进行深度克隆
                 matrices.add(rgbNorm);

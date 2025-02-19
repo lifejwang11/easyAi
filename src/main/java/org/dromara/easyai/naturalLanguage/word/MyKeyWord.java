@@ -25,11 +25,11 @@ public class MyKeyWord extends MatrixOperation {
     public MyKeyWord(SentenceConfig config, WordEmbedding wordEmbedding) throws Exception {
         int vectorDimension = config.getWordVectorDimension();
         int nerveLength = config.getKeyWordNerveDeep();
-        double studyPoint = config.getWeStudyPoint();
+        float studyPoint = config.getWeStudyPoint();
         boolean isShowLog = config.isShowLog();
         this.maxWordLength = config.getMaxWordLength();
         typeNerveManager = new NerveManager(vectorDimension, vectorDimension, 2, nerveLength - 1, new Tanh(), false,
-                studyPoint, RZ.L1, studyPoint * 0.2);
+                studyPoint, RZ.L1, studyPoint * 0.2f);
         typeNerveManager.initRnn(true, isShowLog);
         this.wordEmbedding = wordEmbedding;
         this.nerveLength = nerveLength;
@@ -57,7 +57,7 @@ public class MyKeyWord extends MatrixOperation {
         return isKeyWord;
     }
 
-    private int myStudy(boolean isStudy, long eventId, String word, String keyWord, Map<Integer, Double> E) throws Exception {
+    private int myStudy(boolean isStudy, long eventId, String word, String keyWord, Map<Integer, Float> E) throws Exception {
         int key = 0;
         if (word.length() > 1) {
             if (word.length() > maxWordLength) {
@@ -81,9 +81,9 @@ public class MyKeyWord extends MatrixOperation {
                 if (isStudy) {
                     E.clear();
                     if (i > endIndex || (i + nerveLength - 1) < startIndex) {//不相交
-                        E.put(2, 1D);
+                        E.put(2, 1f);
                     } else {//相交
-                        E.put(1, 1D);
+                        E.put(1, 1f);
                     }
                 } else {
                     wordBack.clear();
@@ -94,7 +94,7 @@ public class MyKeyWord extends MatrixOperation {
                 } else {
                     feature = allFeature.getSonOfMatrix(i, 0, nerveLength, allFeature.getY());
                 }
-                List<Double> firstFeature = rowVectorToList(feature.getRow(0));//首行特征
+                List<Float> firstFeature = rowVectorToList(feature.getRow(0));//首行特征
                 studyNerve(eventId, typeNerveManager.getSensoryNerves(), firstFeature, feature, E, isStudy, wordBack);
                 if (!isStudy) {//需要返回结果
                     key = wordBack.getId();
@@ -107,7 +107,7 @@ public class MyKeyWord extends MatrixOperation {
         return key;
     }
 
-    private void studyNerve(long eventId, List<SensoryNerve> sensoryNerves, List<Double> featureList, Matrix rnnMatrix, Map<Integer, Double> E, boolean isStudy, OutBack convBack) throws Exception {
+    private void studyNerve(long eventId, List<SensoryNerve> sensoryNerves, List<Float> featureList, Matrix rnnMatrix, Map<Integer, Float> E, boolean isStudy, OutBack convBack) throws Exception {
         if (sensoryNerves.size() == featureList.size()) {
             for (int i = 0; i < sensoryNerves.size(); i++) {
                 sensoryNerves.get(i).postMessage(eventId, featureList.get(i), isStudy, E, convBack, false, rnnMatrix);

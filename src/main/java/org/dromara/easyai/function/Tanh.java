@@ -5,16 +5,16 @@ import org.dromara.easyai.i.ActiveFunction;
 
 public class Tanh implements ActiveFunction {
     @Override
-    public double function(double x) {
-        double x1 = Math.exp(x);
-        double x2 = Math.exp(-x);
-        double son = x1 - x2;// ArithUtil.sub(x1, x2);
-        double mother = x1 + x2;// ArithUtil.add(x1, x2);
+    public float function(float x) {
+        float x1 = (float)Math.exp(x);
+        float x2 = (float)Math.exp(-x);
+        float son = x1 - x2;// ArithUtil.sub(x1, x2);
+        float mother = x1 + x2;// ArithUtil.add(x1, x2);
         return son / mother;//ArithUtil.div(son, mother);
     }
 
     @Override
-    public double functionG(double out) {
-        return 1 - Math.pow(out, 2);
+    public float functionG(float out) {
+        return 1 - (float)Math.pow(out, 2);
     }
 }

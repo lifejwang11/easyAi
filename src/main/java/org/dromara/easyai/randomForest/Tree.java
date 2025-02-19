@@ -16,7 +16,7 @@ public class Tree {//决策树
     private List<Integer> endList;//最终结果分类
     private final List<Node> lastNodes = new ArrayList<>();//最后一层节点集合
     private final Random random = new Random();
-    private final double trustPunishment;//信任惩罚
+    private final float trustPunishment;//信任惩罚
 
     public Node getRootNode() {
         return rootNode;
@@ -31,15 +31,15 @@ public class Tree {//决策树
     }
 
     private static class Gain {
-        private double gain;//信息增益
-        private double gainRatio;//信息增益率
+        private float gain;//信息增益
+        private float gainRatio;//信息增益率
     }
 
-    public Tree(double trustPunishment) {
+    public Tree(float trustPunishment) {
         this.trustPunishment = trustPunishment;
     }
 
-    public Tree(DataTable dataTable, double trustPunishment) throws Exception {
+    public Tree(DataTable dataTable, float trustPunishment) throws Exception {
         if (dataTable != null && dataTable.getKey() != null) {
             this.trustPunishment = trustPunishment;
             this.dataTable = dataTable;
@@ -48,11 +48,11 @@ public class Tree {//决策树
         }
     }
 
-    private double log2(double p) {
-        return Math.log(p) / Math.log(2);
+    private float log2(float p) {
+        return (float)Math.log(p) / (float)Math.log(2);
     }
 
-    private double getEnt(List<Integer> list) {
+    private float getEnt(List<Integer> list) {
         //记录了每个类别有几个
         Map<Integer, Integer> myType = new HashMap<>();
         for (int index : list) {
@@ -63,16 +63,16 @@ public class Tree {//决策树
                 myType.put(type, 1);
             }
         }
-        double ent = 0;
+        float ent = 0;
         //求信息熵
         for (Map.Entry<Integer, Integer> entry1 : myType.entrySet()) {
-            double g = (double) entry1.getValue() / (double) list.size();//每个类别的概率
+            float g = (float) entry1.getValue() / (float) list.size();//每个类别的概率
             ent = ent + g * log2(g);
         }
         return -ent;
     }
 
-    private double getGain(double ent, double dNub, double gain) {
+    private float getGain(float ent, float dNub, float gain) {
         return gain + ent * dNub;
     }
 
@@ -81,7 +81,7 @@ public class Tree {//决策树
         List<Integer> fatherList = node.fatherList;
         if (!attributes.isEmpty()) {
             Map<String, Map<Integer, List<Integer>>> mapAll = new HashMap<>();//主键：可用属性 次主键该属性的属性值，集合该值对应的id
-            double fatherEnt = getEnt(fatherList);
+            float fatherEnt = getEnt(fatherList);
             int fatherNub = fatherList.size();//总样本数
             //该属性每个离散数据分类的集合
             for (int i = 0; i < fatherList.size(); i++) {
@@ -101,13 +101,13 @@ public class Tree {//决策树
             }
             Map<String, List<Node>> nodeMap = new HashMap<>();
             int i = 0;
-            double sigmaG = 0;
+            float sigmaG = 0;
             Map<String, Gain> gainMap = new HashMap<>();
             for (Map.Entry<String, Map<Integer, List<Integer>>> mapEntry : mapAll.entrySet()) {
                 Map<Integer, List<Integer>> map = mapEntry.getValue();//当前属性的 属性值及id
                 //求信息增益
-                double gain = 0;//信息增益
-                double IV = 0;//增益率
+                float gain = 0;//信息增益
+                float IV = 0;//增益率
                 List<Node> nodeList = new ArrayList<>();
                 String name = mapEntry.getKey();//可用属性名称
                 nodeMap.put(name, nodeList);
@@ -120,8 +120,8 @@ public class Tree {//决策树
                     sonNode.fatherList = list;
                     sonNode.typeId = entry.getKey();//该属性值
                     int myNub = list.size();//该属性值下数据的数量
-                    double ent = getEnt(list);//该属性值 的信息熵
-                    double dNub = (double) myNub / (double) fatherNub;//该属性值在 父级样本中出现的概率
+                    float ent = getEnt(list);//该属性值 的信息熵
+                    float dNub = (float) myNub / (float) fatherNub;//该属性值在 父级样本中出现的概率
                     IV = dNub * log2(dNub) + IV;
                     gain = getGain(ent, dNub, gain);
                 }
@@ -136,15 +136,15 @@ public class Tree {//决策树
                 sigmaG = gain1.gain + sigmaG;
                 i++;
             }
-            double avgGain = sigmaG / i;
-            double gainRatio = -2;//最大增益率
+            float avgGain = sigmaG / i;
+            float gainRatio = -2;//最大增益率
             String key = null;//可选属性
             //System.out.println("平均信息增益==============================" + avgGain);
             for (Map.Entry<String, Gain> entry : gainMap.entrySet()) {
                 Gain gain = entry.getValue();
 //                System.out.println("主键:" + entry.getKey() + ",平均信息增益:" + avgGain + ",可用属性数量:" + gainMap.size()
 //                        + "该属性信息增益:" + gain.gain + ",该属性增益率：" + gain.gainRatio + ",当前最高增益率:" + gainRatio);
-                if (gainMap.size() == 1 || ((gain.gain >= avgGain || Math.abs(gain.gain - avgGain) < 0.000001) && (gain.gainRatio >= gainRatio || gainRatio == -2))) {
+                if (gainMap.size() == 1 || ((gain.gain >= avgGain || (float)Math.abs(gain.gain - avgGain) < 0.000001) && (gain.gainRatio >= gainRatio || gainRatio == -2))) {
                     gainRatio = gain.gainRatio;
                     key = entry.getKey();
                 }
@@ -210,7 +210,7 @@ public class Tree {//决策树
     public TreeWithTrust judge(Object ob) throws Exception {//进行类别判断
         if (rootNode != null) {
             TreeWithTrust treeWithTrust = new TreeWithTrust();
-            treeWithTrust.setTrust(1.0);
+            treeWithTrust.setTrust(1.0f);
             goTree(ob, rootNode, treeWithTrust, 0);
             return treeWithTrust;
         } else {
@@ -220,7 +220,7 @@ public class Tree {//决策树
 
     private void punishment(TreeWithTrust treeWithTrust) {//信任惩罚
         //System.out.println("惩罚");
-        double trust = treeWithTrust.getTrust();//获取当前信任值
+        float trust = treeWithTrust.getTrust();//获取当前信任值
         trust = trust * trustPunishment;
         treeWithTrust.setTrust(trust);
     }
@@ -311,7 +311,7 @@ public class Tree {//决策树
         int fatherType = getType(father.fatherList);
         int nub = getRightPoint(father.fatherList, fatherType);
         //父级该样本正确率
-        double rightFather = (double) nub / (double) father.fatherList.size();
+        float rightFather = (float) nub / (float) father.fatherList.size();
         int rightNub = 0;
         int rightAllNub = 0;
         for (int i = 0; i < sonNodes.size(); i++) {
@@ -321,7 +321,7 @@ public class Tree {//决策树
             rightNub = rightNub + right;
             rightAllNub = rightAllNub + list.size();
         }
-        double rightPoint = (double) rightNub / (double) rightAllNub;//子节点正确率
+        float rightPoint = (float) rightNub / (float) rightAllNub;//子节点正确率
         if (rightPoint <= rightFather) {
             isRemove = true;
         }

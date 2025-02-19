@@ -27,24 +27,24 @@ public class NerveManager {
     private final List<Nerve> outNerves = new ArrayList<>();//输出神经元
     private final List<Nerve> softMaxList = new ArrayList<>();//softMax层
     private boolean initPower;
-    private double studyPoint = 0.1;//学习率
-    private double convStudyPoint = 0.1;//卷积学习率
+    private float studyPoint = 0.1f;//学习率
+    private float convStudyPoint = 0.1f;//卷积学习率
     private final ActiveFunction activeFunction;
     private final int rzType;//正则化类型，默认不进行正则化
-    private final double lParam;//正则参数
+    private final float lParam;//正则参数
     private final int coreNumber;
 
-    private Map<String, Double> conversion(Map<Integer, Double> map) {
-        Map<String, Double> cMap = new HashMap<>();
-        for (Map.Entry<Integer, Double> entry : map.entrySet()) {
+    private Map<String, Float> conversion(Map<Integer, Float> map) {
+        Map<String, Float> cMap = new HashMap<>();
+        for (Map.Entry<Integer, Float> entry : map.entrySet()) {
             cMap.put(String.valueOf(entry.getKey()), entry.getValue());
         }
         return cMap;
     }
 
-    private Map<Integer, Double> unConversion(Map<String, Double> map) {
-        Map<Integer, Double> cMap = new HashMap<>();
-        for (Map.Entry<String, Double> entry : map.entrySet()) {
+    private Map<Integer, Float> unConversion(Map<String, Float> map) {
+        Map<Integer, Float> cMap = new HashMap<>();
+        for (Map.Entry<String, Float> entry : map.entrySet()) {
             cMap.put(Integer.parseInt(entry.getKey()), entry.getValue());
         }
         return cMap;
@@ -58,7 +58,7 @@ public class NerveManager {
             List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
             for (Nerve depthNerve : convDepthNerve) {
                 DymNerveStudy deepNerveStudy = new DymNerveStudy();//动态神经元隐层
-                List<Double> list = deepNerveStudy.getList();
+                List<Float> list = deepNerveStudy.getList();
                 Matrix matrix = depthNerve.getNerveMatrix();
                 insertWList(matrix, list);
                 dymNerveStudies.add(deepNerveStudy);
@@ -69,7 +69,7 @@ public class NerveManager {
         return modelParameter;
     }
 
-    private void insertWList(Matrix matrix, List<Double> list) throws Exception {//
+    private void insertWList(Matrix matrix, List<Float> list) throws Exception {//
         for (int i = 0; i < matrix.getX(); i++) {
             for (int j = 0; j < matrix.getY(); j++) {
                 list.add(matrix.getNumber(i, j));
@@ -129,7 +129,7 @@ public class NerveManager {
             for (int i = 0; i < dymNerveStudyList.size(); i++) {
                 Nerve depthNerve = convDepthNerves.get(t).get(i);
                 DymNerveStudy dymNerveStudy = dymNerveStudyList.get(i);
-                List<Double> list = dymNerveStudy.getList();
+                List<Float> list = dymNerveStudy.getList();
                 Matrix nerveMatrix = depthNerve.getNerveMatrix();
                 insertMatrix(nerveMatrix, list);
             }
@@ -137,7 +137,7 @@ public class NerveManager {
         insertBpModelParameter(modelParameter);//全连接层注入参数
     }
 
-    private void insertMatrix(Matrix matrix, List<Double> list) throws Exception {
+    private void insertMatrix(Matrix matrix, List<Float> list) throws Exception {
         for (int i = 0; i < list.size(); i++) {
             matrix.setNub(i, 0, list.get(i));
         }
@@ -155,11 +155,11 @@ public class NerveManager {
                 Nerve nerve = depthNerve.get(j);
                 NerveStudy nerveStudy = depth.get(j);
                 //学习结果
-                Map<Integer, Double> studyDendrites = unConversion(nerveStudy.getDendrites());
+                Map<Integer, Float> studyDendrites = unConversion(nerveStudy.getDendrites());
                 //神经元参数注入
-                Map<Integer, Double> dendrites = nerve.getDendrites();
+                Map<Integer, Float> dendrites = nerve.getDendrites();
                 nerve.setThreshold(nerveStudy.getThreshold());//注入隐层阈值
-                for (Map.Entry<Integer, Double> entry : dendrites.entrySet()) {
+                for (Map.Entry<Integer, Float> entry : dendrites.entrySet()) {
                     int key = entry.getKey();
                     dendrites.put(key, studyDendrites.get(key));//注入隐层权重
                 }
@@ -170,9 +170,9 @@ public class NerveManager {
             Nerve outNerve = outNerves.get(i);
             NerveStudy nerveStudy = outStudyNerves.get(i);
             outNerve.setThreshold(nerveStudy.getThreshold());
-            Map<Integer, Double> dendrites = outNerve.getDendrites();
-            Map<Integer, Double> studyDendrites = unConversion(nerveStudy.getDendrites());
-            for (Map.Entry<Integer, Double> outEntry : dendrites.entrySet()) {
+            Map<Integer, Float> dendrites = outNerve.getDendrites();
+            Map<Integer, Float> studyDendrites = unConversion(nerveStudy.getDendrites());
+            for (Map.Entry<Integer, Float> outEntry : dendrites.entrySet()) {
                 int key = outEntry.getKey();
                 dendrites.put(key, studyDendrites.get(key));
             }
@@ -194,7 +194,7 @@ public class NerveManager {
      * @throws Exception 如果参数错误则抛异常
      */
     public NerveManager(int sensoryNerveNub, int hiddenNerveNub, int outNerveNub
-            , int hiddenDepth, ActiveFunction activeFunction, double studyPoint, int rzType, double lParam
+            , int hiddenDepth, ActiveFunction activeFunction, float studyPoint, int rzType, float lParam
             , int coreNumber) throws Exception {
         if (sensoryNerveNub > 0 && hiddenNerveNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
             this.coreNumber = coreNumber;
@@ -221,7 +221,7 @@ public class NerveManager {
             , int id) throws Exception {//初始化隐层神经元1
         List<Nerve> depthNerves = new ArrayList<>();
         for (int i = 0; i < conHiddenDepth; i++) {//遍历深度
-            double studyPoint = this.convStudyPoint;
+            float studyPoint = this.convStudyPoint;
             if (studyPoint <= 0 || studyPoint > 1) {
                 throw new Exception("studyPoint Values range from 0 to 1");
             }
@@ -288,7 +288,7 @@ public class NerveManager {
      * @param isSoftMax       最后一层是否用softMax激活
      */
     public void initImageNet(int channelNo, int step, int kernLen, int xSize, int ySize, boolean isSoftMax
-            , boolean isShowLog, double convStudyPoint, ActiveFunction convFunction) throws Exception {
+            , boolean isShowLog, float convStudyPoint, ActiveFunction convFunction) throws Exception {
         this.initPower = true;//convDepthNerves
         this.convStudyPoint = convStudyPoint;
         int deep = getConvMyDep(xSize, ySize, step, kernLen);//卷积层深度
@@ -390,7 +390,7 @@ public class NerveManager {
     private void initDepthNerve(int step, int kernLen, int matrixX, int matrixY) throws Exception {//初始化隐层神经元1
         for (int i = 0; i < hiddenDepth; i++) {//遍历深度
             List<Nerve> hiddenNerveList = new ArrayList<>();
-            double studyPoint = this.studyPoint;
+            float studyPoint = this.studyPoint;
             if (studyPoint <= 0 || studyPoint > 1) {
                 throw new Exception("studyPoint Values range from 0 to 1");
             }

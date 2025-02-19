@@ -25,11 +25,11 @@ public class MatrixMulAccelerate implements Runnable {
         try {
             Matrix matrixRow = matrix1.getRow(i);//行向量
             Matrix matrixColumn = matrix2.getColumn(j);
-            double columnAllNumber = 0;//对每一项的乘积求和
+            float columnAllNumber = 0;//对每一项的乘积求和
             for (int h = 0; h < matrixColumn.getX(); h++) {
-                double columnNumber = matrixColumn.getNumber(h, 0);
-                double rowNumber = matrixRow.getNumber(0, h);
-                double nowNumber = columnNumber * rowNumber;
+                float columnNumber = matrixColumn.getNumber(h, 0);
+                float rowNumber = matrixRow.getNumber(0, h);
+                float nowNumber = columnNumber * rowNumber;
                 columnAllNumber = columnAllNumber + nowNumber;
             }
             matrix.setNub(i, j, columnAllNumber);

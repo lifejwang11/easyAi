@@ -6,7 +6,7 @@ package org.dromara.easyai.i;
  * @date 8:52 上午 2020/1/11
  */
 public interface ActiveFunction {
-    double function(double x);//激活函数
+    float function(float x);//激活函数
 
-    double functionG(double out);//激活函数的导函数
+    float functionG(float out);//激活函数的导函数
 }

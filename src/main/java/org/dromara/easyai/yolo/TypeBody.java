@@ -41,32 +41,32 @@ public class TypeBody {
                 false, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu());
     }
 
-    public double getRealWidth(double width) {
+    public float getRealWidth(float width) {
         if (maxWidth == minWidth) {
             return maxWidth;
         }
         return (maxWidth - minWidth) * width + minWidth;
     }
 
-    public double getRealHeight(double height) {
+    public float getRealHeight(float height) {
         if (maxHeight == minHeight) {
             return maxHeight;
         }
         return (maxHeight - minHeight) * height + minHeight;
     }
 
-    public double getOneWidth(int width) {
+    public float getOneWidth(int width) {
         if (maxWidth == minWidth) {
             return 1;
         }
-        return (double) (width - minWidth) / (maxWidth - minWidth);
+        return (float) (width - minWidth) / (maxWidth - minWidth);
     }
 
-    public double getOneHeight(int height) {
+    public float getOneHeight(int height) {
         if (maxHeight == minHeight) {
             return 1;
         }
-        return (double) (height - minHeight) / (maxHeight - minHeight);
+        return (float) (height - minHeight) / (maxHeight - minHeight);
     }
 
     public void insertYoloBody(YoloBody yoloBody) {

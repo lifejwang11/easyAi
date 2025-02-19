@@ -20,7 +20,7 @@ public class FirstDecoderBlock {//解码器模块
         this.lastEncoderBlock = lastEncoderBlock;
     }
 
-    public FirstDecoderBlock(int multiNumber, int featureDimension, double studyPoint, CodecBlock codecBlock, int maxLength, boolean selfTimeCode
+    public FirstDecoderBlock(int multiNumber, int featureDimension, float studyPoint, CodecBlock codecBlock, int maxLength, boolean selfTimeCode
             , int coreNumber) throws Exception {//进行初始化
         //注意力层残差归一化
         attentionLayNorm = new LayNorm(1, featureDimension, null, this, studyPoint, coreNumber);
@@ -31,7 +31,7 @@ public class FirstDecoderBlock {//解码器模块
         this.codecBlock = codecBlock;
     }
 
-    public FirstDecoderModel getModel() {
+    public FirstDecoderModel getModel() throws Exception {
         FirstDecoderModel firstDecoderModel = new FirstDecoderModel();
         firstDecoderModel.setMultiSelfAttentionModel(multiSelfAttention.getModel());
         firstDecoderModel.setAttentionLayNormModel(attentionLayNorm.getModel());

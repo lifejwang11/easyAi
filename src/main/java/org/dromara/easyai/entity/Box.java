@@ -11,7 +11,7 @@ public class Box {
     private int y;
     private int xSize;
     private int ySize;
-    private double confidence;
+    private float confidence;
     private int typeID;//类别id
     //识别参数
     private int realX;//识别X
@@ -42,11 +42,11 @@ public class Box {
         this.realY = realY;
     }
 
-    public double getConfidence() {
+    public float getConfidence() {
         return confidence;
     }
 
-    public void setConfidence(double confidence) {
+    public void setConfidence(float confidence) {
         this.confidence = confidence;
     }
 

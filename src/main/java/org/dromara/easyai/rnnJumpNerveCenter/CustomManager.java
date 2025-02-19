@@ -19,12 +19,12 @@ public class CustomManager {//
     private NerveJumpManager semanticsManager;//网络
     private final int vectorDimension;//特征纵向维度
     private final int maxFeatureLength;//特征最长长度
-    private final double studyPoint;//词向量学习学习率
+    private final float studyPoint;//词向量学习学习率
     private final int minLength;//最小长度
     private final int answerMaxLength;//回答最长长度
     private int times;
-    private final double param;
-    private final double powerTh;
+    private final float param;
+    private final float powerTh;
     private final int rzModel;
 
     public CustomManager(WordEmbedding wordEmbedding, SentenceConfig config) {
@@ -64,7 +64,7 @@ public class CustomManager {//
             question = question.substring(0, maxFeatureLength);
         }
         MyWordFeature myWordFeature = wordEmbedding.getEmbedding(question, eventID, false);
-        List<Double> featureList = myWordFeature.getFirstFeatureList();
+        List<Float> featureList = myWordFeature.getFirstFeatureList();
         Matrix featureMatrix = myWordFeature.getFeatureMatrix();
         featureMatrix = insertZero(featureMatrix, featureMatrix.getX());
         int[] storeys = getStoreys2(question.length(), maxFeatureLength);
@@ -93,7 +93,7 @@ public class CustomManager {//
                 String word = question + answer;
                 MyWordFeature myWordFeature = wordEmbedding.getEmbedding(word, 1, false);
                 semanticsStudy(myWordFeature, question, answer, 1, random);
-                double point = (double) index / (double) (wordSize) * 100;
+                float point = (float) index / (float) (wordSize) * 100;
                 String result = String.format("%.6f", point);
                 System.out.println("训练进度：" + result + "%");
             }
@@ -126,7 +126,7 @@ public class CustomManager {//
             for (int i = 1; i < len; i++) {
                 list.add(i);
             }
-            int myLen = (int) (minLength + Math.random() * (len - minLength + 1));
+            int myLen = (int) (minLength + (float)Math.random() * (len - minLength + 1));
             storeys = new int[myLen];
             if (startIndex > 0) {
                 storeys[0] = startIndex;
@@ -172,12 +172,12 @@ public class CustomManager {//
 
     private void semanticsStudy(MyWordFeature myWordFeature, String question, String answer, long eventID, Random random) throws Exception {
         Matrix featureMatrix = insertZero(myWordFeature.getFeatureMatrix(), question.length());
-        List<Double> firstFeatureList = myWordFeature.getFirstFeatureList();
+        List<Float> firstFeatureList = myWordFeature.getFirstFeatureList();
         System.out.println("训练question:" + question + ",answer:" + answer);
         if (question.length() > 1 && !answer.isEmpty()) {
             int[] questionStoreys = getStoreys(question.length(), random, 0);
             int[] answerStoreys = getStoreys(answer.length() + 1, random, maxFeatureLength);
-            Map<Integer, Double> E = new HashMap<>();
+            Map<Integer, Float> E = new HashMap<>();
             for (int i = 0; i < answerStoreys.length - 1; i++) {
                 //System.out.println("=====================================");
                 E.clear();
@@ -185,13 +185,13 @@ public class CustomManager {//
                 questionStoreys = pushArray(questionStoreys, answerStoreys[i]);
                 String myAnswer = answer.substring(index - 1, index);
                 int wordID = wordEmbedding.getID(myAnswer) + 1;
-                E.put(wordID, 1D);
+                E.put(wordID, 1f);
                 studySemanticsNerve(eventID, firstFeatureList, true, E, null, featureMatrix, questionStoreys, question.length());
             }
         }
     }
 
-    private void studySemanticsNerve(long eventId, List<Double> featureList, boolean isStudy, Map<Integer, Double> E, SemanticsBack semanticsBack,
+    private void studySemanticsNerve(long eventId, List<Float> featureList, boolean isStudy, Map<Integer, Float> E, SemanticsBack semanticsBack,
                                      Matrix rnnMatrix, int[] storeys, int questionLength) throws Exception {
         List<SensoryNerve> sensoryNerves = semanticsManager.getSensoryNerves();
         if (sensoryNerves.size() == featureList.size()) {

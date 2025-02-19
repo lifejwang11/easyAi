@@ -19,16 +19,16 @@ public class Forest extends Frequency {
     private Forest forestLeft;//左森林
     private Forest forestRight;//右森林
     private int featureSize;
-    private double resultVariance;//结果矩阵方差
-    private double median;//结果矩阵中位数
-    private double shrinkParameter;//方差收缩参数
+    private float resultVariance;//结果矩阵方差
+    private float median;//结果矩阵中位数
+    private float shrinkParameter;//方差收缩参数
     private Matrix pc;//需要映射的基的集合
     private Matrix pc1;//需要映射的基
-    private double[] w;
+    private float[] w;
     private boolean isOldG = true;//是否使用老基
     private int oldGId = 0;//老基的id
     private Matrix matrixAll;//全矩阵
-    private double gNorm;//新维度的摸
+    private float gNorm;//新维度的摸
     private Forest father;//父级
     private final Map<Integer, Forest> forestMap;//尽头列表
     private int id;//本节点的id
@@ -37,31 +37,31 @@ public class Forest extends Frequency {
     private final int minGrain;//最小粒度
     private final MatrixOperation matrixOperation = new MatrixOperation();
 
-    public Forest(int featureSize, double shrinkParameter, Matrix pc, Map<Integer, Forest> forestMap
+    public Forest(int featureSize, float shrinkParameter, Matrix pc, Map<Integer, Forest> forestMap
             , int id, int minGrain) {
         this.featureSize = featureSize;
         this.shrinkParameter = shrinkParameter;
         this.pc = pc;
-        w = new double[featureSize];
+        w = new float[featureSize];
         this.forestMap = forestMap;
         this.id = id;
         this.minGrain = minGrain;
     }
 
-    public double getMedian() {
+    public float getMedian() {
         return median;
     }
 
-    public double getResultVariance() {
+    public float getResultVariance() {
         return resultVariance;
     }
 
-    public void setResultVariance(double resultVariance) {
+    public void setResultVariance(float resultVariance) {
         this.resultVariance = resultVariance;
     }
 
-    public double getMappingFeature(Matrix feature) throws Exception {//获取映射后的特征
-        double nub;
+    public float getMappingFeature(Matrix feature) throws Exception {//获取映射后的特征
+        float nub;
         if (feature.isRowVector()) {
             if (isOldG) {//使用原有基
                 nub = feature.getNumber(0, oldGId);
@@ -74,7 +74,7 @@ public class Forest extends Frequency {
         return nub;
     }
 
-    private double[] findG() throws Exception {//寻找新的切入维度
+    private float[] findG() throws Exception {//寻找新的切入维度
         // 先尝试从原有维度切入
         int xSize = conditionMatrix.getX();
         int ySize = conditionMatrix.getY();
@@ -88,10 +88,10 @@ public class Forest extends Frequency {
                 }
             }
         }
-        double maxOld = 0;
+        float maxOld = 0;
         int type = 0;
         for (int i = 0; i < featureSize; i++) {
-            double[] g = new double[conditionMatrix.getX()];
+            float[] g = new float[conditionMatrix.getX()];
             for (int j = 0; j < g.length; j++) {
                 if (i < featureSize - 1) {
                     g[j] = conditionMatrix.getNumber(j, i);
@@ -99,24 +99,24 @@ public class Forest extends Frequency {
                     g[j] = resultMatrix.getNumber(j, 0);
                 }
             }
-            double var = dc(g);//计算方差
+            float var = dc(g);//计算方差
             if (var > maxOld) {
                 maxOld = var;
                 type = i;
             }
         }
         int x = pc.getX();
-        double max = 0;
+        float max = 0;
         for (int i = 0; i < x; i++) {
             Matrix g = pc.getRow(i);
-            double gNorm = matrixOperation.getNorm(g);
-            double[] var = new double[xSize];
+            float gNorm = matrixOperation.getNorm(g);
+            float[] var = new float[xSize];
             for (int j = 0; j < xSize; j++) {
                 Matrix parameter = matrixAll.getRow(j);
-                double dist = transG(g, parameter, gNorm);
+                float dist = transG(g, parameter, gNorm);
                 var[j] = dist;
             }
-            double variance = dc(var);
+            float variance = dc(var);
             if (variance > max) {
                 max = variance;
                 pc1 = g;
@@ -132,15 +132,15 @@ public class Forest extends Frequency {
         return findTwo(xSize);
     }
 
-    private double transG(Matrix g, Matrix parameter, double gNorm) throws Exception {//将数据映射到新基
+    private float transG(Matrix g, Matrix parameter, float gNorm) throws Exception {//将数据映射到新基
         //先求内积
-        double innerProduct = matrixOperation.innerProduct(g, parameter);
+        float innerProduct = matrixOperation.innerProduct(g, parameter);
         return innerProduct / gNorm;
     }
 
-    private double[] findTwo(int dataSize) throws Exception {
+    private float[] findTwo(int dataSize) throws Exception {
         Matrix matrix;//创建一个列向量
-        double[] data = new double[dataSize];
+        float[] data = new float[dataSize];
         if (isOldG) {//使用原有基
             if (oldGId == featureSize - 1) {//从结果矩阵提取数据
                 matrix = resultMatrix;
@@ -156,7 +156,7 @@ public class Forest extends Frequency {
             gNorm = matrixOperation.getNorm(pc1);
             for (int i = 0; i < x; i++) {
                 Matrix parameter = matrixAll.getRow(i);
-                double dist = transG(pc1, parameter, gNorm);
+                float dist = transG(pc1, parameter, gNorm);
                 data[i] = dist;
             }
         }
@@ -164,12 +164,12 @@ public class Forest extends Frequency {
         return data;
     }
 
-    private double getDist(double[] data, double[] w) {
+    private float getDist(float[] data, float[] w) {
         int len = data.length;
-        double sigma = 0;
+        float sigma = 0;
         for (int i = 0; i < len; i++) {
-            double sub = data[i] - w[i];
-            sigma = sigma + Math.pow(sub, 2);
+            float sub = data[i] - w[i];
+            sigma = sigma + (float)Math.pow(sub, 2);
         }
         return sigma / len;
     }
@@ -177,8 +177,8 @@ public class Forest extends Frequency {
     public void pruning() {//进行后剪枝，跟父级进行比较
         if (!notRemovable) {
             Forest fatherForest = this.getFather();
-            double[] fatherW = fatherForest.getW();
-            double sub = getDist(w, fatherW);
+            float[] fatherW = fatherForest.getW();
+            float sub = getDist(w, fatherW);
             if (sub < shrinkParameter) {//需要剪枝,通知父级
                 fatherForest.getSonMessage(true, id);
                 isRemove = true;
@@ -204,7 +204,7 @@ public class Forest extends Frequency {
     public void cut() throws Exception {
         int y = resultMatrix.getX();
         if (y > minGrain) {
-            double[] dm = findG();
+            float[] dm = findG();
             int z = y / 2;
             median = dm[z];
             int rightNub = 0;
@@ -235,7 +235,7 @@ public class Forest extends Frequency {
             int leftIndex = 0;//左矩阵添加行数
             int rightIndex = 0;//右矩阵添加行数
             for (int i = 0; i < y; i++) {
-                double nub;
+                float nub;
                 if (isOldG) {//使用原有基
                     nub = matrixAll.getNumber(i, oldGId);
                 } else {//使用新基
@@ -276,11 +276,11 @@ public class Forest extends Frequency {
         this.resultMatrix = resultMatrix;
     }
 
-    public double[] getW() {
+    public float[] getW() {
         return w;
     }
 
-    public void setW(double[] w) {
+    public void setW(float[] w) {
         this.w = w;
     }
 

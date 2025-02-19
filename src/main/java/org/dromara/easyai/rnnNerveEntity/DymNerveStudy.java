@@ -9,13 +9,13 @@ import java.util.List;
  * @date 8:14 上午 2020/1/18
  */
 public class DymNerveStudy {
-    private List<Double> list = new ArrayList<>();
+    private List<Float> list = new ArrayList<>();
 
-    public List<Double> getList() {
+    public List<Float> getList() {
         return list;
     }
 
-    public void setList(List<Double> list) {
+    public void setList(List<Float> list) {
         this.list = list;
     }
 }

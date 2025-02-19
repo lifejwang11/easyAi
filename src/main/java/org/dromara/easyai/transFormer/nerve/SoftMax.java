@@ -12,10 +12,10 @@ public class SoftMax extends Nerve {
     private final List<OutNerve> outNerves;
     private final boolean isShowLog;
     private final MatrixOperation matrixOperation = new MatrixOperation();
-    private final double timePunValue;//时间惩罚系数
+    private final float timePunValue;//时间惩罚系数
 
     public SoftMax(List<OutNerve> outNerves, boolean isShowLog
-            , int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, double timePunValue) throws Exception {
+            , int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, float timePunValue) throws Exception {
         super(0, "softMax", 0, null, sensoryNerveNub, hiddenNerveNub, outNerveNub,
                 null, 0, 0, 1);
         this.timePunValue = timePunValue;
@@ -27,10 +27,10 @@ public class SoftMax extends Nerve {
         int x = matrix.getX();
         int y = matrix.getY();
         Matrix myMatrix = new Matrix(1, y);
-        double pun = 1;
+        float pun = 1;
         for (int i = x - 1; i >= 0; i--) {
             for (int j = 0; j < y; j++) {
-                double value = myMatrix.getNumber(0, j) + matrix.getNumber(i, j) * pun;
+                float value = myMatrix.getNumber(0, j) + matrix.getNumber(i, j) * pun;
                 myMatrix.setNub(0, j, value);
             }
             pun = pun * timePunValue;
@@ -91,19 +91,19 @@ public class SoftMax extends Nerve {
 
     private Matrix error(Mes mes, int key, int featureIndex, int allSize) throws Exception {
         int t = key - 1;
-        List<Double> softMax = mes.softMax;
+        List<Float> softMax = mes.softMax;
         Matrix matrix = new Matrix(allSize, softMax.size());
         for (int i = 0; i < softMax.size(); i++) {
-            double self = softMax.get(i);
-            double myError;
+            float self = softMax.get(i);
+            float myError;
             if (i != t) {
                 myError = -self;
             } else {
                 myError = 1 - self;
             }
-            double pun = 1;
+            float pun = 1;
             for (int j = featureIndex; j >= 0; j--) {
-                double error = myError * pun;
+                float error = myError * pun;
                 matrix.setNub(j, i, error);
                 pun = pun * timePunValue;
             }
@@ -112,19 +112,19 @@ public class SoftMax extends Nerve {
     }
 
     private Mes softMax(boolean isStudy, Matrix matrix, boolean outAllPro) throws Exception {//计算当前输出结果
-        double sigma = 0;
+        float sigma = 0;
         int id = 0;
-        double poi = 0;
+        float poi = 0;
         Mes mes = new Mes();
         int size = matrix.getY();
         for (int j = 0; j < size; j++) {
-            double value = matrix.getNumber(0, j);
-            sigma = Math.exp(value) + sigma;
+            float value = matrix.getNumber(0, j);
+            sigma = (float)Math.exp(value) + sigma;
         }
-        List<Double> softMax = new ArrayList<>();
+        List<Float> softMax = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            double eSelf = Math.exp(matrix.getNumber(0, i));
-            double value = eSelf / sigma;
+            float eSelf = (float)Math.exp(matrix.getNumber(0, i));
+            float value = eSelf / sigma;
             if (isStudy || outAllPro) {
                 softMax.add(value);
             }
@@ -141,7 +141,7 @@ public class SoftMax extends Nerve {
 
     static class Mes {
         int typeID;
-        double poi;
-        List<Double> softMax;
+        float poi;
+        List<Float> softMax;
     }
 }

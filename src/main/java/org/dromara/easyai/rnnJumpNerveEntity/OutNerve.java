@@ -17,9 +17,9 @@ public class OutNerve extends Nerve {
     private final boolean isShowLog;
     private final boolean isSoftMax;
 
-    public OutNerve(int id, double studyPoint, boolean init,
+    public OutNerve(int id, float studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic, boolean isShowLog,
-                    int rzType, double lParam, boolean isSoftMax, int step, int kernLen,
+                    int rzType, float lParam, boolean isSoftMax, int step, int kernLen,
                     int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, int allDepth) throws Exception {
         super(id, "OutNerve", studyPoint, init, activeFunction, isDynamic, rzType, lParam, step, kernLen,
                 sensoryNerveNub, hiddenNerveNub, outNerveNub, allDepth, false, 0);
@@ -28,7 +28,7 @@ public class OutNerve extends Nerve {
     }
 
 
-    void getGBySoftMax(double g, long eventId, int[] storeys, int index) throws Exception {//接收softMax层回传梯度
+    void getGBySoftMax(float g, long eventId, int[] storeys, int index) throws Exception {//接收softMax层回传梯度
         gradient = g;
         updatePower(eventId, storeys, index);
     }
@@ -38,35 +38,35 @@ public class OutNerve extends Nerve {
     }
 
     @Override
-    protected void sendAppointTestMessage(long eventId, double parameter, Matrix featureMatrix, OutBack outBack, String myWord) throws Exception {
+    protected void sendAppointTestMessage(long eventId, float parameter, Matrix featureMatrix, OutBack outBack, String myWord) throws Exception {
         //计算出结果返回给对应的层的神经中枢
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//所有参数集齐
-            double sigma = calculation(eventId);
+            float sigma = calculation(eventId);
             destroyParameter(eventId);
             sendSoftMaxBack(eventId, sigma, featureMatrix, outBack, myWord);
         }
     }
 
-    public void backMatrixError(double g, long eventId, int[] storeys, int index) throws Exception {//返回误差
+    public void backMatrixError(float g, long eventId, int[] storeys, int index) throws Exception {//返回误差
         gradient = activeFunction.functionG(outNub) * g;
         //调整权重 修改阈值 并进行反向传播
         updatePower(eventId, storeys, index);
     }
 
     @Override
-    public void input(long eventId, double parameter, boolean isStudy, Map<Integer, Double> E
+    public void input(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E
             , OutBack outBack, Matrix rnnMatrix, int[] storeys, int index, int questionLength) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
-            double sigma = calculation(eventId);
+            float sigma = calculation(eventId);
             if (isSoftMax) {
                 if (!isStudy) {
                     destroyParameter(eventId);
                 }
                 sendSoftMax(eventId, sigma, isStudy, E, outBack, rnnMatrix, storeys, index);
             } else {
-                double out = activeFunction.function(sigma);
+                float out = activeFunction.function(sigma);
                 if (isStudy) {//输出结果并进行BP调整权重及阈值
                     outNub = out;
                     if (E.containsKey(getId())) {
@@ -122,7 +122,7 @@ public class OutNerve extends Nerve {
         Matrix matrix1 = new Matrix(matrix.getX(), matrix.getY());
         for (int i = 0; i < E.getX(); i++) {
             for (int j = 0; j < E.getY(); j++) {
-                double nub = E.getNumber(i, j) - matrix.getNumber(i, j);
+                float nub = E.getNumber(i, j) - matrix.getNumber(i, j);
                 //ArithUtil.sub(E.getNumber(i, j), matrix.getNumber(i, j));
                 matrix1.setNub(i, j, nub);
             }
@@ -130,7 +130,7 @@ public class OutNerve extends Nerve {
         return matrix1;
     }
 
-    private double outGradient() {//生成输出层神经元梯度变化
+    private float outGradient() {//生成输出层神经元梯度变化
         //上层神经元输入值 * 当前神经元梯度*学习率 =该上层输入的神经元权重变化
         //当前梯度神经元梯度变化 *学习旅 * -1 = 当前神经元阈值变化
         return activeFunction.functionG(outNub) * (E - outNub);

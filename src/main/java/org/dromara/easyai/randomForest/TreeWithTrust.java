@@ -7,7 +7,7 @@ package org.dromara.easyai.randomForest;
  */
 public class TreeWithTrust {
     private int type;//类别
-    private double trust;//可信度
+    private float trust;//可信度
 
     public int getType() {
         return type;
@@ -17,11 +17,11 @@ public class TreeWithTrust {
         this.type = type;
     }
 
-    public double getTrust() {
+    public float getTrust() {
         return trust;
     }
 
-    public void setTrust(double trust) {
+    public void setTrust(float trust) {
         this.trust = trust;
     }
 }

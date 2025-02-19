@@ -13,7 +13,7 @@ public class MultiSelfAttention {//多头自注意力层
     private final CodecBlock codecBlock;//本层壳子
     private final List<SelfAttention> selfAttentions = new ArrayList<>();
     private LayNorm layNorm;
-    private final double studyPoint;
+    private final float studyPoint;
     private Matrix powerMatrix;//权重矩阵
     private final int multiNumber;//头数
     private final int wordVectorDimension;//维度
@@ -56,7 +56,7 @@ public class MultiSelfAttention {//多头自注意力层
         }
     }
 
-    private void insertPower(double[][] modelPower, Matrix power) throws Exception {
+    private void insertPower(float[][] modelPower, Matrix power) throws Exception {
         for (int i = 0; i < power.getX(); i++) {
             for (int j = 0; j < power.getY(); j++) {
                 power.setNub(i, j, modelPower[i][j]);
@@ -64,7 +64,7 @@ public class MultiSelfAttention {//多头自注意力层
         }
     }
 
-    public MultiSelfAttentionModel getModel() {
+    public MultiSelfAttentionModel getModel() throws Exception {
         MultiSelfAttentionModel multiSelfAttentionModel = new MultiSelfAttentionModel();
         List<QKVModel> qkvModelList = new ArrayList<>();
         for (SelfAttention selfAttention : selfAttentions) {
@@ -177,27 +177,27 @@ public class MultiSelfAttention {//多头自注意力层
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 int k = j / 2;
-                double wk = 1 / (Math.pow(10000, 2D * k / y));
-                double pe;
+                float wk = 1 / ((float)Math.pow(10000, 2D * k / y));
+                float pe;
                 if (j % 2 == 0) {//当列数是偶数
-                    pe = Math.sin(wk * i);
+                    pe = (float)Math.sin(wk * i);
                 } else {//当列数是奇数
-                    pe = Math.cos(wk * i);
+                    pe = (float)Math.cos(wk * i);
                 }
-                double value = feature.getNumber(i, j) + pe;
+                float value = feature.getNumber(i, j) + pe;
                 feature.setNub(i, j, value);
             }
         }
     }
 
     private void addTimeCodeBySelf(Matrix feature) throws Exception {//添加时间编码
-        double timeStep = 1D / maxLength;
+        float timeStep = 1f / maxLength;
         int x = feature.getX();
         int y = feature.getY();
         for (int i = 1; i < x; i++) {
-            double step = i * timeStep;
+            float step = i * timeStep;
             for (int j = 0; j < y; j++) {
-                double value = feature.getNumber(i, j) + step;
+                float value = feature.getNumber(i, j) + step;
                 feature.setNub(i, j, value);
             }
         }
@@ -222,7 +222,7 @@ public class MultiSelfAttention {//多头自注意力层
     }
 
 
-    public MultiSelfAttention(int multiNumber, double studyPoint, int depth, int wordVectorDimension, boolean encoder,
+    public MultiSelfAttention(int multiNumber, float studyPoint, int depth, int wordVectorDimension, boolean encoder,
                               CodecBlock codecBlock, int maxLength, boolean selfTimeCode, int coreNumber) throws Exception {
         Random random = new Random();
         matrixOperation = new MatrixOperation(coreNumber);
@@ -244,7 +244,7 @@ public class MultiSelfAttention {//多头自注意力层
         int y = powerMatrix.getY();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                powerMatrix.setNub(i, j, random.nextDouble() / yiZhi);
+                powerMatrix.setNub(i, j, random.nextFloat() / yiZhi);
             }
         }
     }

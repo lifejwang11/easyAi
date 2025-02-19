@@ -22,10 +22,10 @@ public class LineBlock {//线性层模块
     private int backNumber = 0;//误差返回次数
     private final MatrixOperation matrixOperation;
 
-    public LineBlockModel getModel() {
+    public LineBlockModel getModel() throws Exception {
         LineBlockModel lineBlockModel = new LineBlockModel();
-        List<double[][]> hiddenNerveModel = new ArrayList<>();
-        List<double[][]> outNerveModel = new ArrayList<>();
+        List<float[][]> hiddenNerveModel = new ArrayList<>();
+        List<float[][]> outNerveModel = new ArrayList<>();
         for (HiddenNerve hiddenNerve : hiddenNerveList) {
             hiddenNerveModel.add(hiddenNerve.getModel());
         }
@@ -38,8 +38,8 @@ public class LineBlock {//线性层模块
     }
 
     public void insertModel(LineBlockModel lineBlockModel) throws Exception {
-        List<double[][]> hiddenNerveModel = lineBlockModel.getHiddenNervesModel();
-        List<double[][]> outNerveModel = lineBlockModel.getOutNervesModel();
+        List<float[][]> hiddenNerveModel = lineBlockModel.getHiddenNervesModel();
+        List<float[][]> outNerveModel = lineBlockModel.getOutNervesModel();
         for (int i = 0; i < hiddenNerveList.size(); i++) {
             hiddenNerveList.get(i).insertModel(hiddenNerveModel.get(i));
         }
@@ -48,8 +48,8 @@ public class LineBlock {//线性层模块
         }
     }
 
-    public LineBlock(int typeNumber, int featureDimension, double studyPoint, CodecBlock lastCodecBlock,
-                     boolean showLog, int regularModel, double regular, int coreNumber, double timePunValue) throws Exception {
+    public LineBlock(int typeNumber, int featureDimension, float studyPoint, CodecBlock lastCodecBlock,
+                     boolean showLog, int regularModel, float regular, int coreNumber, float timePunValue) throws Exception {
         this.featureDimension = featureDimension;
         this.lastCodecBlock = lastCodecBlock;
         matrixOperation = new MatrixOperation(coreNumber);

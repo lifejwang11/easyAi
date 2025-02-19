@@ -32,9 +32,9 @@ public class CodecBlock {
     private final MatrixOperation matrixOperation;
     private final int coreNumber;
 
-    public CodecBlockModel getModel() {
-        List<double[][]> firstNerveModel = new ArrayList<>();
-        List<double[][]> secondNerveModel = new ArrayList<>();
+    public CodecBlockModel getModel() throws Exception {
+        List<float[][]> firstNerveModel = new ArrayList<>();
+        List<float[][]> secondNerveModel = new ArrayList<>();
         for (int i = 0; i < fistHiddenNerves.size(); i++) {
             firstNerveModel.add(fistHiddenNerves.get(i).getModel());
             secondNerveModel.add(secondHiddenNerves.get(i).getModel());
@@ -51,8 +51,8 @@ public class CodecBlock {
     public void insertModel(CodecBlockModel codecBlockModel) throws Exception {
         multiSelfAttention.insertModel(codecBlockModel.getMultiSelfAttentionModel());
         attentionLayNorm.insertModel(codecBlockModel.getAttentionLayNormModel());
-        List<double[][]> firstNerveModel = codecBlockModel.getFistNervesModel();
-        List<double[][]> secondNerveModel = codecBlockModel.getSecondNervesModel();
+        List<float[][]> firstNerveModel = codecBlockModel.getFistNervesModel();
+        List<float[][]> secondNerveModel = codecBlockModel.getSecondNervesModel();
         for (int i = 0; i < fistHiddenNerves.size(); i++) {
             fistHiddenNerves.get(i).insertModel(firstNerveModel.get(i));
             secondHiddenNerves.get(i).insertModel(secondNerveModel.get(i));
@@ -80,8 +80,8 @@ public class CodecBlock {
         this.beforeEncoderBlock = beforeEncoderBlock;
     }
 
-    public CodecBlock(int multiNumber, int featureDimension, double studyPoint, int depth,
-                      boolean encoder, int regularModel, double regular, int maxLength, boolean selfTimeCode
+    public CodecBlock(int multiNumber, int featureDimension, float studyPoint, int depth,
+                      boolean encoder, int regularModel, float regular, int maxLength, boolean selfTimeCode
             , int coreNumber) throws Exception {//进行初始化
         matrixOperation = new MatrixOperation(coreNumber);
         this.encoder = encoder;
@@ -148,7 +148,7 @@ public class CodecBlock {
         multiSelfAttention.sendMatrixMessage(eventID, feature, isStudy, outBack, E, encoderFeature, outAllPro);
     }
 
-    private void initLine(int featureDimension, double studyPoint, int regularModel, double regular) throws Exception {
+    private void initLine(int featureDimension, float studyPoint, int regularModel, float regular) throws Exception {
         List<Nerve> firstNerves = new ArrayList<>();
         List<Nerve> secondNerves = new ArrayList<>();
         for (int i = 0; i < featureDimension; i++) {

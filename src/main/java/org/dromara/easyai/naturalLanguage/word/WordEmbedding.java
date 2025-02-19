@@ -105,12 +105,12 @@ public class WordEmbedding extends MatrixOperation {
     private void studyDNN(long eventId, int featureIndex, int resIndex, OutBack outBack, boolean isStudy) throws Exception {
         List<SensoryNerve> sensoryNerves = nerveManager.getSensoryNerves();
         int size = sensoryNerves.size();
-        Map<Integer, Double> map = new HashMap<>();
+        Map<Integer, Float> map = new HashMap<>();
         if (resIndex > 0) {
-            map.put(resIndex + 1, 1D);
+            map.put(resIndex + 1, 1f);
         }
         for (int i = 0; i < size; i++) {
-            double feature = 0;
+            float feature = 0;
             if (i == featureIndex) {
                 feature = 1;
             }
@@ -131,7 +131,7 @@ public class WordEmbedding extends MatrixOperation {
                 long start = System.currentTimeMillis();
                 study(sentenceList.get(i));
                 long end = System.currentTimeMillis() - start;
-                double r = (double) index / allTimes * 100;
+                float r = (float) index / allTimes * 100;
                 String result = String.format("%.6f", r);
                 System.out.println("size:" + size + ",index:" + i + ",耗时:" + end + ",完成度:" + result + "%");
             }

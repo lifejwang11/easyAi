@@ -9,27 +9,27 @@ package org.dromara.easyai.config;
  */
 public class WaterConfig {
     //分水岭参数
-    private double rainTh = 0.4;//降雨密度图
+    private float rainTh = 0.4f;//降雨密度图
     private int regionNub = 100;//区域大小
     private int cutMaxXSize = 2000;//分水岭切割最大取样X400
     private int cutMaxYSize = 2000;//分水岭切割最大取样Y400
     private int minXSizeTh = 100;//分水岭过滤最小框
     private int minYSizeTh = 100;//分水岭过滤最小框
-    private double th = 2 / 255D;//落差阈值
+    private float th = 2 / 255f;//落差阈值
 
-    public double getTh() {
+    public float getTh() {
         return th;
     }
 
-    public void setTh(double th) {
+    public void setTh(float th) {
         this.th = th;
     }
 
-    public double getRainTh() {
+    public float getRainTh() {
         return rainTh;
     }
 
-    public void setRainTh(double rainTh) {
+    public void setRainTh(float rainTh) {
         this.rainTh = rainTh;
     }
 

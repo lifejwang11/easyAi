@@ -20,7 +20,7 @@ public class ModelParameter {
     private List<RnnOutNerveStudy> rnnOutNerveStudies = new ArrayList<>();//rnn多级输出神经元
     private List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
     private DymNerveStudy dymOutNerveStudy = new DymNerveStudy();//动态神经元输出层
-    private Map<Integer, Double> foodS;//干食品类别对应的积分 需激活注入
+    private Map<Integer, Float> foodS;//干食品类别对应的积分 需激活注入
 
     public List<RnnOutNerveStudy> getRnnOutNerveStudies() {
         return rnnOutNerveStudies;
@@ -62,11 +62,11 @@ public class ModelParameter {
         this.dymOutNerveStudy = dymOutNerveStudy;
     }
 
-    public Map<Integer, Double> getFoodS() {
+    public Map<Integer, Float> getFoodS() {
         return foodS;
     }
 
-    public void setFoodS(Map<Integer, Double> foodS) {
+    public void setFoodS(Map<Integer, Float> foodS) {
         this.foodS = foodS;
     }
 }

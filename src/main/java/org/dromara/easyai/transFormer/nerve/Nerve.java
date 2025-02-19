@@ -28,8 +28,8 @@ public abstract class Nerve {
     protected Map<Long, Matrix> reMatrixFeatures = new HashMap<>();
     protected String name;//该神经元所属类型
     protected Matrix featureMatrix;
-    protected double E;//模板期望值
-    protected double studyPoint;
+    protected float E;//模板期望值
+    protected float studyPoint;
     protected LineBlock lineBlock;//是否为最后线性层
     protected Matrix sigmaW;//对上一层权重与上一层梯度的积进行求和
     private int backNub = 0;//当前节点被反向传播的次数
@@ -38,7 +38,7 @@ public abstract class Nerve {
     protected int myUpNumber;//统计参数数量
     protected int depth;//所处深度
     private final int regularModel;//正则模式
-    private final double regular;//正则系数
+    private final float regular;//正则系数
     private final MatrixOperation matrixOperation;
 
     public int getDepth() {
@@ -53,9 +53,9 @@ public abstract class Nerve {
         this.afterLayNorm = afterLayNorm;
     }
 
-    protected Nerve(int id, String name, double studyPoint, ActiveFunction activeFunction, int sensoryNerveNub,
+    protected Nerve(int id, String name, float studyPoint, ActiveFunction activeFunction, int sensoryNerveNub,
                     int hiddenNerveNub, int outNerveNub, LineBlock lineBlock, int regularModel,
-                    double regular, int coreNumber) throws Exception {//该神经元在同层神经元中的编号
+                    float regular, int coreNumber) throws Exception {//该神经元在同层神经元中的编号
         this.id = id;
         matrixOperation = new MatrixOperation(coreNumber);
         this.regular = regular;
@@ -70,11 +70,11 @@ public abstract class Nerve {
         initPower();//生成随机权重
     }
 
-    public double[][] getModel() {
+    public float[][] getModel() throws Exception {
         return powerMatrix.getMatrix();
     }
 
-    public void insertModel(double[][] modelPower) throws Exception {
+    public void insertModel(float[][] modelPower) throws Exception {
         for (int i = 0; i < powerMatrix.getX(); i++) {
             for (int j = 0; j < powerMatrix.getY(); j++) {
                 powerMatrix.setNub(i, j, modelPower[i][j]);
@@ -136,8 +136,8 @@ public abstract class Nerve {
             backNub = 0;
             if (activeFunction != null) {
                 for (int i = 0; i < sigmaW.getX(); i++) {
-                    double out = outMatrix.getNumber(i, 0);
-                    double value = activeFunction.functionG(out) * sigmaW.getNumber(i, 0);
+                    float out = outMatrix.getNumber(i, 0);
+                    float value = activeFunction.functionG(out) * sigmaW.getNumber(i, 0);
                     sigmaW.setNub(i, 0, value);
                 }
             }
@@ -155,20 +155,20 @@ public abstract class Nerve {
 
     private Matrix getRegularizationMatrix() throws Exception {
         int size = powerMatrix.getX();
-        double sigma = 0;
+        float sigma = 0;
         for (int i = 0; i < size; i++) {
-            double value = powerMatrix.getNumber(i, 0);
+            float value = powerMatrix.getNumber(i, 0);
             if (regularModel == RZ.L1) {//l1正则化
-                sigma = sigma + Math.abs(value);
+                sigma = sigma + (float)Math.abs(value);
             } else {
-                sigma = sigma + Math.pow(value, 2);
+                sigma = sigma + (float)Math.pow(value, 2);
             }
         }
-        double param = sigma * regular * studyPoint;
+        float param = (float) sigma * regular * studyPoint;
         Matrix rzMatrix = new Matrix(powerMatrix.getX(), powerMatrix.getY());
         for (int i = 0; i < size; i++) {
-            double value = powerMatrix.getNumber(i, 0);
-            double re = 0.0;
+            float value = powerMatrix.getNumber(i, 0);
+            float re = 0F;
             if (regularModel == RZ.L2) {
                 re = param * -value;
             } else if (regularModel == RZ.L1) {
@@ -218,13 +218,13 @@ public abstract class Nerve {
     protected Matrix opMatrix(Matrix feature, boolean isStudy) throws Exception {
         Matrix th = new Matrix(feature.getX(), 1);
         for (int i = 0; i < th.getX(); i++) {
-            th.setNub(i, 0, 1D);
+            th.setNub(i, 0, 1F);
         }
         Matrix matrix = matrixOperation.pushVector(feature, th, false);
         Matrix sigma = matrixOperation.mulMatrix(matrix, powerMatrix);
         if (activeFunction != null) {
             for (int i = 0; i < sigma.getX(); i++) {
-                double value = activeFunction.function(sigma.getNumber(i, 0));
+                float value = activeFunction.function(sigma.getNumber(i, 0));
                 sigma.setNub(i, 0, value);
             }
         }
@@ -248,13 +248,13 @@ public abstract class Nerve {
         }
         if (myUpNumber > 0) {//输入个数
             powerMatrix = new Matrix(myUpNumber + 1, 1);
-            double sh = Math.sqrt(myUpNumber);
+            float sh = (float)Math.sqrt(myUpNumber);
             for (int i = 0; i < myUpNumber; i++) {
-                double nub = random.nextDouble() / sh;
+                float nub = (float) (random.nextFloat() / sh);
                 powerMatrix.setNub(i, 0, nub);
             }
             //生成随机阈值
-            powerMatrix.setNub(myUpNumber, 0, random.nextDouble() / sh);
+            powerMatrix.setNub(myUpNumber, 0, (float) (random.nextFloat() / sh));
         }
     }
 

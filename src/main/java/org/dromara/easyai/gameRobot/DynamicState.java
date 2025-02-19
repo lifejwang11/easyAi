@@ -10,7 +10,7 @@ import java.util.*;
 public class DynamicState {
     private int[] stateId;//状态id
     private int bestActionId = 1;//该状态的最优动作
-    private double value = 0;//该状态价值
+    private float value = 0;//该状态价值
     private int number = 0;//该状态被执行了几次 被执行的时候需要修改
     private boolean isFinish = false;//是否是终结态
     private Map<Integer, List<DynamicState>> sonStatesMap = new HashMap<>();//动作-子状态集合 被执行的时候需要修改
@@ -60,11 +60,11 @@ public class DynamicState {
         this.stateId = stateId;
     }
 
-    public double getValue() {
+    public float getValue() {
         return value;
     }
 
-    public void setValue(double value) {
+    public void setValue(float value) {
         this.value = value;
     }
 }

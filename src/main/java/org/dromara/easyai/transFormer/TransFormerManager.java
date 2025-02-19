@@ -22,7 +22,7 @@ public class TransFormerManager {
         return sensoryNerve;
     }
 
-    public TransFormerModel getModel() {
+    public TransFormerModel getModel() throws Exception {
         TransFormerModel transFormerModel = new TransFormerModel();
         List<CodecBlockModel> encoderBlockModels = new ArrayList<>();
         List<CodecBlockModel> decoderBlockModels = new ArrayList<>();
@@ -44,14 +44,14 @@ public class TransFormerManager {
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 int k = j / 2;
-                double wk = 1 / (Math.pow(10000, 2D * k / y));
-                double pe;
+                float wk = 1 / ((float)Math.pow(10000, 2D * k / y));
+                float pe;
                 if (j % 2 == 0) {//当列数是偶数
-                    pe = Math.sin(wk * i);
+                    pe = (float)Math.sin(wk * i);
                 } else {//当列数是奇数
-                    pe = Math.cos(wk * i);
+                    pe = (float)Math.cos(wk * i);
                 }
-                double value = feature.getNumber(i, j) + pe;
+                float value = feature.getNumber(i, j) + (float) pe;
                 matrix.setNub(i, j, value);
             }
         }
@@ -59,14 +59,14 @@ public class TransFormerManager {
     }
 
     private Matrix addTimeCodeBySelf(Matrix feature) throws Exception {//添加时间编码
-        double timeStep = 1D / maxLength;
+        float timeStep = 1F / maxLength;
         int x = feature.getX();
         int y = feature.getY();
         Matrix matrix = new Matrix(x, y);
         for (int i = 1; i < x; i++) {
-            double step = i * timeStep;
+            float step = i * timeStep;
             for (int j = 0; j < y; j++) {
-                double value = feature.getNumber(i, j) + step;
+                float value = feature.getNumber(i, j) + step;
                 matrix.setNub(i, j, value);
             }
         }
@@ -83,7 +83,7 @@ public class TransFormerManager {
         Matrix myFeature = new Matrix(1, matrix.getY());
         for (int j = 0; j < matrix.getY(); j++) {
             Matrix col = matrix.getColumn(j);
-            double value = col.getAVG();
+            float value = col.getAVG();
             myFeature.setNub(0, j, value);
         }
         return myFeature;
@@ -115,11 +115,11 @@ public class TransFormerManager {
             throw new Exception("TransFormer 词向量维度必须为偶数");
         }
         int allDepth = tfConfig.getAllDepth();
-        double studyPoint = tfConfig.getStudyPoint();
+        float studyPoint = tfConfig.getStudyPoint();
         int typeNumber = tfConfig.getTypeNumber();
         boolean showLog = tfConfig.isShowLog();
         int regularModel = tfConfig.getRegularModel();
-        double regular = tfConfig.getRegular();
+        float regular = tfConfig.getRegular();
         if (multiNumber > 1 && featureDimension > 0 && allDepth > 0 && typeNumber > 1) {
             for (int i = 0; i < allDepth; i++) {
                 CodecBlock encoderBlock = new CodecBlock(multiNumber, featureDimension, studyPoint,

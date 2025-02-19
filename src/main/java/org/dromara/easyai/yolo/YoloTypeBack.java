@@ -6,11 +6,11 @@ import org.dromara.easyai.i.OutBack;
 import java.util.List;
 
 public class YoloTypeBack implements OutBack {
-    private double out = -1;
+    private float out = -1;
     private int id = 0;
 
 
-    public double getOut() {
+    public float getOut() {
         return out;
     }
 
@@ -24,7 +24,7 @@ public class YoloTypeBack implements OutBack {
     }
 
     @Override
-    public void getBack(double out, int id, long eventId) {
+    public void getBack(float out, int id, long eventId) {
         if (out > this.out) {
             this.out = out;
             this.id = id;
@@ -32,7 +32,7 @@ public class YoloTypeBack implements OutBack {
     }
 
     @Override
-    public void getSoftMaxBack(long eventId, List<Double> softMax) {
+    public void getSoftMaxBack(long eventId, List<Float> softMax) {
 
     }
 
@@ -48,7 +48,7 @@ public class YoloTypeBack implements OutBack {
     }
 
     @Override
-    public void getWordVector(int id, double w) {
+    public void getWordVector(int id, float w) {
 
     }
 }

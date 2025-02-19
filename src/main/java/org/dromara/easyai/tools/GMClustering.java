@@ -11,13 +11,13 @@ import org.dromara.easyai.entity.RGBNorm;
  * @Description
  */
 public class GMClustering extends MeanClustering {
-    private double regionSize;//单区域面积
+    private float regionSize;//单区域面积
 
-    public double getRegionSize() {
+    public float getRegionSize() {
         return regionSize;
     }
 
-    public void setRegionSize(double regionSize) {
+    public void setRegionSize(float regionSize) {
         this.regionSize = regionSize;
     }
 
@@ -25,12 +25,12 @@ public class GMClustering extends MeanClustering {
         super(speciesQuantity, maxTimes);
     }
 
-    public int getProbabilityDensity(double[] feature) throws Exception {//获取簇id
-        double maxPower = 0;
+    public int getProbabilityDensity(float[] feature) throws Exception {//获取簇id
+        float maxPower = 0;
         int id = 0;
         int index = 0;
         for (RGBNorm rgbNorm : matrices) {
-            double power = rgbNorm.getGMProbability(feature);
+            float power = rgbNorm.getGMProbability(feature);
             if (power > maxPower) {
                 maxPower = power;
                 id = index;
@@ -55,7 +55,7 @@ public class GMClustering extends MeanClustering {
         int y = matrix.getY();
         int size = y / speciesQuantity;
         for (int i = 0; i <= y - size; i += size) {
-            double[] feature = new double[size];
+            float[] feature = new float[size];
             RGBNorm rgbNorm = new RGBNorm();
             matrices.add(rgbNorm);
             for (int j = i; j < i + size; j++) {
@@ -73,12 +73,12 @@ public class GMClustering extends MeanClustering {
 
     private void gmClustering() throws Exception {//进行gm聚类
         clear();
-        for (double[] rgb : matrixList) {//遍历当前集合
-            double allProbability = 0;//全概率
-            double[] pro = new double[speciesQuantity];
+        for (float[] rgb : matrixList) {//遍历当前集合
+            float allProbability = 0;//全概率
+            float[] pro = new float[speciesQuantity];
             for (int i = 0; i < speciesQuantity; i++) {
                 RGBNorm rgbNorm = matrices.get(i);
-                double probability = rgbNorm.getGMProbability(rgb);
+                float probability = rgbNorm.getGMProbability(rgb);
                 //System.out.println("pro===" + probability);
                 allProbability = allProbability + probability;
                 pro[i] = probability;
@@ -89,7 +89,7 @@ public class GMClustering extends MeanClustering {
             }
             //判断概率最大的簇
             int index = 0;
-            double max = 0;
+            float max = 0;
             for (int i = 0; i < speciesQuantity; i++) {
                 if (pro[i] > max) {
                     max = pro[i];

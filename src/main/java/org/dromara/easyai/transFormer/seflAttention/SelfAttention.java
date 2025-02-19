@@ -15,7 +15,7 @@ public class SelfAttention {//自注意力层
     private Matrix powerV;//v权重矩阵
     private final int wordVectorDimension;//特征矩阵维度
     private final int depth;//深度
-    private final double studyPoint;//学习率
+    private final float studyPoint;//学习率
     private final int selfID;
     private final boolean encoder;//是否为编码器模块
     private final MatrixOperation matrixOperation;
@@ -24,7 +24,7 @@ public class SelfAttention {//自注意力层
         return selfID;
     }
 
-    public SelfAttention(double studyPoint, int depth, int wordVectorDimension, int selfID, boolean encoder
+    public SelfAttention(float studyPoint, int depth, int wordVectorDimension, int selfID, boolean encoder
             , int coreNumber) throws Exception {
         matrixOperation = new MatrixOperation(coreNumber);
         this.studyPoint = studyPoint;
@@ -43,7 +43,7 @@ public class SelfAttention {//自注意力层
         insertPower(qkvModel.getV(), powerV);
     }
 
-    private void insertPower(double[][] modelPower, Matrix power) throws Exception {
+    private void insertPower(float[][] modelPower, Matrix power) throws Exception {
         for (int i = 0; i < power.getX(); i++) {
             for (int j = 0; j < power.getY(); j++) {
                 power.setNub(i, j, modelPower[i][j]);
@@ -51,7 +51,7 @@ public class SelfAttention {//自注意力层
         }
     }
 
-    public QKVModel getModel() {
+    public QKVModel getModel() throws Exception {
         QKVModel qkvModel = new QKVModel();
         qkvModel.setQ(powerQ.getMatrix());
         qkvModel.setK(powerK.getMatrix());
@@ -70,7 +70,7 @@ public class SelfAttention {//自注意力层
         Matrix qkt = featureBody.qkt;
         Matrix errorV = matrixOperation.matrixMulPd(feature, qkt, v, false);//先求V的偏导
         Matrix subQktMax = matrixOperation.matrixMulPd(feature, qkt, v, true);
-        Matrix grMatrix = matrixSoftMaxPd(qkt, subQktMax);//对softMax做误差求导
+        Matrix grMatrix = matrixOperation.matrixSoftMaxPd(qkt, subQktMax, wordVectorDimension);//对softMax做误差求导
         Matrix errorKt = matrixOperation.matrixMulPd(grMatrix, q, kt, false);
         Matrix errorQ = matrixOperation.matrixMulPd(grMatrix, q, kt, true);
         Matrix errorK = matrixOperation.transPosition(errorKt);
@@ -110,42 +110,12 @@ public class SelfAttention {//自注意力层
         return errorFeature;
     }
 
-    private Matrix matrixSoftMaxPd(Matrix qkt, Matrix errorMatrix) throws Exception {//对矩阵的softMax求导
-        double param = Math.sqrt(wordVectorDimension);
-        int x = qkt.getX();
-        int y = qkt.getY();
-        Matrix grMatrix = new Matrix(x, y);
-        for (int i = 0; i < x; i++) {
-            Matrix qr = qkt.getRow(i);//该行的行向量
-            for (int j = 0; j < y; j++) {
-                double jValue = qr.getNumber(0, j);//遍历qr每一个元素，分别对他们求偏导
-                int z = qr.getY();
-                double sigma = 0;
-                for (int k = 0; k < z; k++) {
-                    double kValue = qr.getNumber(0, k);//遍历qr每一个元素，分别对他们求偏导
-                    double error = errorMatrix.getNumber(i, k);
-                    double er;
-                    if (k != j) {
-                        er = -error * kValue * jValue;
-                    } else {
-                        er = jValue * (1 - jValue) * error;
-                    }
-                    sigma = sigma + er;
-                }
-                double gr = sigma / param;//该位置梯度
-                grMatrix.setNub(i, j, gr);
-            }
-        }
-        return grMatrix;
-    }
-
-
     private void mask(Matrix matrix) throws Exception {
         int x = matrix.getX();
         int y = matrix.getY();
         for (int i = 0; i < x; i++) {
             for (int j = i + 1; j < y; j++) {
-                matrix.setNub(i, j, -1000D);
+                matrix.setNub(i, j, -1000f);
             }
         }
     }
@@ -164,12 +134,12 @@ public class SelfAttention {//自注意力层
         Matrix v = matrixOperation.mulMatrix(kvFeature, powerV);
         Matrix kt = matrixOperation.transPosition(k);//k转置
         Matrix qkt = matrixOperation.mulMatrix(q, kt);
-        matrixOperation.mathDiv(qkt, Math.sqrt(wordVectorDimension));
+        matrixOperation.mathDiv(qkt, (float)Math.sqrt(wordVectorDimension));
         //做蒙版
         if (depth == 1 && !encoder) {//第一层解码器 需要先做蒙版操作
             mask(qkt);
         }
-        softMax(qkt);
+        matrixOperation.softMax(qkt);
         Matrix result = matrixOperation.mulMatrix(qkt, v);
         if (!isStudy) {
             this.featureMatrix.remove(eventID);
@@ -180,27 +150,6 @@ public class SelfAttention {//自注意力层
             featureBody.qkt = qkt;
         }
         return result;
-    }
-
-    private double getRowSoftMaxSigma(Matrix row) throws Exception {
-        double sigma = 0;
-        for (int i = 0; i < row.getY(); i++) {
-            double value = row.getNumber(0, i);
-            sigma = Math.exp(value) + sigma;
-        }
-        return sigma;
-    }
-
-    private void softMax(Matrix matrix) throws Exception {//进行softMax处理
-        for (int i = 0; i < matrix.getX(); i++) {
-            Matrix row = matrix.getRow(i);
-            double sigma = getRowSoftMaxSigma(row);
-            for (int j = 0; j < matrix.getY(); j++) {
-                double self = row.getNumber(0, j);
-                double eSelf = Math.exp(self);
-                matrix.setNub(i, j, eSelf / sigma);
-            }
-        }
     }
 
     public EventBody sendMatrixFeature(long eventID, boolean isStudy, Matrix feature, Matrix encoderFeature) throws Exception {
@@ -221,7 +170,7 @@ public class SelfAttention {//自注意力层
         Matrix power = new Matrix(wordVectorDimension, wordVectorDimension);
         for (int i = 0; i < wordVectorDimension; i++) {
             for (int j = 0; j < wordVectorDimension; j++) {
-                power.setNub(i, j, random.nextDouble() / wordVectorDimension);
+                power.setNub(i, j, random.nextFloat() / wordVectorDimension);
             }
         }
         return power;

@@ -6,22 +6,22 @@ import org.dromara.easyai.tools.RgbRegression;
 import java.util.*;
 
 public class RGBNorm {
-    private double[] rgbAll;
-    private double norm;
+    private float[] rgbAll;
+    private float norm;
     private int nub;
-    private double[] rgb;//均值
-    private double[] rgbUp;
-    private List<double[]> rgbs = new ArrayList<>();//需要对它进行排序
-    private List<Double> powers = new ArrayList<>();//需要对它进行排序
+    private float[] rgb;//均值
+    private float[] rgbUp;
+    private List<float[]> rgbs = new ArrayList<>();//需要对它进行排序
+    private List<Float> powers = new ArrayList<>();//需要对它进行排序
     private RgbRegression rgbRegression;
     private int len;
-    private double varAll = 1;
+    private float varAll = 1;
     private Matrix avgMatrix;//均值矩阵
     private Matrix varMatrix;//方差矩阵
-    private double gmParameter;//gm混合系数
-    private double probabilitySigma = 0;//后验概率求和
+    private float gmParameter;//gm混合系数
+    private float probabilitySigma = 0;//后验概率求和
 
-    public double getVarAll() {
+    public float getVarAll() {
         return varAll;
     }
 
@@ -33,7 +33,7 @@ public class RGBNorm {
         return varMatrix;
     }
 
-    public List<double[]> getRgbs() {
+    public List<float[]> getRgbs() {
         return rgbs;
     }
 
@@ -45,12 +45,12 @@ public class RGBNorm {
         this.rgbRegression = rgbRegression;
     }
 
-    public RGBNorm(double[] rgb, int len) {
+    public RGBNorm(float[] rgb, int len) {
         this.len = len;
-        rgbAll = new double[len];
-        this.rgb = new double[len];
+        rgbAll = new float[len];
+        this.rgb = new float[len];
         this.rgbUp = rgb;
-        gmParameter = new Random().nextDouble();
+        gmParameter = new Random().nextFloat();
     }
 
     public RGBNorm() {
@@ -67,14 +67,14 @@ public class RGBNorm {
     }
 
     //特征及权重
-    public void setGmFeature(double[] feature, double probability) {
+    public void setGmFeature(float[] feature, float probability) {
         rgbs.add(feature);
         powers.add(probability);
         probabilitySigma = probability + probabilitySigma;
     }
 
     public void clear() {
-        rgbAll = new double[len];
+        rgbAll = new float[len];
         nub = 0;
         for (int i = 0; i < rgb.length; i++) {
             rgbUp[i] = rgb[i];
@@ -98,19 +98,19 @@ public class RGBNorm {
         return isNext;
     }
 
-    public double getEDist(double[] x) {
-        double[] y = new double[x.length];
+    public float getEDist(float[] x) {
+        float[] y = new float[x.length];
         for (int i = 0; i < y.length; i++) {
             y[i] = x[i] - rgbUp[i];
         }
-        double sigma = 0;
+        float sigma = 0;
         for (int i = 0; i < y.length; i++) {
-            sigma = sigma + Math.pow(y[i], 2);
+            sigma = sigma + (float)Math.pow(y[i], 2);
         }
-        return Math.sqrt(sigma);
+        return (float)Math.sqrt(sigma);
     }
 
-    public void setColor(double[] rgb) {
+    public void setColor(float[] rgb) {
         for (int i = 0; i < rgb.length; i++) {
             rgbAll[i] = rgbAll[i] + rgb[i];
         }
@@ -125,18 +125,18 @@ public class RGBNorm {
         boolean isPower = powers.size() > 1;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                double power;
+                float power;
                 if (!isPower) {
                     power = 1;
                 } else {
                     power = powers.get(j);
                 }
-                double nub = avgMatrix.getNumber(i, 0) + matrix.getNumber(i, j) * power;
+                float nub = avgMatrix.getNumber(i, 0) + matrix.getNumber(i, j) * power;
                 avgMatrix.setNub(i, 0, nub);
             }
         }
         for (int i = 0; i < x; i++) {
-            double nub;
+            float nub;
             if (probabilitySigma > 0) {
                 nub = avgMatrix.getNumber(i, 0) / probabilitySigma;
             } else {
@@ -153,20 +153,20 @@ public class RGBNorm {
         Matrix varMatrix = new Matrix(x, 1);
         boolean isPower = powers.size() > 1;
         for (int i = 0; i < x; i++) {
-            double avg = avgMatrix.getNumber(i, 0);
+            float avg = avgMatrix.getNumber(i, 0);
             for (int j = 0; j < y; j++) {
-                double power;
+                float power;
                 if (!isPower) {
                     power = 1;
                 } else {
                     power = powers.get(j);
                 }
-                double sub = Math.pow(matrix.getNumber(i, j) - avg, 2) * power;
+                float sub = (float) ((float)Math.pow(matrix.getNumber(i, j) - avg, 2) * power);
                 varMatrix.setNub(i, 0, sub + varMatrix.getNumber(i, 0));
             }
         }
         for (int i = 0; i < x; i++) {
-            double nub;
+            float nub;
             if (probabilitySigma > 0) {
                 nub = varMatrix.getNumber(i, 0) / probabilitySigma;
             } else {
@@ -177,10 +177,10 @@ public class RGBNorm {
         return varMatrix;
     }
 
-    public double[] getFeature() throws Exception {
+    public float[] getFeature() throws Exception {
         int avgLen = avgMatrix.getX();
         int length = avgLen * 2 + 1;
-        double[] feature = new double[length];
+        float[] feature = new float[length];
         for (int i = 0; i < length - 1; i++) {
             if (i < avgLen) {
                 feature[i] = avgMatrix.getNumber(i, 0);
@@ -193,7 +193,7 @@ public class RGBNorm {
         return feature;
     }
 
-    public void insertFeature(double[] feature) throws Exception {
+    public void insertFeature(float[] feature) throws Exception {
         int length = feature.length - 1;
         int size = length / 2;
         avgMatrix = new Matrix(size, 1);
@@ -205,9 +205,9 @@ public class RGBNorm {
                 avgMatrix.setNub(i, 0, feature[i]);
             } else {
                 int t = i - size;
-                double var = feature[i];
+                float var = feature[i];
                 varMatrix.setNub(t, 0, var);
-                varAll = varAll * Math.sqrt(var);
+                varAll = varAll * (float)Math.sqrt(var);
             }
         }
     }
@@ -217,7 +217,7 @@ public class RGBNorm {
         if (size > 0) {
             Matrix matrix = new Matrix(len, size);
             for (int i = 0; i < size; i++) {
-                double[] rgb = rgbs.get(i);
+                float[] rgb = rgbs.get(i);
                 for (int j = 0; j < len; j++) {
                     matrix.setNub(j, i, rgb[j]);
                 }
@@ -226,7 +226,7 @@ public class RGBNorm {
             varMatrix = getVariance(matrix, avgMatrix);//方差矩阵
             varAll = 1;
             for (int i = 0; i < len; i++) {
-                double var = Math.sqrt(varMatrix.getNumber(i, 0));
+                float var = (float)Math.sqrt(varMatrix.getNumber(i, 0));
                 varAll = varAll * var;
             }
             //确认新的混合系数
@@ -236,36 +236,36 @@ public class RGBNorm {
         }
     }
 
-    public double getGMProbability(double[] feature) throws Exception {//计算正态分布概率密度
-        double zSigma = 0;
+    public float getGMProbability(float[] feature) throws Exception {//计算正态分布概率密度
+        float zSigma = 0;
         int size = feature.length;
         for (int i = 0; i < size; i++) {
-            double sub = Math.pow(feature[i] - avgMatrix.getNumber(i, 0), 2) / varMatrix.getNumber(i, 0);
+            float sub = (float)Math.pow(feature[i] - avgMatrix.getNumber(i, 0), 2) / varMatrix.getNumber(i, 0);
             zSigma = sub + zSigma;
         }
-        double one = 1 / (Math.pow(Math.sqrt(Math.PI * 2), size) * varAll);
-        double two = Math.exp(zSigma * -0.5);
-        double n = one * two * gmParameter;
+        float one = 1 / ((float)Math.pow((float)Math.sqrt((float)Math.PI * 2), size) * varAll);
+        float two = (float)Math.exp(zSigma * -0.5);
+        float n = one * two * gmParameter;
         return n;
     }
 
-    public double getGmParameter() {
+    public float getGmParameter() {
         return gmParameter;
     }
 
-    public void setGmParameter(double gmParameter) {
+    public void setGmParameter(float gmParameter) {
         this.gmParameter = gmParameter;
     }
 
     public void norm() {//范长计算
-        double sigma = 0;
+        float sigma = 0;
         if (nub > 0) {
             for (int i = 0; i < rgb.length; i++) {
-                double rgbc = rgbAll[i] / nub;
+                float rgbc = rgbAll[i] / nub;
                 rgb[i] = rgbc;
-                sigma = sigma + Math.pow(rgbc, 2);
+                sigma = sigma + (float)Math.pow(rgbc, 2);
             }
-            norm = Math.sqrt(sigma);
+            norm = (float)Math.sqrt(sigma);
         }
     }
 
@@ -274,22 +274,22 @@ public class RGBNorm {
         Collections.sort(rgbs, rgbListSort);
     }
 
-    public double getNorm() {
+    public float getNorm() {
         return norm;
     }
 
-    public double[] getRgb() {
+    public float[] getRgb() {
         return rgb;
     }
 
-    class RGBListSort implements Comparator<double[]> {
+    class RGBListSort implements Comparator<float[]> {
         @Override
-        public int compare(double[] o1, double[] o2) {
-            double o1Norm = 0;
-            double o2Norm = 0;
+        public int compare(float[] o1, float[] o2) {
+            float o1Norm = 0;
+            float o2Norm = 0;
             for (int i = 0; i < o1.length; i++) {
-                o1Norm = o1Norm + Math.pow(o1[i], 2);
-                o2Norm = o2Norm + Math.pow(o2[i], 2);
+                o1Norm = o1Norm + (float)Math.pow(o1[i], 2);
+                o2Norm = o2Norm + (float)Math.pow(o2[i], 2);
             }
             if (o1Norm > o2Norm) {
                 return 1;

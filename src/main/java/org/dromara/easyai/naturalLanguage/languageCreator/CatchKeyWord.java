@@ -12,14 +12,14 @@ public class CatchKeyWord {//抓取关键词
     private final DynamicProgramming dynamicProgramming = new DynamicProgramming();//保存它的状态集合
     private final List<String> keyWords = new ArrayList<>();//保存词列表
     private final List<String> finishWords = new ArrayList<>();//终结态词集合
-    private double proTh = 0.1;//收益阈值
-    private double maxFinishValue = 100;//终结态value
+    private float proTh = 0.1f;//收益阈值
+    private float maxFinishValue = 100;//终结态value
 
-    public void setMaxFinishValue(double maxFinishValue) {
+    public void setMaxFinishValue(float maxFinishValue) {
         this.maxFinishValue = maxFinishValue;
     }
 
-    public void setProTh(double proTh) {
+    public void setProTh(float proTh) {
         this.proTh = proTh;
     }
 
@@ -125,9 +125,9 @@ public class CatchKeyWord {//抓取关键词
         if (!wordsValues.isEmpty()) {
             mergeWord(wordsValues);
             //合并完成，进行规则判断 第一步 先找出最高的一座山峰
-            double maxValue = -2000;
-            double maxLeftValue = -2000;
-            double maxRightValue = -2000;
+            float maxValue = -2000;
+            float maxLeftValue = -2000;
+            float maxRightValue = -2000;
             WordsValue maxWordsValue = null;//最高山峰
             WordsValue leftWordsValue = null;//左峰
             WordsValue rightWordsValue = null;//右峰
@@ -236,7 +236,7 @@ public class CatchKeyWord {//抓取关键词
                         int endIndex = dynamicState.endIndex;//结束下标
                         boolean isFinish = dynamicState.isFinish;
                         String word = dynamicState.word;
-                        double value = dynamicState.value;
+                        float value = dynamicState.value;
                         WordsValue dynamic = myDyList.get(j);
                         int myStart = dynamic.startIndex;
                         int myEnd = dynamic.endIndex;
@@ -252,7 +252,7 @@ public class CatchKeyWord {//抓取关键词
                             if (wordsValue.isFinish) {
                                 wordsValue.value = maxFinishValue;
                             } else {
-                                wordsValue.value = Math.max(dynamic.value, value);
+                                wordsValue.value = (float)Math.max(dynamic.value, value);
                             }
                             dynamicState = wordsValue;
                         }
@@ -361,7 +361,7 @@ public class CatchKeyWord {//抓取关键词
         int id;//词id
         int startIndex;//起始下标
         int endIndex;//末尾下标
-        double value = 0;//该状态收益
+        float value = 0;//该状态收益
         boolean isFinish;//是否为终结态
         String word;//词
         boolean isMerge = false;

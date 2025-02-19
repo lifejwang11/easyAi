@@ -76,7 +76,7 @@ public class WaveFile {
         return sampleSize;
     }
 
-    public double getDurationTime() {
+    public float getDurationTime() {
         return getFramesCount() / getAudioFormat().getFrameRate();
     }
 

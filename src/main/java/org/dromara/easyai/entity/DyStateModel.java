@@ -3,7 +3,7 @@ package org.dromara.easyai.entity;
 public class DyStateModel {
     private int id;
     private boolean isFinish;
-    private double value;
+    private float value;
 
     public int getId() {
         return id;
@@ -21,11 +21,11 @@ public class DyStateModel {
         isFinish = finish;
     }
 
-    public double getValue() {
+    public float getValue() {
         return value;
     }
 
-    public void setValue(double value) {
+    public void setValue(float value) {
         this.value = value;
     }
 }

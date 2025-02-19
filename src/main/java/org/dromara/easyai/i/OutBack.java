@@ -19,7 +19,7 @@ public interface OutBack {
      * @param id      输出神经元ID
      * @param eventId 事件ID
      */
-    void getBack(double out, int id, long eventId);
+    void getBack(float out, int id, long eventId);
 
     /**
      * 多分类回调
@@ -27,7 +27,7 @@ public interface OutBack {
      * @param eventId 事件ID
      * @param softMax 概率集合
      */
-    void getSoftMaxBack(long eventId, List<Double> softMax);
+    void getSoftMaxBack(long eventId, List<Float> softMax);
 
     /**
      * 回调
@@ -51,6 +51,6 @@ public interface OutBack {
      *
      * @param id 当前词向量id
      */
-    void getWordVector(int id, double w);
+    void getWordVector(int id, float w);
 
 }

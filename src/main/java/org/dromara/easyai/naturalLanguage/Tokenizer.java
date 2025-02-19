@@ -13,7 +13,7 @@ import java.util.*;
 public class Tokenizer extends Frequency {
     private final List<Sentence> sentences;//所有断句
     private final List<WorldBody> allWorld;//所有词集合
-    private final double wordNoise;
+    private final float wordNoise;
 
     public Tokenizer(WordTemple wordTemple) {
         sentences = wordTemple.getSentences();//所有断句
@@ -60,7 +60,7 @@ public class Tokenizer extends Frequency {
         word.setOk(false);
         List<String> keyWords = new ArrayList<>();
         while (word.getWord() != null) {
-            word = keyWord(-1, word, new double[]{firstWord.getWordFrequency()});
+            word = keyWord(-1, word, new float[]{firstWord.getWordFrequency()});
             Word myWord = word.getWord();
             String wordT = myWord.getWord();//当前截取到的分词串
             String keyWord;
@@ -78,8 +78,8 @@ public class Tokenizer extends Frequency {
         sentenceWords.setKeyWords(keyWords);
     }
 
-    private double[] getDiff(double[] diff, Word word) {
-        double[] diffef = new double[diff.length + 1];
+    private float[] getDiff(float[] diff, Word word) {
+        float[] diffef = new float[diff.length + 1];
         for (int i = 0; i < diffef.length; i++) {
             if (i == diffef.length - 1) {
                 diffef[i] = word.getWordFrequency();
@@ -90,13 +90,13 @@ public class Tokenizer extends Frequency {
         return diffef;
     }
 
-    private KeyWord keyWord(double dm, KeyWord words, double[] diff) {//平均差值，离散系数，是否为关键字
-        double right = 0;
+    private KeyWord keyWord(float dm, KeyWord words, float[] diff) {//平均差值，离散系数，是否为关键字
+        float right = 0;
         boolean bm = words.isOk();
         if (!bm) {
             Word word = words.getWord();
             if (word.getSon() != null) {
-                double db = wordEnd(word, new ArrayList<>(), 0);//计算身前平均值
+                float db = wordEnd(word, new ArrayList<>(), 0);//计算身前平均值
                 //与它儿子词频的差要小于辐射向前的词频差的平均值
                 boolean isAvgOk = (ArithUtil.mul(word.getWordFrequency() - word.getSon().getWordFrequency(), wordNoise)) <= db;
                 if (isAvgOk) {//平均值检测
@@ -125,14 +125,14 @@ public class Tokenizer extends Frequency {
         return words;
     }
 
-    private double wordEnd(Word word, List<Integer> av, double a) {//对一句话中的词进行处理
+    private float wordEnd(Word word, List<Integer> av, float a) {//对一句话中的词进行处理
         //先取全句平均差值
         Word son = word.getSon();
         if (son != null) {
             av.add(word.getWordFrequency() - son.getWordFrequency());
             a = wordEnd(son, av, a);
         } else {//最后计算平均值
-            double[] allNub = new double[av.size()];
+            float[] allNub = new float[av.size()];
             for (int i = 0; i < av.size(); i++) {
                 allNub[i] = av.get(i);
             }

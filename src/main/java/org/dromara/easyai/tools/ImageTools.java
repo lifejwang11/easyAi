@@ -51,7 +51,7 @@ public class ImageTools {
         g2.drawImage(image2, 0, 0, width, height, null);
         g2.setFont(new Font(null, Font.BOLD, fontSize));
         for (OutBox borderFood : borderFoods) {//输出
-            Rectangle2D rect = new Rectangle2D.Double(borderFood.getX(), borderFood.getY(), borderFood.getWidth(), borderFood.getHeight());//声明并创建矩形对象，矩形的左上角是(20，30)，宽是300，高是40
+            Rectangle2D rect = new Rectangle2D.Float(borderFood.getX(), borderFood.getY(), borderFood.getWidth(), borderFood.getHeight());//声明并创建矩形对象，矩形的左上角是(20，30)，宽是300，高是40
             g2.setColor(Color.RED);
             g2.draw(rect);
             g2.setColor(Color.BLUE);
