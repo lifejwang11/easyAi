@@ -4,7 +4,7 @@ public interface CudaMatrix {
 	void init() throws Exception;
 	void softMax(Matrix matrix) throws Exception;
 
-	Matrix matrixSoftMaxPd(Matrix qkt, Matrix errorMatrix, double wordVectorDimension) throws Exception;
+	Matrix matrixSoftMaxPd(Matrix qkt, Matrix errorMatrix, float wordVectorDimension) throws Exception;
 
 	Matrix mulMatrix(Matrix matrix1, Matrix matrix2) throws Exception;
 
