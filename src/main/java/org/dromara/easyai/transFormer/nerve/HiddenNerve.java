@@ -38,7 +38,7 @@ public class HiddenNerve extends Nerve {
                          List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {//第二层收到参数
         boolean allReady = insertMatrixParameter(eventId, parameter);
         if (allReady) {//参数齐了，开始计算
-            Matrix out = opMatrix(reMatrixFeatures.get(eventId), isStudy);
+            Matrix out = opMatrix(reMatrixFeatures.get(eventId).getMatrix(), isStudy);
             reMatrixFeatures.remove(eventId);
             beforeLayNorm.addNormFromNerve(eventId, isStudy, out, allFeature, outBack, E, encoderFeature, outAllPro);
         }
