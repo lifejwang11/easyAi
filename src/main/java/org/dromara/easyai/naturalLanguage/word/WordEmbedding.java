@@ -2,6 +2,7 @@ package org.dromara.easyai.naturalLanguage.word;
 
 
 import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.matrixTools.MatrixList;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.config.SentenceConfig;
@@ -77,7 +78,7 @@ public class WordEmbedding extends MatrixOperation {
     public MyWordFeature getEmbedding(String word, long eventId, boolean once) throws Exception {//做截断
         MyWordFeature myWordFeature = new MyWordFeature();
         int wordDim = wordVectorDimension;//
-        Matrix matrix = null;
+        MatrixList matrixList = null;
         for (int i = 0; i < word.length(); i++) {
             WordMatrix wordMatrix = new WordMatrix(wordDim);
             String myWord;
@@ -88,17 +89,17 @@ public class WordEmbedding extends MatrixOperation {
             }
             int index = getID(myWord);
             studyDNN(eventId, index, 0, wordMatrix, false);
-            if (matrix == null) {
+            if (matrixList == null) {
                 myWordFeature.setFirstFeatureList(wordMatrix.getList());
-                matrix = wordMatrix.getVector();
+                matrixList = new MatrixList(wordMatrix.getVector(), true);
             } else {
-                matrix = pushVector(matrix, wordMatrix.getVector(), true);
+                matrixList.add(wordMatrix.getVector());
             }
             if (once) {
                 break;
             }
         }
-        myWordFeature.setFeatureMatrix(matrix);
+        myWordFeature.setFeatureMatrix(matrixList.getMatrix());
         return myWordFeature;
     }
 

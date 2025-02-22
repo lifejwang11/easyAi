@@ -30,7 +30,7 @@ public class OutNerve extends Nerve {
     protected void toOut(long eventId, Matrix parameter, boolean isStudy, OutBack outBack, List<Integer> E, boolean outAllPro) throws Exception {
         boolean allReady = insertMatrixParameter(eventId, parameter);
         if (allReady) {
-            Matrix out = opMatrix(reMatrixFeatures.get(eventId), isStudy);
+            Matrix out = opMatrix(reMatrixFeatures.get(eventId).getMatrix(), isStudy);
             reMatrixFeatures.remove(eventId);
             softMax.toOut(eventId, out, isStudy, outBack, E, outAllPro);
         }
