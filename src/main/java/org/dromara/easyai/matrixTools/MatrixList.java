@@ -96,7 +96,7 @@ public class MatrixList {
         init(firstMatrix, addRow);
     }
 
-    public void init(Matrix firstMatrix, boolean addRow) throws Exception {
+    private void init(Matrix firstMatrix, boolean addRow) throws Exception {
         this.addRow = addRow;
         pointerX = firstMatrix.getX();
         pointerY = firstMatrix.getY();
