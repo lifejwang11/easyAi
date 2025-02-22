@@ -2,6 +2,7 @@ package org.dromara.easyai.transFormer.seflAttention;
 
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.matrixTools.MatrixList;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.transFormer.CodecBlock;
 import org.dromara.easyai.transFormer.FirstDecoderBlock;
@@ -19,7 +20,7 @@ public class LayNorm {//残差与归一化
     private final int featureDimension;//特征维度
     private List<HiddenNerve> hiddenNerves;//第一层隐层
     private final int type;//类别层模型需要保存
-    private final Map<Long, Matrix> reMatrixMap = new HashMap<>();
+    private final Map<Long, MatrixList> reMatrixMap = new HashMap<>();
     private final FirstDecoderBlock firstDecoderBlock;
     private Matrix bTa;//模型需要保存
     private Matrix power;//模型需要保存
@@ -60,7 +61,7 @@ public class LayNorm {//残差与归一化
         bTa = new Matrix(1, featureDimension);
         power = new Matrix(featureDimension, featureDimension);
         Random random = new Random();
-        float sh = (float)Math.sqrt(featureDimension);
+        float sh = (float) Math.sqrt(featureDimension);
         for (int i = 0; i < featureDimension; i++) {
             float value = random.nextFloat() / sh;
             bTa.setNub(0, i, value);
@@ -77,7 +78,7 @@ public class LayNorm {//残差与归一化
         Matrix subPower = matrixOperation.matrixMulPd(errorMatrix, myData, power, false);
         Matrix sub = matrixOperation.matrixMulPd(errorMatrix, myData, power, true);
         power = matrixOperation.add(subPower, power);
-        float n = (float)Math.sqrt(sub.getY());
+        float n = (float) Math.sqrt(sub.getY());
         float nt = -n / (n - 1);
         Matrix subMatrix = new Matrix(1, sub.getY());
         for (int i = 0; i < sub.getY(); i++) {
@@ -127,18 +128,19 @@ public class LayNorm {//残差与归一化
     public void backErrorFromLine(Matrix errorMatrix, long eventID) throws Exception {//从线性层后传，类别为2
         matrixOperation.mathMul(errorMatrix, study);
         int x = errorMatrix.getX();
-        Matrix myError = null;
+        MatrixList errorMatrixList = null;
         for (int i = 0; i < x; i++) {
             Matrix error = errorMatrix.getRow(i);
             Matrix myData = myNormData.getRow(i);
             bTa = matrixOperation.add(error, bTa);//更新bTa
             Matrix myRowError = back(error, myData);
             if (i == 0) {
-                myError = myRowError;
+                errorMatrixList = new MatrixList(myRowError, true);
             } else {
-                myError = matrixOperation.pushVector(myError, myRowError, true);
+                errorMatrixList.add(myRowError);
             }
         }
+        Matrix myError = errorMatrixList.getMatrix();
         //本模块误差处理完毕继续向后传播 2返回到fnn,1返回注意力
         if (type == 2) {//返回fnn
             int size = hiddenNerves.size();
@@ -168,17 +170,17 @@ public class LayNorm {//残差与归一化
 
     public void addNormFromNerve(long eventID, boolean isStudy, Matrix parameter, Matrix allFeature,
                                  OutBack outBack, List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {
-        Matrix matrixFeature;
+        MatrixList matrixFeature;
         if (reMatrixMap.containsKey(eventID)) {
-            Matrix myFeature = reMatrixMap.get(eventID);
-            matrixFeature = matrixOperation.pushVector(myFeature, parameter, false);
+            matrixFeature = reMatrixMap.get(eventID);
+            matrixFeature.add(parameter);
         } else {
-            matrixFeature = parameter;
+            matrixFeature = new MatrixList(parameter, false);
+            reMatrixMap.put(eventID, matrixFeature);
         }
-        reMatrixMap.put(eventID, matrixFeature);
         if (matrixFeature.getY() == featureDimension) {//执行残差
             reMatrixMap.remove(eventID);
-            addNorm(matrixFeature, allFeature, eventID, isStudy, outBack, E, encoderFeature, outAllPro);
+            addNorm(matrixFeature.getMatrix(), allFeature, eventID, isStudy, outBack, E, encoderFeature, outAllPro);
         }
     }
 
@@ -202,27 +204,28 @@ public class LayNorm {//残差与归一化
 
     private Matrix layNorm(Matrix feature, boolean isStudy) throws Exception {//进行归一化
         int x = feature.getX();
-        Matrix out = null;
-        if (isStudy) {
-            myNormData = null;
-        }
+        MatrixList normMatrixList = null;
+        MatrixList outMatrixList = null;
         for (int i = 0; i < x; i++) {
             Matrix normData = norm(feature.getRow(i));//back时候需要
             if (isStudy) {
                 if (i == 0) {
-                    myNormData = normData;
+                    normMatrixList = new MatrixList(normData, true);
                 } else {
-                    myNormData = matrixOperation.pushVector(myNormData, normData, true);
+                    normMatrixList.add(normData);
                 }
             }
             Matrix want = matrixOperation.add(matrixOperation.mulMatrix(normData, power), bTa);
             if (i == 0) {
-                out = want;
+                outMatrixList = new MatrixList(want, true);
             } else {
-                out = matrixOperation.pushVector(out, want, true);
+                outMatrixList.add(want);
             }
         }
-        return out;
+        if (isStudy) {
+            myNormData = normMatrixList.getMatrix();
+        }
+        return outMatrixList.getMatrix();
     }
 
     public void setHiddenNerves(List<HiddenNerve> hiddenNerves) {

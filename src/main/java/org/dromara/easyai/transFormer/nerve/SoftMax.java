@@ -42,7 +42,7 @@ public class SoftMax extends Nerve {
     protected void toOut(long eventId, Matrix parameter, boolean isStudy, OutBack outBack, List<Integer> E, boolean outAllPro) throws Exception {
         boolean allReady = insertMatrixParameter(eventId, parameter);
         if (allReady) {
-            Matrix feature = reMatrixFeatures.get(eventId);//特征
+            Matrix feature = reMatrixFeatures.get(eventId).getMatrix();//特征
             reMatrixFeatures.remove(eventId);
             int x = feature.getX();
             if (isStudy) {
@@ -119,11 +119,11 @@ public class SoftMax extends Nerve {
         int size = matrix.getY();
         for (int j = 0; j < size; j++) {
             float value = matrix.getNumber(0, j);
-            sigma = (float)Math.exp(value) + sigma;
+            sigma = (float) Math.exp(value) + sigma;
         }
         List<Float> softMax = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            float eSelf = (float)Math.exp(matrix.getNumber(0, i));
+            float eSelf = (float) Math.exp(matrix.getNumber(0, i));
             float value = eSelf / sigma;
             if (isStudy || outAllPro) {
                 softMax.add(value);

@@ -2,7 +2,9 @@ package org.dromara.easyai.matrixTools;
 
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,6 +12,23 @@ import java.util.concurrent.Executors;
 public class MatrixOperation {
     private final int coreNumber;
     private ExecutorService POOL;//线程池
+
+    private static final CudaMatrix cudaMatrix = getCudaMatrix();
+
+    private static CudaMatrix getCudaMatrix() {
+        ServiceLoader<CudaMatrix> loader = ServiceLoader.load(CudaMatrix.class);
+        Iterator<CudaMatrix> iterator = loader.iterator();
+        if (iterator.hasNext()) {
+            CudaMatrix cm = iterator.next();
+            try {
+                cm.init();
+                return cm;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
 
     public MatrixOperation() {
         coreNumber = 1;
@@ -489,6 +508,10 @@ public class MatrixOperation {
     }
 
     public Matrix matrixSoftMaxPd(Matrix qkt, Matrix errorMatrix, float wordVectorDimension) throws Exception {//重重点
+        if (null != cudaMatrix) {
+            return cudaMatrix.matrixSoftMaxPd(qkt, errorMatrix, wordVectorDimension);
+        }
+
         float param = (float) Math.sqrt(wordVectorDimension);
         int x = qkt.getX();
         int y = qkt.getY();
@@ -621,6 +644,10 @@ public class MatrixOperation {
 
     //重重点
     public Matrix mulMatrix(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘
+        if (null != cudaMatrix) {
+            return cudaMatrix.mulMatrix(matrix1, matrix2);
+        }
+
         if (coreNumber > 1) {
             return mulMatrixMany(matrix1, matrix2);
         } else {

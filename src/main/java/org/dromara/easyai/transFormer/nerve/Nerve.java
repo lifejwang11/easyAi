@@ -4,6 +4,7 @@ import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
+import org.dromara.easyai.matrixTools.MatrixList;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.transFormer.LineBlock;
 import org.dromara.easyai.transFormer.seflAttention.LayNorm;
@@ -25,7 +26,7 @@ public abstract class Nerve {
     private final int hiddenNerveNub;//隐层神经元个数
     private final int sensoryNerveNub;//输入神经元个数
     private final int outNerveNub;//输出神经元个数
-    protected Map<Long, Matrix> reMatrixFeatures = new HashMap<>();
+    protected Map<Long, MatrixList> reMatrixFeatures = new HashMap<>();
     protected String name;//该神经元所属类型
     protected Matrix featureMatrix;
     protected float E;//模板期望值
@@ -159,9 +160,9 @@ public abstract class Nerve {
         for (int i = 0; i < size; i++) {
             float value = powerMatrix.getNumber(i, 0);
             if (regularModel == RZ.L1) {//l1正则化
-                sigma = sigma + (float)Math.abs(value);
+                sigma = sigma + (float) Math.abs(value);
             } else {
-                sigma = sigma + (float)Math.pow(value, 2);
+                sigma = sigma + (float) Math.pow(value, 2);
             }
         }
         float param = (float) sigma * regular * studyPoint;
@@ -199,14 +200,14 @@ public abstract class Nerve {
 
     protected boolean insertMatrixParameter(long eventID, Matrix matrix) throws Exception {//reMatrixFeatures
         boolean allReady = false;
-        Matrix feature;
+        MatrixList feature;
         if (reMatrixFeatures.containsKey(eventID)) {
-            Matrix myFeature = reMatrixFeatures.get(eventID);
-            feature = matrixOperation.pushVector(myFeature, matrix, false);
+            feature = reMatrixFeatures.get(eventID);
+            feature.add(matrix);
         } else {
-            feature = matrix;
+            feature = new MatrixList(matrix, false);
+            reMatrixFeatures.put(eventID, feature);
         }
-        reMatrixFeatures.put(eventID, feature);
         if (feature.getY() == myUpNumber) {
             allReady = true;
         } else if (feature.getY() > myUpNumber) {
@@ -248,7 +249,7 @@ public abstract class Nerve {
         }
         if (myUpNumber > 0) {//输入个数
             powerMatrix = new Matrix(myUpNumber + 1, 1);
-            float sh = (float)Math.sqrt(myUpNumber);
+            float sh = (float) Math.sqrt(myUpNumber);
             for (int i = 0; i < myUpNumber; i++) {
                 float nub = (float) (random.nextFloat() / sh);
                 powerMatrix.setNub(i, 0, nub);
