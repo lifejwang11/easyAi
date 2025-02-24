@@ -14,6 +14,7 @@ import org.dromara.easyai.rnnJumpNerveEntity.SensoryNerve;
 
 import java.util.*;
 
+@Deprecated()
 public class CustomManager {//
     private final WordEmbedding wordEmbedding;
     private NerveJumpManager semanticsManager;//网络
@@ -126,7 +127,7 @@ public class CustomManager {//
             for (int i = 1; i < len; i++) {
                 list.add(i);
             }
-            int myLen = (int) (minLength + (float)Math.random() * (len - minLength + 1));
+            int myLen = (int) (minLength + (float) Math.random() * (len - minLength + 1));
             storeys = new int[myLen];
             if (startIndex > 0) {
                 storeys[0] = startIndex;
