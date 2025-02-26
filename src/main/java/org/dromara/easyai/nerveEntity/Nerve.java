@@ -1,10 +1,12 @@
 package org.dromara.easyai.nerveEntity;
 
 import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.matrixTools.MatrixList;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
+import org.dromara.easyai.rnnJumpNerveCenter.CustomManager;
 
 import java.util.*;
 
@@ -114,9 +116,6 @@ public abstract class Nerve {
         int y = (yInput - sub) / step;//线性变换后矩阵的列数
         Matrix myMatrix = new Matrix(x, y);//线性变化后的矩阵
         im2col = matrixOperation.im2col(matrix, kernLen, step);
-        //System.out.println("=================================");
-        //System.out.println(matrix.getString());
-        //System.out.println(im2col.getString());
         //输出矩阵
         Matrix matrixOut = matrixOperation.mulMatrix(im2col, nerveMatrix);
         //输出矩阵重新排序
@@ -126,7 +125,6 @@ public abstract class Nerve {
                 myMatrix.setNub(i, j, nub);
             }
         }
-        //System.out.println(myMatrix.getString());
         outMatrix = myMatrix;
         return myMatrix;
     }
@@ -216,41 +214,23 @@ public abstract class Nerve {
         }
         if (backNub == downNub) {
             backNub = 0;
-//            if (downNub > 1) {
-//                System.out.println(sigmaMatrix.getString());
-//            }
             //对g进行重新排序
             int x = sigmaMatrix.getX();
             int y = sigmaMatrix.getY();
-            Matrix yc = new Matrix(x * y, 1);
-            int index = 0;
+            Matrix resultError = new Matrix(x * y, 1);
             for (int i = 0; i < x; i++) {
                 for (int j = 0; j < y; j++) {
                     float error = sigmaMatrix.getNumber(i, j);
                     float out = outMatrix.getNumber(i, j);
-                    error = error * activeFunction.functionG(out) * studyPoint;
-                    yc.setNub(index, 0, error);
-                    index++;
+                    error = error * activeFunction.functionG(out);
+                    resultError.setNub(y * i + j, 0, error);
                 }
             }
-            //计算权重变化量
-            Matrix trx = matrixOperation.transPosition(im2col);
-            Matrix wSub = matrixOperation.mulMatrix(trx, yc);
-            //给权重变化wSub增加正则项，抑制权重变化量
-            //System.out.println(wSub.getString());
-            //计算x变化量
-            x = im2col.getX();
-            y = im2col.getY();
-            for (int i = 0; i < x; i++) {
-                float ySub = yc.getNumber(i, 0);
-                for (int j = 0; j < y; j++) {
-                    float k = nerveMatrix.getNumber(j, 0) * ySub;
-                    im2col.setNub(i, j, k);
-                }
-            }
-            Matrix gNext = matrixOperation.reverseIm2col(im2col, kernLen, step, xInput, yInput);
-            //更新权重
+            Matrix wSub = matrixOperation.matrixMulPd(resultError, im2col, nerveMatrix, false);
+            Matrix im2colSub = matrixOperation.matrixMulPd(resultError, im2col, nerveMatrix, true);
+            matrixOperation.mathMul(wSub, studyPoint);
             nerveMatrix = matrixOperation.add(nerveMatrix, wSub);
+            Matrix gNext = matrixOperation.reverseIm2col(im2colSub, kernLen, step, xInput, yInput);
             sigmaMatrix = null;
             //将梯度继续回传
             backMatrixMessage(gNext);
@@ -288,9 +268,9 @@ public abstract class Nerve {
             float sigma = 0;
             for (Map.Entry<Integer, Float> entry : dendrites.entrySet()) {
                 if (rzType == RZ.L2) {
-                    sigma = sigma + (float)Math.pow(entry.getValue(), 2);
+                    sigma = sigma + (float) Math.pow(entry.getValue(), 2);
                 } else {
-                    sigma = sigma + (float)Math.abs(entry.getValue());
+                    sigma = sigma + (float) Math.abs(entry.getValue());
                 }
             }
             param = sigma * lParam * studyPoint;
@@ -368,14 +348,14 @@ public abstract class Nerve {
                 for (int i = 1; i < upNub + 1; i++) {
                     float nub = 0;
                     if (init) {
-                        nub = random.nextFloat() / (float)Math.sqrt(upNub);
+                        nub = random.nextFloat() / (float) Math.sqrt(upNub);
                     }
                     dendrites.put(i, nub);//random.nextFloat()
                 }
                 //生成随机阈值
                 float nub = 0;
                 if (init) {
-                    nub = random.nextFloat() / (float)Math.sqrt(upNub);
+                    nub = random.nextFloat() / (float) Math.sqrt(upNub);
                 }
                 threshold = nub;
             }

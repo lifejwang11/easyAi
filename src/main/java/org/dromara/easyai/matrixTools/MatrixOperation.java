@@ -753,7 +753,7 @@ public class MatrixOperation {
 
     private void inputVector(Matrix matrix, Matrix feature, int index, int kenLen) throws Exception {
         int y = matrix.getY();
-        for (int i = 0; i < y - 1; i++) {
+        for (int i = 0; i < y; i++) {
             matrix.setNub(index, i, feature.getNumber(i / kenLen, i % kenLen));
         }
         // matrix.setNub(index, y - 1, 1);
