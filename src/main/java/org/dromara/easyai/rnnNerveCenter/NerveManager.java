@@ -28,8 +28,6 @@ public class NerveManager {
     private boolean initPower;
     private float studyPoint = 0.1f;//学习率
     private final ActiveFunction activeFunction;
-    private Map<Integer, Matrix> matrixMap = new HashMap<>();//主键与期望矩阵的映射
-    private final boolean isDynamic;//是否是动态神经网络
     private boolean isRnn = false;//是否为rnn网络
     private List<Float> studyList = new ArrayList<>();
     private final int rzType;//正则化类型，默认不进行正则化
@@ -48,9 +46,6 @@ public class NerveManager {
         this.studyList = studyList;
     }
 
-    public void setMatrixMap(Map<Integer, Matrix> matrixMap) {
-        this.matrixMap = matrixMap;
-    }
 
     private Map<String, Float> conversion(Map<Integer, Float> map) {
         Map<String, Float> cMap = new HashMap<>();
@@ -68,40 +63,10 @@ public class NerveManager {
         return cMap;
     }
 
-    private ModelParameter getDymModelParameter() throws Exception {//获取动态神经元参数
-        ModelParameter modelParameter = new ModelParameter();
-        List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
-        DymNerveStudy dymOutNerveStudy = new DymNerveStudy();//动态神经元输出层
-        modelParameter.setDymNerveStudies(dymNerveStudies);
-        modelParameter.setDymOutNerveStudy(dymOutNerveStudy);
-        for (List<Nerve> nerve : depthNerves) {
-            Nerve depthNerve = nerve.get(0);//隐层神经元
-            DymNerveStudy deepNerveStudy = new DymNerveStudy();//动态神经元输出层
-            List<Float> list = deepNerveStudy.getList();
-            Matrix matrix = depthNerve.getNerveMatrix();
-            insertWList(matrix, list);
-            dymNerveStudies.add(deepNerveStudy);
-        }
-        Nerve outNerve = outNerves.get(0);
-        Matrix matrix = outNerve.getNerveMatrix();
-        List<Float> list = dymOutNerveStudy.getList();
-        insertWList(matrix, list);
-        return modelParameter;
-    }
-
-    private void insertWList(Matrix matrix, List<Float> list) throws Exception {//
-        for (int i = 0; i < matrix.getX(); i++) {
-            for (int j = 0; j < matrix.getY(); j++) {
-                list.add(matrix.getNumber(i, j));
-            }
-        }
-    }
 
     public ModelParameter getModelParameter() throws Exception {
         if (isRnn) {
             return getRnnModelParameter();
-        } else if (isDynamic) {
-            return getDymModelParameter();
         } else {
             return getStaticModelParameter();
         }
@@ -166,35 +131,10 @@ public class NerveManager {
     public void insertModelParameter(ModelParameter modelParameter) throws Exception {
         if (isRnn) {
             insertRnnModelParameter(modelParameter);
-        } else if (isDynamic) {
-            insertConvolutionModelParameter(modelParameter);//动态神经元注入
         } else {
             insertBpModelParameter(modelParameter);//全连接层注入参数
         }
 
-    }
-
-    //注入卷积层模型参数
-    private void insertConvolutionModelParameter(ModelParameter modelParameter) throws Exception {
-        List<DymNerveStudy> dymNerveStudyList = modelParameter.getDymNerveStudies();
-        DymNerveStudy dymOutNerveStudy = modelParameter.getDymOutNerveStudy();
-        for (int i = 0; i < depthNerves.size(); i++) {
-            Nerve depthNerve = depthNerves.get(i).get(0);
-            DymNerveStudy dymNerveStudy = dymNerveStudyList.get(i);
-            List<Float> list = dymNerveStudy.getList();
-            Matrix nerveMatrix = depthNerve.getNerveMatrix();
-            insertMatrix(nerveMatrix, list);
-        }
-        Nerve outNerve = outNerves.get(0);
-        Matrix outNerveMatrix = outNerve.getNerveMatrix();
-        List<Float> list = dymOutNerveStudy.getList();
-        insertMatrix(outNerveMatrix, list);
-    }
-
-    private void insertMatrix(Matrix matrix, List<Float> list) throws Exception {
-        for (int i = 0; i < list.size(); i++) {
-            matrix.setNub(i, 0, list.get(i));
-        }
     }
 
     private void insertRnnModelParameter(ModelParameter modelParameter) {
@@ -292,21 +232,18 @@ public class NerveManager {
      * @param outNerveNub     输出神经元个数
      * @param hiddenDepth     隐层深度
      * @param activeFunction  激活函数
-     * @param isDynamic       是否是动态神经元
      * @param rzType          正则函数
      * @param lParam          正则系数
      * @throws Exception 如果参数错误则抛异常
      */
     public NerveManager(int sensoryNerveNub, int hiddenNerveNub, int outNerveNub
-            , int hiddenDepth, ActiveFunction activeFunction, boolean isDynamic,
-                        float studyPoint, int rzType, float lParam) throws Exception {
+            , int hiddenDepth, ActiveFunction activeFunction, float studyPoint, int rzType, float lParam) throws Exception {
         if (sensoryNerveNub > 0 && hiddenNerveNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
             this.hiddenNerveNub = hiddenNerveNub;
             this.sensoryNerveNub = sensoryNerveNub;
             this.outNerveNub = outNerveNub;
             this.hiddenDepth = hiddenDepth;
             this.activeFunction = activeFunction;
-            this.isDynamic = isDynamic;
             this.rzType = rzType;
             this.lParam = lParam;
             if (studyPoint > 0 && studyPoint < 1) {
@@ -325,16 +262,12 @@ public class NerveManager {
      * 初始化
      *
      * @param initPower 是否是第一次注入
-     * @param isMatrix  参数是否是一个矩阵
      * @param isShowLog 是否打印学习参数
      * @param isSoftMax 最后一层是否用softMax激活
-     * @param step      卷积步长
-     * @param kernLen   卷积核长
      */
-    public void init(boolean initPower, boolean isMatrix, boolean isShowLog, boolean isSoftMax
-            , int step, int kernLen) throws Exception {//进行神经网络的初始化构建
+    public void init(boolean initPower, boolean isShowLog, boolean isSoftMax) throws Exception {//进行神经网络的初始化构建
         this.initPower = initPower;
-        initDepthNerve(isMatrix, step, kernLen);//初始化深度隐层神经元
+        initDepthNerve();//初始化深度隐层神经元
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
         //最后一层隐层神经元啊
         List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);
@@ -342,10 +275,7 @@ public class NerveManager {
         List<OutNerve> outNerveList = new ArrayList<>();
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
-                    activeFunction, isMatrix, isShowLog, rzType, lParam, isSoftMax, step, kernLen);
-            if (isMatrix) {//是卷积层神经网络
-                outNerve.setMatrixMap(matrixMap);
-            }
+                    activeFunction, isShowLog, rzType, lParam, isSoftMax);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFather(lastNerveList);
             outNerves.add(outNerve);
@@ -370,7 +300,7 @@ public class NerveManager {
     private void createSoftMax(boolean isShowLog, boolean isSoftMax, List<OutNerve> outNerveList, List<Nerve> outNerves) throws Exception {
         if (isSoftMax) {
             List<Nerve> softMaxList = new ArrayList<>();
-            SoftMax softMax = new SoftMax(outNerveNub, false, outNerveList, isShowLog);
+            SoftMax softMax = new SoftMax(outNerveNub, outNerveList, isShowLog);
             softMaxList.add(softMax);
             for (Nerve nerve : outNerves) {
                 nerve.connect(softMaxList);
@@ -386,7 +316,7 @@ public class NerveManager {
         rnnOutNerveBody.setOutNerves(rnnOutNerves);
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
-                    activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0, 0);
+                    activeFunction, isShowLog, rzType, lParam, isSoftMax);
             outNerve.connectFather(nerveList);//每一层的输出神经元 链接每一层的隐层神经元
             rnnOutNerves.add(outNerve);
             outNerveList.add(outNerve);
@@ -401,7 +331,7 @@ public class NerveManager {
     public void initRnn(boolean initPower, boolean isShowLog) throws Exception {
         isRnn = true;
         this.initPower = initPower;
-        initDepthNerve(false, 0, 0);//初始化深度隐层神经元
+        initDepthNerve();//初始化深度隐层神经元
         for (int i = 0; i < depthNerves.size(); i++) {
             createRnnOutNerve(initPower, isShowLog, depthNerves.get(i), i + 1);
         }
@@ -415,7 +345,7 @@ public class NerveManager {
         }
     }
 
-    private void initDepthNerve(boolean isMatrix, int step, int kernLen) throws Exception {//初始化隐层神经元1
+    private void initDepthNerve() throws Exception {//初始化隐层神经元1
         for (int i = 0; i < hiddenDepth; i++) {//遍历深度
             List<Nerve> hiddenNerveList = new ArrayList<>();
             float studyPoint = this.studyPoint;
@@ -438,8 +368,8 @@ public class NerveManager {
                 } else {
                     downNub = hiddenNerveNub;
                 }
-                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction, isMatrix
-                        , rzType, lParam, step, kernLen, outNerveNub);
+                HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction
+                        , rzType, lParam, outNerveNub);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);

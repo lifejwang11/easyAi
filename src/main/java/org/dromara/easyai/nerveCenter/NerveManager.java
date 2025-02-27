@@ -33,6 +33,8 @@ public class NerveManager {
     private final int rzType;//正则化类型，默认不进行正则化
     private final float lParam;//正则参数
     private final int coreNumber;
+    private int convTimes;//单层卷积运算次数
+
 
     private Map<String, Float> conversion(Map<Integer, Float> map) {
         Map<String, Float> cMap = new HashMap<>();
@@ -217,8 +219,8 @@ public class NerveManager {
         return sensoryNerves;
     }
 
-    private List<Nerve> initConDepthNerve(int step, int kernLen, int conHiddenDepth, ActiveFunction convFunction
-            , int id) throws Exception {//初始化隐层神经元1
+    private List<Nerve> initConDepthNerve(int kernLen, int conHiddenDepth, ActiveFunction convFunction
+            , int id, int channelNo) throws Exception {//初始化隐层神经元1
         List<Nerve> depthNerves = new ArrayList<>();
         for (int i = 0; i < conHiddenDepth; i++) {//遍历深度
             float studyPoint = this.convStudyPoint;
@@ -232,7 +234,7 @@ public class NerveManager {
                 isConvFinish = true;
             }
             HiddenNerve hiddenNerve = new HiddenNerve(id, i + 1, 1, downNub, studyPoint, initPower, convFunction, true
-                    , rzType, lParam, step, kernLen, 0, 0, isConvFinish, coreNumber);
+                    , rzType, lParam, kernLen, 0, 0, isConvFinish, coreNumber, convTimes, channelNo);
             depthNerves.add(hiddenNerve);
         }
         for (int i = 0; i < conHiddenDepth - 1; i++) {//遍历深度
@@ -248,26 +250,28 @@ public class NerveManager {
         return depthNerves;
     }
 
-    private int getConvMyDep(int xSize, int ySize, int step, int kernLen) {
-        int xDeep = getConvDeep(xSize, step, kernLen);
-        int yDeep = getConvDeep(ySize, step, kernLen);
+    private int getConvMyDep(int xSize, int ySize, int kernLen, int minFeatureValue) {
+        int xDeep = getConvDeep(xSize, kernLen, minFeatureValue);
+        int yDeep = getConvDeep(ySize, kernLen, minFeatureValue);
         return Math.min(xDeep, yDeep);
     }
 
-    private int getConvDeep(int size, int step, int kernLen) {//获取卷积层深度
+    private int getConvDeep(int size, int kernLen, int minFeatureValue) {//获取卷积层深度
         int x = size;
+        int step = 1;
         int deep = 0;//深度
         int y;
         do {
             y = (x - (kernLen - step)) / step;
             x = y;
             deep++;
-        } while (y >= kernLen);
+        } while (y >= minFeatureValue);
         return deep;
     }
 
-    private int getNerveNub(int deep, int size, int kernLen, int step) {
+    private int getNerveNub(int deep, int size, int kernLen) {
         int x = size;
+        int step = 1;
         for (int i = 0; i < deep; i++) {
             x = (x - (kernLen - step)) / step;
         }
@@ -277,8 +281,7 @@ public class NerveManager {
     /**
      * 初始化卷积层神经网络
      *
-     * @param channelNo       特征通道数量
-     * @param step            卷积步长 建议为2
+     * @param channelNo       通道数，当该数值为1 则采用多通道降维模式 推荐值1
      * @param kernLen         卷积核大小 建议为3
      * @param xSize           检测窗口行高
      * @param ySize           检测窗口行宽
@@ -286,16 +289,23 @@ public class NerveManager {
      * @param convFunction    卷积层激活函数
      * @param isShowLog       是否打印学习参数
      * @param isSoftMax       最后一层是否用softMax激活
+     * @param convTimes       单层卷积层的卷积深度 取值范围[1,3]
+     * @param minFeatureValue 卷积层最小特征数量的开方 取值范围 [3,40]
      */
-    public void initImageNet(int channelNo, int step, int kernLen, int xSize, int ySize, boolean isSoftMax
-            , boolean isShowLog, float convStudyPoint, ActiveFunction convFunction) throws Exception {
-        this.initPower = true;//convDepthNerves
+    public void initImageNet(int channelNo, int kernLen, int xSize, int ySize, boolean isSoftMax
+            , boolean isShowLog, float convStudyPoint, ActiveFunction convFunction, int convTimes
+            , int minFeatureValue) throws Exception {
+        this.initPower = true;
+        if (convTimes < 1 || convTimes > 3 || minFeatureValue < 3 || minFeatureValue > 40) {
+            throw new Exception("convTimes 的取值范围是[1,3]，minFeatureValue 取值范围是[3,40]");
+        }
+        this.convTimes = convTimes;
         this.convStudyPoint = convStudyPoint;
-        int deep = getConvMyDep(xSize, ySize, step, kernLen);//卷积层深度
+        int deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue);//卷积层深度
         List<Nerve> lastNerves = new ArrayList<>();
         this.sensoryNerveNub = channelNo;
         for (int i = 0; i < sensoryNerveNub; i++) {
-            List<Nerve> depthNerves = initConDepthNerve(step, kernLen, deep, convFunction, i + 1);//初始化卷积层隐层
+            List<Nerve> depthNerves = initConDepthNerve(kernLen, deep, convFunction, i + 1, channelNo);//初始化卷积层隐层
             convDepthNerves.add(depthNerves);
             List<Nerve> firstDepthNerves = new ArrayList<>();
             firstDepthNerves.add(depthNerves.get(0));
@@ -305,7 +315,7 @@ public class NerveManager {
             sensoryNerves.add(sensoryNerve);
             lastNerves.add(depthNerves.get(depthNerves.size() - 1));
         }
-        initDepthNerve(step, kernLen, getNerveNub(deep, xSize, kernLen, step), getNerveNub(deep, ySize, kernLen, step));//初始化深度隐层神经元 depthNerves
+        initDepthNerve(kernLen, getNerveNub(deep, xSize, kernLen), getNerveNub(deep, ySize, kernLen));//初始化深度隐层神经元 depthNerves
         List<Nerve> firstNerves = depthNerves.get(0);//第一层隐层神经元
         List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);//最后一层隐层神经元
         for (Nerve nerve : lastNerves) {
@@ -318,7 +328,7 @@ public class NerveManager {
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
-                    activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0, 0
+                    activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0
                     , coreNumber);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFather(lastNerveList);
@@ -349,7 +359,7 @@ public class NerveManager {
      */
     public void init(boolean initPower, boolean isShowLog, boolean isSoftMax) throws Exception {//进行神经网络的初始化构建
         this.initPower = initPower;
-        initDepthNerve(0, 0, 0, 0);//初始化深度隐层神经元
+        initDepthNerve(0, 0, 0);//初始化深度隐层神经元
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
         //最后一层隐层神经元啊
         List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);
@@ -357,7 +367,7 @@ public class NerveManager {
         //初始化输出神经元
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
-                    activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0, 0
+                    activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0
                     , coreNumber);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFather(lastNerveList);
@@ -387,7 +397,7 @@ public class NerveManager {
 
     }
 
-    private void initDepthNerve(int step, int kernLen, int matrixX, int matrixY) throws Exception {//初始化隐层神经元1
+    private void initDepthNerve(int kernLen, int matrixX, int matrixY) throws Exception {//初始化隐层神经元1
         for (int i = 0; i < hiddenDepth; i++) {//遍历深度
             List<Nerve> hiddenNerveList = new ArrayList<>();
             float studyPoint = this.studyPoint;
@@ -416,7 +426,7 @@ public class NerveManager {
                     downNub = hiddenNerveNub;
                 }
                 HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction, false
-                        , rzType, lParam, step, kernLen, myMatrixX, myMatrixY, false, coreNumber);
+                        , rzType, lParam, kernLen, myMatrixX, myMatrixY, false, coreNumber, convTimes, 0);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);

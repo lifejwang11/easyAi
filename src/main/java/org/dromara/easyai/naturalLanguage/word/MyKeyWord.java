@@ -28,8 +28,8 @@ public class MyKeyWord extends MatrixOperation {
         float studyPoint = config.getWeStudyPoint();
         boolean isShowLog = config.isShowLog();
         this.maxWordLength = config.getMaxWordLength();
-        typeNerveManager = new NerveManager(vectorDimension, vectorDimension, 2, nerveLength - 1, new Tanh(), false,
-                studyPoint, RZ.L1, studyPoint * 0.2f);
+        typeNerveManager = new NerveManager(vectorDimension, vectorDimension, 2, nerveLength - 1, new Tanh(),
+                studyPoint, RZ.L1, 0.0001f);
         typeNerveManager.initRnn(true, isShowLog);
         this.wordEmbedding = wordEmbedding;
         this.nerveLength = nerveLength;

@@ -16,12 +16,11 @@ import java.util.Map;
 public class HiddenNerve extends Nerve {
     private final Map<Long, Float> outMap = new HashMap<>();
 
-    public HiddenNerve(int id, int depth, float studyPoint,
-                       boolean init, ActiveFunction activeFunction, boolean isDynamic, int rzType, float lParam
-            , int step, int kernLen, int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, int allDepth,
-                       boolean creator, int startDepth) throws Exception {//隐层神经元
+    public HiddenNerve(int id, int depth, float studyPoint, boolean init, ActiveFunction activeFunction,
+                       int rzType, float lParam, int sensoryNerveNub,
+                       int hiddenNerveNub, int outNerveNub, int allDepth, boolean creator, int startDepth) throws Exception {//隐层神经元
         super(id, "HiddenNerve", studyPoint,
-                init, activeFunction, isDynamic, rzType, lParam, step, kernLen, sensoryNerveNub, hiddenNerveNub,
+                init, activeFunction, rzType, lParam, sensoryNerveNub, hiddenNerveNub,
                 outNerveNub, allDepth, creator, startDepth);
         this.depth = depth;
     }
@@ -76,10 +75,4 @@ public class HiddenNerve extends Nerve {
         outMap.remove(eventId);
     }
 
-    @Override
-    protected void inputMatrix(long eventId, Matrix matrix, boolean isStudy
-            , int E, OutBack outBack) throws Exception {
-        Matrix myMatrix = conv(matrix);//处理过的矩阵
-        sendMatrix(eventId, myMatrix, isStudy, E, outBack);
-    }
 }

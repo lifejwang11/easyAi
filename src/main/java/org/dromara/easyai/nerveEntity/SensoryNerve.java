@@ -1,5 +1,6 @@
 package org.dromara.easyai.nerveEntity;
 
+import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.i.OutBack;
 
@@ -16,8 +17,8 @@ public class SensoryNerve extends Nerve {
 
     public SensoryNerve(int id, int upNub) throws Exception {
         super(id, upNub, "SensoryNerve", 0, 0.1f, false,
-                null, false, 0, 0, 0, 0, 0, 0, 0
-                , 1);
+                null, false, 0, 0, 0, 0, 0, 0
+                , 1, 0, 0);
     }
 
     /**
@@ -46,6 +47,20 @@ public class SensoryNerve extends Nerve {
     public void postMatrixMessage(long eventId, Matrix parameter, boolean isKernelStudy
             , Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
         sendMatrix(eventId, parameter, isKernelStudy, E, outBack, needMatrix);
+    }
+
+    /**
+     * @param eventId       唯一的事件id
+     * @param parameter     特征图像
+     * @param isKernelStudy 是否是学习 (学习状态没有输出)
+     * @param E             标注
+     * @param outBack       回调结果
+     * @param needMatrix    需要矩阵输出
+     * @throws Exception
+     */
+    public void postThreeChannelMatrix(long eventId, ThreeChannelMatrix parameter, boolean isKernelStudy
+            , Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
+        sendThreeChannelMatrix(eventId, parameter, isKernelStudy, E, outBack, needMatrix);
     }
 
     @Override

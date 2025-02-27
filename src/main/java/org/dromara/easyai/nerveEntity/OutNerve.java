@@ -16,10 +16,10 @@ public class OutNerve extends Nerve {
 
     public OutNerve(int id, int upNub, int downNub, float studyPoint, boolean init,
                     ActiveFunction activeFunction, boolean isDynamic, boolean isShowLog,
-                    int rzType, float lParam, boolean isSoftMax, int step, int kernLen, int coreNumber) throws Exception {
+                    int rzType, float lParam, boolean isSoftMax, int kernLen, int coreNumber) throws Exception {
         super(id, upNub, "OutNerve", downNub, studyPoint, init,
-                activeFunction, isDynamic, rzType, lParam, step, kernLen, 0, 0, 0
-                , coreNumber);
+                activeFunction, isDynamic, rzType, lParam, kernLen, 0, 0, 0
+                , coreNumber, 0, 0);
         this.isShowLog = isShowLog;
         this.isSoftMax = isSoftMax;
     }

@@ -37,8 +37,8 @@ public class TypeBody {
         positonNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), 5, 1,
                 new Tanh(), yoloConfig.getLineStudy(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
                 , yoloConfig.getCoreNumber());
-        positonNerveManager.initImageNet(3, 2, yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
-                false, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu());
+        positonNerveManager.initImageNet(1, yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
+                false, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu(), 1, 10);
     }
 
     public float getRealWidth(float width) {

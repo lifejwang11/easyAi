@@ -12,15 +12,13 @@ import java.util.Map;
  * @date 11:25 上午 2019/12/21
  */
 public class OutNerve extends Nerve {
-    private Map<Integer, Matrix> matrixMapE;//主键与期望矩阵的映射
-    private boolean isShowLog;
-    private boolean isSoftMax;
+    private final boolean isShowLog;
+    private final boolean isSoftMax;
 
     public OutNerve(int id, int upNub, int downNub, float studyPoint, boolean init,
-                    ActiveFunction activeFunction, boolean isDynamic, boolean isShowLog,
-                    int rzType, float lParam, boolean isSoftMax, int step, int kernLen) throws Exception {
+                    ActiveFunction activeFunction, boolean isShowLog, int rzType, float lParam, boolean isSoftMax) throws Exception {
         super(id, upNub, "OutNerve", downNub, studyPoint, init,
-                activeFunction, isDynamic, rzType, lParam, step, kernLen, 0);
+                activeFunction, rzType, lParam, 0);
         this.isShowLog = isShowLog;
         this.isSoftMax = isSoftMax;
     }
@@ -30,9 +28,6 @@ public class OutNerve extends Nerve {
         updatePower(eventId);
     }
 
-    public void setMatrixMap(Map<Integer, Matrix> matrixMap) {
-        matrixMapE = matrixMap;
-    }
 
     @Override
     public void input(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E
@@ -72,42 +67,6 @@ public class OutNerve extends Nerve {
         }
     }
 
-    @Override
-    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy
-            , int E, OutBack outBack) throws Exception {
-        Matrix myMatrix = conv(matrix);
-        if (isKernelStudy) {//回传
-            Matrix matrix1 = matrixMapE.get(E);
-            if (isShowLog) {
-                System.out.println("E========" + E);
-                System.out.println(myMatrix.getString());
-            }
-            if (matrix1.getX() == myMatrix.getX() && matrix1.getY() == myMatrix.getY()) {
-                Matrix g = getGradient(myMatrix, matrix1);
-                //System.out.println("error:" + g.getString() + ",hope:" + matrix1.getString());
-                backMatrix(g);
-            } else {
-                throw new Exception("Wrong size setting of image in templateConfig");
-            }
-        } else {//卷积层输出
-            if (outBack != null) {
-                outBack.getBackMatrix(myMatrix, getId(), eventId);
-            } else {
-                throw new Exception("not find outBack");
-            }
-        }
-    }
-
-    private Matrix getGradient(Matrix matrix, Matrix E) throws Exception {
-        Matrix matrix1 = new Matrix(matrix.getX(), matrix.getY());
-        for (int i = 0; i < E.getX(); i++) {
-            for (int j = 0; j < E.getY(); j++) {
-                float nub = E.getNumber(i, j) - matrix.getNumber(i, j);
-                matrix1.setNub(i, j, nub);
-            }
-        }
-        return matrix1;
-    }
 
     private float outGradient() {//生成输出层神经元梯度变化
         //上层神经元输入值 * 当前神经元梯度*学习率 =该上层输入的神经元权重变化

@@ -16,7 +16,7 @@ public class SensoryNerve extends Nerve {
 
     public SensoryNerve(int id, int upNub) throws Exception {
         super(id, upNub, "SensoryNerve", 0, 0.1f, false,
-                null, false, 0, 0, 0, 0, 0);
+                null, 0, 0, 0);
     }
 
     /**
@@ -31,11 +31,6 @@ public class SensoryNerve extends Nerve {
             , OutBack outBack, boolean isEmbedding, Matrix rnnMatrix) throws Exception {//感知神经元输出
 
         sendMessage(eventId, parameter, isStudy, E, outBack, isEmbedding, rnnMatrix);
-    }
-
-    public void postMatrixMessage(long eventId, Matrix parameter, boolean isKernelStudy
-            , int E, OutBack outBack) throws Exception {
-        sendMatrix(eventId, parameter, isKernelStudy, E, outBack);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.dromara.easyai.nerveEntity;
 
+import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.i.ActiveFunction;
@@ -19,10 +20,11 @@ public class HiddenNerve extends Nerve {
 
     public HiddenNerve(int id, int depth, int upNub, int downNub, float studyPoint,
                        boolean init, ActiveFunction activeFunction, boolean isDynamic, int rzType, float lParam
-            , int step, int kernLen, int matrixX, int matrixY, boolean isConvFinish, int coreNumber) throws Exception {//隐层神经元
+            , int kernLen, int matrixX, int matrixY, boolean isConvFinish, int coreNumber
+            , int convTimes, int channelNo) throws Exception {//隐层神经元
         super(id, upNub, "HiddenNerve", downNub, studyPoint,
-                init, activeFunction, isDynamic, rzType, lParam, step, kernLen, depth, matrixX, matrixY
-                , coreNumber);
+                init, activeFunction, isDynamic, rzType, lParam, kernLen, depth, matrixX, matrixY
+                , coreNumber, convTimes, channelNo);
         this.isConvFinish = isConvFinish;
     }
 
@@ -69,5 +71,10 @@ public class HiddenNerve extends Nerve {
         } else {
             sendMatrix(eventId, myMatrix, isStudy, E, outBack, needMatrix);
         }
+    }
+
+    @Override
+    protected void inputThreeChannelMatrix(long eventId, ThreeChannelMatrix picture, boolean isKernelStudy, Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
+
     }
 }
