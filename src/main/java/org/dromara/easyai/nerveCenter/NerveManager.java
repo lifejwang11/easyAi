@@ -318,6 +318,9 @@ public class NerveManager {
         this.convTimes = convTimes;
         this.convStudyPoint = convStudyPoint;
         int deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue);//卷积层深度
+        if (deep < 2) {
+            throw new Exception("minFeatureValue 设置过大");
+        }
         List<Nerve> myDepthNerves = initConDepthNerve(kernLen, deep, convFunction, channelNo);//初始化卷积层隐层
         Nerve convFirstNerve = myDepthNerves.get(0);//卷积第一层隐层神经元
         Nerve convLastNerve = myDepthNerves.get(myDepthNerves.size() - 1);//卷积最后一层隐层神经元
