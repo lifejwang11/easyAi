@@ -20,6 +20,24 @@ public class YoloConfig {
     private float regular = 0;//正则系数
     private int regularModel = RZ.NOT_RZ;//正则模式
     private int coreNumber = 1;//是否使用多核并行计算进行提速
+    private int convTimes = 1;//单层卷积层数
+    private int minFeatureValue = 10;//输出特征维度大小
+
+    public int getMinFeatureValue() {
+        return minFeatureValue;
+    }
+
+    public void setMinFeatureValue(int minFeatureValue) {
+        this.minFeatureValue = minFeatureValue;
+    }
+
+    public int getConvTimes() {
+        return convTimes;
+    }
+
+    public void setConvTimes(int convTimes) {
+        this.convTimes = convTimes;
+    }
 
     public int getCoreNumber() {
         return coreNumber;

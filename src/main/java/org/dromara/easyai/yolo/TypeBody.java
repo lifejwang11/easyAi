@@ -38,7 +38,8 @@ public class TypeBody {
                 new Tanh(), yoloConfig.getLineStudy(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
                 , yoloConfig.getCoreNumber());
         positonNerveManager.initImageNet(3, yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
-                false, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu(), 1, 10);
+                false, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu(),
+                yoloConfig.getConvTimes(), yoloConfig.getMinFeatureValue());
     }
 
     public float getRealWidth(float width) {
