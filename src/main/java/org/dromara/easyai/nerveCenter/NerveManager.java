@@ -18,12 +18,13 @@ import java.util.Map;
  */
 public class NerveManager {
     private final int hiddenNerveNub;//隐层神经元个数
-    private int sensoryNerveNub;//输入神经元个数
+    private final int sensoryNerveNub;//输入神经元个数
     private final int outNerveNub;//输出神经元个数
     private final int hiddenDepth;//隐层深度
     private final List<SensoryNerve> sensoryNerves = new ArrayList<>();//感知神经元
+    private SensoryNerve convInput;//卷积网络输入神经元
     private final List<List<Nerve>> depthNerves = new ArrayList<>();//隐层神经元
-    private final List<List<Nerve>> convDepthNerves = new ArrayList<>();//卷积隐层神经元
+    private List<Nerve> convDepthNerves = new ArrayList<>();//卷积隐层神经元
     private final List<Nerve> outNerves = new ArrayList<>();//输出神经元
     private final List<Nerve> softMaxList = new ArrayList<>();//softMax层
     private boolean initPower;
@@ -35,6 +36,9 @@ public class NerveManager {
     private final int coreNumber;
     private int convTimes;//单层卷积运算次数
 
+    public SensoryNerve getConvInput() {
+        return convInput;
+    }
 
     private Map<String, Float> conversion(Map<Integer, Float> map) {
         Map<String, Float> cMap = new HashMap<>();
@@ -54,18 +58,23 @@ public class NerveManager {
 
     private ModelParameter getDymModelParameter() throws Exception {//获取动态神经元参数
         ModelParameter modelParameter = new ModelParameter();
-        List<List<DymNerveStudy>> convStudies = new ArrayList<>();
+        List<ConvDymNerveStudy> convStudies = new ArrayList<>();
         modelParameter.setDymNerveStudies(convStudies);
-        for (List<Nerve> convDepthNerve : convDepthNerves) {
-            List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
-            for (Nerve depthNerve : convDepthNerve) {
+        for (Nerve convDepthNerve : convDepthNerves) {
+            ConvParameter convParameter = convDepthNerve.getConvParameter();
+            List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();//权重矩阵
+            ConvDymNerveStudy convDymNerveStudy = new ConvDymNerveStudy();
+            List<Float> oneConvList = convParameter.getOneConvPower();
+            List<DymNerveStudy> dymNerveStudies = new ArrayList<>();//一个卷积层的所有权重参数
+            convDymNerveStudy.setOneConvPower(oneConvList);
+            convDymNerveStudy.setDymNerveStudyList(dymNerveStudies);
+            for (Matrix nerveMatrix : nerveMatrixList) {
                 DymNerveStudy deepNerveStudy = new DymNerveStudy();//动态神经元隐层
                 List<Float> list = deepNerveStudy.getList();
-                Matrix matrix = depthNerve.getNerveMatrix();
-                insertWList(matrix, list);
+                insertWList(nerveMatrix, list);
                 dymNerveStudies.add(deepNerveStudy);
             }
-            convStudies.add(dymNerveStudies);
+            convStudies.add(convDymNerveStudy);
         }
         getStaticModelParameter(modelParameter);
         return modelParameter;
@@ -125,14 +134,22 @@ public class NerveManager {
 
     //注入卷积层模型参数
     private void insertConvolutionModelParameter(ModelParameter modelParameter) throws Exception {
-        List<List<DymNerveStudy>> allDymNerveStudyList = modelParameter.getDymNerveStudies();
+        List<ConvDymNerveStudy> allDymNerveStudyList = modelParameter.getDymNerveStudies();
         for (int t = 0; t < allDymNerveStudyList.size(); t++) {
-            List<DymNerveStudy> dymNerveStudyList = allDymNerveStudyList.get(t);
+            ConvParameter convParameter = convDepthNerves.get(t).getConvParameter();
+            List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
+            ConvDymNerveStudy convDymNerveStudy = allDymNerveStudyList.get(t);
+            List<Float> oneConvPower = convDymNerveStudy.getOneConvPower();
+            if (oneConvPower != null && !oneConvPower.isEmpty()) {
+                convParameter.setOneConvPower(oneConvPower);
+            }
+            List<DymNerveStudy> dymNerveStudyList = convDymNerveStudy.getDymNerveStudyList();
+            if (dymNerveStudyList.size() != nerveMatrixList.size()) {
+                throw new Exception("卷积层数量参数与模型不匹配");
+            }
             for (int i = 0; i < dymNerveStudyList.size(); i++) {
-                Nerve depthNerve = convDepthNerves.get(t).get(i);
-                DymNerveStudy dymNerveStudy = dymNerveStudyList.get(i);
-                List<Float> list = dymNerveStudy.getList();
-                Matrix nerveMatrix = depthNerve.getNerveMatrix();
+                List<Float> list = dymNerveStudyList.get(i).getList();
+                Matrix nerveMatrix = nerveMatrixList.get(i);
                 insertMatrix(nerveMatrix, list);
             }
         }
@@ -219,8 +236,7 @@ public class NerveManager {
         return sensoryNerves;
     }
 
-    private List<Nerve> initConDepthNerve(int kernLen, int conHiddenDepth, ActiveFunction convFunction
-            , int id, int channelNo) throws Exception {//初始化隐层神经元1
+    private List<Nerve> initConDepthNerve(int kernLen, int conHiddenDepth, ActiveFunction convFunction, int channelNo) throws Exception {//初始化隐层神经元1
         List<Nerve> depthNerves = new ArrayList<>();
         for (int i = 0; i < conHiddenDepth; i++) {//遍历深度
             float studyPoint = this.convStudyPoint;
@@ -233,19 +249,15 @@ public class NerveManager {
                 downNub = hiddenNerveNub;
                 isConvFinish = true;
             }
-            HiddenNerve hiddenNerve = new HiddenNerve(id, i + 1, 1, downNub, studyPoint, initPower, convFunction, true
+            HiddenNerve hiddenNerve = new HiddenNerve(1, i + 1, 1, downNub, studyPoint, initPower, convFunction, true
                     , rzType, lParam, kernLen, 0, 0, isConvFinish, coreNumber, convTimes, channelNo);
             depthNerves.add(hiddenNerve);
         }
         for (int i = 0; i < conHiddenDepth - 1; i++) {//遍历深度
             Nerve hiddenNerve = depthNerves.get(i);//当前遍历隐层神经元
             Nerve nextHiddenNerve = depthNerves.get(i + 1);//当前遍历的下一层神经元
-            List<Nerve> hiddenNerveList = new ArrayList<>();
-            List<Nerve> nextHiddenNerveList = new ArrayList<>();
-            hiddenNerveList.add(hiddenNerve);
-            nextHiddenNerveList.add(nextHiddenNerve);
-            hiddenNerve.connect(nextHiddenNerveList);
-            nextHiddenNerve.connectFather(hiddenNerveList);
+            hiddenNerve.connectSonOnly(nextHiddenNerve);
+            nextHiddenNerve.connectFatherOnly(hiddenNerve);
         }
         return depthNerves;
     }
@@ -260,20 +272,24 @@ public class NerveManager {
         int x = size;
         int step = 1;
         int deep = 0;//深度
-        int y;
         do {
-            y = (x - (kernLen - step)) / step;
-            x = y;
+            for (int i = 0; i < convTimes; i++) {
+                x = (x - (kernLen - step)) / step;
+            }
+            x = x / 2 + x % 2;
             deep++;
-        } while (y >= minFeatureValue);
-        return deep;
+        } while (x > minFeatureValue);
+        return deep - 1;
     }
 
     private int getNerveNub(int deep, int size, int kernLen) {
         int x = size;
         int step = 1;
         for (int i = 0; i < deep; i++) {
-            x = (x - (kernLen - step)) / step;
+            for (int j = 0; j < convTimes; j++) {
+                x = (x - (kernLen - step)) / step;
+            }
+            x = x / 2 + x % 2;
         }
         return x;
     }
@@ -302,27 +318,19 @@ public class NerveManager {
         this.convTimes = convTimes;
         this.convStudyPoint = convStudyPoint;
         int deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue);//卷积层深度
-        List<Nerve> lastNerves = new ArrayList<>();
-        this.sensoryNerveNub = channelNo;
-        for (int i = 0; i < sensoryNerveNub; i++) {
-            List<Nerve> depthNerves = initConDepthNerve(kernLen, deep, convFunction, i + 1, channelNo);//初始化卷积层隐层
-            convDepthNerves.add(depthNerves);
-            List<Nerve> firstDepthNerves = new ArrayList<>();
-            firstDepthNerves.add(depthNerves.get(0));
-            SensoryNerve sensoryNerve = new SensoryNerve(i + 1, 0);
-            //感知神经元与第一层隐层神经元进行连接
-            sensoryNerve.connect(firstDepthNerves);
-            sensoryNerves.add(sensoryNerve);
-            lastNerves.add(depthNerves.get(depthNerves.size() - 1));
-        }
+        List<Nerve> myDepthNerves = initConDepthNerve(kernLen, deep, convFunction, channelNo);//初始化卷积层隐层
+        Nerve convFirstNerve = myDepthNerves.get(0);//卷积第一层隐层神经元
+        Nerve convLastNerve = myDepthNerves.get(myDepthNerves.size() - 1);//卷积最后一层隐层神经元
+        convDepthNerves = myDepthNerves;
+        convInput = new SensoryNerve(1, 0, channelNo);//输入神经元
+        //感知神经元与卷积第一层隐层神经元进行连接
+        convInput.connectSonOnly(convFirstNerve);
         initDepthNerve(kernLen, getNerveNub(deep, xSize, kernLen), getNerveNub(deep, ySize, kernLen));//初始化深度隐层神经元 depthNerves
-        List<Nerve> firstNerves = depthNerves.get(0);//第一层隐层神经元
-        List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);//最后一层隐层神经元
-        for (Nerve nerve : lastNerves) {
-            nerve.connect(firstNerves);
-        }
-        for (Nerve nerve : firstNerves) {
-            nerve.connectFather(lastNerves);
+        List<Nerve> firstNerves = depthNerves.get(0);//线性层第一层隐层神经元
+        List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);//线性层最后一层隐层神经元
+        convLastNerve.connect(firstNerves);//卷积最后一层链接线性层第一层
+        for (Nerve nerve : firstNerves) {//线性层第一层链接卷积层最后一层
+            nerve.connectFatherOnly(convLastNerve);
         }
         List<OutNerve> myOutNerveList = new ArrayList<>();
         //初始化输出神经元
@@ -389,7 +397,7 @@ public class NerveManager {
 
         //初始化感知神经元
         for (int i = 1; i < sensoryNerveNub + 1; i++) {
-            SensoryNerve sensoryNerve = new SensoryNerve(i, 0);
+            SensoryNerve sensoryNerve = new SensoryNerve(i, 0, 0);
             //感知神经元与第一层隐层神经元进行连接
             sensoryNerve.connect(nerveList);
             sensoryNerves.add(sensoryNerve);
@@ -413,7 +421,7 @@ public class NerveManager {
                     myMatrixX = matrixX;
                     myMatrixY = matrixY;
                     if (matrixX > 0 && matrixY > 0) {
-                        upNub = sensoryNerveNub * matrixX * matrixY;
+                        upNub = matrixX * matrixY;
                     } else {
                         upNub = sensoryNerveNub;
                     }
