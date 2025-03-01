@@ -1,6 +1,7 @@
 package org.dromara.easyai.nerveCenter;
 
 
+import org.dromara.easyai.nerveEntity.ConvDymNerveStudy;
 import org.dromara.easyai.nerveEntity.DymNerveStudy;
 import org.dromara.easyai.nerveEntity.NerveStudy;
 
@@ -16,7 +17,7 @@ public class ModelParameter {
     //神经远模型参数
     private List<List<NerveStudy>> depthNerves = new ArrayList<>();//隐层神经元
     private List<NerveStudy> outNerves = new ArrayList<>();//输出神经元
-    private List<List<DymNerveStudy>> dymNerveStudies = new ArrayList<>();//动态神经元隐层
+    private List<ConvDymNerveStudy> dymNerveStudies = new ArrayList<>();//动态神经元隐层
 
     public List<List<NerveStudy>> getDepthNerves() {
         return depthNerves;
@@ -34,11 +35,11 @@ public class ModelParameter {
         this.outNerves = outNerves;
     }
 
-    public List<List<DymNerveStudy>> getDymNerveStudies() {
+    public List<ConvDymNerveStudy> getDymNerveStudies() {
         return dymNerveStudies;
     }
 
-    public void setDymNerveStudies(List<List<DymNerveStudy>> dymNerveStudies) {
+    public void setDymNerveStudies(List<ConvDymNerveStudy> dymNerveStudies) {
         this.dymNerveStudies = dymNerveStudies;
     }
 }

@@ -336,7 +336,7 @@ public class MatrixOperation {
         return (float) Math.max(o1, o2);
     }
 
-    public Matrix matrixToVector(Matrix matrix, boolean isRow) throws Exception {//将一个矩阵转成行向量
+    public Matrix matrixToVector(Matrix matrix, boolean isRow) throws Exception {//将一个矩阵转成向量
         int x = matrix.getX();
         int y = matrix.getY();
         Matrix myMatrix;
@@ -753,7 +753,7 @@ public class MatrixOperation {
 
     private void inputVector(Matrix matrix, Matrix feature, int index, int kenLen) throws Exception {
         int y = matrix.getY();
-        for (int i = 0; i < y - 1; i++) {
+        for (int i = 0; i < y; i++) {
             matrix.setNub(index, i, feature.getNumber(i / kenLen, i % kenLen));
         }
         // matrix.setNub(index, y - 1, 1);

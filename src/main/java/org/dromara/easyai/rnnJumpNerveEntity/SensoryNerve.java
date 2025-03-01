@@ -16,8 +16,8 @@ import java.util.Map;
 public class SensoryNerve extends Nerve {
 
     public SensoryNerve(int id, int allDepth) throws Exception {
-        super(id, "SensoryNerve", 0, false, null, false, 0, 0,
-                0, 0, 0, 0, 0, allDepth, false, 0);
+        super(id, "SensoryNerve", 0, false, null, 0, 0,
+                0, 0, 0, allDepth, false, 0);
         depth = 0;
     }
 
@@ -33,14 +33,6 @@ public class SensoryNerve extends Nerve {
         sendMessage(eventId, parameter, isStudy, E, outBack, rnnMatrix, storeys, 0, questionLength);
     }
 
-//    public void postPowerMessage(long eventId, float parameter, Matrix featureMatrix, OutBack outBack) throws Exception {
-//        sendTestMessage(eventId, parameter, featureMatrix, outBack, null);
-//    }
-
-    public void postMatrixMessage(long eventId, Matrix parameter, boolean isKernelStudy
-            , int E, OutBack outBack) throws Exception {
-        sendMatrix(eventId, parameter, isKernelStudy, E, outBack);
-    }
 
     @Override
     public void connect(int depth, List<Nerve> nerveList) {//连接第一层隐层神经元

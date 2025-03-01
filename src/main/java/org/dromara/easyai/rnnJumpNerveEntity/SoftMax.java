@@ -14,10 +14,10 @@ public class SoftMax extends Nerve {
     private final boolean isShowLog;
     private NerveCenter nerveCenter;//该输出层对应的神经中枢
 
-    public SoftMax(boolean isDynamic, List<OutNerve> outNerves, boolean isShowLog
+    public SoftMax(List<OutNerve> outNerves, boolean isShowLog
             , int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, int allDepth) throws Exception {
-        super(0, "softMax", 0, false, null, isDynamic
-                , RZ.NOT_RZ, 0, 0, 0, sensoryNerveNub, hiddenNerveNub, outNerveNub, allDepth
+        super(0, "softMax", 0, false, null
+                , RZ.NOT_RZ, 0, sensoryNerveNub, hiddenNerveNub, outNerveNub, allDepth
                 , false, 0);
         this.outNerves = outNerves;
         this.isShowLog = isShowLog;
@@ -64,7 +64,7 @@ public class SoftMax extends Nerve {
                 destroyParameter(eventId);
                 if (outBack != null) {
                     outBack.getBack(mes.poi, mes.typeID, eventId);
-                    outBack.getSoftMaxBack(eventId,mes.softMax);
+                    outBack.getSoftMaxBack(eventId, mes.softMax);
                 } else {
                     throw new Exception("not find outBack");
                 }
@@ -96,11 +96,11 @@ public class SoftMax extends Nerve {
         Mes mes = new Mes();
         List<Float> featuresList = features.get(eventId);
         for (float value : featuresList) {
-            sigma = (float)Math.exp(value) + sigma;
+            sigma = (float) Math.exp(value) + sigma;
         }
         List<Float> softMax = new ArrayList<>();
         for (int i = 0; i < featuresList.size(); i++) {
-            float eSelf = (float)Math.exp(featuresList.get(i));
+            float eSelf = (float) Math.exp(featuresList.get(i));
             float value = eSelf / sigma;
             softMax.add(value);
             if (value > poi) {

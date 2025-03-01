@@ -31,10 +31,11 @@ public class FastYolo {//yolo
         heightStep = (int) (winHeight * stepReduce);
         if (stepReduce <= 1 && widthStep > 0 && heightStep > 0) {
             typeNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), yoloConfig.getTypeNub() + 1,
-                    1, new ReLu(), yoloConfig.getLineStudy(), RZ.L1, yoloConfig.getLineStudy() * yoloConfig.getRegular()
+                    1, new ReLu(), yoloConfig.getTypeStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
                     , yoloConfig.getCoreNumber());
-            typeNerveManager.initImageNet(3, 2, yoloConfig.getKernelSize(), winHeight, winWidth,
-                    true, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu());
+            typeNerveManager.initImageNet(3, yoloConfig.getKernelSize(), winHeight, winWidth, true,
+                    yoloConfig.isShowLog(), yoloConfig.getTypeStudyRate(), new ReLu(), yoloConfig.getConvTimes(),
+                    yoloConfig.getMinFeatureValue());
         } else {
             throw new Exception("The stepReduce must be (0,1] and widthStep ,heightStep must Greater than 0");
         }
@@ -148,12 +149,12 @@ public class FastYolo {//yolo
                 YoloTypeBack yoloTypeBack = new YoloTypeBack();
                 PositionBack positionBack = new PositionBack();
                 ThreeChannelMatrix myTh = th.cutChannel(i, j, winHeight, winWidth);
-                study(eventID, typeNerveManager.getSensoryNerves(), myTh, false, null, yoloTypeBack);
+                study(eventID, typeNerveManager.getConvInput(), myTh, false, null, yoloTypeBack);
                 int mappingID = yoloTypeBack.getId();//映射id
                 if (mappingID != typeBodies.size() + 1 && yoloTypeBack.getOut() > pth) {
                     TypeBody typeBody = getTypeBodyByMappingID(mappingID);
-                    List<SensoryNerve> sensoryNerves = typeBody.getPositonNerveManager().getSensoryNerves();
-                    study(eventID, sensoryNerves, myTh, false, null, positionBack);
+                    SensoryNerve convInput = typeBody.getPositonNerveManager().getConvInput();
+                    study(eventID, convInput, myTh, false, null, positionBack);
                     boxes.add(getBox(i, j, x, y, positionBack, typeBody));
                 }
             }
@@ -312,7 +313,7 @@ public class FastYolo {//yolo
             ThreeChannelMatrix small = yoloMessage.getPic();
             int mappingID = yoloMessage.getMappingID();
             typeE.put(mappingID, 1f);
-            study(1, typeNerveManager.getSensoryNerves(), small, true, typeE, null);
+            study(1, typeNerveManager.getConvInput(), small, true, typeE, null);
             if (!yoloMessage.isBackGround()) {
                 Map<Integer, Float> positionE = new HashMap<>();
                 positionE.put(1, yoloMessage.getDistX());
@@ -321,27 +322,13 @@ public class FastYolo {//yolo
                 positionE.put(4, yoloMessage.getHeight());
                 positionE.put(5, yoloMessage.getTrust());
                 NerveManager position = yoloMessage.getTypeBody().getPositonNerveManager();
-                study(1, position.getSensoryNerves(), small, true, positionE, null);
+                study(1, position.getConvInput(), small, true, positionE, null);
             }
         }
 
     }
 
-    private void study(long eventID, List<SensoryNerve> sensoryNerves, ThreeChannelMatrix feature, boolean isStudy, Map<Integer, Float> E, OutBack back) throws Exception {
-        for (int i = 0; i < sensoryNerves.size(); i++) {
-            Matrix p;
-            switch (i) {
-                case 0:
-                    p = feature.getMatrixR();
-                    break;
-                case 1:
-                    p = feature.getMatrixG();
-                    break;
-                default:
-                    p = feature.getMatrixB();
-                    break;
-            }
-            sensoryNerves.get(i).postMatrixMessage(eventID, p, isStudy, E, back, false);
-        }
+    private void study(long eventID, SensoryNerve convInput, ThreeChannelMatrix feature, boolean isStudy, Map<Integer, Float> E, OutBack back) throws Exception {
+        convInput.postThreeChannelMatrix(eventID, feature, isStudy, E, back, false);
     }
 }

@@ -12,13 +12,12 @@ import java.util.Map;
  * @date 9:30 上午 2019/12/21
  */
 public class HiddenNerve extends Nerve {
-    private int depth;//所处深度
+    private final int depth;//所处深度
 
     public HiddenNerve(int id, int depth, int upNub, int downNub, float studyPoint,
-                       boolean init, ActiveFunction activeFunction, boolean isDynamic, int rzType, float lParam
-            , int step, int kernLen, int rnnOutNumber) throws Exception {//隐层神经元
+                       boolean init, ActiveFunction activeFunction, int rzType, float lParam, int rnnOutNumber) throws Exception {//隐层神经元
         super(id, upNub, "HiddenNerve", downNub, studyPoint,
-                init, activeFunction, isDynamic, rzType, lParam, step, kernLen, rnnOutNumber);
+                init, activeFunction, rzType, lParam, rnnOutNumber);
         this.depth = depth;
     }
 
@@ -50,10 +49,4 @@ public class HiddenNerve extends Nerve {
         }
     }
 
-    @Override
-    protected void inputMatrix(long eventId, Matrix matrix, boolean isStudy
-            , int E, OutBack outBack) throws Exception {
-        Matrix myMatrix = conv(matrix);//处理过的矩阵
-        sendMatrix(eventId, myMatrix, isStudy, E, outBack);
-    }
 }

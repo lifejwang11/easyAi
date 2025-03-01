@@ -13,7 +13,7 @@ public class SoftMax extends Nerve {
 
     public SoftMax(int upNub, boolean isDynamic, List<OutNerve> outNerves, boolean isShowLog, int coreNumber) throws Exception {
         super(0, upNub, "softMax", 0, 0, false, null, isDynamic
-                , RZ.NOT_RZ, 0, 0, 0, 0, 0, 0, coreNumber);
+                , RZ.NOT_RZ, 0, 0, 0, 0, 0, coreNumber, 0,0);
         this.outNerves = outNerves;
         this.isShowLog = isShowLog;
     }
@@ -76,11 +76,11 @@ public class SoftMax extends Nerve {
         Mes mes = new Mes();
         List<Float> featuresList = features.get(eventId);
         for (float value : featuresList) {
-            sigma = (float)Math.exp(value) + sigma;
+            sigma = (float) Math.exp(value) + sigma;
         }
         List<Float> softMax = new ArrayList<>();
         for (int i = 0; i < featuresList.size(); i++) {
-            float eSelf = (float)Math.exp(featuresList.get(i));
+            float eSelf = (float) Math.exp(featuresList.get(i));
             float value = eSelf / sigma;
             softMax.add(value);
             if (value > poi) {

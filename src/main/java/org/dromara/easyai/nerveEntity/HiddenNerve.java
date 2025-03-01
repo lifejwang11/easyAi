@@ -1,10 +1,12 @@
 package org.dromara.easyai.nerveEntity;
 
+import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,10 +21,11 @@ public class HiddenNerve extends Nerve {
 
     public HiddenNerve(int id, int depth, int upNub, int downNub, float studyPoint,
                        boolean init, ActiveFunction activeFunction, boolean isDynamic, int rzType, float lParam
-            , int step, int kernLen, int matrixX, int matrixY, boolean isConvFinish, int coreNumber) throws Exception {//隐层神经元
+            , int kernLen, int matrixX, int matrixY, boolean isConvFinish, int coreNumber
+            , int convTimes, int channelNo) throws Exception {//隐层神经元
         super(id, upNub, "HiddenNerve", downNub, studyPoint,
-                init, activeFunction, isDynamic, rzType, lParam, step, kernLen, depth, matrixX, matrixY
-                , coreNumber);
+                init, activeFunction, isDynamic, rzType, lParam, kernLen, depth, matrixX, matrixY
+                , coreNumber, convTimes, channelNo);
         this.isConvFinish = isConvFinish;
     }
 
@@ -44,17 +47,15 @@ public class HiddenNerve extends Nerve {
 
     @Override
     protected void inputMatrixFeature(long eventId, List<Float> parameters, boolean isStudy, Map<Integer, Float> E, OutBack imageBack) throws Exception {
-        boolean allReady = insertParameters(eventId, parameters);
-        if (allReady) {//参数齐了，开始计算 sigma - threshold
-            float sigma = calculation(eventId);
-            float out = activeFunction.function(sigma);//激活函数输出数值
-            if (isStudy) {
-                outNub = out;
-            } else {
-                destoryParameter(eventId);
-            }
-            sendMessage(eventId, out, isStudy, E, imageBack);
+        insertParameters(eventId, parameters);
+        float sigma = calculation(eventId);
+        float out = activeFunction.function(sigma);//激活函数输出数值
+        if (isStudy) {
+            outNub = out;
+        } else {
+            destoryParameter(eventId);
         }
+        sendMessage(eventId, out, isStudy, E, imageBack);
     }
 
     @Override
@@ -69,5 +70,15 @@ public class HiddenNerve extends Nerve {
         } else {
             sendMatrix(eventId, myMatrix, isStudy, E, outBack, needMatrix);
         }
+    }
+
+    @Override
+    protected void inputThreeChannelMatrix(long eventId, ThreeChannelMatrix picture, boolean isKernelStudy, Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
+        //接收三通道矩阵
+        List<Matrix> matrixList = new ArrayList<>();
+        matrixList.add(picture.getMatrixR());
+        matrixList.add(picture.getMatrixG());
+        matrixList.add(picture.getMatrixB());
+        demRedByMatrixList(eventId, matrixList, isKernelStudy, E, outBack, needMatrix);
     }
 }

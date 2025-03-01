@@ -35,10 +35,11 @@ public class TypeBody {
         winWidth = minWinWidth;
         winHeight = minWinHeight;
         positonNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), 5, 1,
-                new Tanh(), yoloConfig.getLineStudy(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
+                new Tanh(), yoloConfig.getPositionStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
                 , yoloConfig.getCoreNumber());
-        positonNerveManager.initImageNet(3, 2, yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
-                false, yoloConfig.isShowLog(), yoloConfig.getConvStudy(), new ReLu());
+        positonNerveManager.initImageNet(3, yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
+                false, yoloConfig.isShowLog(), yoloConfig.getPositionStudyRate(), new ReLu(),
+                yoloConfig.getConvTimes(), yoloConfig.getMinFeatureValue());
     }
 
     public float getRealWidth(float width) {

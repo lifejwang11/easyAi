@@ -51,9 +51,9 @@ public class WordEmbedding extends MatrixOperation {
         this.sentenceModel = sentenceModel;
         wordList.addAll(sentenceModel.getWordSet());
         nerveManager = new NerveManager(wordList.size(), wordVectorDimension, wordList.size()
-                , 1, new Tanh(), false, config.getWeStudyPoint(), config.getRzModel(),
+                , 1, new Tanh(), config.getWeStudyPoint(), config.getRzModel(),
                 config.getWeLParam());
-        nerveManager.init(true, false, false, true, 0, 0);
+        nerveManager.init(true, false, true);
     }
 
     public List<String> getWordList() {
@@ -70,8 +70,8 @@ public class WordEmbedding extends MatrixOperation {
         List<String> myWordList = wordTwoVectorModel.getWordList();
         wordList.addAll(myWordList);
         nerveManager = new NerveManager(wordList.size(), wordVectorDimension, wordList.size()
-                , 1, new Tanh(), false, config.getWeStudyPoint(), RZ.NOT_RZ, 0);
-        nerveManager.init(true, false, false, true, 0, 0);
+                , 1, new Tanh(), config.getWeStudyPoint(), RZ.NOT_RZ, 0);
+        nerveManager.init(true, false, true);
         nerveManager.insertModelParameter(wordTwoVectorModel.getModelParameter());
     }
 

@@ -7,10 +7,10 @@ public class YoloConfig {
     private int windowHeight = 140;//检测窗口高
     private int typeNub = 10;//类别数量
     private int hiddenNerveNub = 16;//线性层隐层神经元数量
-    private float lineStudy = 0.01f;//线性层学习率
+    private float typeStudyRate = 0.0025f;//分类学习率
+    private float positionStudyRate = 0.0025f;//卷积层学习率
     private int kernelSize = 3;//卷积核尺寸
     private boolean showLog = false;//是否打印学习过程中的log
-    private float convStudy = 0.01f;//卷积层学习率
     private int enhance = 1;//数据增强
     private float iouTh = 0.05f;//合并框交并比阈值
     private float containIouTh = 0.15f;//是否包含样本交并比阈值
@@ -20,6 +20,24 @@ public class YoloConfig {
     private float regular = 0;//正则系数
     private int regularModel = RZ.NOT_RZ;//正则模式
     private int coreNumber = 1;//是否使用多核并行计算进行提速
+    private int convTimes = 1;//单层卷积层数
+    private int minFeatureValue = 5;//输出特征维度大小
+
+    public int getMinFeatureValue() {
+        return minFeatureValue;
+    }
+
+    public void setMinFeatureValue(int minFeatureValue) {
+        this.minFeatureValue = minFeatureValue;
+    }
+
+    public int getConvTimes() {
+        return convTimes;
+    }
+
+    public void setConvTimes(int convTimes) {
+        this.convTimes = convTimes;
+    }
 
     public int getCoreNumber() {
         return coreNumber;
@@ -134,12 +152,20 @@ public class YoloConfig {
         this.hiddenNerveNub = hiddenNerveNub;
     }
 
-    public float getLineStudy() {
-        return lineStudy;
+    public float getTypeStudyRate() {
+        return typeStudyRate;
     }
 
-    public void setLineStudy(float lineStudy) {
-        this.lineStudy = lineStudy;
+    public void setTypeStudyRate(float typeStudyRate) {
+        this.typeStudyRate = typeStudyRate;
+    }
+
+    public float getPositionStudyRate() {
+        return positionStudyRate;
+    }
+
+    public void setPositionStudyRate(float positionStudyRate) {
+        this.positionStudyRate = positionStudyRate;
     }
 
     public boolean isShowLog() {
@@ -150,11 +176,4 @@ public class YoloConfig {
         this.showLog = showLog;
     }
 
-    public float getConvStudy() {
-        return convStudy;
-    }
-
-    public void setConvStudy(float convStudy) {
-        this.convStudy = convStudy;
-    }
 }

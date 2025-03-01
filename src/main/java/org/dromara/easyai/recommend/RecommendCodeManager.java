@@ -22,8 +22,8 @@ public class RecommendCodeManager {//推荐id管理
     public RecommendCodeManager(boolean initPower, RecommendConfig recommendConfig) throws Exception {
         studyTh = recommendConfig.getStudyTh();
         dim = recommendConfig.getDimension();
-        nerveManager = new NerveManager(31, dim, 31, 1, new Tanh(), false,
-                0.01f, RZ.L1, 0.01f * 0.2f);
+        nerveManager = new NerveManager(31, dim, 31, 1, new Tanh(),
+                0.01f, RZ.L1, 0.0001f);
         nerveManager.setSoftMax(false);
         nerveManager.initRnn(initPower, false);
     }

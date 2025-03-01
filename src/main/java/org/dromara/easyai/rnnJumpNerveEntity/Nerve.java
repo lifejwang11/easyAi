@@ -37,18 +37,11 @@ public abstract class Nerve {
     protected ActiveFunction activeFunction;
     private final int rzType;//正则化类型，默认不进行正则化
     private final float lParam;//正则参数
-    private final int step;//步长
-    private final int kernLen;//核长
-    private Matrix im2col;//输入矩阵
-    private int xInput;//输入矩阵的x
-    private int yInput;//输入矩阵的y
-    private Matrix outMatrix;//输出矩阵
     private int myUpNumber;//统计参数数量
     protected int depth;//所处深度
     protected int allDepth;//总深度
     protected boolean creator;//是否为创建网络
     protected int startDepth;//开始深度
-    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public int getDepth() {
         return depth;
@@ -79,8 +72,7 @@ public abstract class Nerve {
     }
 
     protected Nerve(int id, String name,
-                    float studyPoint, boolean init, ActiveFunction activeFunction
-            , boolean isDynamic, int rzType, float lParam, int step, int kernLen, int sensoryNerveNub
+                    float studyPoint, boolean init, ActiveFunction activeFunction, int rzType, float lParam, int sensoryNerveNub
             , int hiddenNerveNub, int outNerveNub, int allDepth, boolean creator, int startDepth) throws Exception {//该神经元在同层神经元中的编号
         this.id = id;
         this.creator = creator;
@@ -94,12 +86,10 @@ public abstract class Nerve {
         this.activeFunction = activeFunction;
         this.rzType = rzType;
         this.lParam = lParam;
-        this.step = step;
-        this.kernLen = kernLen;
         if (name.equals("OutNerve")) {
             fromOutNerve = true;
         }
-        initPower(init, isDynamic);//生成随机权重
+        initPower(init);//生成随机权重
     }
 
     protected void setStudyPoint(float studyPoint) {
@@ -219,38 +209,6 @@ public abstract class Nerve {
         }
     }
 
-    protected Matrix conv(Matrix matrix) throws Exception {//正向卷积，下取样
-        xInput = matrix.getX();
-        yInput = matrix.getY();
-        int sub = kernLen - step;
-        int x = (xInput - sub) / step;//线性变换后矩阵的行数 （图片长度-（核长-步长））/步长
-        int y = (yInput - sub) / step;//线性变换后矩阵的列数
-        Matrix myMatrix = new Matrix(x, y);//线性变化后的矩阵
-        im2col = matrixOperation.im2col(matrix, kernLen, step);
-        //输出矩阵
-        Matrix matrixOut = matrixOperation.mulMatrix(im2col, nerveMatrix);
-        //输出矩阵重新排序
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                float nub = activeFunction.function(matrixOut.getNumber(i * y + j, 0));
-                myMatrix.setNub(i, j, nub);
-            }
-        }
-        outMatrix = myMatrix;
-        return myMatrix;
-    }
-
-    protected void sendMatrix(long eventId, Matrix parameter, boolean isStudy,
-                              int E, OutBack outBack) throws Exception {
-        if (!son.isEmpty()) {
-            for (Nerve nerve : son.get(0)) {
-                nerve.inputMatrix(eventId, parameter, isStudy, E, outBack);
-            }
-        } else {
-            throw new Exception("this layer is lastIndex");
-        }
-    }
-
     private void backSendMessage(long eventId, boolean fromOutNerve, int[] storeys, int index) throws Exception {//反向传播
         if (!father.isEmpty()) {//要先判定是不是可以继续往后传
             List<Nerve> nerveList = null;
@@ -272,21 +230,10 @@ public abstract class Nerve {
         }
     }
 
-    private void backMatrixMessage(Matrix g) throws Exception {//反向传播矩阵
-        if (!father.isEmpty()) {
-            for (Nerve nerve : father.get(0)) {
-                nerve.backMatrix(g);
-            }
-        }
-    }
-
     protected void input(long eventId, float parameter, boolean isStudy
             , Map<Integer, Float> E, OutBack imageBack, Matrix rnnMatrix
             , int[] storeys, int index, int questionLength) throws Exception {//输入参数
 
-    }
-
-    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy, int E, OutBack outBack) throws Exception {//输入动态矩阵
     }
 
     private void backGetMessage(float parameter, long eventId, boolean fromOutNerve, int[] storeys, int index) throws Exception {//反向传播
@@ -303,42 +250,6 @@ public abstract class Nerve {
             gradient = activeFunction.functionG(outNub) * sigmaW;
             updatePower(eventId, storeys, index);//修改阈值
         }
-    }
-
-    protected void backMatrix(Matrix g) throws Exception {//回传梯度
-        //对g进行重新排序
-        int x = g.getX();
-        int y = g.getY();
-        Matrix yc = new Matrix(x * y, 1);
-        int index = 0;
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                float error = g.getNumber(i, j);
-                float out = outMatrix.getNumber(i, j);
-                error = error * activeFunction.functionG(out) * studyPoint;
-                yc.setNub(index, 0, error);
-                index++;
-            }
-        }
-        //计算权重变化量
-        Matrix trx = matrixOperation.transPosition(im2col);
-        Matrix wSub = matrixOperation.mulMatrix(trx, yc);
-        //给权重变化wSub增加正则项，抑制权重变化量
-        //计算x变化量
-        x = im2col.getX();
-        y = im2col.getY() - 1;
-        for (int i = 0; i < x; i++) {
-            float ySub = yc.getNumber(i, 0);
-            for (int j = 0; j < y; j++) {
-                float k = nerveMatrix.getNumber(j, 0) * ySub;
-                im2col.setNub(i, j, k);
-            }
-        }
-        Matrix gNext = matrixOperation.reverseIm2col(im2col, kernLen, step, xInput, yInput);
-        //更新权重
-        nerveMatrix = matrixOperation.add(nerveMatrix, wSub);
-        //将梯度继续回传
-        backMatrixMessage(gNext);
     }
 
     protected void updatePower(long eventId, int[] storeys, int index) throws Exception {//修改阈值
@@ -372,9 +283,9 @@ public abstract class Nerve {
             float sigma = 0;
             for (Map.Entry<Integer, Float> entry : dendrites.entrySet()) {
                 if (rzType == RZ.L2) {
-                    sigma = sigma + (float)Math.pow(entry.getValue(), 2);
+                    sigma = sigma + (float) Math.pow(entry.getValue(), 2);
                 } else {
-                    sigma = sigma + (float)Math.abs(entry.getValue());
+                    sigma = sigma + (float) Math.abs(entry.getValue());
                 }
             }
             param = sigma * lParam * studyPoint;
@@ -427,45 +338,31 @@ public abstract class Nerve {
         return sigma - threshold;
     }
 
-    private void initPower(boolean init, boolean isDynamic) throws Exception {//初始化权重及阈值
+    private void initPower(boolean init) throws Exception {//初始化权重及阈值
         Random random = new Random();
-        if (!isDynamic) {//静态神经元
-            //设置初始化权重范围收缩系数
-            if (name.equals("HiddenNerve")) {//隐层神经元
-                myUpNumber = sensoryNerveNub;
-            } else if (name.equals("OutNerve")) {//输出神经元
-                myUpNumber = hiddenNerveNub;
-            } else {//softmax
-                myUpNumber = outNerveNub;
-            }
-            if (myUpNumber > 0) {//输入个数
-                float sh = (float)Math.sqrt(myUpNumber);
-                for (int i = 1; i < myUpNumber + 1; i++) {
-                    float nub = 0;
-                    if (init) {
-                        nub = random.nextFloat() / sh;
-                    }
-                    dendrites.put(i, nub);//random.nextFloat()
-                }
-                //生成随机阈值
+        //设置初始化权重范围收缩系数
+        if (name.equals("HiddenNerve")) {//隐层神经元
+            myUpNumber = sensoryNerveNub;
+        } else if (name.equals("OutNerve")) {//输出神经元
+            myUpNumber = hiddenNerveNub;
+        } else {//softmax
+            myUpNumber = outNerveNub;
+        }
+        if (myUpNumber > 0) {//输入个数
+            float sh = (float) Math.sqrt(myUpNumber);
+            for (int i = 1; i < myUpNumber + 1; i++) {
                 float nub = 0;
                 if (init) {
                     nub = random.nextFloat() / sh;
                 }
-                threshold = nub;
+                dendrites.put(i, nub);//random.nextFloat()
             }
-        } else {//动态神经元
-            int nerveNub = kernLen * kernLen;
-            float sh = (float)Math.sqrt(2D / nerveNub);
-            float nub;
-            nerveMatrix = new Matrix(nerveNub + 1, 1);
-            for (int i = 0; i < nerveMatrix.getX(); i++) {
-                nub = 0;
-                if (init) {
-                    nub = random.nextFloat() * sh;
-                }
-                nerveMatrix.setNub(i, 0, nub);
+            //生成随机阈值
+            float nub = 0;
+            if (init) {
+                nub = random.nextFloat() / sh;
             }
+            threshold = nub;
         }
     }
 
