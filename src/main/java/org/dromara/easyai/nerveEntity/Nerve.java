@@ -394,10 +394,9 @@ public abstract class Nerve extends ConvCount {
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
         List<Float> oneConvPowerList = new ArrayList<>();
         List<ConvSize> convSizeList = convParameter.getConvSizeList();
-        float sh = (float) Math.sqrt(channelNo);
         if (depth == 1) {
             for (int i = 0; i < channelNo; i++) {
-                oneConvPowerList.add(random.nextFloat() / sh);
+                oneConvPowerList.add(random.nextFloat() / channelNo);
             }
             convParameter.setOneConvPower(oneConvPowerList);
         }
