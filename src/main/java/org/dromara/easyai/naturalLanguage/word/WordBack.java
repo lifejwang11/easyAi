@@ -1,5 +1,6 @@
 package org.dromara.easyai.naturalLanguage.word;
 
+import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 
@@ -34,6 +35,11 @@ public class WordBack implements OutBack {
 
     @Override
     public void getWordVector(int id, float w) {
+
+    }
+
+    @Override
+    public void getBackThreeChannelMatrix(ThreeChannelMatrix picture) {
 
     }
 }

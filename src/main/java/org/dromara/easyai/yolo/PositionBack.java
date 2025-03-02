@@ -1,5 +1,6 @@
 package org.dromara.easyai.yolo;
 
+import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.i.OutBack;
 
@@ -71,6 +72,11 @@ public class PositionBack implements OutBack {
 
     @Override
     public void getWordVector(int id, float w) {
+
+    }
+
+    @Override
+    public void getBackThreeChannelMatrix(ThreeChannelMatrix picture) {
 
     }
 }

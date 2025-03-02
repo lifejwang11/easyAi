@@ -108,30 +108,7 @@ public abstract class Nerve extends ConvCount {
     }
 
     protected Matrix conv(Matrix matrix) throws Exception {//一次正向卷积，下取样
-        List<ConvSize> convSizeList = convParameter.getConvSizeList();
-        List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
-        List<Matrix> im2colMatrixList = convParameter.getIm2colMatrixList();
-        List<Matrix> outMatrixList = convParameter.getOutMatrixList();
-        im2colMatrixList.clear();
-        outMatrixList.clear();
-        for (int i = 0; i < convTimes; i++) {
-            ConvSize convSize = convSizeList.get(i);
-            Matrix nerveMatrix = nerveMatrixList.get(i);
-            int xInput = matrix.getX();
-            int yInput = matrix.getY();
-            convSize.setXInput(xInput);
-            convSize.setYInput(yInput);
-            ConvResult convResult = downConv(matrix, activeFunction, kernLen, nerveMatrix);
-            im2colMatrixList.add(convResult.getLeftMatrix());
-            Matrix myMatrix = convResult.getResultMatrix();
-            outMatrixList.add(myMatrix);
-            matrix = myMatrix;
-        }
-        convParameter.setOutX(matrix.getX());
-        convParameter.setOutY(matrix.getY());
-        //判断matrix是不是偶数，不是的边则补0
-        //下池化
-        return downPooling(matrix);
+        return downConvAndPooling(matrix, convParameter, convTimes, activeFunction, kernLen, true, -1);
     }
 
     protected void demRedByMatrixList(long eventId, List<Matrix> matrixList, boolean study,
@@ -241,28 +218,13 @@ public abstract class Nerve extends ConvCount {
         if (backNub == downNub) {
             backNub = 0;
             Matrix errorMatrix = backDownPooling(sigmaMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
-            List<Matrix> outMatrixList = convParameter.getOutMatrixList();
-            List<Matrix> im2colMatrixList = convParameter.getIm2colMatrixList();
-            List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
-            List<ConvSize> convSizeList = convParameter.getConvSizeList();
-            for (int i = convTimes - 1; i >= 0; i--) {
-                Matrix outMatrix = outMatrixList.get(i);
-                Matrix im2col = im2colMatrixList.get(i);
-                Matrix nerveMatrix = nerveMatrixList.get(i);
-                ConvSize convSize = convSizeList.get(i);
-                int xInput = convSize.getXInput();
-                int yInput = convSize.getYInput();
-                ConvResult convResult = backDownConv(errorMatrix, outMatrix, activeFunction, im2col,
-                        nerveMatrix, studyPoint, kernLen, xInput, yInput);
-                nerveMatrixList.set(i, convResult.getNervePowerMatrix());//更新权重
-                errorMatrix = convResult.getResultMatrix();
-            }
+            Matrix myErrorMatrix = backAllDownConv(convParameter, errorMatrix, studyPoint, activeFunction, convTimes, kernLen);
             sigmaMatrix = null;
             if (depth == 1) {//1*1 卷积调整
-                backOneConv(errorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), studyPoint);
+                backOneConv(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), studyPoint);
             } else {
                 //将梯度继续回传
-                backMatrixMessage(errorMatrix);
+                backMatrixMessage(myErrorMatrix);
             }
         }
     }

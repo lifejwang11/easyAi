@@ -66,6 +66,24 @@ public class MatrixOperation {
         }
     }
 
+    //重点
+    public Matrix addThreeMatrix(Matrix matrix1, Matrix matrix2, Matrix matrix3) throws Exception {//三矩阵相加
+        if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY() && matrix1.getX() == matrix3.getX()
+                && matrix1.getY() == matrix3.getY()) {
+            Matrix matrix = new Matrix(matrix1.getX(), matrix1.getY());
+            int x = matrix1.getX();
+            int y = matrix1.getY();
+            for (int i = 0; i < x; i++) {//遍历行
+                for (int j = 0; j < y; j++) {//遍历列
+                    matrix.setNub(i, j, matrix1.getNumber(i, j) + matrix2.getNumber(i, j) + matrix3.getNumber(i, j));
+                }
+            }
+            return matrix;
+        } else {
+            throw new Exception("matrix is not equals");
+        }
+    }
+
     public void center(Matrix matrix) throws Exception {//将矩阵中心化
         float avgValue = matrix.getAVG();
         mathSub(matrix, avgValue);
