@@ -106,8 +106,21 @@ public abstract class ConvCount {
         return size + kerSize - 1;
     }
 
-    private void backUpConv(Matrix errorMatrix) {//退上卷积
+    private int backUpSize(int size, int kerSize) {//获取上采样前的尺寸
+        return size - kerSize + 1;
+    }
 
+    private Matrix backUpConv(Matrix errorMatrix, int kerSize, ConvParameter convParameter, float studyRate) throws Exception {//退上卷积
+        int x = backUpSize(errorMatrix.getX(), kerSize);
+        int y = backUpSize(errorMatrix.getY(), kerSize);
+        Matrix upNerveMatrix = convParameter.getUpNerveMatrix();//上采样卷积权重
+        Matrix vector = convParameter.getUpFeatureMatrix();
+        Matrix error = matrixOperation.im2col(errorMatrix, kerSize, 1);
+        Matrix subNerveMatrix = matrixOperation.matrixMulPd(error, vector, upNerveMatrix, false);
+        Matrix errorFeature = matrixOperation.matrixMulPd(error, vector, upNerveMatrix, true);
+        matrixOperation.mathMul(subNerveMatrix, studyRate);
+        convParameter.setUpNerveMatrix(matrixOperation.add(subNerveMatrix, upNerveMatrix));
+        return matrixOperation.vectorToMatrix(errorFeature, x, y);
     }
 
     private ConvResult upConv(Matrix matrix, int kerSize, Matrix nervePowerMatrix, ActiveFunction activeFunction) throws Exception {//进行上采样

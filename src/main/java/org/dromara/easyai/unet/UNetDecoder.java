@@ -33,7 +33,7 @@ public class UNetDecoder extends ConvCount {
     private UNetDecoder beforeDecoder;//上一个解码器
     private UNetEncoder encoder;//上一个编码器
     private UNetEncoder myUNetEncoder;//同级编码器
-    private ConvSize convSize = new ConvSize();
+    private final ConvSize convSize = new ConvSize();
 
     public UNetDecoder(int kerSize, int deep, int convTimes, ActiveFunction activeFunction
             , boolean lastLay, boolean outThree, float studyRate) throws Exception {
@@ -165,7 +165,15 @@ public class UNetDecoder extends ConvCount {
 
     private void backLastError(Matrix errorMatrix) throws Exception {//最后一层的误差反向传播
         Matrix error = backAllDownConv(convParameter, errorMatrix, studyRate, activeFunction, convTimes, kerSize);
-        myUNetEncoder.setDecodeErrorMatrix(error);//给同级解码器发送误差
+        Matrix encoderError = new Matrix(convSize.getXInput(), convSize.getYInput());
+        int x = error.getX();
+        int y = error.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                encoderError.setNub(i, j, error.getNumber(i, j));
+            }
+        }
+        myUNetEncoder.setDecodeErrorMatrix(encoderError);//给同级解码器发送误差
         beforeDecoder.backErrorMatrix(error);
     }
 

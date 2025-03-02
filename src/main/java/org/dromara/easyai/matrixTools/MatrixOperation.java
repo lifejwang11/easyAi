@@ -1,10 +1,7 @@
 package org.dromara.easyai.matrixTools;
 
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -733,6 +730,26 @@ public class MatrixOperation {
             }
         }
         return list;
+    }
+
+    public Matrix vectorToMatrix(Matrix vector, int xSize, int ySize) throws Exception {//向量转矩阵
+        Matrix matrix = new Matrix(xSize, ySize);
+        if (vector.isRowVector()) {//行向量
+            for (int i = 0; i < xSize; i++) {
+                for (int j = 0; j < ySize; j++) {
+                    int index = i * ySize + j;
+                    matrix.setNub(i, j, vector.getNumber(0, index));
+                }
+            }
+        } else {//列向量
+            for (int i = 0; i < xSize; i++) {
+                for (int j = 0; j < ySize; j++) {
+                    int index = i * ySize + j;
+                    matrix.setNub(i, j, vector.getNumber(index, 0));
+                }
+            }
+        }
+        return matrix;
     }
 
     //list转矩阵
