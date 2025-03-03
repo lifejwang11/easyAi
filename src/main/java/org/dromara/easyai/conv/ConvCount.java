@@ -11,10 +11,30 @@ import java.util.List;
 /**
  * @author lidapeng
  * @time 2025/2/26 10:52
- * @des unet运算超类
+ * @des 卷积运算超类
  */
 public abstract class ConvCount {
     private final MatrixOperation matrixOperation = new MatrixOperation();
+
+    protected int getConvMyDep(int xSize, int ySize, int kernLen, int minFeatureValue, int convTimes) {
+        int xDeep = getConvDeep(xSize, kernLen, minFeatureValue, convTimes);
+        int yDeep = getConvDeep(ySize, kernLen, minFeatureValue, convTimes);
+        return Math.min(xDeep, yDeep);
+    }
+
+    private int getConvDeep(int size, int kernLen, int minFeatureValue, int convTimes) {//获取卷积层深度
+        int x = size;
+        int step = 1;
+        int deep = 0;//深度
+        do {
+            for (int i = 0; i < convTimes; i++) {
+                x = (x - (kernLen - step)) / step;
+            }
+            x = x / 2 + x % 2;
+            deep++;
+        } while (x > minFeatureValue);
+        return deep - 1;
+    }
 
     private Matrix upPooling(Matrix matrix) throws Exception {//上池化
         int x = matrix.getX();
@@ -29,7 +49,7 @@ public abstract class ConvCount {
         return myMatrix;
     }
 
-    private Matrix backUpPooling(Matrix errorMatrix) throws Exception {//退上池化
+    protected Matrix backUpPooling(Matrix errorMatrix) throws Exception {//退上池化
         int x = errorMatrix.getX();
         int y = errorMatrix.getY();
         Matrix myMatrix = new Matrix(x / 2, y / 2);
@@ -110,7 +130,7 @@ public abstract class ConvCount {
         return size - kerSize + 1;
     }
 
-    private Matrix backUpConv(Matrix errorMatrix, int kerSize, ConvParameter convParameter, float studyRate) throws Exception {//退上卷积
+    protected Matrix backUpConv(Matrix errorMatrix, int kerSize, ConvParameter convParameter, float studyRate) throws Exception {//退上卷积
         int x = backUpSize(errorMatrix.getX(), kerSize);
         int y = backUpSize(errorMatrix.getY(), kerSize);
         Matrix upNerveMatrix = convParameter.getUpNerveMatrix();//上采样卷积权重

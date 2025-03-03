@@ -27,7 +27,6 @@ public class UNetDecoder extends ConvCount {
     private final float studyRate;//学习率
     private final int convTimes;//卷积层数
     private final boolean lastLay;//是否为最后一层
-    private final boolean outThree;//是否要输出为三通道矩阵
     private final ActiveFunction activeFunction;
     private UNetDecoder afterDecoder;//下一个解码器
     private UNetDecoder beforeDecoder;//上一个解码器
@@ -36,12 +35,11 @@ public class UNetDecoder extends ConvCount {
     private final ConvSize convSize = new ConvSize();
 
     public UNetDecoder(int kerSize, int deep, int convTimes, ActiveFunction activeFunction
-            , boolean lastLay, boolean outThree, float studyRate) throws Exception {
+            , boolean lastLay, float studyRate) throws Exception {
         this.kerSize = kerSize;
         this.deep = deep;
         this.studyRate = studyRate;
         this.lastLay = lastLay;
-        this.outThree = outThree;
         this.convTimes = convTimes;
         this.activeFunction = activeFunction;
         Random random = new Random();
@@ -51,7 +49,7 @@ public class UNetDecoder extends ConvCount {
         for (int i = 0; i < convTimes; i++) {
             initNervePowerMatrix(random, nerveMatrixList);
         }
-        if (lastLay && outThree) {
+        if (lastLay) {
             for (int i = 0; i < 3; i++) {
                 oneConvPower.add(random.nextFloat() / 3);
             }
@@ -154,17 +152,13 @@ public class UNetDecoder extends ConvCount {
         }
     }
 
-    private void toMatrix(Matrix feature, Matrix featureE, boolean study, OutBack outBack, long eventID) throws Exception {
-        if (study) {
-            Matrix errorMatrix = matrixOperation.sub(featureE, feature);
-            backLastError(errorMatrix);
-        } else {
-            outBack.getBackMatrix(feature, 1, eventID);
-        }
-    }
-
     private void backLastError(Matrix errorMatrix) throws Exception {//最后一层的误差反向传播
         Matrix error = backAllDownConv(convParameter, errorMatrix, studyRate, activeFunction, convTimes, kerSize);
+        sendEncoderError(error);//给同级解码器发送误差
+        beforeDecoder.backErrorMatrix(error);
+    }
+
+    private void sendEncoderError(Matrix error) throws Exception {//给同级解码器发送误差
         Matrix encoderError = new Matrix(convSize.getXInput(), convSize.getYInput());
         int x = error.getX();
         int y = error.getY();
@@ -173,27 +167,33 @@ public class UNetDecoder extends ConvCount {
                 encoderError.setNub(i, j, error.getNumber(i, j));
             }
         }
-        myUNetEncoder.setDecodeErrorMatrix(encoderError);//给同级解码器发送误差
-        beforeDecoder.backErrorMatrix(error);
+        myUNetEncoder.setDecodeErrorMatrix(encoderError);
     }
 
     protected void backErrorMatrix(Matrix errorMatrix) throws Exception {//接收解码器误差
-
+        //退上池化，退上卷积 退下卷积 并返回编码器误差
+        Matrix error = backUpPooling(errorMatrix);//退上池化
+        Matrix error2 = backUpConv(error, kerSize, convParameter, studyRate);//退上卷积
+        Matrix back = backAllDownConv(convParameter, error2, studyRate, activeFunction, convTimes, kerSize);//退下卷积
+        if (myUNetEncoder != null) {
+            sendEncoderError(back);//给同级解码器发送误差
+        }
+        if (beforeDecoder != null) {
+            beforeDecoder.backErrorMatrix(back);
+        } else {//给上一个编码器发送误差
+            encoder.backError(back);
+        }
     }
 
-    protected void sendFeature(long eventID, OutBack outBack, Matrix matrixE, ThreeChannelMatrix featureE,
+    protected void sendFeature(long eventID, OutBack outBack, ThreeChannelMatrix featureE,
                                Matrix myFeature, boolean study) throws Exception {
         Matrix encoderMatrix = myUNetEncoder.getAfterConvMatrix(eventID);//编码器特征
         addFeature(encoderMatrix, myFeature, study);
         Matrix upConvMatrix = upConvAndPooling(myFeature, convParameter, convTimes, activeFunction, kerSize, !lastLay);
         if (lastLay) {//最后一层解码器
-            if (outThree) {//三通道输出
-                toThreeChannelMatrix(upConvMatrix, featureE, study, outBack);
-            } else {//单通道输出
-                toMatrix(upConvMatrix, matrixE, study, outBack, eventID);
-            }
+            toThreeChannelMatrix(upConvMatrix, featureE, study, outBack);
         } else {
-            afterDecoder.sendFeature(eventID, outBack, matrixE, featureE, upConvMatrix, study);
+            afterDecoder.sendFeature(eventID, outBack, featureE, upConvMatrix, study);
         }
     }
 

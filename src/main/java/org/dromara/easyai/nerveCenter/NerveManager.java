@@ -1,5 +1,6 @@
 package org.dromara.easyai.nerveCenter;
 
+import org.dromara.easyai.conv.ConvCount;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.nerveEntity.*;
@@ -16,7 +17,7 @@ import java.util.Map;
  * @author lidapeng
  * &#064;date  11:05 上午 2019/12/21
  */
-public class NerveManager {
+public class NerveManager extends ConvCount {
     private final int hiddenNerveNub;//隐层神经元个数
     private final int sensoryNerveNub;//输入神经元个数
     private final int outNerveNub;//输出神经元个数
@@ -262,25 +263,6 @@ public class NerveManager {
         return depthNerves;
     }
 
-    private int getConvMyDep(int xSize, int ySize, int kernLen, int minFeatureValue) {
-        int xDeep = getConvDeep(xSize, kernLen, minFeatureValue);
-        int yDeep = getConvDeep(ySize, kernLen, minFeatureValue);
-        return Math.min(xDeep, yDeep);
-    }
-
-    private int getConvDeep(int size, int kernLen, int minFeatureValue) {//获取卷积层深度
-        int x = size;
-        int step = 1;
-        int deep = 0;//深度
-        do {
-            for (int i = 0; i < convTimes; i++) {
-                x = (x - (kernLen - step)) / step;
-            }
-            x = x / 2 + x % 2;
-            deep++;
-        } while (x > minFeatureValue);
-        return deep - 1;
-    }
 
     private int getNerveNub(int deep, int size, int kernLen) {
         int x = size;
@@ -317,7 +299,7 @@ public class NerveManager {
         }
         this.convTimes = convTimes;
         this.convStudyPoint = convStudyPoint;
-        int deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue);//卷积层深度
+        int deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue, convTimes);//卷积层深度
         if (deep < 2) {
             throw new Exception("minFeatureValue 设置过大");
         }

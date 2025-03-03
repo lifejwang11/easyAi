@@ -5,6 +5,7 @@ import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.nerveEntity.ConvParameter;
 
 import java.util.*;
@@ -16,12 +17,12 @@ import java.util.*;
  */
 public class UNetEncoder extends ConvCount {
     private final ConvParameter convParameter = new ConvParameter();//内存中卷积层模型及临时数据
+    private final MatrixOperation matrixOperation = new MatrixOperation();
     private final int kerSize;
     private final float studyRate;//学习率
     private final int deep;//当前深度
     private final int channelNum;//通道数
     private final int convTimes;//卷积层数
-    private final boolean outThree;//是否要输出为三通道矩阵
     private Matrix decodeErrorMatrix;//从解码器传来的误差矩阵
     private final ActiveFunction activeFunction;
     private UNetEncoder afterEncoder;//下一个编码器
@@ -29,10 +30,9 @@ public class UNetEncoder extends ConvCount {
     private UNetDecoder decoder;//下一个解码器
 
     public UNetEncoder(int kerSize, int convTimes, int deep, int channelNum, ActiveFunction activeFunction
-            , boolean outThree, float studyRate) throws Exception {//核心大小
+            , float studyRate) throws Exception {//核心大小
         Random random = new Random();
         this.studyRate = studyRate;
-        this.outThree = outThree;
         this.kerSize = kerSize;
         this.activeFunction = activeFunction;
         this.deep = deep;
@@ -61,38 +61,47 @@ public class UNetEncoder extends ConvCount {
     }
 
     //发送特征三通道矩阵
-    public void sendThreeChannel(long eventID, OutBack outBack, ThreeChannelMatrix feature, Matrix matrixE, ThreeChannelMatrix featureE,
+    public void sendThreeChannel(long eventID, OutBack outBack, ThreeChannelMatrix feature, ThreeChannelMatrix featureE,
                                  boolean study) throws Exception {
         if (channelNum != 3) {
             throw new Exception("使用本方法，通道数必须设置为3");
         }
-        if (study && ((!outThree && matrixE == null) || (outThree && featureE == null))) {
+        if (study && featureE == null) {
             throw new Exception("训练时期望矩阵不能为空");
         }
         List<Matrix> matrixList = new ArrayList<>();
         matrixList.add(feature.getMatrixR());
         matrixList.add(feature.getMatrixG());
         matrixList.add(feature.getMatrixB());
-        sendMatrixList(eventID, outBack, matrixE, featureE, matrixList, study);
+        sendMatrixList(eventID, outBack, featureE, matrixList, study);
     }
 
-    protected void sendFeature(long eventID, OutBack outBack, Matrix matrixE, ThreeChannelMatrix featureE,
+    protected void sendFeature(long eventID, OutBack outBack, ThreeChannelMatrix featureE,
                                Matrix myFeature, boolean study) throws Exception {
         Matrix convMatrix = downConvAndPooling(myFeature, convParameter, convTimes, activeFunction, kerSize, true, eventID);
         if (afterEncoder != null) {//后面还有编码器，继续向后传递
-            afterEncoder.sendFeature(eventID, outBack, matrixE, featureE, convMatrix, study);
+            afterEncoder.sendFeature(eventID, outBack, featureE, convMatrix, study);
         } else {//向解码器传递
-            decoder.sendFeature(eventID, outBack, matrixE, featureE, convMatrix, study);
+            decoder.sendFeature(eventID, outBack, featureE, convMatrix, study);
         }
     }
 
-    public void sendMatrixList(long eventID, OutBack outBack, Matrix matrixE, ThreeChannelMatrix featureE, List<Matrix> feature, boolean study) throws Exception {
+    protected void backError(Matrix errorMatrix) throws Exception {//接收误差
+        Matrix error = backDownPooling(errorMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
+        Matrix myError = matrixOperation.add(error, decodeErrorMatrix);
+        Matrix myErrorMatrix = backAllDownConv(convParameter, myError, studyRate, activeFunction, convTimes, kerSize);
+        if (beforeEncoder != null) {
+            beforeEncoder.backError(myErrorMatrix);
+        }
+    }
+
+    public void sendMatrixList(long eventID, OutBack outBack, ThreeChannelMatrix featureE, List<Matrix> feature, boolean study) throws Exception {
         Matrix myFeature = oneConv(feature, convParameter.getOneConvPower());//降维矩阵
         Matrix convMatrix = downConvAndPooling(myFeature, convParameter, convTimes, activeFunction, kerSize, true, eventID);
         if (afterEncoder != null) {//后面还有编码器，继续向后传递
-            afterEncoder.sendFeature(eventID, outBack, matrixE, featureE, convMatrix, study);
+            afterEncoder.sendFeature(eventID, outBack, featureE, convMatrix, study);
         } else {//向解码器传递
-            decoder.sendFeature(eventID, outBack, matrixE, featureE, convMatrix, study);
+            decoder.sendFeature(eventID, outBack, featureE, convMatrix, study);
         }
     }
 
