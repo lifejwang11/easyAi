@@ -62,4 +62,9 @@ public class RegionBack implements OutBack {
     public void getWordVector(int id, float w) {
 
     }
+
+    @Override
+    public void getBackThreeChannelMatrix(ThreeChannelMatrix picture) {
+
+    }
 }

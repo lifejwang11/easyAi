@@ -1,6 +1,7 @@
 package org.dromara.easyai.i;
 
 
+import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.matrixTools.Matrix;
 
 import java.util.List;
@@ -52,5 +53,12 @@ public interface OutBack {
      * @param id 当前词向量id
      */
     void getWordVector(int id, float w);
+
+    /**
+     * 特征图像回调
+     *
+     * @param picture 输出的图像
+     */
+    void getBackThreeChannelMatrix(ThreeChannelMatrix picture);
 
 }

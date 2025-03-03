@@ -43,4 +43,9 @@ public class SemanticsBack implements OutBack {
     public void getWordVector(int id, float w) {
 
     }
+
+    @Override
+    public void getBackThreeChannelMatrix(ThreeChannelMatrix picture) {
+
+    }
 }

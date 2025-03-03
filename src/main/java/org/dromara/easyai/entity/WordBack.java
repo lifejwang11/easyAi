@@ -56,4 +56,9 @@ public class WordBack implements OutBack {
     @Override
     public void getWordVector(int id, float w) {
     }
+
+    @Override
+    public void getBackThreeChannelMatrix(ThreeChannelMatrix picture) {
+
+    }
 }
