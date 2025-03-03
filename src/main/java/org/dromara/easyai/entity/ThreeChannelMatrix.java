@@ -56,14 +56,14 @@ public class ThreeChannelMatrix {
 
     //生成一个高斯核
     private Matrix createGaussianKern(float sd, int kerSize) throws Exception {
-        float a = (float) (1 / (2 * (float)Math.PI * (float)Math.pow(sd, 2)));
+        float a = (float) (1 / (2 * (float) Math.PI * (float) Math.pow(sd, 2)));
         Matrix matrix = new Matrix(kerSize, kerSize);
         int half = kerSize / 2;
         for (int i = 0; i < kerSize; i++) {
             for (int j = 0; j < kerSize; j++) {
                 int xIndex = i - half;
                 int yIndex = j - half;
-                float b = (float)Math.exp(-((float)Math.pow(xIndex, 2) + (float)Math.pow(yIndex, 2)) / (2 * (float)Math.pow(sd, 2)));
+                float b = (float) Math.exp(-((float) Math.pow(xIndex, 2) + (float) Math.pow(yIndex, 2)) / (2 * (float) Math.pow(sd, 2)));
                 matrix.setNub(i, j, a * b);
             }
         }
@@ -155,11 +155,11 @@ public class ThreeChannelMatrix {
         float size = x * y;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                sigma = sigma + (float)Math.pow(matrix.getNumber(i, j) - avg, 2);
+                sigma = sigma + (float) Math.pow(matrix.getNumber(i, j) - avg, 2);
             }
         }
         sigma = sigma / size;//方差
-        float b = (float)Math.sqrt(sigma);//标准差
+        float b = (float) Math.sqrt(sigma);//标准差
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 float value = (matrix.getNumber(i, j) - avg) / b;
@@ -177,6 +177,11 @@ public class ThreeChannelMatrix {
         }
         int narrowX = (int) (x / value);
         int narrowY = (int) (y / value);
+        if (scaleWidth) {
+            narrowY = (int) size;
+        } else {
+            narrowX = (int) size;
+        }
         ThreeChannelMatrix scaleMatrix = new ThreeChannelMatrix();
         scaleMatrix.setX(narrowX);
         scaleMatrix.setY(narrowY);

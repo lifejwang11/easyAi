@@ -9,10 +9,7 @@ import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.nerveEntity.ConvParameter;
 import org.dromara.easyai.nerveEntity.ConvSize;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * @author lidapeng
@@ -44,15 +41,18 @@ public class UNetDecoder extends ConvCount {
         this.activeFunction = activeFunction;
         Random random = new Random();
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
-        List<Float> oneConvPower = convParameter.getOneConvPower();
         convParameter.setUpNerveMatrix(initUpNervePowerMatrix(random));
+        List<ConvSize> convSizeList = convParameter.getConvSizeList();
         for (int i = 0; i < convTimes; i++) {
             initNervePowerMatrix(random, nerveMatrixList);
+            convSizeList.add(new ConvSize());
         }
         if (lastLay) {
+            List<Float> oneConvPower = new ArrayList<>();
             for (int i = 0; i < 3; i++) {
                 oneConvPower.add(random.nextFloat() / 3);
             }
+            convParameter.setOneConvPower(oneConvPower);
         }
     }
 
@@ -97,11 +97,17 @@ public class UNetDecoder extends ConvCount {
             convSize.setXInput(encoderFeature.getX());
             convSize.setYInput(encoderFeature.getY());
         }
+        int tx = encoderFeature.getX();
+        int ty = encoderFeature.getY();
         int x = myFeature.getX();
         int y = myFeature.getY();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                float value = myFeature.getNumber(i, j) + encoderFeature.getNumber(i, j);
+                float encoderValue = 0;
+                if (i < tx && j < ty) {
+                    encoderValue = encoderFeature.getNumber(i, j);
+                }
+                float value = myFeature.getNumber(i, j) + encoderValue;
                 myFeature.setNub(i, j, value);
             }
         }
@@ -164,11 +170,17 @@ public class UNetDecoder extends ConvCount {
 
     private void sendEncoderError(Matrix error) throws Exception {//给同级解码器发送误差
         Matrix encoderError = new Matrix(convSize.getXInput(), convSize.getYInput());
-        int x = error.getX();
-        int y = error.getY();
+        int x = convSize.getXInput();
+        int y = convSize.getYInput();
+        int tx = error.getX();
+        int ty = error.getY();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                encoderError.setNub(i, j, error.getNumber(i, j));
+                float value = 0;
+                if (i < tx && j < ty) {
+                    value = error.getNumber(i, j);
+                }
+                encoderError.setNub(i, j, value);
             }
         }
         myUNetEncoder.setDecodeErrorMatrix(encoderError);

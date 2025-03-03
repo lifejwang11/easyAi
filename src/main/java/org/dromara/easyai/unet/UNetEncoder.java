@@ -7,6 +7,7 @@ import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.nerveEntity.ConvParameter;
+import org.dromara.easyai.nerveEntity.ConvSize;
 
 import java.util.*;
 
@@ -36,17 +37,20 @@ public class UNetEncoder extends ConvCount {
         this.activeFunction = activeFunction;
         this.deep = deep;
         this.convTimes = convTimes;
-        List<Float> oneConvPower = convParameter.getOneConvPower();
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
+        List<ConvSize> convSizeList = convParameter.getConvSizeList();
         for (int i = 0; i < convTimes; i++) {
             initNervePowerMatrix(random, nerveMatrixList);
+            convSizeList.add(new ConvSize());
         }
         if (deep == 1) {
+            List<Float> oneConvPower = new ArrayList<>();
             //通道数
             int channelNum = 3;
             for (int i = 0; i < channelNum; i++) {
                 oneConvPower.add(random.nextFloat() / channelNum);
             }
+            convParameter.setOneConvPower(oneConvPower);
         }
     }
 
