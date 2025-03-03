@@ -13,13 +13,13 @@ import java.util.Map;
  * @des 卷积参数保存
  */
 public class ConvParameter {
-    private final List<Matrix> nerveMatrixList = new ArrayList<>();//下采样卷积权重矩阵
+    private final List<Matrix> nerveMatrixList = new ArrayList<>();//下采样卷积权重矩阵 需取出模型
     private final List<ConvSize> convSizeList = new ArrayList<>();
     private final List<Matrix> im2colMatrixList = new ArrayList<>();
     private final List<Matrix> outMatrixList = new ArrayList<>();
-    private List<Float> oneConvPower;//1*1卷积核
+    private List<Float> oneConvPower;//1*1卷积核 需取出模型
     private List<Matrix> featureMatrixList;//所有通道特征矩阵集合
-    private Matrix upNerveMatrix;//上采样卷积权重
+    private Matrix upNerveMatrix;//上采样卷积权重  需要取出模型
     private Matrix upFeatureMatrix;//上采样输入特征
     private final Map<Long, Matrix> featureMap = new HashMap<>();
     private int outX;

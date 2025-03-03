@@ -21,7 +21,6 @@ public class UNetEncoder extends ConvCount {
     private final int kerSize;
     private final float studyRate;//学习率
     private final int deep;//当前深度
-    private final int channelNum;//通道数
     private final int convTimes;//卷积层数
     private Matrix decodeErrorMatrix;//从解码器传来的误差矩阵
     private final ActiveFunction activeFunction;
@@ -29,14 +28,13 @@ public class UNetEncoder extends ConvCount {
     private UNetEncoder beforeEncoder;//上一个编码器
     private UNetDecoder decoder;//下一个解码器
 
-    public UNetEncoder(int kerSize, int convTimes, int deep, int channelNum, ActiveFunction activeFunction
+    public UNetEncoder(int kerSize, int convTimes, int deep, ActiveFunction activeFunction
             , float studyRate) throws Exception {//核心大小
         Random random = new Random();
         this.studyRate = studyRate;
         this.kerSize = kerSize;
         this.activeFunction = activeFunction;
         this.deep = deep;
-        this.channelNum = channelNum;
         this.convTimes = convTimes;
         List<Float> oneConvPower = convParameter.getOneConvPower();
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
@@ -44,10 +42,16 @@ public class UNetEncoder extends ConvCount {
             initNervePowerMatrix(random, nerveMatrixList);
         }
         if (deep == 1) {
+            //通道数
+            int channelNum = 3;
             for (int i = 0; i < channelNum; i++) {
                 oneConvPower.add(random.nextFloat() / channelNum);
             }
         }
+    }
+
+    public ConvParameter getConvParameter() {
+        return convParameter;
     }
 
     protected void setDecodeErrorMatrix(Matrix decodeErrorMatrix) {
@@ -63,9 +67,6 @@ public class UNetEncoder extends ConvCount {
     //发送特征三通道矩阵
     public void sendThreeChannel(long eventID, OutBack outBack, ThreeChannelMatrix feature, ThreeChannelMatrix featureE,
                                  boolean study) throws Exception {
-        if (channelNum != 3) {
-            throw new Exception("使用本方法，通道数必须设置为3");
-        }
         if (study && featureE == null) {
             throw new Exception("训练时期望矩阵不能为空");
         }
@@ -73,6 +74,9 @@ public class UNetEncoder extends ConvCount {
         matrixList.add(feature.getMatrixR());
         matrixList.add(feature.getMatrixG());
         matrixList.add(feature.getMatrixB());
+        if (study) {
+            convParameter.setFeatureMatrixList(matrixList);
+        }
         sendMatrixList(eventID, outBack, featureE, matrixList, study);
     }
 
@@ -92,6 +96,8 @@ public class UNetEncoder extends ConvCount {
         Matrix myErrorMatrix = backAllDownConv(convParameter, myError, studyRate, activeFunction, convTimes, kerSize);
         if (beforeEncoder != null) {
             beforeEncoder.backError(myErrorMatrix);
+        } else {//最后一层 调整1v1卷积
+            backOneConv(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), studyRate);
         }
     }
 
