@@ -56,6 +56,10 @@ public class UNetDecoder extends ConvCount {
         }
     }
 
+    public ConvParameter getConvParameter() {
+        return convParameter;
+    }
+
     private ThreeChannelMatrix fillColor(ThreeChannelMatrix picture, int heightSize, int widthSize) throws Exception {
         int myFaceHeight = picture.getX();
         int sub = myFaceHeight - heightSize;
@@ -187,8 +191,10 @@ public class UNetDecoder extends ConvCount {
 
     protected void sendFeature(long eventID, OutBack outBack, ThreeChannelMatrix featureE,
                                Matrix myFeature, boolean study) throws Exception {
-        Matrix encoderMatrix = myUNetEncoder.getAfterConvMatrix(eventID);//编码器特征
-        addFeature(encoderMatrix, myFeature, study);
+        if (deep > 1) {
+            Matrix encoderMatrix = myUNetEncoder.getAfterConvMatrix(eventID);//编码器特征
+            addFeature(encoderMatrix, myFeature, study);
+        }
         Matrix upConvMatrix = upConvAndPooling(myFeature, convParameter, convTimes, activeFunction, kerSize, !lastLay);
         if (lastLay) {//最后一层解码器
             toThreeChannelMatrix(upConvMatrix, featureE, study, outBack);
