@@ -4,6 +4,8 @@ package org.dromara.easyai.unet;
 import org.dromara.easyai.config.UNetConfig;
 import org.dromara.easyai.conv.ConvCount;
 import org.dromara.easyai.function.ReLu;
+import org.dromara.easyai.function.Sigmoid;
+import org.dromara.easyai.function.Tanh;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.nerveEntity.ConvParameter;
 
@@ -22,6 +24,7 @@ public class UNetManager extends ConvCount {
     private final int convTimes;
     private final int deep;
     private final float studyRate;
+    private final float oneStudyRate;//1v1卷积权重学习率
     private UNetInput input;//输入类
 
     public UNetInput getInput() {
@@ -35,9 +38,10 @@ public class UNetManager extends ConvCount {
         this.kernLen = uNetConfig.getKerSize();
         this.convTimes = uNetConfig.getConvTimes();
         this.studyRate = uNetConfig.getStudyRate();
+        this.oneStudyRate = uNetConfig.getOneStudyRate();
         this.deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue, convTimes);//编码器深度深度
         if (deep > 1) {
-            initEncoder();//初始化编码器
+            initEncoder(xSize, ySize);//初始化编码器
             initDecoder();
             connectionCoder();
         } else {
@@ -148,8 +152,8 @@ public class UNetManager extends ConvCount {
 
     private void initDecoder() throws Exception {
         for (int i = 0; i < deep + 1; i++) {
-            UNetDecoder uNetDecoder = new UNetDecoder(kernLen, i + 1, convTimes, new ReLu(),
-                    i == deep, studyRate);
+            UNetDecoder uNetDecoder = new UNetDecoder(kernLen, i + 1, convTimes, new Tanh(),
+                    i == deep, studyRate, oneStudyRate);
             decoderList.add(uNetDecoder);
         }
         for (int i = 0; i < deep; i++) {
@@ -160,9 +164,10 @@ public class UNetManager extends ConvCount {
         }
     }
 
-    private void initEncoder() throws Exception {
+    private void initEncoder(int xSize, int ySize) throws Exception {
         for (int i = 0; i < deep; i++) {
-            UNetEncoder uNetEncoder = new UNetEncoder(kernLen, convTimes, i + 1, new ReLu(), studyRate);
+            UNetEncoder uNetEncoder = new UNetEncoder(kernLen, convTimes, i + 1, new ReLu(), studyRate
+                    , xSize, ySize, oneStudyRate);
             if (i == 0) {
                 input = new UNetInput(uNetEncoder);
             }

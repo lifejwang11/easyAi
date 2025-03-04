@@ -130,9 +130,18 @@ public abstract class ConvCount {
         return size - kerSize + 1;
     }
 
-    protected Matrix backUpConv(Matrix errorMatrix, int kerSize, ConvParameter convParameter, float studyRate) throws Exception {//退上卷积
-        int x = backUpSize(errorMatrix.getX(), kerSize);
-        int y = backUpSize(errorMatrix.getY(), kerSize);
+    protected Matrix backUpConv(Matrix errorMatrix, int kerSize, ConvParameter convParameter, float studyRate, ActiveFunction activeFunction) throws Exception {//退上卷积
+        int myX = errorMatrix.getX();
+        int myY = errorMatrix.getY();
+        Matrix outMatrix = convParameter.getUpOutMatrix();
+        for (int i = 0; i < myX; i++) {
+            for (int j = 0; j < myY; j++) {
+                float value = activeFunction.functionG(outMatrix.getNumber(i, j)) * errorMatrix.getNumber(i, j);
+                errorMatrix.setNub(i, j, value);
+            }
+        }
+        int x = backUpSize(myX, kerSize);
+        int y = backUpSize(myY, kerSize);
         Matrix upNerveMatrix = convParameter.getUpNerveMatrix();//上采样卷积权重
         Matrix vector = convParameter.getUpFeatureMatrix();
         Matrix error = matrixOperation.im2col(errorMatrix, kerSize, 1);
@@ -167,6 +176,7 @@ public abstract class ConvCount {
         Matrix downConvMatrix = downConvAndPooling(matrix, convParameter, convTimes, activeFunction, kernLen, false, -1);
         if (pooling) {
             ConvResult result = upConv(downConvMatrix, kernLen, convParameter.getUpNerveMatrix(), activeFunction);
+            convParameter.setUpOutMatrix(result.getResultMatrix());
             convParameter.setUpFeatureMatrix(result.getLeftMatrix());
             return upPooling(result.getResultMatrix());
         }
@@ -225,16 +235,18 @@ public abstract class ConvCount {
         int x = featureMatrix.getX();
         int y = featureMatrix.getY();
         float allSub = 0;//1卷积权重误差
+        float len = (float) Math.sqrt(x * y);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 float value = featureMatrix.getNumber(i, j) * errorMatrix.getNumber(i, j) * studyRate;
                 allSub = allSub + value;
             }
         }
-        return allSub;
+        return allSub / len;
     }
 
-    protected void backOneConv(Matrix errorMatrix, List<Matrix> matrixList, List<Float> oneConvPower, float studyRate) throws Exception {//单卷积降维回传
+    protected void backOneConv(Matrix errorMatrix, List<Matrix> matrixList, List<Float> oneConvPower,
+                               float studyRate, boolean uNet) throws Exception {//单卷积降维回传
         int size = oneConvPower.size();
         for (int t = 0; t < size; t++) {
             Matrix myMatrix = matrixList.get(t);
@@ -242,13 +254,17 @@ public abstract class ConvCount {
             int y = myMatrix.getY();
             float power = oneConvPower.get(t);
             float allSubPower = 0;
+            float len = 1;
+            if (uNet) {
+                len = (float) Math.sqrt(x * y);
+            }
             for (int i = 0; i < x; i++) {
                 for (int j = 0; j < y; j++) {
                     float subPower = myMatrix.getNumber(i, j) * errorMatrix.getNumber(i, j) * studyRate;
                     allSubPower = allSubPower + subPower;
                 }
             }
-            power = power + allSubPower;
+            power = power + allSubPower / len;
             oneConvPower.set(t, power);
         }
     }

@@ -31,11 +31,11 @@ public class FastYolo {//yolo
         heightStep = (int) (winHeight * stepReduce);
         if (stepReduce <= 1 && widthStep > 0 && heightStep > 0) {
             typeNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), yoloConfig.getTypeNub() + 1,
-                    1, new ReLu(), yoloConfig.getTypeStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
+                    1, new ReLu(), yoloConfig.getStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
                     , yoloConfig.getCoreNumber());
             typeNerveManager.initImageNet(3, yoloConfig.getKernelSize(), winHeight, winWidth, true,
-                    yoloConfig.isShowLog(), yoloConfig.getTypeStudyRate(), new ReLu(), yoloConfig.getConvTimes(),
-                    yoloConfig.getMinFeatureValue());
+                    yoloConfig.isShowLog(), yoloConfig.getStudyRate(), new ReLu(), yoloConfig.getConvTimes(),
+                    yoloConfig.getMinFeatureValue(), yoloConfig.getOneConvStudy());
         } else {
             throw new Exception("The stepReduce must be (0,1] and widthStep ,heightStep must Greater than 0");
         }

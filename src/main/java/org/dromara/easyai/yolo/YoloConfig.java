@@ -7,8 +7,7 @@ public class YoloConfig {
     private int windowHeight = 140;//检测窗口高
     private int typeNub = 10;//类别数量
     private int hiddenNerveNub = 16;//线性层隐层神经元数量
-    private float typeStudyRate = 0.0025f;//分类学习率
-    private float positionStudyRate = 0.0025f;//卷积层学习率
+    private float studyRate = 0.0025f;//学习率
     private int kernelSize = 3;//卷积核尺寸
     private boolean showLog = false;//是否打印学习过程中的log
     private int enhance = 1;//数据增强
@@ -22,6 +21,15 @@ public class YoloConfig {
     private int coreNumber = 1;//是否使用多核并行计算进行提速
     private int convTimes = 1;//单层卷积层数
     private int minFeatureValue = 5;//输出特征维度大小
+    private float oneConvStudy = 0.0025f;//降维层学习率
+
+    public float getOneConvStudy() {
+        return oneConvStudy;
+    }
+
+    public void setOneConvStudy(float oneConvStudy) {
+        this.oneConvStudy = oneConvStudy;
+    }
 
     public int getMinFeatureValue() {
         return minFeatureValue;
@@ -152,20 +160,12 @@ public class YoloConfig {
         this.hiddenNerveNub = hiddenNerveNub;
     }
 
-    public float getTypeStudyRate() {
-        return typeStudyRate;
+    public float getStudyRate() {
+        return studyRate;
     }
 
-    public void setTypeStudyRate(float typeStudyRate) {
-        this.typeStudyRate = typeStudyRate;
-    }
-
-    public float getPositionStudyRate() {
-        return positionStudyRate;
-    }
-
-    public void setPositionStudyRate(float positionStudyRate) {
-        this.positionStudyRate = positionStudyRate;
+    public void setStudyRate(float studyRate) {
+        this.studyRate = studyRate;
     }
 
     public boolean isShowLog() {

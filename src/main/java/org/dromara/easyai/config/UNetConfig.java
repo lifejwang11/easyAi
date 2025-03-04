@@ -8,10 +8,19 @@ package org.dromara.easyai.config;
 public class UNetConfig {
     private int XSize;//图像的高度
     private int YSize;//图像宽
-    private float studyRate = 0.00001f;//学习率
+    private float studyRate = 0.0001f;//学习率
+    private float oneStudyRate = 0.01f;//1*1学习率
     private int minFeatureValue = 10;//最小特征维度
     private int kerSize = 3;//卷积核大小
     private int convTimes = 1;//单层卷积数量
+
+    public float getOneStudyRate() {
+        return oneStudyRate;
+    }
+
+    public void setOneStudyRate(float oneStudyRate) {
+        this.oneStudyRate = oneStudyRate;
+    }
 
     public int getConvTimes() {
         return convTimes;
