@@ -254,17 +254,20 @@ public abstract class ConvCount {
             int y = myMatrix.getY();
             float power = oneConvPower.get(t);
             float allSubPower = 0;
-            float len = 1;
-            if (uNet) {
-                len = (float) Math.sqrt(x * y);
-            }
+            float len = (float) Math.sqrt(x * y);
             for (int i = 0; i < x; i++) {
                 for (int j = 0; j < y; j++) {
                     float subPower = myMatrix.getNumber(i, j) * errorMatrix.getNumber(i, j) * studyRate;
                     allSubPower = allSubPower + subPower;
                 }
             }
-            power = power + allSubPower / len;
+            float sup;
+            if (uNet) {
+                sup = allSubPower / len;
+            } else {
+                sup = allSubPower;
+            }
+            power = power + sup;
             oneConvPower.set(t, power);
         }
     }
