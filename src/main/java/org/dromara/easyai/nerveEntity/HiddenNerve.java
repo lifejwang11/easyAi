@@ -22,10 +22,10 @@ public class HiddenNerve extends Nerve {
     public HiddenNerve(int id, int depth, int upNub, int downNub, float studyPoint,
                        boolean init, ActiveFunction activeFunction, boolean isDynamic, int rzType, float lParam
             , int kernLen, int matrixX, int matrixY, boolean isConvFinish, int coreNumber
-            , int convTimes, int channelNo) throws Exception {//隐层神经元
+            , int convTimes, int channelNo, float oneConvStudy) throws Exception {//隐层神经元
         super(id, upNub, "HiddenNerve", downNub, studyPoint,
                 init, activeFunction, isDynamic, rzType, lParam, kernLen, depth, matrixX, matrixY
-                , coreNumber, convTimes, channelNo);
+                , coreNumber, convTimes, channelNo, oneConvStudy);
         this.isConvFinish = isConvFinish;
     }
 

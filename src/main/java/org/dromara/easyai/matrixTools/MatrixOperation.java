@@ -791,7 +791,6 @@ public class MatrixOperation {
         for (int i = 0; i < y; i++) {
             matrix.setNub(index, i, feature.getNumber(i / kenLen, i % kenLen));
         }
-        // matrix.setNub(index, y - 1, 1);
     }
 
     //重重点

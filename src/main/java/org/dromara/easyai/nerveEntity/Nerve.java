@@ -49,6 +49,7 @@ public abstract class Nerve extends ConvCount {
     private final MatrixOperation matrixOperation;
     protected final int channelNo;//通道数
     private final ConvParameter convParameter = new ConvParameter();//内存中卷积层模型及临时数据
+    protected final float oneConvRate;
 
     public Map<Integer, Float> getDendrites() {
         return dendrites;
@@ -73,7 +74,7 @@ public abstract class Nerve extends ConvCount {
     protected Nerve(int id, int upNub, String name, int downNub,
                     float studyPoint, boolean init, ActiveFunction activeFunction
             , boolean isDynamic, int rzType, float lParam, int kernLen, int depth
-            , int matrixX, int matrixY, int coreNumber, int convTimes, int channelNo) throws Exception {//该神经元在同层神经元中的编号
+            , int matrixX, int matrixY, int coreNumber, int convTimes, int channelNo, float onConvRate) throws Exception {//该神经元在同层神经元中的编号
         matrixOperation = new MatrixOperation(coreNumber);
         this.matrixX = matrixX;
         this.matrixY = matrixY;
@@ -89,6 +90,7 @@ public abstract class Nerve extends ConvCount {
         this.rzType = rzType;
         this.lParam = lParam;
         this.kernLen = kernLen;
+        this.oneConvRate = onConvRate;
         initPower(init, isDynamic);//生成随机权重
     }
 
@@ -221,7 +223,8 @@ public abstract class Nerve extends ConvCount {
             Matrix myErrorMatrix = backAllDownConv(convParameter, errorMatrix, studyPoint, activeFunction, convTimes, kernLen);
             sigmaMatrix = null;
             if (depth == 1) {//1*1 卷积调整
-                backOneConv(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), studyPoint);
+                backOneConv(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(),
+                        oneConvRate, false);
             } else {
                 //将梯度继续回传
                 backMatrixMessage(myErrorMatrix);

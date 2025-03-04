@@ -21,11 +21,20 @@ public class ConvParameter {
     private List<Matrix> featureMatrixList;//所有通道特征矩阵集合
     private Matrix upNerveMatrix;//上采样卷积权重  需要取出模型
     private Matrix upFeatureMatrix;//上采样输入特征
+    private Matrix upOutMatrix;//上卷积输出矩阵
     private final Map<Long, Matrix> featureMap = new HashMap<>();
     private int outX;
     private int outY;
     private int encoderX;
     private int encoderY;
+
+    public Matrix getUpOutMatrix() {
+        return upOutMatrix;
+    }
+
+    public void setUpOutMatrix(Matrix upOutMatrix) {
+        this.upOutMatrix = upOutMatrix;
+    }
 
     public int getEncoderX() {
         return encoderX;

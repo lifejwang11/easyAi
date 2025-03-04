@@ -29,12 +29,14 @@ public class UNetDecoder extends ConvCount {
     private UNetDecoder beforeDecoder;//上一个解码器
     private UNetEncoder encoder;//上一个编码器
     private UNetEncoder myUNetEncoder;//同级编码器
+    private final float oneStudyRate;
     private final ConvSize convSize = new ConvSize();
 
     public UNetDecoder(int kerSize, int deep, int convTimes, ActiveFunction activeFunction
-            , boolean lastLay, float studyRate) throws Exception {
+            , boolean lastLay, float studyRate, float oneStudyRate) throws Exception {
         this.kerSize = kerSize;
         this.deep = deep;
+        this.oneStudyRate = oneStudyRate;
         this.studyRate = studyRate;
         this.lastLay = lastLay;
         this.convTimes = convTimes;
@@ -107,7 +109,7 @@ public class UNetDecoder extends ConvCount {
                 if (i < tx && j < ty) {
                     encoderValue = encoderFeature.getNumber(i, j);
                 }
-                float value = myFeature.getNumber(i, j) + encoderValue;
+                float value = (myFeature.getNumber(i, j) + encoderValue) / 2;
                 myFeature.setNub(i, j, value);
             }
         }
@@ -116,6 +118,7 @@ public class UNetDecoder extends ConvCount {
     private void toThreeChannelMatrix(Matrix feature, ThreeChannelMatrix featureE, boolean study, OutBack outBack) throws Exception {
         int x = feature.getX();
         int y = feature.getY();
+        //System.out.println("x:" + x + " y:" + y + ",feature:" + feature.getAVG());
         List<Float> oneConvPower = convParameter.getOneConvPower();
         Matrix matrixR = null;
         Matrix matrixG = null;
@@ -130,6 +133,7 @@ public class UNetDecoder extends ConvCount {
                 matrixB = matrixOperation.mathMulBySelf(feature, value);
             }
         }
+        //System.out.println("r:" + matrixR.getAVG() + ",g:" + matrixG.getAVG() + ",b:" + matrixB.getAVG());
         if (study) {//训练
             ThreeChannelMatrix sfe = featureE.scale(true, y);//缩放
             ThreeChannelMatrix fe = fillColor(sfe, x, y);//补0
@@ -143,9 +147,9 @@ public class UNetDecoder extends ConvCount {
             Matrix featureSubG = matrixOperation.mathMulBySelf(errorG, oneConvPower.get(1));
             Matrix featureSubB = matrixOperation.mathMulBySelf(errorB, oneConvPower.get(2));
             Matrix errorMatrix = matrixOperation.addThreeMatrix(featureSubR, featureSubG, featureSubB);//总误差
-            float v0 = backDecoderOneConv(errorR, feature, studyRate);
-            float v1 = backDecoderOneConv(errorG, feature, studyRate);
-            float v2 = backDecoderOneConv(errorB, feature, studyRate);
+            float v0 = backDecoderOneConv(errorR, feature, oneStudyRate);
+            float v1 = backDecoderOneConv(errorG, feature, oneStudyRate);
+            float v2 = backDecoderOneConv(errorB, feature, oneStudyRate);
             oneConvPower.set(0, oneConvPower.get(0) + v0);
             oneConvPower.set(1, oneConvPower.get(1) + v1);
             oneConvPower.set(2, oneConvPower.get(2) + v2);
@@ -178,7 +182,7 @@ public class UNetDecoder extends ConvCount {
             for (int j = 0; j < y; j++) {
                 float value = 0;
                 if (i < tx && j < ty) {
-                    value = error.getNumber(i, j);
+                    value = error.getNumber(i, j) / 2;
                 }
                 encoderError.setNub(i, j, value);
             }
@@ -189,7 +193,7 @@ public class UNetDecoder extends ConvCount {
     protected void backErrorMatrix(Matrix errorMatrix) throws Exception {//接收解码器误差
         //退上池化，退上卷积 退下卷积 并返回编码器误差
         Matrix error = backUpPooling(errorMatrix);//退上池化
-        Matrix error2 = backUpConv(error, kerSize, convParameter, studyRate);//退上卷积
+        Matrix error2 = backUpConv(error, kerSize, convParameter, studyRate, activeFunction);//退上卷积
         Matrix back = backAllDownConv(convParameter, error2, studyRate, activeFunction, convTimes, kerSize);//退下卷积
         if (myUNetEncoder != null) {
             sendEncoderError(back);//给同级解码器发送误差
@@ -207,7 +211,9 @@ public class UNetDecoder extends ConvCount {
             Matrix encoderMatrix = myUNetEncoder.getAfterConvMatrix(eventID);//编码器特征
             addFeature(encoderMatrix, myFeature, study);
         }
+        //System.out.println("deep==" + deep + ",解码器运算前:" + myFeature.getAVG());
         Matrix upConvMatrix = upConvAndPooling(myFeature, convParameter, convTimes, activeFunction, kerSize, !lastLay);
+        //System.out.println("deep==" + deep + ",解码器运算后:" + upConvMatrix.getAVG());
         if (lastLay) {//最后一层解码器
             toThreeChannelMatrix(upConvMatrix, featureE, study, outBack);
         } else {

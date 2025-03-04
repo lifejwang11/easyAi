@@ -29,8 +29,9 @@ public class NerveManager extends ConvCount {
     private final List<Nerve> outNerves = new ArrayList<>();//输出神经元
     private final List<Nerve> softMaxList = new ArrayList<>();//softMax层
     private boolean initPower;
-    private float studyPoint = 0.1f;//学习率
-    private float convStudyPoint = 0.1f;//卷积学习率
+    private float studyPoint = 0.001f;//学习率
+    private float convStudyPoint = 0.001f;//卷积学习率
+    private float oneConvRate = 0.001f;
     private final ActiveFunction activeFunction;
     private final int rzType;//正则化类型，默认不进行正则化
     private final float lParam;//正则参数
@@ -251,7 +252,7 @@ public class NerveManager extends ConvCount {
                 isConvFinish = true;
             }
             HiddenNerve hiddenNerve = new HiddenNerve(1, i + 1, 1, downNub, studyPoint, initPower, convFunction, true
-                    , rzType, lParam, kernLen, 0, 0, isConvFinish, coreNumber, convTimes, channelNo);
+                    , rzType, lParam, kernLen, 0, 0, isConvFinish, coreNumber, convTimes, channelNo, oneConvRate);
             depthNerves.add(hiddenNerve);
         }
         for (int i = 0; i < conHiddenDepth - 1; i++) {//遍历深度
@@ -289,11 +290,13 @@ public class NerveManager extends ConvCount {
      * @param isSoftMax       最后一层是否用softMax激活
      * @param convTimes       单层卷积层的卷积深度 取值范围[1,3]
      * @param minFeatureValue 卷积层最小特征数量的开方 取值范围 [3,40]
+     * @param oneConvRate     降维层学习率
      */
     public void initImageNet(int channelNo, int kernLen, int xSize, int ySize, boolean isSoftMax
             , boolean isShowLog, float convStudyPoint, ActiveFunction convFunction, int convTimes
-            , int minFeatureValue) throws Exception {
+            , int minFeatureValue, float oneConvRate) throws Exception {
         this.initPower = true;
+        this.oneConvRate = oneConvRate;
         if (convTimes < 1 || convTimes > 3 || minFeatureValue < 3 || minFeatureValue > 40) {
             throw new Exception("convTimes 的取值范围是[1,3]，minFeatureValue 取值范围是[3,40]");
         }
@@ -419,7 +422,7 @@ public class NerveManager extends ConvCount {
                     downNub = hiddenNerveNub;
                 }
                 HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction, false
-                        , rzType, lParam, kernLen, myMatrixX, myMatrixY, false, coreNumber, convTimes, 0);
+                        , rzType, lParam, kernLen, myMatrixX, myMatrixY, false, coreNumber, convTimes, 0, oneConvRate);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);
