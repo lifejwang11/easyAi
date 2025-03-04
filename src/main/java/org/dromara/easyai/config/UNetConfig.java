@@ -8,7 +8,7 @@ package org.dromara.easyai.config;
 public class UNetConfig {
     private int XSize;//图像的高度
     private int YSize;//图像宽
-    private float studyRate = 0.0025f;//学习率
+    private float studyRate = 0.00001f;//学习率
     private int minFeatureValue = 10;//最小特征维度
     private int kerSize = 3;//卷积核大小
     private int convTimes = 1;//单层卷积数量
