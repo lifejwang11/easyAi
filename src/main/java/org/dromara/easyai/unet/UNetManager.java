@@ -4,7 +4,6 @@ package org.dromara.easyai.unet;
 import org.dromara.easyai.config.UNetConfig;
 import org.dromara.easyai.conv.ConvCount;
 import org.dromara.easyai.function.ReLu;
-import org.dromara.easyai.function.Sigmoid;
 import org.dromara.easyai.function.Tanh;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.nerveEntity.ConvParameter;
@@ -42,7 +41,7 @@ public class UNetManager extends ConvCount {
         this.deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue, convTimes);//编码器深度深度
         if (deep > 1) {
             initEncoder(xSize, ySize);//初始化编码器
-            initDecoder();
+            initDecoder(xSize, ySize);
             connectionCoder();
         } else {
             throw new Exception("minFeatureValue 设置的值太大了");
@@ -150,10 +149,10 @@ public class UNetManager extends ConvCount {
         }
     }
 
-    private void initDecoder() throws Exception {
+    private void initDecoder(int xSize, int ySize) throws Exception {
         for (int i = 0; i < deep + 1; i++) {
             UNetDecoder uNetDecoder = new UNetDecoder(kernLen, i + 1, convTimes, new Tanh(),
-                    i == deep, studyRate, oneStudyRate);
+                    i == deep, studyRate, oneStudyRate, xSize, ySize);
             decoderList.add(uNetDecoder);
         }
         for (int i = 0; i < deep; i++) {
