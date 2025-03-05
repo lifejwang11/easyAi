@@ -31,10 +31,14 @@ public class UNetDecoder extends ConvCount {
     private UNetEncoder myUNetEncoder;//同级编码器
     private final float oneStudyRate;
     private final ConvSize convSize = new ConvSize();
+    private final int outX;
+    private final int outY;
 
     public UNetDecoder(int kerSize, int deep, int convTimes, ActiveFunction activeFunction
-            , boolean lastLay, float studyRate, float oneStudyRate) throws Exception {
+            , boolean lastLay, float studyRate, float oneStudyRate, int outX, int outY) throws Exception {
         this.kerSize = kerSize;
+        this.outX = outX;
+        this.outY = outY;
         this.deep = deep;
         this.oneStudyRate = oneStudyRate;
         this.studyRate = studyRate;
@@ -162,7 +166,7 @@ public class UNetDecoder extends ConvCount {
             threeChannelMatrix.setMatrixR(matrixR);
             threeChannelMatrix.setMatrixG(matrixG);
             threeChannelMatrix.setMatrixB(matrixB);
-            outBack.getBackThreeChannelMatrix(threeChannelMatrix);
+            outBack.getBackThreeChannelMatrix(threeChannelMatrix.scale(true, outY));
         }
     }
 
