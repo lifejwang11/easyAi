@@ -13,6 +13,24 @@ public class UNetConfig {
     private int minFeatureValue = 20;//最小特征维度
     private int kerSize = 3;//卷积核大小
     private int convTimes = 1;//单层卷积数量
+    private float cutTh = 90 / 255f;//裁切阈值像素 大于该亮度的进行裁切
+    private boolean cutting = true;//是否要输出裁切图像
+
+    public float getCutTh() {
+        return cutTh;
+    }
+
+    public void setCutTh(float cutTh) {
+        this.cutTh = cutTh;
+    }
+
+    public boolean isCutting() {
+        return cutting;
+    }
+
+    public void setCutting(boolean cutting) {
+        this.cutting = cutting;
+    }
 
     public float getOneStudyRate() {
         return oneStudyRate;

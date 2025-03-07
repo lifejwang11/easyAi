@@ -33,9 +33,12 @@ public class UNetDecoder extends ConvCount {
     private final ConvSize convSize = new ConvSize();
     private final int outX;
     private final int outY;
+    private final Cutting cutting;//输出语义切割图像
 
     public UNetDecoder(int kerSize, int deep, int convTimes, ActiveFunction activeFunction
-            , boolean lastLay, float studyRate, float oneStudyRate, int outX, int outY) throws Exception {
+            , boolean lastLay, float studyRate, float oneStudyRate, int outX, int outY,
+                       Cutting cutting) throws Exception {
+        this.cutting = cutting;
         this.kerSize = kerSize;
         this.outX = outX;
         this.outY = outY;
@@ -119,7 +122,8 @@ public class UNetDecoder extends ConvCount {
         }
     }
 
-    private void toThreeChannelMatrix(Matrix feature, ThreeChannelMatrix featureE, boolean study, OutBack outBack) throws Exception {
+    private void toThreeChannelMatrix(Matrix feature, ThreeChannelMatrix featureE, boolean study, OutBack outBack
+            , ThreeChannelMatrix backGround) throws Exception {
         int x = feature.getX();
         int y = feature.getY();
         //System.out.println("x:" + x + " y:" + y + ",feature:" + feature.getAVG());
@@ -166,7 +170,11 @@ public class UNetDecoder extends ConvCount {
             threeChannelMatrix.setMatrixR(matrixR);
             threeChannelMatrix.setMatrixG(matrixG);
             threeChannelMatrix.setMatrixB(matrixB);
-            outBack.getBackThreeChannelMatrix(threeChannelMatrix.scale(true, outY));
+            if (cutting != null) {
+                cutting.cut(backGround, threeChannelMatrix.scale(true, outY), outBack);
+            } else {
+                outBack.getBackThreeChannelMatrix(threeChannelMatrix.scale(true, outY));
+            }
         }
     }
 
@@ -210,7 +218,7 @@ public class UNetDecoder extends ConvCount {
     }
 
     protected void sendFeature(long eventID, OutBack outBack, ThreeChannelMatrix featureE,
-                               Matrix myFeature, boolean study) throws Exception {
+                               Matrix myFeature, boolean study, ThreeChannelMatrix backGround) throws Exception {
         if (deep > 1) {
             Matrix encoderMatrix = myUNetEncoder.getAfterConvMatrix(eventID);//编码器特征
             addFeature(encoderMatrix, myFeature, study);
@@ -219,9 +227,9 @@ public class UNetDecoder extends ConvCount {
         Matrix upConvMatrix = upConvAndPooling(myFeature, convParameter, convTimes, activeFunction, kerSize, !lastLay);
         //System.out.println("deep==" + deep + ",解码器运算后:" + upConvMatrix.getAVG());
         if (lastLay) {//最后一层解码器
-            toThreeChannelMatrix(upConvMatrix, featureE, study, outBack);
+            toThreeChannelMatrix(upConvMatrix, featureE, study, outBack, backGround);
         } else {
-            afterDecoder.sendFeature(eventID, outBack, featureE, upConvMatrix, study);
+            afterDecoder.sendFeature(eventID, outBack, featureE, upConvMatrix, study, backGround);
         }
     }
 

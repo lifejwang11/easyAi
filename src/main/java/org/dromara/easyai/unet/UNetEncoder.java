@@ -90,18 +90,18 @@ public class UNetEncoder extends ConvCount {
         if (study) {
             convParameter.setFeatureMatrixList(matrixList);
         }
-        sendMatrixList(eventID, outBack, featureE, matrixList, study);
+        sendMatrixList(eventID, outBack, featureE, matrixList, study, feature);
     }
 
     protected void sendFeature(long eventID, OutBack outBack, ThreeChannelMatrix featureE,
-                               Matrix myFeature, boolean study) throws Exception {
+                               Matrix myFeature, boolean study, ThreeChannelMatrix backGround) throws Exception {
         Matrix convMatrix = downConvAndPooling(myFeature, convParameter, convTimes, activeFunction, kerSize, true, eventID);
         if (afterEncoder != null) {//后面还有编码器，继续向后传递
             //System.out.println("deep==" + deep + ",编码器运算后:" + convMatrix.getAVG());
-            afterEncoder.sendFeature(eventID, outBack, featureE, convMatrix, study);
+            afterEncoder.sendFeature(eventID, outBack, featureE, convMatrix, study, backGround);
         } else {//向解码器传递
             //System.out.println("deep==" + deep + ",编码器运算后去解码器:" + convMatrix.getAVG());
-            decoder.sendFeature(eventID, outBack, featureE, convMatrix, study);
+            decoder.sendFeature(eventID, outBack, featureE, convMatrix, study, backGround);
         }
     }
 
@@ -117,15 +117,16 @@ public class UNetEncoder extends ConvCount {
         }
     }
 
-    public void sendMatrixList(long eventID, OutBack outBack, ThreeChannelMatrix featureE, List<Matrix> feature, boolean study) throws Exception {
+    public void sendMatrixList(long eventID, OutBack outBack, ThreeChannelMatrix featureE, List<Matrix> feature,
+                               boolean study, ThreeChannelMatrix backGround) throws Exception {
         Matrix myFeature = oneConv(feature, convParameter.getOneConvPower());//降维矩阵
         //System.out.println("第一层编码器，第一次降维度 avg = " + myFeature.getAVG());
         Matrix convMatrix = downConvAndPooling(myFeature, convParameter, convTimes, activeFunction, kerSize, true, eventID);
         //System.out.println("第一层编码器，卷积池化后 avg = " + convMatrix.getAVG());
         if (afterEncoder != null) {//后面还有编码器，继续向后传递
-            afterEncoder.sendFeature(eventID, outBack, featureE, convMatrix, study);
+            afterEncoder.sendFeature(eventID, outBack, featureE, convMatrix, study, backGround);
         } else {//向解码器传递
-            decoder.sendFeature(eventID, outBack, featureE, convMatrix, study);
+            decoder.sendFeature(eventID, outBack, featureE, convMatrix, study, backGround);
         }
     }
 
