@@ -13,6 +13,32 @@ import java.io.InputStream;
  * 图片工具类
  */
 public class Picture {
+    /**
+     * 创建一个指定大小的纯白图像并返回
+     *
+     * @param x 图像像素的行数
+     * @param y 图像的列数
+     * @return 返回图像三通道矩阵
+     */
+    public static ThreeChannelMatrix getMyPicture(int x, int y) throws Exception {
+        Matrix matrixR = new Matrix(x, y);
+        Matrix matrixG = new Matrix(x, y);
+        Matrix matrixB = new Matrix(x, y);
+        ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
+        threeChannelMatrix.setX(x);
+        threeChannelMatrix.setY(y);
+        threeChannelMatrix.setMatrixR(matrixR);
+        threeChannelMatrix.setMatrixG(matrixG);
+        threeChannelMatrix.setMatrixB(matrixB);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                matrixR.setNub(i, j, 1);
+                matrixG.setNub(i, j, 1);
+                matrixB.setNub(i, j, 1);
+            }
+        }
+        return threeChannelMatrix;
+    }
 
     /**
      * 从本地文件拿出图像矩阵
