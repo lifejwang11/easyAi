@@ -29,21 +29,14 @@ public class UNetDecoder extends ConvCount {
     private UNetDecoder beforeDecoder;//上一个解码器
     private UNetEncoder encoder;//上一个编码器
     private UNetEncoder myUNetEncoder;//同级编码器
-    private final float oneStudyRate;
     private final ConvSize convSize = new ConvSize();
-    private final int outX;
-    private final int outY;
     private final Cutting cutting;//输出语义切割图像
 
     public UNetDecoder(int kerSize, int deep, int convTimes, ActiveFunction activeFunction
-            , boolean lastLay, float studyRate, float oneStudyRate, int outX, int outY,
-                       Cutting cutting) throws Exception {
+            , boolean lastLay, float studyRate, Cutting cutting) throws Exception {
         this.cutting = cutting;
         this.kerSize = kerSize;
-        this.outX = outX;
-        this.outY = outY;
         this.deep = deep;
-        this.oneStudyRate = oneStudyRate;
         this.studyRate = studyRate;
         this.lastLay = lastLay;
         this.convTimes = convTimes;
