@@ -127,53 +127,37 @@ public class UNetDecoder extends ConvCount {
         int x = feature.getX();
         int y = feature.getY();
         //System.out.println("x:" + x + " y:" + y + ",feature:" + feature.getAVG());
-        List<Float> oneConvPower = convParameter.getOneConvPower();
-        Matrix matrixR = null;
-        Matrix matrixG = null;
-        Matrix matrixB = null;
-        for (int i = 0; i < 3; i++) {
-            float value = oneConvPower.get(i);
-            if (i == 0) {
-                matrixR = matrixOperation.mathMulBySelf(feature, value);
-            } else if (i == 1) {
-                matrixG = matrixOperation.mathMulBySelf(feature, value);
-            } else {
-                matrixB = matrixOperation.mathMulBySelf(feature, value);
-            }
-        }
-        //System.out.println("r:" + matrixR.getAVG() + ",g:" + matrixG.getAVG() + ",b:" + matrixB.getAVG());
         if (study) {//训练
             ThreeChannelMatrix sfe = featureE.scale(true, y);//缩放
             ThreeChannelMatrix fe = fillColor(sfe, x, y);//补0
             if (fe == null) {
                 fe = sfe;
             }
-            Matrix errorR = matrixOperation.sub(fe.getMatrixR(), matrixR);
-            Matrix errorG = matrixOperation.sub(fe.getMatrixG(), matrixG);
-            Matrix errorB = matrixOperation.sub(fe.getMatrixB(), matrixB);
-            Matrix featureSubR = matrixOperation.mathMulBySelf(errorR, oneConvPower.get(0));
-            Matrix featureSubG = matrixOperation.mathMulBySelf(errorG, oneConvPower.get(1));
-            Matrix featureSubB = matrixOperation.mathMulBySelf(errorB, oneConvPower.get(2));
-            Matrix errorMatrix = matrixOperation.addThreeMatrix(featureSubR, featureSubG, featureSubB);//总误差
-            float v0 = backDecoderOneConv(errorR, feature, oneStudyRate);
-            float v1 = backDecoderOneConv(errorG, feature, oneStudyRate);
-            float v2 = backDecoderOneConv(errorB, feature, oneStudyRate);
-            oneConvPower.set(0, oneConvPower.get(0) + v0);
-            oneConvPower.set(1, oneConvPower.get(1) + v1);
-            oneConvPower.set(2, oneConvPower.get(2) + v2);
+            Matrix he = fe.CalculateAvgGrayscale();
+            Matrix errorMatrix = matrixOperation.sub(he, feature);//总误差
             backLastError(errorMatrix);
             //误差矩阵开始back
         } else {//输出
+            int mx = backGround.getX();
+            int my = backGround.getY();
+            int startX = (mx - feature.getX()) / 2;
+            int startY = (my - feature.getY()) / 2;
+            Matrix myMatrix = new Matrix(mx, my);
+            for (int i = startX; i < x; i++) {
+                for (int j = startY; j < y; j++) {
+                    myMatrix.setNub(i, j, feature.getNumber(i - startX, j - startY));
+                }
+            }
             ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
             threeChannelMatrix.setX(x);
             threeChannelMatrix.setY(y);
-            threeChannelMatrix.setMatrixR(matrixR);
-            threeChannelMatrix.setMatrixG(matrixG);
-            threeChannelMatrix.setMatrixB(matrixB);
+            threeChannelMatrix.setMatrixR(myMatrix);
+            threeChannelMatrix.setMatrixG(myMatrix);
+            threeChannelMatrix.setMatrixB(myMatrix);
             if (cutting != null) {
-                cutting.cut(backGround, threeChannelMatrix.scale(true, outY), outBack);
+                cutting.cut(backGround, threeChannelMatrix, outBack);
             } else {
-                outBack.getBackThreeChannelMatrix(threeChannelMatrix.scale(true, outY));
+                outBack.getBackThreeChannelMatrix(threeChannelMatrix);
             }
         }
     }

@@ -22,6 +22,15 @@ public abstract class ConvCount {
         return Math.min(xDeep, yDeep);
     }
 
+    private int getConvSize(int size, int kernLen, int convTimes) {
+        int x = size;
+        int step = 1;
+        for (int j = 0; j < convTimes; j++) {
+            x = (x - (kernLen - step)) / step;
+        }
+        return x;
+    }
+
     private int getConvDeep(int size, int kernLen, int minFeatureValue, int convTimes) {//获取卷积层深度
         int x = size;
         int step = 1;
@@ -191,6 +200,10 @@ public abstract class ConvCount {
         List<Matrix> outMatrixList = convParameter.getOutMatrixList();
         im2colMatrixList.clear();
         outMatrixList.clear();
+        Matrix inputMatrix = null;
+        if (convTimes > 1) {
+            inputMatrix = matrix.copy();
+        }
         for (int i = 0; i < convTimes; i++) {
             ConvSize convSize = convSizeList.get(i);
             Matrix nerveMatrix = nerveMatrixList.get(i);
@@ -198,12 +211,17 @@ public abstract class ConvCount {
             int yInput = matrix.getY();
             convSize.setXInput(xInput);
             convSize.setYInput(yInput);
-            ConvResult convResult = downConvCount(matrix, activeFunction, kernLen, nerveMatrix);
+            Matrix resdualMatrix = null;
+            if (inputMatrix != null && i == convTimes - 1) {
+                resdualMatrix = inputMatrix;
+            }
+            ConvResult convResult = downConvCount(matrix, activeFunction, kernLen, nerveMatrix, resdualMatrix);
             im2colMatrixList.add(convResult.getLeftMatrix());
             Matrix myMatrix = convResult.getResultMatrix();
             outMatrixList.add(myMatrix);
             matrix = myMatrix;
         }
+
         if (eventID >= 0) {
             convParameter.getFeatureMap().put(eventID, matrix);
         }
@@ -272,12 +290,24 @@ public abstract class ConvCount {
         }
     }
 
+    private void residualAdd(Matrix bigMatrix, Matrix smallMatrix) throws Exception {
+        int sx = smallMatrix.getX();
+        int sy = smallMatrix.getY();
+        for (int i = 0; i < sx; i++) {
+            for (int j = 0; j < sy; j++) {
+                float value = bigMatrix.getNumber(i, j) + smallMatrix.getNumber(i, j);
+                bigMatrix.setNub(i, j, value);
+            }
+        }
+    }
+
     protected Matrix backAllDownConv(ConvParameter convParameter, Matrix errorMatrix, float studyPoint
             , ActiveFunction activeFunction, int convTimes, int kernLen) throws Exception {
         List<Matrix> outMatrixList = convParameter.getOutMatrixList();
         List<Matrix> im2colMatrixList = convParameter.getIm2colMatrixList();
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
         List<ConvSize> convSizeList = convParameter.getConvSizeList();
+        Matrix residualMatrix = null;
         for (int i = convTimes - 1; i >= 0; i--) {
             Matrix outMatrix = outMatrixList.get(i);
             Matrix im2col = im2colMatrixList.get(i);
@@ -285,27 +315,45 @@ public abstract class ConvCount {
             ConvSize convSize = convSizeList.get(i);
             int xInput = convSize.getXInput();
             int yInput = convSize.getYInput();
+            boolean backResidual = convTimes > 1 && i == convTimes - 1;
             ConvResult convResult = backDownConv(errorMatrix, outMatrix, activeFunction, im2col,
-                    nerveMatrix, studyPoint, kernLen, xInput, yInput);
+                    nerveMatrix, studyPoint, kernLen, xInput, yInput, backResidual);
+            if (backResidual) {
+                residualMatrix = convResult.getResidualError();
+            }
             nerveMatrixList.set(i, convResult.getNervePowerMatrix());//更新权重
             errorMatrix = convResult.getResultMatrix();
+        }
+        if (convTimes > 1) {
+            residualAdd(errorMatrix, residualMatrix);
         }
         return errorMatrix;
     }
 
     private ConvResult backDownConv(Matrix errorMatrix, Matrix outMatrix, ActiveFunction activeFunction
-            , Matrix im2col, Matrix nerveMatrix, float studyRate, int kernSize, int xInput, int yInput) throws Exception {
+            , Matrix im2col, Matrix nerveMatrix, float studyRate, int kernSize, int xInput, int yInput
+            , boolean backResidual) throws Exception {
         //下采样卷积误差反向传播
         ConvResult convResult = new ConvResult();
         int x = errorMatrix.getX();
         int y = errorMatrix.getY();
         Matrix resultError = new Matrix(x * y, 1);
+        Matrix residual = null;
+        if (backResidual) {
+            residual = new Matrix(x, y);
+        }
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 float error = errorMatrix.getNumber(i, j);
                 float out = outMatrix.getNumber(i, j);
                 error = error * activeFunction.functionG(out);
+                if (backResidual) {
+                    error = error / 2;
+                }
                 resultError.setNub(y * i + j, 0, error);
+                if (backResidual) {
+                    residual.setNub(i, j, error);
+                }
             }
         }
         Matrix wSub = matrixOperation.matrixMulPd(resultError, im2col, nerveMatrix, false);
@@ -315,11 +363,12 @@ public abstract class ConvCount {
         Matrix gNext = matrixOperation.reverseIm2col(im2colSub, kernSize, 1, xInput, yInput);//其余误差
         convResult.setNervePowerMatrix(nerveMatrix);
         convResult.setResultMatrix(gNext);
+        convResult.setResidualError(residual);
         return convResult;
     }
 
     private ConvResult downConvCount(Matrix matrix, ActiveFunction activeFunction, int kerSize
-            , Matrix nervePowerMatrix) throws Exception {//进行下采样卷积运算
+            , Matrix nervePowerMatrix, Matrix residualMatrix) throws Exception {//进行下采样卷积运算
         ConvResult convResult = new ConvResult();
         int xInput = matrix.getX();
         int yInput = matrix.getY();
@@ -334,7 +383,11 @@ public abstract class ConvCount {
         //输出矩阵重新排序
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                float nub = activeFunction.function(matrixOut.getNumber(i * y + j, 0));
+                float value = matrixOut.getNumber(i * y + j, 0);
+                if (residualMatrix != null) {
+                    value = (value + residualMatrix.getNumber(i, j)) / 2;
+                }
+                float nub = activeFunction.function(value);
                 myMatrix.setNub(i, j, nub);
             }
         }
