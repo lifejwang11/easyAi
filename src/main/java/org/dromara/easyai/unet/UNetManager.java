@@ -41,7 +41,7 @@ public class UNetManager extends ConvCount {
         this.deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue, convTimes);//编码器深度深度
         if (deep > 1) {
             initEncoder(xSize, ySize);//初始化编码器
-            initDecoder(xSize, ySize, uNetConfig.isCutting(), uNetConfig.getCutTh());
+            initDecoder(uNetConfig.isCutting(), uNetConfig.getCutTh());
             connectionCoder();
         } else {
             throw new Exception("minFeatureValue 设置的值太大了");
@@ -149,14 +149,14 @@ public class UNetManager extends ConvCount {
         }
     }
 
-    private void initDecoder(int xSize, int ySize, boolean cutting, float cutTh) throws Exception {
+    private void initDecoder(boolean cutting, float cutTh) throws Exception {
         Cutting myCut = null;
         if (cutting) {
             myCut = new Cutting(cutTh);
         }
         for (int i = 0; i < deep + 1; i++) {
             UNetDecoder uNetDecoder = new UNetDecoder(kernLen, i + 1, convTimes, new Tanh(),
-                    i == deep, studyRate, oneStudyRate, xSize, ySize, myCut);
+                    i == deep, studyRate, myCut);
             decoderList.add(uNetDecoder);
         }
         for (int i = 0; i < deep; i++) {

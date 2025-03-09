@@ -91,8 +91,8 @@ public class SelfAttention {//自注意力层
             nextFeatureError = QPower.errorFeatureMatrix;
             lastEncoderError = matrixOperation.add(KPower.errorFeatureMatrix, VPower.errorFeatureMatrix);
         } else {
-            nextFeatureError = matrixOperation.add(matrixOperation.add(QPower.errorFeatureMatrix, KPower.errorFeatureMatrix),
-                    VPower.errorFeatureMatrix);
+            nextFeatureError = matrixOperation.addThreeMatrix(QPower.errorFeatureMatrix, KPower.errorFeatureMatrix
+                    , VPower.errorFeatureMatrix);
         }
         attentionError.setNextFeatureError(nextFeatureError);
         attentionError.setLastEncoderError(lastEncoderError);
@@ -134,7 +134,7 @@ public class SelfAttention {//自注意力层
         Matrix v = matrixOperation.mulMatrix(kvFeature, powerV);
         Matrix kt = matrixOperation.transPosition(k);//k转置
         Matrix qkt = matrixOperation.mulMatrix(q, kt);
-        matrixOperation.mathDiv(qkt, (float)Math.sqrt(wordVectorDimension));
+        matrixOperation.mathDiv(qkt, (float) Math.sqrt(wordVectorDimension));
         //做蒙版
         if (depth == 1 && !encoder) {//第一层解码器 需要先做蒙版操作
             mask(qkt);

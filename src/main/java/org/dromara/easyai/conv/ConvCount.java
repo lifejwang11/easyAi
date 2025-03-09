@@ -231,20 +231,6 @@ public abstract class ConvCount {
         return sigmaMatrix;
     }
 
-    protected float backDecoderOneConv(Matrix errorMatrix, Matrix featureMatrix, float studyRate) throws Exception {
-        int x = featureMatrix.getX();
-        int y = featureMatrix.getY();
-        float allSub = 0;//1卷积权重误差
-        float len = (float) Math.sqrt(x * y);
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                float value = featureMatrix.getNumber(i, j) * errorMatrix.getNumber(i, j) * studyRate;
-                allSub = allSub + value;
-            }
-        }
-        return allSub / len;
-    }
-
     protected void backOneConv(Matrix errorMatrix, List<Matrix> matrixList, List<Float> oneConvPower,
                                float studyRate, boolean uNet) throws Exception {//单卷积降维回传
         int size = oneConvPower.size();

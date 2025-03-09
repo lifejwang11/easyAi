@@ -13,8 +13,10 @@ public class Matrix extends MatrixOperation {
     private boolean isRowVector = false;//是否是单行矩阵
     private boolean isVector = false;//是否是向量
     private boolean isZero = false;//是否是单元素矩阵
+
     /**
      * 获取Cuda列主序一维数组
+     *
      * @return 获取Cuda列主序一维数组
      */
     public float[] getCudaMatrix() {//获取cudaMatrix
@@ -452,6 +454,15 @@ public class Matrix extends MatrixOperation {
             builder.append("]\r\n");
         }
         return builder.toString();
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return getString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

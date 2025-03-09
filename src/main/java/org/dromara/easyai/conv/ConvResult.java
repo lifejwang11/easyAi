@@ -10,6 +10,15 @@ public class ConvResult {
     private Matrix leftMatrix;//计算结果的左乘矩阵
     private Matrix resultMatrix;//计算结果矩阵
     private Matrix nervePowerMatrix;//权重矩阵
+    private Matrix residualError;//残差误差
+
+    public Matrix getResidualError() {
+        return residualError;
+    }
+
+    public void setResidualError(Matrix residualError) {
+        this.residualError = residualError;
+    }
 
     public Matrix getNervePowerMatrix() {
         return nervePowerMatrix;

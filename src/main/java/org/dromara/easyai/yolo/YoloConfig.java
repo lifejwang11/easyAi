@@ -4,7 +4,7 @@ import org.dromara.easyai.config.RZ;
 
 public class YoloConfig {
     private int windowWidth = 90;//检测窗口宽
-    private int windowHeight = 140;//检测窗口高
+    private int windowHeight = 120;//检测窗口高
     private int typeNub = 10;//类别数量
     private int hiddenNerveNub = 16;//线性层隐层神经元数量
     private float studyRate = 0.0025f;//学习率
@@ -20,7 +20,7 @@ public class YoloConfig {
     private int regularModel = RZ.NOT_RZ;//正则模式
     private int coreNumber = 1;//是否使用多核并行计算进行提速
     private int convTimes = 1;//单层卷积层数
-    private int minFeatureValue = 5;//输出特征维度大小
+    private int minFeatureValue = 3;//输出特征维度大小
     private float oneConvStudy = 0.0025f;//降维层学习率
 
     public float getOneConvStudy() {
