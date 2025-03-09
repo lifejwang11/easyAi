@@ -10,7 +10,7 @@ public class UNetConfig {
     private int YSize;//图像宽
     private float studyRate = 0.0000001f;//学习率
     private float oneStudyRate = 0.0001f;//1*1学习率
-    private int minFeatureValue = 20;//最小特征维度
+    private int minFeatureValue = 30;//最小特征维度
     private int kerSize = 3;//卷积核大小
     private int convTimes = 1;//单层卷积数量
     private float cutTh = 90 / 255f;//裁切阈值像素 大于该亮度的进行裁切
