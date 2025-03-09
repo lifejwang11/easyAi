@@ -26,6 +26,12 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 
 <div align=center> <img src="https://myeasyai.cn/img/drink.png"></div>
 
+### 图像抠图
+* 对图像语义进行像素级切割，前者输入原图像，后者进行输出抠图后的图像
+
+<img src="https://myeasyai.cn/img/cut.png" alt="Image 1" style="vertical-align:middle; display:inline-block; width:48%; margin-right:2%;">
+<img src="https://myeasyai.cn/img/cutting.png" alt="Image 2" style="vertical-align:middle; display:inline-block; width:48%;">
+
 ### 人脸识别
 * 人脸识别是对人的脸部进行定位后进行识别，是常用的人工智能图像项目
 * seeFace是基于EasyAi框架开发的开源社区级人脸识别内核算法
