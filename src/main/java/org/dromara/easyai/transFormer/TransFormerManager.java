@@ -44,12 +44,12 @@ public class TransFormerManager {
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 int k = j / 2;
-                float wk = 1 / ((float)Math.pow(10000, 2D * k / y));
+                float wk = 1 / ((float) Math.pow(10000, 2D * k / y));
                 float pe;
                 if (j % 2 == 0) {//当列数是偶数
-                    pe = (float)Math.sin(wk * i);
+                    pe = (float) Math.sin(wk * i);
                 } else {//当列数是奇数
-                    pe = (float)Math.cos(wk * i);
+                    pe = (float) Math.cos(wk * i);
                 }
                 float value = feature.getNumber(i, j) + (float) pe;
                 matrix.setNub(i, j, value);
@@ -92,7 +92,8 @@ public class TransFormerManager {
     public void insertModel(TransFormerModel transFormerModel) throws Exception {
         List<CodecBlockModel> encoderBlockModels = transFormerModel.getEncoderBlockModels();
         List<CodecBlockModel> decoderBlockModels = transFormerModel.getDecoderBlockModels();
-        for (int i = 0; i < encoderBlocks.size(); i++) {
+        int minSize = Math.min(encoderBlocks.size(), encoderBlockModels.size());
+        for (int i = 0; i < minSize; i++) {
             encoderBlocks.get(i).insertModel(encoderBlockModels.get(i));
             decoderBlocks.get(i).insertModel(decoderBlockModels.get(i));
         }
