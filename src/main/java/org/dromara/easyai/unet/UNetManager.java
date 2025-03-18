@@ -38,7 +38,7 @@ public class UNetManager extends ConvCount {
         this.convTimes = uNetConfig.getConvTimes();
         this.studyRate = uNetConfig.getStudyRate();
         this.oneStudyRate = uNetConfig.getOneStudyRate();
-        this.deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue, convTimes);//编码器深度深度
+        this.deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue);//编码器深度深度
         if (deep > 1) {
             initEncoder(xSize, ySize);//初始化编码器
             initDecoder(uNetConfig.isCutting(), uNetConfig.getCutTh());
@@ -76,7 +76,9 @@ public class UNetManager extends ConvCount {
             ConvModel convModel = encoderModel.get(i);
             List<Float[]> downPowers = convModel.getDownNervePower();
             List<Float> oneNerPower = convModel.getOneNervePower();
-            convParameter.setOneConvPower(oneNerPower);
+            List<List<Float>> oneNervePower = new ArrayList<>();
+            oneNervePower.add(oneNerPower);
+            convParameter.setOneConvPower(oneNervePower);
             for (int j = 0; j < matrixList.size(); j++) {
                 Matrix matrix = matrixList.get(j);
                 float[] power = getFValue(downPowers.get(j));
@@ -88,9 +90,7 @@ public class UNetManager extends ConvCount {
             List<Matrix> matrixList = convParameter.getNerveMatrixList();
             ConvModel convModel = decoderModel.get(i);
             List<Float[]> downPowers = convModel.getDownNervePower();
-            List<Float> oneNerPower = convModel.getOneNervePower();
             float[] upPower = getFValue(convModel.getUpNervePower());
-            convParameter.setOneConvPower(oneNerPower);
             Matrix upNervePower = convParameter.getUpNerveMatrix();
             upNervePower.setCudaMatrix(upPower, upNervePower.getX(), upNervePower.getY());
             for (int j = 0; j < matrixList.size(); j++) {
@@ -113,7 +113,10 @@ public class UNetManager extends ConvCount {
             ConvParameter convParameter = encoderList.get(i).getConvParameter();
             List<Float[]> downNervePower = new ArrayList<>();
             convModel.setDownNervePower(downNervePower);
-            convModel.setOneNervePower(convParameter.getOneConvPower());
+            List<List<Float>> onePowers = convParameter.getOneConvPower();
+            if (onePowers != null && !onePowers.isEmpty()) {
+                convModel.setOneNervePower(onePowers.get(0));
+            }
             List<Matrix> downNerveMatrix = convParameter.getNerveMatrixList();//下采样卷积权重
             for (Matrix nerveMatrix : downNerveMatrix) {
                 Float[] downPower = getValue(nerveMatrix.getCudaMatrix());
@@ -126,7 +129,6 @@ public class UNetManager extends ConvCount {
             ConvParameter convParameter = decoderList.get(i).getConvParameter();
             List<Float[]> downNervePower = new ArrayList<>();
             convModel.setDownNervePower(downNervePower);
-            convModel.setOneNervePower(convParameter.getOneConvPower());
             convModel.setUpNervePower(getValue(convParameter.getUpNerveMatrix().getCudaMatrix()));
             List<Matrix> downNerveMatrix = convParameter.getNerveMatrixList();
             for (Matrix nerveMatrix : downNerveMatrix) {

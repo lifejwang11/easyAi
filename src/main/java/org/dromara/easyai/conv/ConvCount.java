@@ -6,6 +6,7 @@ import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.nerveEntity.ConvParameter;
 import org.dromara.easyai.nerveEntity.ConvSize;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,20 +17,18 @@ import java.util.List;
 public abstract class ConvCount {
     private final MatrixOperation matrixOperation = new MatrixOperation();
 
-    protected int getConvMyDep(int xSize, int ySize, int kernLen, int minFeatureValue, int convTimes) {
-        int xDeep = getConvDeep(xSize, kernLen, minFeatureValue, convTimes);
-        int yDeep = getConvDeep(ySize, kernLen, minFeatureValue, convTimes);
+    protected int getConvMyDep(int xSize, int ySize, int kernLen, int minFeatureValue) {
+        int xDeep = getConvDeep(xSize, kernLen, minFeatureValue);
+        int yDeep = getConvDeep(ySize, kernLen, minFeatureValue);
         return Math.min(xDeep, yDeep);
     }
 
-    private int getConvDeep(int size, int kernLen, int minFeatureValue, int convTimes) {//获取卷积层深度
+    private int getConvDeep(int size, int kernLen, int minFeatureValue) {//获取卷积层深度
         int x = size;
         int step = 1;
         int deep = 0;//深度
         do {
-            for (int i = 0; i < convTimes; i++) {
-                x = (x - (kernLen - step)) / step;
-            }
+            x = (x - (kernLen - step)) / step;
             x = x / 2 + x % 2;
             deep++;
         } while (x > minFeatureValue);
@@ -99,6 +98,14 @@ public abstract class ConvCount {
                 matrix.setNub(i, j, value);
             }
         }
+    }
+
+    protected List<Matrix> backDownPoolingByList(List<Matrix> matrixList, int outX, int outY) throws Exception {
+        List<Matrix> result = new ArrayList<>();
+        for (Matrix matrix : matrixList) {
+            result.add(backDownPooling(matrix, outX, outY));
+        }
+        return result;
     }
 
     protected Matrix backDownPooling(Matrix matrix, int outX, int outY) throws Exception {//退下池化
@@ -173,7 +180,9 @@ public abstract class ConvCount {
 
     protected Matrix upConvAndPooling(Matrix matrix, ConvParameter convParameter, int convTimes, ActiveFunction activeFunction
             , int kernLen, boolean pooling) throws Exception {
-        Matrix downConvMatrix = downConvAndPooling(matrix, convParameter, convTimes, activeFunction, kernLen, false, -1);
+        List<Matrix> matrixList = new ArrayList<>();
+        matrixList.add(matrix);
+        Matrix downConvMatrix = downConvAndPooling(matrixList, convParameter, 1, activeFunction, kernLen, false, -1).get(0);
         if (pooling) {
             ConvResult result = upConv(downConvMatrix, kernLen, convParameter.getUpNerveMatrix(), activeFunction);
             convParameter.setUpOutMatrix(result.getResultMatrix());
@@ -183,7 +192,7 @@ public abstract class ConvCount {
         return downConvMatrix;
     }
 
-    protected Matrix downConvAndPooling(Matrix matrix, ConvParameter convParameter, int convTimes, ActiveFunction activeFunction
+    protected List<Matrix> downConvAndPooling(List<Matrix> matrixList, ConvParameter convParameter, int channelNo, ActiveFunction activeFunction
             , int kernLen, boolean pooling, long eventID) throws Exception {
         List<ConvSize> convSizeList = convParameter.getConvSizeList();
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
@@ -191,7 +200,9 @@ public abstract class ConvCount {
         List<Matrix> outMatrixList = convParameter.getOutMatrixList();
         im2colMatrixList.clear();
         outMatrixList.clear();
-        for (int i = 0; i < convTimes; i++) {
+        List<Matrix> resultMatrixList = new ArrayList<>();
+        for (int i = 0; i < channelNo; i++) {
+            Matrix matrix = matrixList.get(i);
             ConvSize convSize = convSizeList.get(i);
             Matrix nerveMatrix = nerveMatrixList.get(i);
             int xInput = matrix.getX();
@@ -200,19 +211,31 @@ public abstract class ConvCount {
             convSize.setYInput(yInput);
             ConvResult convResult = downConvCount(matrix, activeFunction, kernLen, nerveMatrix);
             im2colMatrixList.add(convResult.getLeftMatrix());
-            Matrix myMatrix = convResult.getResultMatrix();
+            Matrix myMatrix = convResult.getResultMatrix();//卷积后的矩阵
             outMatrixList.add(myMatrix);
-            matrix = myMatrix;
+            resultMatrixList.add(myMatrix);
         }
         if (eventID >= 0) {
-            convParameter.getFeatureMap().put(eventID, matrix);
+            convParameter.getFeatureMap().put(eventID, resultMatrixList.get(0));
         }
-        convParameter.setOutX(matrix.getX());
-        convParameter.setOutY(matrix.getY());
+        convParameter.setOutX(resultMatrixList.get(0).getX());
+        convParameter.setOutY(resultMatrixList.get(0).getY());
         if (pooling) {
-            return downPooling(matrix);//池化
+            List<Matrix> poolMatrixList = new ArrayList<>();
+            for (Matrix matrix : resultMatrixList) {
+                poolMatrixList.add(downPooling(matrix));
+            }
+            return poolMatrixList;//池化
         }
-        return matrix;
+        return resultMatrixList;
+    }
+
+    protected List<Matrix> manyOneConv(List<Matrix> feature, List<List<Float>> oneConvPower) throws Exception {
+        List<Matrix> result = new ArrayList<>();
+        for (List<Float> convPower : oneConvPower) {
+            result.add(oneConv(feature, convPower));
+        }
+        return result;
     }
 
     protected Matrix oneConv(List<Matrix> feature, List<Float> oneConvPower) throws Exception {//单卷积降维
@@ -229,6 +252,21 @@ public abstract class ConvCount {
             }
         }
         return sigmaMatrix;
+    }
+
+    protected void backOneConvByList(List<Matrix> errorMatrixList, List<Matrix> matrixList, List<List<Float>> oneConvPower,
+                                     float studyRate) throws Exception {
+        int size = errorMatrixList.size();
+        if (size == oneConvPower.size()) {
+            for (int i = 0; i < size; i++) {
+                Matrix errorMatrix = errorMatrixList.get(i);
+                List<Float> oneConvPowerList = oneConvPower.get(i);
+                backOneConv(errorMatrix, matrixList, oneConvPowerList, studyRate, false);
+            }
+        } else {
+            throw new Exception("误差矩阵大小与通道数不相符");
+        }
+
     }
 
     protected void backOneConv(Matrix errorMatrix, List<Matrix> matrixList, List<Float> oneConvPower,
@@ -258,13 +296,15 @@ public abstract class ConvCount {
         }
     }
 
-    protected Matrix backAllDownConv(ConvParameter convParameter, Matrix errorMatrix, float studyPoint
-            , ActiveFunction activeFunction, int convTimes, int kernLen) throws Exception {
+    protected List<Matrix> backAllDownConv(ConvParameter convParameter, List<Matrix> errorMatrixList, float studyPoint
+            , ActiveFunction activeFunction, int channelNo, int kernLen) throws Exception {
         List<Matrix> outMatrixList = convParameter.getOutMatrixList();
         List<Matrix> im2colMatrixList = convParameter.getIm2colMatrixList();
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
         List<ConvSize> convSizeList = convParameter.getConvSizeList();
-        for (int i = convTimes - 1; i >= 0; i--) {
+        List<Matrix> resultMatrixList = new ArrayList<>();
+        for (int i = 0; i < channelNo; i++) {
+            Matrix errorMatrix = errorMatrixList.get(i);
             Matrix outMatrix = outMatrixList.get(i);
             Matrix im2col = im2colMatrixList.get(i);
             Matrix nerveMatrix = nerveMatrixList.get(i);
@@ -274,9 +314,9 @@ public abstract class ConvCount {
             ConvResult convResult = backDownConv(errorMatrix, outMatrix, activeFunction, im2col,
                     nerveMatrix, studyPoint, kernLen, xInput, yInput);
             nerveMatrixList.set(i, convResult.getNervePowerMatrix());//更新权重
-            errorMatrix = convResult.getResultMatrix();
+            resultMatrixList.add(convResult.getResultMatrix());
         }
-        return errorMatrix;
+        return resultMatrixList;
     }
 
     private ConvResult backDownConv(Matrix errorMatrix, Matrix outMatrix, ActiveFunction activeFunction

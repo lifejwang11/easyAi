@@ -2,6 +2,7 @@ package org.dromara.easyai.nerveEntity;
 
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.matrixTools.MatrixList;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
@@ -21,11 +22,10 @@ public class HiddenNerve extends Nerve {
 
     public HiddenNerve(int id, int depth, int upNub, int downNub, float studyPoint,
                        boolean init, ActiveFunction activeFunction, boolean isDynamic, int rzType, float lParam
-            , int kernLen, int matrixX, int matrixY, boolean isConvFinish, int coreNumber
-            , int convTimes, int channelNo, float oneConvStudy) throws Exception {//隐层神经元
+            , int kernLen, int matrixX, int matrixY, boolean isConvFinish, int coreNumber, int channelNo, float oneConvStudy, boolean norm) throws Exception {//隐层神经元
         super(id, upNub, "HiddenNerve", downNub, studyPoint,
                 init, activeFunction, isDynamic, rzType, lParam, kernLen, depth, matrixX, matrixY
-                , coreNumber, convTimes, channelNo, oneConvStudy);
+                , coreNumber, channelNo, oneConvStudy, norm);
         this.isConvFinish = isConvFinish;
     }
 
@@ -59,14 +59,24 @@ public class HiddenNerve extends Nerve {
     }
 
     @Override
-    protected void inputMatrix(long eventId, Matrix matrix, boolean isStudy
+    protected void inputMatrix(long eventId, List<Matrix> matrix, boolean isStudy
             , Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
-        Matrix myMatrix = conv(matrix);//处理过的矩阵
+        List<Matrix> myMatrix = conv(matrix);//处理过的矩阵
         if (isConvFinish) {
-            if (!isStudy && needMatrix) {
-                outBack.getBackMatrix(myMatrix, getId(), eventId);
+            Matrix ourMatrix;
+            if (myMatrix.size() == 1) {
+                ourMatrix = myMatrix.get(0);
+            } else {
+                MatrixList matrixList = new MatrixList(myMatrix.get(0), true, 100);
+                for (int i = 1; i < myMatrix.size(); i++) {
+                    matrixList.add(myMatrix.get(i));
+                }
+                ourMatrix = matrixList.getMatrix();
             }
-            sendMatrixList(eventId, matrixOperation.matrixToList(myMatrix), isStudy, E, outBack);
+            if (!isStudy && needMatrix) {
+                outBack.getBackMatrix(ourMatrix, getId(), eventId);
+            }
+            sendMatrixList(eventId, matrixOperation.matrixToList(ourMatrix), isStudy, E, outBack);
         } else {
             sendMatrix(eventId, myMatrix, isStudy, E, outBack, needMatrix);
         }

@@ -46,6 +46,19 @@ public class MatrixOperation {
         return list;
     }
 
+    public List<Matrix> addMatrixList(List<Matrix> matrixList1, List<Matrix> matrixList2) throws Exception {//两个矩阵集合相加
+        if (matrixList1.size() == matrixList2.size()) {
+            List<Matrix> result = new ArrayList<>();
+            int size = matrixList1.size();
+            for (int i = 0; i < size; i++) {
+                result.add(add(matrixList1.get(i), matrixList2.get(i)));
+            }
+            return result;
+        } else {
+            throw new Exception("两个矩阵集合相加大小不相等");
+        }
+    }
+
     //重点
     public Matrix add(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相加
         if (matrix1.getX() == matrix2.getX() && matrix1.getY() == matrix2.getY()) {

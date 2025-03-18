@@ -18,7 +18,7 @@ public class SensoryNerve extends Nerve {
     public SensoryNerve(int id, int upNub, int channelNo) throws Exception {
         super(id, upNub, "SensoryNerve", 0, 0.1f, false,
                 null, false, 0, 0, 0, 0, 0, 0
-                , 1, 0, channelNo,0);
+                ,  0, channelNo,0,false);
     }
 
     /**
@@ -47,9 +47,6 @@ public class SensoryNerve extends Nerve {
      */
     public void postThreeChannelMatrix(long eventId, ThreeChannelMatrix parameter, boolean isKernelStudy
             , Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
-        if (channelNo != 3) {
-            throw new Exception("发送三通道矩阵特征，通道数必须设置为3");
-        }
         sendThreeChannelMatrix(eventId, parameter, isKernelStudy, E, outBack, needMatrix);
     }
 
@@ -64,9 +61,6 @@ public class SensoryNerve extends Nerve {
      */
     public void postMatrixList(long eventId, List<Matrix> parameter, boolean isKernelStudy
             , Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
-        if (channelNo != parameter.size()) {
-            throw new Exception("设置通道数与实际通道数不符");
-        }
         sendListMatrix(eventId, parameter, isKernelStudy, E, outBack, needMatrix);
     }
 

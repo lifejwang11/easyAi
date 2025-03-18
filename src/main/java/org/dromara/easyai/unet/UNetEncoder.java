@@ -50,13 +50,15 @@ public class UNetEncoder extends ConvCount {
             convSizeList.add(new ConvSize());
         }
         if (deep == 1) {
+            List<List<Float>> oneConvPowers = new ArrayList<>();
             List<Float> oneConvPower = new ArrayList<>();
+            oneConvPowers.add(oneConvPower);
             //通道数
             int channelNum = 3;
             for (int i = 0; i < channelNum; i++) {
                 oneConvPower.add(random.nextFloat() / channelNum);
             }
-            convParameter.setOneConvPower(oneConvPower);
+            convParameter.setOneConvPower(oneConvPowers);
         }
     }
 
@@ -95,7 +97,9 @@ public class UNetEncoder extends ConvCount {
 
     protected void sendFeature(long eventID, OutBack outBack, ThreeChannelMatrix featureE,
                                Matrix myFeature, boolean study, ThreeChannelMatrix backGround) throws Exception {
-        Matrix convMatrix = downConvAndPooling(myFeature, convParameter, convTimes, activeFunction, kerSize, true, eventID);
+        List<Matrix> featureList = new ArrayList<>();
+        featureList.add(myFeature);
+        Matrix convMatrix = downConvAndPooling(featureList, convParameter, 1, activeFunction, kerSize, true, eventID).get(0);
         if (afterEncoder != null) {//后面还有编码器，继续向后传递
             //System.out.println("deep==" + deep + ",编码器运算后:" + convMatrix.getAVG());
             afterEncoder.sendFeature(eventID, outBack, featureE, convMatrix, study, backGround);
@@ -108,20 +112,24 @@ public class UNetEncoder extends ConvCount {
     protected void backError(Matrix errorMatrix) throws Exception {//接收误差
         Matrix error = backDownPooling(errorMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
         Matrix myError = matrixOperation.add(error, decodeErrorMatrix);
-        Matrix myErrorMatrix = backAllDownConv(convParameter, myError, studyRate, activeFunction, convTimes, kerSize);
+        List<Matrix> errorMatrixList = new ArrayList<>();
+        errorMatrixList.add(myError);
+        Matrix myErrorMatrix = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, 1, kerSize).get(0);
         if (beforeEncoder != null) {
             beforeEncoder.backError(myErrorMatrix);
         } else {//最后一层 调整1v1卷积
-            backOneConv(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(),
+            backOneConv(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower().get(0),
                     oneStudyRate, true);
         }
     }
 
     public void sendMatrixList(long eventID, OutBack outBack, ThreeChannelMatrix featureE, List<Matrix> feature,
                                boolean study, ThreeChannelMatrix backGround) throws Exception {
-        Matrix myFeature = oneConv(feature, convParameter.getOneConvPower());//降维矩阵
+        Matrix myFeature = oneConv(feature, convParameter.getOneConvPower().get(0));//降维矩阵
         //System.out.println("第一层编码器，第一次降维度 avg = " + myFeature.getAVG());
-        Matrix convMatrix = downConvAndPooling(myFeature, convParameter, convTimes, activeFunction, kerSize, true, eventID);
+        List<Matrix> featureList = new ArrayList<>();
+        featureList.add(myFeature);
+        Matrix convMatrix = downConvAndPooling(featureList, convParameter, 1, activeFunction, kerSize, true, eventID).get(0);
         //System.out.println("第一层编码器，卷积池化后 avg = " + convMatrix.getAVG());
         if (afterEncoder != null) {//后面还有编码器，继续向后传递
             afterEncoder.sendFeature(eventID, outBack, featureE, convMatrix, study, backGround);
