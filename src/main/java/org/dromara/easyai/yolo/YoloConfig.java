@@ -19,9 +19,18 @@ public class YoloConfig {
     private float regular = 0;//正则系数
     private int regularModel = RZ.NOT_RZ;//正则模式
     private int coreNumber = 1;//是否使用多核并行计算进行提速
-    private int convTimes = 1;//单层卷积层数
+    private int channelNo = 1;//通道数
     private int minFeatureValue = 3;//输出特征维度大小
     private float oneConvStudy = 0.0025f;//降维层学习率
+    private boolean norm = true;//是否进行维度调节
+
+    public boolean isNorm() {
+        return norm;
+    }
+
+    public void setNorm(boolean norm) {
+        this.norm = norm;
+    }
 
     public float getOneConvStudy() {
         return oneConvStudy;
@@ -39,12 +48,12 @@ public class YoloConfig {
         this.minFeatureValue = minFeatureValue;
     }
 
-    public int getConvTimes() {
-        return convTimes;
+    public int getChannelNo() {
+        return channelNo;
     }
 
-    public void setConvTimes(int convTimes) {
-        this.convTimes = convTimes;
+    public void setChannelNo(int channelNo) {
+        this.channelNo = channelNo;
     }
 
     public int getCoreNumber() {

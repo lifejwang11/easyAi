@@ -17,7 +17,7 @@ public class ConvParameter {
     private final List<ConvSize> convSizeList = new ArrayList<>();
     private final List<Matrix> im2colMatrixList = new ArrayList<>();
     private final List<Matrix> outMatrixList = new ArrayList<>();
-    private List<Float> oneConvPower;//1*1卷积核 需取出模型
+    private List<List<Float>> oneConvPower;//1*1卷积核 需取出模型
     private List<Matrix> featureMatrixList;//所有通道特征矩阵集合
     private Matrix upNerveMatrix;//上采样卷积权重  需要取出模型
     private Matrix upFeatureMatrix;//上采样输入特征
@@ -104,11 +104,11 @@ public class ConvParameter {
         return outMatrixList;
     }
 
-    public List<Float> getOneConvPower() {
+    public List<List<Float>> getOneConvPower() {
         return oneConvPower;
     }
 
-    public void setOneConvPower(List<Float> oneConvPower) {
+    public void setOneConvPower(List<List<Float>> oneConvPower) {
         this.oneConvPower = oneConvPower;
     }
 

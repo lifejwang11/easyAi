@@ -13,8 +13,8 @@ public class SoftMax extends Nerve {
 
     public SoftMax(int upNub, boolean isDynamic, List<OutNerve> outNerves, boolean isShowLog, int coreNumber) throws Exception {
         super(0, upNub, "softMax", 0, 0, false, null, isDynamic
-                , RZ.NOT_RZ, 0, 0, 0, 0, 0, coreNumber, 0, 0
-                , 0);
+                , RZ.NOT_RZ, 0, 0, 0, 0, 0, coreNumber, 0
+                , 0, false);
         this.outNerves = outNerves;
         this.isShowLog = isShowLog;
     }

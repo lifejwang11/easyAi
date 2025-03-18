@@ -36,7 +36,7 @@ public abstract class Nerve extends ConvCount {
     protected float gradient;//当前梯度
     protected float studyPoint;
     protected float sigmaW;//对上一层权重与上一层梯度的积进行求和
-    protected Matrix sigmaMatrix;//对上层回传误差进行求和
+    protected List<Matrix> sigmaMatrix;//对上层回传误差进行求和
     private int backNub = 0;//当前节点被反向传播的次数
     protected ActiveFunction activeFunction;
     private final int rzType;//正则化类型，默认不进行正则化
@@ -45,11 +45,11 @@ public abstract class Nerve extends ConvCount {
     protected final int depth;//所处深度
     protected final int matrixX;//卷积输出行数列数
     protected final int matrixY;//卷积输出矩阵列数
-    protected final int convTimes;//卷积运算次数
     private final MatrixOperation matrixOperation;
     protected final int channelNo;//通道数
     private final ConvParameter convParameter = new ConvParameter();//内存中卷积层模型及临时数据
     protected final float oneConvRate;
+    private final boolean norm;//是否进行1v1卷积升降维
 
     public Map<Integer, Float> getDendrites() {
         return dendrites;
@@ -74,13 +74,13 @@ public abstract class Nerve extends ConvCount {
     protected Nerve(int id, int upNub, String name, int downNub,
                     float studyPoint, boolean init, ActiveFunction activeFunction
             , boolean isDynamic, int rzType, float lParam, int kernLen, int depth
-            , int matrixX, int matrixY, int coreNumber, int convTimes, int channelNo, float onConvRate) throws Exception {//该神经元在同层神经元中的编号
+            , int matrixX, int matrixY, int coreNumber, int channelNo, float onConvRate, boolean norm) throws Exception {//该神经元在同层神经元中的编号
         matrixOperation = new MatrixOperation(coreNumber);
         this.matrixX = matrixX;
+        this.norm = norm;
         this.matrixY = matrixY;
         this.channelNo = channelNo;
         this.id = id;
-        this.convTimes = convTimes;
         this.depth = depth;
         this.upNub = upNub;
         this.name = name;
@@ -109,8 +109,8 @@ public abstract class Nerve extends ConvCount {
         }
     }
 
-    protected Matrix conv(Matrix matrix) throws Exception {//一次正向卷积，下取样
-        return downConvAndPooling(matrix, convParameter, convTimes, activeFunction, kernLen, true, -1);
+    protected List<Matrix> conv(List<Matrix> matrix) throws Exception {//一次正向卷积，下取样
+        return downConvAndPooling(matrix, convParameter, channelNo, activeFunction, kernLen, true, -1);
     }
 
     protected void demRedByMatrixList(long eventId, List<Matrix> matrixList, boolean study,
@@ -118,8 +118,16 @@ public abstract class Nerve extends ConvCount {
         if (study) {//训练临时保存
             convParameter.setFeatureMatrixList(matrixList);
         }
-        Matrix feature = oneConv(matrixList, convParameter.getOneConvPower());//降维后的特征矩阵
-        Matrix convMatrix = conv(feature);
+        List<Matrix> feature;
+        if (norm) {
+            feature = manyOneConv(matrixList, convParameter.getOneConvPower());//降维后的特征矩阵
+        } else {
+            if (matrixList.size() != 3) {
+                throw new Exception("不进行维度调节，输入的特征矩阵通道数必须为3");
+            }
+            feature = matrixList;
+        }
+        List<Matrix> convMatrix = conv(feature);
         sendMatrix(eventId, convMatrix, study, E, outBack, needMatrix);
     }
 
@@ -134,7 +142,7 @@ public abstract class Nerve extends ConvCount {
         }
     }
 
-    public void sendMatrix(long eventId, Matrix parameter, boolean isStudy,
+    public void sendMatrix(long eventId, List<Matrix> parameter, boolean isStudy,
                            Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
         if (sonOnly != null) {
             sonOnly.inputMatrix(eventId, parameter, isStudy, E, outBack, needMatrix);
@@ -167,16 +175,24 @@ public abstract class Nerve extends ConvCount {
                 father.get(i).backGetMessage(wg.get(i + 1), eventId);
             }
         } else if (fatherOnly != null && depth == 1) {//反矩阵误差
-            List<Float> list = new ArrayList<>();
-            for (int j = 0; j < wg.size(); j++) {
-                list.add(wg.get(j + 1));
+            List<Matrix> errorMatrixList = new ArrayList<>();
+            int size = this.matrixX * this.matrixY;
+            int featureSize = wg.size() / size;
+            for (int i = 0; i < featureSize; ++i) {
+                List<Float> list = new ArrayList<>();
+                int startIndex = size * i;
+                int endIndex = startIndex + size;
+                for (int j = startIndex; j < endIndex; j++) {
+                    list.add(this.wg.get(j + 1));
+                }
+                Matrix errorMatrix = this.matrixOperation.ListToMatrix(list, this.matrixX, this.matrixY);
+                errorMatrixList.add(errorMatrix);
             }
-            Matrix errorMatrix = matrixOperation.ListToMatrix(list, matrixX, matrixY);
-            fatherOnly.backMatrix(errorMatrix);
+            fatherOnly.backMatrix(errorMatrixList);
         }
     }
 
-    private void backMatrixMessage(Matrix g) throws Exception {//反向传播矩阵
+    private void backMatrixMessage(List<Matrix> g) throws Exception {//反向传播矩阵
         if (fatherOnly != null) {
             fatherOnly.backMatrix(g);
         }
@@ -192,7 +208,7 @@ public abstract class Nerve extends ConvCount {
 
     }
 
-    protected void inputMatrix(long eventId, Matrix matrix, boolean isKernelStudy, Map<Integer, Float> E,
+    protected void inputMatrix(long eventId, List<Matrix> matrix, boolean isKernelStudy, Map<Integer, Float> E,
                                OutBack outBack, boolean needMatrix) throws Exception {//输入动态矩阵
     }
 
@@ -210,21 +226,22 @@ public abstract class Nerve extends ConvCount {
         }
     }
 
-    protected void backMatrix(Matrix t) throws Exception {//回传梯度
+    protected void backMatrix(List<Matrix> t) throws Exception {//回传梯度
         backNub++;
         if (sigmaMatrix == null) {
             sigmaMatrix = t;
         } else {
-            sigmaMatrix = matrixOperation.add(t, sigmaMatrix);
+            sigmaMatrix = matrixOperation.addMatrixList(t, sigmaMatrix);
         }
         if (backNub == downNub) {
             backNub = 0;
-            Matrix errorMatrix = backDownPooling(sigmaMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
-            Matrix myErrorMatrix = backAllDownConv(convParameter, errorMatrix, studyPoint, activeFunction, convTimes, kernLen);
+            List<Matrix> errorMatrix = backDownPoolingByList(sigmaMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
+            List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrix, studyPoint, activeFunction, channelNo, kernLen);
             sigmaMatrix = null;
             if (depth == 1) {//1*1 卷积调整
-                backOneConv(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(),
-                        oneConvRate, false);
+                if (norm) {
+                    backOneConvByList(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), oneConvRate);
+                }
             } else {
                 //将梯度继续回传
                 backMatrixMessage(myErrorMatrix);
@@ -356,23 +373,27 @@ public abstract class Nerve extends ConvCount {
 
     private void initMatrixPower(Random random) throws Exception {
         int nerveNub = kernLen * kernLen;
-        List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
-        List<Float> oneConvPowerList = new ArrayList<>();
+        List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();//一层当中所有的深度卷积核
         List<ConvSize> convSizeList = convParameter.getConvSizeList();
-        if (depth == 1) {
-            for (int i = 0; i < channelNo; i++) {
-                oneConvPowerList.add(random.nextFloat() / channelNo);
-            }
-            convParameter.setOneConvPower(oneConvPowerList);
-        }
-        for (int j = 0; j < convTimes; j++) {
-            Matrix nerveMatrix = new Matrix(nerveNub, 1);
+        List<List<Float>> onePowers = new ArrayList<>();//1*1卷积核
+        for (int k = 0; k < channelNo; k++) {//遍历通道
+            Matrix nerveMatrix = new Matrix(nerveNub, 1);//一组通道创建一组卷积核
             convSizeList.add(new ConvSize());
-            for (int i = 0; i < nerveMatrix.getX(); i++) {
+            for (int i = 0; i < nerveMatrix.getX(); i++) {//初始化深度卷积核权重
                 float nub = random.nextFloat() / kernLen;
                 nerveMatrix.setNub(i, 0, nub);
             }
             nerveMatrixList.add(nerveMatrix);
+            if (depth == 1) {
+                List<Float> oneConvPowerList = new ArrayList<>();
+                for (int i = 0; i < 3; i++) {
+                    oneConvPowerList.add(random.nextFloat() / 3);
+                }
+                onePowers.add(oneConvPowerList);
+            }
+        }
+        if (depth == 1) {
+            convParameter.setOneConvPower(onePowers);
         }
     }
 

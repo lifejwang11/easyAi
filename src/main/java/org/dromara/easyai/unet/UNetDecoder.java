@@ -50,11 +50,13 @@ public class UNetDecoder extends ConvCount {
             convSizeList.add(new ConvSize());
         }
         if (lastLay) {
+            List<List<Float>> oneConvPowers = new ArrayList<>();
             List<Float> oneConvPower = new ArrayList<>();
+            oneConvPowers.add(oneConvPower);
             for (int i = 0; i < 3; i++) {
                 oneConvPower.add(random.nextFloat() / 3);
             }
-            convParameter.setOneConvPower(oneConvPower);
+            convParameter.setOneConvPower(oneConvPowers);
         }
     }
 
@@ -156,7 +158,9 @@ public class UNetDecoder extends ConvCount {
     }
 
     private void backLastError(Matrix errorMatrix) throws Exception {//最后一层的误差反向传播
-        Matrix error = backAllDownConv(convParameter, errorMatrix, studyRate, activeFunction, convTimes, kerSize);
+        List<Matrix> errorMatrixList = new ArrayList<>();
+        errorMatrixList.add(errorMatrix);
+        Matrix error = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, 1, kerSize).get(0);
         sendEncoderError(error);//给同级解码器发送误差
         beforeDecoder.backErrorMatrix(error);
     }
@@ -183,7 +187,9 @@ public class UNetDecoder extends ConvCount {
         //退上池化，退上卷积 退下卷积 并返回编码器误差
         Matrix error = backUpPooling(errorMatrix);//退上池化
         Matrix error2 = backUpConv(error, kerSize, convParameter, studyRate, activeFunction);//退上卷积
-        Matrix back = backAllDownConv(convParameter, error2, studyRate, activeFunction, convTimes, kerSize);//退下卷积
+        List<Matrix> errorMatrixList = new ArrayList<>();
+        errorMatrixList.add(error2);
+        Matrix back = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, 1, kerSize).get(0);//退下卷积
         if (myUNetEncoder != null) {
             sendEncoderError(back);//给同级解码器发送误差
         }

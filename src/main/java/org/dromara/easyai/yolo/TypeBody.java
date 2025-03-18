@@ -37,9 +37,9 @@ public class TypeBody {
         positonNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), 5, 1,
                 new Tanh(), yoloConfig.getStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
                 , yoloConfig.getCoreNumber());
-        positonNerveManager.initImageNet(3, yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
+        positonNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
                 false, yoloConfig.isShowLog(), yoloConfig.getStudyRate(), new ReLu(),
-                yoloConfig.getConvTimes(), yoloConfig.getMinFeatureValue(), yoloConfig.getOneConvStudy());
+                yoloConfig.getMinFeatureValue(), yoloConfig.getOneConvStudy(), yoloConfig.isNorm());
     }
 
     public float getRealWidth(float width) {

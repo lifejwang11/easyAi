@@ -8,13 +8,13 @@ import java.util.List;
  */
 public class ConvDymNerveStudy {
     private List<DymNerveStudy> dymNerveStudyList;//每一层卷积
-    private List<Float> oneConvPower;//1conv参数
+    private List<List<Float>> oneConvPower;//1conv参数
 
-    public List<Float> getOneConvPower() {
+    public List<List<Float>> getOneConvPower() {
         return oneConvPower;
     }
 
-    public void setOneConvPower(List<Float> oneConvPower) {
+    public void setOneConvPower(List<List<Float>> oneConvPower) {
         this.oneConvPower = oneConvPower;
     }
 
