@@ -240,7 +240,7 @@ public abstract class Nerve extends ConvCount {
             sigmaMatrix = null;
             if (depth == 1) {//1*1 卷积调整
                 if (norm) {
-                    backOneConvByList(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), oneConvRate);
+                    backOneConvByList(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), oneConvRate, false);
                 }
             } else {
                 //将梯度继续回传
