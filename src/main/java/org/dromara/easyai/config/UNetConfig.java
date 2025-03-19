@@ -12,7 +12,7 @@ public class UNetConfig {
     private float oneStudyRate = 0.0001f;//1*1学习率
     private int minFeatureValue = 30;//最小特征维度
     private int kerSize = 3;//卷积核大小
-    private int convTimes = 1;//单层卷积数量
+    private int channelNo = 1;//通道数
     private float cutTh = 0.5f;//裁切阈值像素 大于该亮度的进行裁切
     private boolean cutting = true;//是否要输出裁切图像
 
@@ -40,12 +40,12 @@ public class UNetConfig {
         this.oneStudyRate = oneStudyRate;
     }
 
-    public int getConvTimes() {
-        return convTimes;
+    public int getChannelNo() {
+        return channelNo;
     }
 
-    public void setConvTimes(int convTimes) {
-        this.convTimes = convTimes;
+    public void setChannelNo(int channelNo) {
+        this.channelNo = channelNo;
     }
 
     public int getXSize() {

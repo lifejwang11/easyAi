@@ -48,6 +48,14 @@ public abstract class ConvCount {
         return myMatrix;
     }
 
+    protected List<Matrix> backManyUpPooling(List<Matrix> errorMatrix) throws Exception {
+        List<Matrix> result = new ArrayList<>();
+        for (Matrix matrix : errorMatrix) {
+            result.add(backUpPooling(matrix));
+        }
+        return result;
+    }
+
     protected Matrix backUpPooling(Matrix errorMatrix) throws Exception {//退上池化
         int x = errorMatrix.getX();
         int y = errorMatrix.getY();
@@ -137,10 +145,22 @@ public abstract class ConvCount {
         return size - kerSize + 1;
     }
 
-    protected Matrix backUpConv(Matrix errorMatrix, int kerSize, ConvParameter convParameter, float studyRate, ActiveFunction activeFunction) throws Exception {//退上卷积
+    protected List<Matrix> backManyUpConv(List<Matrix> errorMatrixList, int kerSize, ConvParameter convParameter, float studyRate,
+                                          ActiveFunction activeFunction) throws Exception {
+        List<Matrix> result = new ArrayList<>();
+        int size = errorMatrixList.size();
+        for (int i = 0; i < size; i++) {
+            Matrix errorMatrix = errorMatrixList.get(i);
+            result.add(backUpConv(errorMatrix, kerSize, convParameter, studyRate, activeFunction, i));
+        }
+        return result;
+    }
+
+    protected Matrix backUpConv(Matrix errorMatrix, int kerSize, ConvParameter convParameter, float studyRate, ActiveFunction activeFunction
+            , int index) throws Exception {//退上卷积
         int myX = errorMatrix.getX();
         int myY = errorMatrix.getY();
-        Matrix outMatrix = convParameter.getUpOutMatrix();
+        Matrix outMatrix = convParameter.getUpOutMatrixList().get(index);
         for (int i = 0; i < myX; i++) {
             for (int j = 0; j < myY; j++) {
                 float value = activeFunction.functionG(outMatrix.getNumber(i, j)) * errorMatrix.getNumber(i, j);
@@ -149,47 +169,58 @@ public abstract class ConvCount {
         }
         int x = backUpSize(myX, kerSize);
         int y = backUpSize(myY, kerSize);
-        Matrix upNerveMatrix = convParameter.getUpNerveMatrix();//上采样卷积权重
-        Matrix vector = convParameter.getUpFeatureMatrix();
+        Matrix upNerveMatrix = convParameter.getUpNerveMatrixList().get(index);//上采样卷积权重
+        Matrix vector = convParameter.getUpFeatureMatrixList().get(index);
         Matrix error = matrixOperation.im2col(errorMatrix, kerSize, 1);
         Matrix subNerveMatrix = matrixOperation.matrixMulPd(error, vector, upNerveMatrix, false);
         Matrix errorFeature = matrixOperation.matrixMulPd(error, vector, upNerveMatrix, true);
         matrixOperation.mathMul(subNerveMatrix, studyRate);
-        convParameter.setUpNerveMatrix(matrixOperation.add(subNerveMatrix, upNerveMatrix));
+        convParameter.getUpNerveMatrixList().set(index, matrixOperation.add(subNerveMatrix, upNerveMatrix));
         return matrixOperation.vectorToMatrix(errorFeature, x, y);
     }
 
-    private ConvResult upConv(Matrix matrix, int kerSize, Matrix nervePowerMatrix, ActiveFunction activeFunction) throws Exception {//进行上采样
+    private ConvResult upConv(List<Matrix> matrixList, int kerSize, List<Matrix> nervePowerMatrixList, ActiveFunction activeFunction, int channelNo) throws Exception {//进行上采样
         ConvResult convResult = new ConvResult();
-        int x = getUpSize(matrix.getX(), kerSize);
-        int y = getUpSize(matrix.getY(), kerSize);
-        Matrix vector = matrixOperation.matrixToVector(matrix, false);//输入矩阵转列向量 t
-        Matrix im2colMatrix = matrixOperation.mulMatrix(vector, nervePowerMatrix);
-        Matrix out = matrixOperation.reverseIm2col(im2colMatrix, kerSize, 1, x, y);
-        Matrix outMatrix = new Matrix(x, y);
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                float value = activeFunction.function(out.getNumber(i, j));
-                outMatrix.setNub(i, j, value);
+        int x = getUpSize(matrixList.get(0).getX(), kerSize);
+        int y = getUpSize(matrixList.get(0).getY(), kerSize);
+        List<Matrix> vectorList = new ArrayList<>();
+        List<Matrix> resultList = new ArrayList<>();
+        convResult.setLeftMatrixList(vectorList);
+        convResult.setResultMatrixList(resultList);
+        for (int k = 0; k < channelNo; k++) {
+            Matrix matrix = matrixList.get(k);
+            Matrix nervePowerMatrix = nervePowerMatrixList.get(k);
+            Matrix vector = matrixOperation.matrixToVector(matrix, false);//输入矩阵转列向量 t
+            Matrix im2colMatrix = matrixOperation.mulMatrix(vector, nervePowerMatrix);
+            Matrix out = matrixOperation.reverseIm2col(im2colMatrix, kerSize, 1, x, y);
+            Matrix outMatrix = new Matrix(x, y);
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    float value = activeFunction.function(out.getNumber(i, j));
+                    outMatrix.setNub(i, j, value);
+                }
             }
+            vectorList.add(vector);
+            resultList.add(outMatrix);
         }
-        convResult.setLeftMatrix(vector);
-        convResult.setResultMatrix(outMatrix);
         return convResult;
     }
 
-    protected Matrix upConvAndPooling(Matrix matrix, ConvParameter convParameter, int convTimes, ActiveFunction activeFunction
+    protected List<Matrix> upConvAndPooling(List<Matrix> matrixList, ConvParameter convParameter, int channelNo, ActiveFunction activeFunction
             , int kernLen, boolean pooling) throws Exception {
-        List<Matrix> matrixList = new ArrayList<>();
-        matrixList.add(matrix);
-        Matrix downConvMatrix = downConvAndPooling(matrixList, convParameter, 1, activeFunction, kernLen, false, -1).get(0);
+        List<Matrix> downConvMatrixList = downConvAndPooling(matrixList, convParameter, channelNo, activeFunction, kernLen, false, -1);
         if (pooling) {
-            ConvResult result = upConv(downConvMatrix, kernLen, convParameter.getUpNerveMatrix(), activeFunction);
-            convParameter.setUpOutMatrix(result.getResultMatrix());
-            convParameter.setUpFeatureMatrix(result.getLeftMatrix());
-            return upPooling(result.getResultMatrix());
+            ConvResult result = upConv(downConvMatrixList, kernLen, convParameter.getUpNerveMatrixList(), activeFunction, channelNo);
+            convParameter.setUpOutMatrixList(result.getResultMatrixList());
+            convParameter.setUpFeatureMatrixList(result.getLeftMatrixList());
+            List<Matrix> upPoolingMatrixList = new ArrayList<>();
+            List<Matrix> resultMatrixList = result.getResultMatrixList();
+            for (Matrix matrix : resultMatrixList) {
+                upPoolingMatrixList.add(upPooling(matrix));
+            }
+            return upPoolingMatrixList;
         }
-        return downConvMatrix;
+        return downConvMatrixList;
     }
 
     protected List<Matrix> downConvAndPooling(List<Matrix> matrixList, ConvParameter convParameter, int channelNo, ActiveFunction activeFunction
@@ -216,7 +247,7 @@ public abstract class ConvCount {
             resultMatrixList.add(myMatrix);
         }
         if (eventID >= 0) {
-            convParameter.getFeatureMap().put(eventID, resultMatrixList.get(0));
+            convParameter.getFeatureMap().put(eventID, resultMatrixList);
         }
         convParameter.setOutX(resultMatrixList.get(0).getX());
         convParameter.setOutY(resultMatrixList.get(0).getY());
@@ -255,13 +286,13 @@ public abstract class ConvCount {
     }
 
     protected void backOneConvByList(List<Matrix> errorMatrixList, List<Matrix> matrixList, List<List<Float>> oneConvPower,
-                                     float studyRate) throws Exception {
+                                     float studyRate, boolean UNet) throws Exception {
         int size = errorMatrixList.size();
         if (size == oneConvPower.size()) {
             for (int i = 0; i < size; i++) {
                 Matrix errorMatrix = errorMatrixList.get(i);
                 List<Float> oneConvPowerList = oneConvPower.get(i);
-                backOneConv(errorMatrix, matrixList, oneConvPowerList, studyRate, false);
+                backOneConv(errorMatrix, matrixList, oneConvPowerList, studyRate, UNet);
             }
         } else {
             throw new Exception("误差矩阵大小与通道数不相符");

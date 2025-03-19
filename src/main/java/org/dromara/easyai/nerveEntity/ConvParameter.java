@@ -18,23 +18,41 @@ public class ConvParameter {
     private final List<Matrix> im2colMatrixList = new ArrayList<>();
     private final List<Matrix> outMatrixList = new ArrayList<>();
     private List<List<Float>> oneConvPower;//1*1卷积核 需取出模型
+    private List<Float> upOneConvPower;//上采样降维卷积核 需要取出模型
     private List<Matrix> featureMatrixList;//所有通道特征矩阵集合
-    private Matrix upNerveMatrix;//上采样卷积权重  需要取出模型
-    private Matrix upFeatureMatrix;//上采样输入特征
-    private Matrix upOutMatrix;//上卷积输出矩阵
-    private final Map<Long, Matrix> featureMap = new HashMap<>();
+    private final List<Matrix> upNerveMatrixList = new ArrayList<>();//上采样卷积权重  需要取出模型
+    private List<Matrix> upFeatureMatrixList;//上采样输入特征
+    private List<Matrix> upOutMatrixList;//上卷积输出矩阵集合
+    private final Map<Long, List<Matrix>> featureMap = new HashMap<>();
     private int outX;
     private int outY;
     private int encoderX;
     private int encoderY;
 
-    public Matrix getUpOutMatrix() {
-        return upOutMatrix;
+    public List<Matrix> getUpFeatureMatrixList() {
+        return upFeatureMatrixList;
     }
 
-    public void setUpOutMatrix(Matrix upOutMatrix) {
-        this.upOutMatrix = upOutMatrix;
+    public void setUpFeatureMatrixList(List<Matrix> upFeatureMatrixList) {
+        this.upFeatureMatrixList = upFeatureMatrixList;
     }
+
+    public List<Matrix> getUpOutMatrixList() {
+        return upOutMatrixList;
+    }
+
+    public void setUpOutMatrixList(List<Matrix> upOutMatrixList) {
+        this.upOutMatrixList = upOutMatrixList;
+    }
+
+    public List<Float> getUpOneConvPower() {
+        return upOneConvPower;
+    }
+
+    public void setUpOneConvPower(List<Float> upOneConvPower) {
+        this.upOneConvPower = upOneConvPower;
+    }
+
 
     public int getEncoderX() {
         return encoderX;
@@ -52,24 +70,12 @@ public class ConvParameter {
         this.encoderY = encoderY;
     }
 
-    public Map<Long, Matrix> getFeatureMap() {
+    public Map<Long, List<Matrix>> getFeatureMap() {
         return featureMap;
     }
 
-    public Matrix getUpFeatureMatrix() {
-        return upFeatureMatrix;
-    }
-
-    public void setUpFeatureMatrix(Matrix upFeatureMatrix) {
-        this.upFeatureMatrix = upFeatureMatrix;
-    }
-
-    public Matrix getUpNerveMatrix() {
-        return upNerveMatrix;
-    }
-
-    public void setUpNerveMatrix(Matrix upNerveMatrix) {
-        this.upNerveMatrix = upNerveMatrix;
+    public List<Matrix> getUpNerveMatrixList() {
+        return upNerveMatrixList;
     }
 
     public int getOutX() {
