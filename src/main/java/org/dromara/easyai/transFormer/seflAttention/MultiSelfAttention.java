@@ -4,6 +4,7 @@ import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.transFormer.CodecBlock;
+import org.dromara.easyai.transFormer.TransWordVector;
 import org.dromara.easyai.transFormer.model.MultiSelfAttentionModel;
 import org.dromara.easyai.transFormer.model.QKVModel;
 
@@ -23,6 +24,7 @@ public class MultiSelfAttention {//多头自注意力层
     private final int maxLength;//序列最大长度
     private final boolean selfTimeCode;//使用自增时间序列编码
     private final MatrixOperation matrixOperation;
+    private final TransWordVector transWordVector;
 
     public void setLayNorm(LayNorm layNorm) {
         this.layNorm = layNorm;
@@ -127,6 +129,8 @@ public class MultiSelfAttention {//多头自注意力层
         }
         if (codecBlock != null) {
             codecBlock.backCodecError(allNextFeatureError, eventID, allErrorMatrix);//将下层误差发送
+        } else {//第一层解码器，回传调整词向量
+            transWordVector.backDecoderError(allNextFeatureError, allErrorMatrix);
         }
     }
 
@@ -177,12 +181,12 @@ public class MultiSelfAttention {//多头自注意力层
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 int k = j / 2;
-                float wk = 1 / ((float)Math.pow(10000, 2D * k / y));
+                float wk = 1 / ((float) Math.pow(10000, 2f * k / y));
                 float pe;
                 if (j % 2 == 0) {//当列数是偶数
-                    pe = (float)Math.sin(wk * i);
+                    pe = (float) Math.sin(wk * i);
                 } else {//当列数是奇数
-                    pe = (float)Math.cos(wk * i);
+                    pe = (float) Math.cos(wk * i);
                 }
                 float value = feature.getNumber(i, j) + pe;
                 feature.setNub(i, j, value);
@@ -223,9 +227,11 @@ public class MultiSelfAttention {//多头自注意力层
 
 
     public MultiSelfAttention(int multiNumber, float studyPoint, int depth, int wordVectorDimension, boolean encoder,
-                              CodecBlock codecBlock, int maxLength, boolean selfTimeCode, int coreNumber) throws Exception {
+                              CodecBlock codecBlock, int maxLength, boolean selfTimeCode, int coreNumber
+            , TransWordVector transWordVector) throws Exception {
         Random random = new Random();
         matrixOperation = new MatrixOperation(coreNumber);
+        this.transWordVector = transWordVector;
         this.selfTimeCode = selfTimeCode;
         this.maxLength = maxLength;
         this.codecBlock = codecBlock;

@@ -5,8 +5,7 @@ public class TfConfig {
     private int multiNumber = 8;//多头数量
     private int featureDimension = 50;//词向量维度
     private int allDepth = 1;//深度
-    private float studyPoint = 0.01f;
-    private int typeNumber;
+    private float studyPoint = 0.005f;
     private boolean showLog = true;
     private int times = 10;//循环增强次数
     private int regularModel = RZ.NOT_RZ;//正则模式
@@ -16,6 +15,24 @@ public class TfConfig {
     private int coreNumber = 1;//是否使用多核并行计算进行提速
     private boolean outAllPro = false;//是否输出全概率，注意，若输出全概率只能用来分类概率,否则将消耗大量内存
     private float timePunValue = 0.7f;//时间惩罚系数
+    public String startWord = "<start>";//开始符
+    public String endWord = "<end>";//结束符
+
+    public String getStartWord() {
+        return startWord;
+    }
+
+    public void setStartWord(String startWord) {
+        this.startWord = startWord;
+    }
+
+    public String getEndWord() {
+        return endWord;
+    }
+
+    public void setEndWord(String endWord) {
+        this.endWord = endWord;
+    }
 
     public float getTimePunValue() {
         return timePunValue;
@@ -119,14 +136,6 @@ public class TfConfig {
 
     public void setStudyPoint(float studyPoint) {
         this.studyPoint = studyPoint;
-    }
-
-    public int getTypeNumber() {
-        return typeNumber;
-    }
-
-    public void setTypeNumber(int typeNumber) {
-        this.typeNumber = typeNumber;
     }
 
     public boolean isShowLog() {

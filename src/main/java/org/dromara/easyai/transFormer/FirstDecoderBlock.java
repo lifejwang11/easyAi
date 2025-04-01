@@ -21,11 +21,12 @@ public class FirstDecoderBlock {//解码器模块
     }
 
     public FirstDecoderBlock(int multiNumber, int featureDimension, float studyPoint, CodecBlock codecBlock, int maxLength, boolean selfTimeCode
-            , int coreNumber) throws Exception {//进行初始化
+            , int coreNumber, TransWordVector transWordVector) throws Exception {//进行初始化
         //注意力层残差归一化
-        attentionLayNorm = new LayNorm(1, featureDimension, null, this, studyPoint, coreNumber);
+        attentionLayNorm = new LayNorm(1, featureDimension, null, this, studyPoint, coreNumber, false
+                , 1);
         multiSelfAttention = new MultiSelfAttention(multiNumber, studyPoint, 1, featureDimension, false, null, maxLength
-                , selfTimeCode, coreNumber);
+                , selfTimeCode, coreNumber, transWordVector);
         multiSelfAttention.setLayNorm(attentionLayNorm);
         attentionLayNorm.setMultiSelfAttention(multiSelfAttention);
         this.codecBlock = codecBlock;
