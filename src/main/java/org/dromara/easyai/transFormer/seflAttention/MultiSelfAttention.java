@@ -188,7 +188,7 @@ public class MultiSelfAttention {//多头自注意力层
                 } else {//当列数是奇数
                     pe = (float) Math.cos(wk * i);
                 }
-                float value = feature.getNumber(i, j) + pe;
+                float value = feature.getNumber(i, j) + pe * 0.1f;
                 feature.setNub(i, j, value);
             }
         }
@@ -233,7 +233,7 @@ public class MultiSelfAttention {//多头自注意力层
         matrixOperation = new MatrixOperation(coreNumber);
         this.transWordVector = transWordVector;
         this.selfTimeCode = selfTimeCode;
-        this.maxLength = maxLength;
+        this.maxLength = maxLength * 10;
         this.codecBlock = codecBlock;
         this.encoder = encoder;
         int yiZhi = wordVectorDimension * multiNumber;
