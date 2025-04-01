@@ -66,7 +66,7 @@ public class LayNorm {//残差与归一化
         power = new Matrix(featureDimension, featureDimension);
         Random random = new Random();
         float sh = 1;
-        if (!encoder) {
+        if (!encoder && depth == 1) {
             sh = featureDimension * featureDimension;
         }
         for (int i = 0; i < featureDimension; i++) {
