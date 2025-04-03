@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TalkToTalk extends MatrixOperation {
+public class TalkToTalk {
     private final TfConfig tfConfig;
     private final int maxLength;
     private final int times;
