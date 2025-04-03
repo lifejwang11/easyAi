@@ -4,20 +4,19 @@ import org.dromara.easyai.config.TfConfig;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.transFormer.model.CodecBlockModel;
 import org.dromara.easyai.transFormer.model.TransFormerModel;
+import org.dromara.easyai.transFormer.model.TransWordVectorModel;
 import org.dromara.easyai.transFormer.nerve.SensoryNerve;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TransFormerManager {
-    private final SensoryNerve sensoryNerve;//感知神经元
     private final List<CodecBlock> encoderBlocks = new ArrayList<>();//编码器模块
     private final List<CodecBlock> decoderBlocks = new ArrayList<>();//解码器模块
-    private final FirstDecoderBlock firstDecoderBlock;//第一个解码器模块
-    private final LineBlock lineBlock;//线性分类层
-    private final int maxLength;
-    private final boolean selfTimeCode;//使用自增时间序列编码
-    private final TransWordVector transWordVector;//内置词向量
+    private SensoryNerve sensoryNerve;//感知神经元
+    private FirstDecoderBlock firstDecoderBlock;//第一个解码器模块
+    private LineBlock lineBlock;//线性分类层
+    private TransWordVector transWordVector;//内置词向量
 
     public TransWordVector getTransWordVector() {
         return transWordVector;
@@ -29,6 +28,7 @@ public class TransFormerManager {
 
     public TransFormerModel getModel() throws Exception {
         TransFormerModel transFormerModel = new TransFormerModel();
+        transFormerModel.setTransWordVectorModel(transWordVector.getModel());
         List<CodecBlockModel> encoderBlockModels = new ArrayList<>();
         List<CodecBlockModel> decoderBlockModels = new ArrayList<>();
         for (int i = 0; i < encoderBlocks.size(); i++) {
@@ -42,59 +42,9 @@ public class TransFormerManager {
         return transFormerModel;
     }
 
-    private Matrix addTimeCode(Matrix feature) throws Exception {
-        int x = feature.getX();
-        int y = feature.getY();
-        Matrix matrix = new Matrix(x, y);
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                int k = j / 2;
-                float wk = 1 / ((float) Math.pow(10000, 2D * k / y));
-                float pe;
-                if (j % 2 == 0) {//当列数是偶数
-                    pe = (float) Math.sin(wk * i);
-                } else {//当列数是奇数
-                    pe = (float) Math.cos(wk * i);
-                }
-                float value = feature.getNumber(i, j) + (float) pe;
-                matrix.setNub(i, j, value);
-            }
-        }
-        return matrix;
-    }
 
-    private Matrix addTimeCodeBySelf(Matrix feature) throws Exception {//添加时间编码
-        float timeStep = 1F / maxLength;
-        int x = feature.getX();
-        int y = feature.getY();
-        Matrix matrix = new Matrix(x, y);
-        for (int i = 1; i < x; i++) {
-            float step = i * timeStep;
-            for (int j = 0; j < y; j++) {
-                float value = feature.getNumber(i, j) + step;
-                matrix.setNub(i, j, value);
-            }
-        }
-        return matrix;
-    }
-
-    public Matrix getStartMatrix(Matrix feature) throws Exception {
-        Matrix matrix;
-        if (selfTimeCode) {
-            matrix = addTimeCodeBySelf(feature);
-        } else {
-            matrix = addTimeCode(feature);
-        }
-        Matrix myFeature = new Matrix(1, matrix.getY());
-        for (int j = 0; j < matrix.getY(); j++) {
-            Matrix col = matrix.getColumn(j);
-            float value = col.getAVG();
-            myFeature.setNub(0, j, value);
-        }
-        return myFeature;
-    }
-
-    public void insertModel(TransFormerModel transFormerModel) throws Exception {
+    public void insertModel(TransFormerModel transFormerModel, TfConfig tfConfig) throws Exception {
+        init(tfConfig, null, transFormerModel.getTransWordVectorModel());
         List<CodecBlockModel> encoderBlockModels = transFormerModel.getEncoderBlockModels();
         List<CodecBlockModel> decoderBlockModels = transFormerModel.getDecoderBlockModels();
         int minSize = Math.min(encoderBlocks.size(), encoderBlockModels.size());
@@ -106,18 +56,28 @@ public class TransFormerManager {
         lineBlock.insertModel(transFormerModel.getLineBlockModel());
     }
 
+    public void init(TfConfig tfConfig, List<String> sentenceList) throws Exception {
+        init(tfConfig, sentenceList, null);
+    }
+
     /**
      * 初始化神经元参数
      *
      * @param tfConfig 配置参数
      * @throws Exception 如果参数错误则抛异常
      */
-    public TransFormerManager(TfConfig tfConfig, List<String> sentenceList) throws Exception {
-        int multiNumber = tfConfig.getMultiNumber();
-        maxLength = tfConfig.getMaxLength();
-        selfTimeCode = tfConfig.isSelfTimeCode();
+    private void init(TfConfig tfConfig, List<String> sentenceList, TransWordVectorModel transWordVectorModel) throws Exception {
         transWordVector = new TransWordVector(tfConfig);
-        int typeNumber = transWordVector.init(sentenceList);
+        int typeNumber;
+        if (transWordVectorModel == null) {
+            typeNumber = transWordVector.init(sentenceList);
+        } else {
+            typeNumber = transWordVector.insertModel(transWordVectorModel);
+        }
+        int multiNumber = tfConfig.getMultiNumber();
+        int maxLength = tfConfig.getMaxLength();
+        //使用自增时间序列编码
+        boolean selfTimeCode = tfConfig.isSelfTimeCode();
         int featureDimension = tfConfig.getFeatureDimension();
         if (featureDimension % 2 != 0) {
             throw new Exception("TransFormer 词向量维度必须为偶数");

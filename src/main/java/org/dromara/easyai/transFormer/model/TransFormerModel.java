@@ -7,6 +7,15 @@ public class TransFormerModel {
     private List<CodecBlockModel> decoderBlockModels;//解码器模块
     private FirstDecoderModel firstDecoderBlockModel;//第一个解码器模块
     private LineBlockModel lineBlockModel;//线性分类层
+    private TransWordVectorModel transWordVectorModel;//词向量模型
+
+    public TransWordVectorModel getTransWordVectorModel() {
+        return transWordVectorModel;
+    }
+
+    public void setTransWordVectorModel(TransWordVectorModel transWordVectorModel) {
+        this.transWordVectorModel = transWordVectorModel;
+    }
 
     public List<CodecBlockModel> getEncoderBlockModels() {
         return encoderBlockModels;

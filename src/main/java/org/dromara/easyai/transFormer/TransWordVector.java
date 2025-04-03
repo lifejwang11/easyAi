@@ -4,6 +4,7 @@ import org.dromara.easyai.config.TfConfig;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixList;
 import org.dromara.easyai.matrixTools.MatrixOperation;
+import org.dromara.easyai.transFormer.model.TransWordVectorModel;
 
 import java.util.*;
 
@@ -24,6 +25,14 @@ public class TransWordVector {
     private final MatrixOperation matrixOperation = new MatrixOperation();
     private final float studyRate;
 
+    public int getEndID() {//返回结束离散id，约定为2
+        return 2;
+    }
+
+    public int getStartID() {//返回开始离散id，约定为1
+        return 1;
+    }
+
     public TransWordVector(TfConfig tfConfig) throws Exception {
         this.splitWord = tfConfig.getSplitWord();
         this.studyRate = tfConfig.getStudyPoint();
@@ -34,6 +43,34 @@ public class TransWordVector {
         wordList.add(endWord);
         initWordVector();
         initWordVector();
+    }
+
+    public TransWordVectorModel getModel() {
+        TransWordVectorModel transWordVectorModel = new TransWordVectorModel();
+        transWordVectorModel.setWordList(wordList);
+        transWordVectorModel.setX(wordVectorList.get(0).getX());
+        transWordVectorModel.setY(wordVectorList.get(0).getY());
+        List<Float[]> wordVectorModel = new ArrayList<>();
+        transWordVectorModel.setWordVectorModel(wordVectorModel);
+        for (Matrix matrix : wordVectorList) {
+            wordVectorModel.add(matrix.getMatrixModel());
+        }
+        return transWordVectorModel;
+    }
+
+    public int insertModel(TransWordVectorModel transWordVectorModel) {
+        int x = transWordVectorModel.getX();
+        int y = transWordVectorModel.getY();
+        wordList.clear();
+        wordVectorList.clear();
+        wordList.addAll(transWordVectorModel.getWordList());
+        List<Float[]> wordVectorModel = transWordVectorModel.getWordVectorModel();
+        for (Float[] floats : wordVectorModel) {
+            Matrix matrix = new Matrix(x, y);
+            matrix.insertMatrixModel(floats);
+            wordVectorList.add(matrix);
+        }
+        return wordList.size();
     }
 
     public void backEncoderError(Matrix error) throws Exception {
@@ -71,6 +108,10 @@ public class TransWordVector {
         }
     }
 
+    public String getWordByID(int id) {//通过离散id获取字符
+        return wordList.get(id - 1);
+    }
+
     public int getWordID(String word) {//获取离散id
         int id = -1;
         int size = wordList.size();
@@ -99,7 +140,19 @@ public class TransWordVector {
         return result;
     }
 
-    private Matrix getVector(String word, boolean decoder, boolean study) {
+    public Matrix getVector(String word) {//通过word获取对应的词向量
+        int size = wordList.size();
+        Matrix feature = null;
+        for (int i = 0; i < size; i++) {
+            if (wordList.get(i).equals(word)) {
+                feature = wordVectorList.get(i);
+                break;
+            }
+        }
+        return feature;
+    }
+
+    private Matrix getVectorByStudy(String word, boolean decoder, boolean study) {
         int size = wordList.size();
         Matrix feature = null;
         List<Integer> ids = null;
@@ -135,7 +188,7 @@ public class TransWordVector {
             if (splitWord == null) {
                 int size = word.length();
                 for (int i = 0; i < size; i++) {
-                    Matrix feature = getVector(word.substring(i, i + 1), decoder, study);
+                    Matrix feature = getVectorByStudy(word.substring(i, i + 1), decoder, study);
                     if (matrixList == null) {
                         matrixList = new MatrixList(feature, true, 128);
                     } else {
@@ -145,7 +198,7 @@ public class TransWordVector {
             } else {
                 String[] myWord = word.split(splitWord);
                 for (String s : myWord) {
-                    Matrix feature = getVector(s, decoder, study);
+                    Matrix feature = getVectorByStudy(s, decoder, study);
                     if (matrixList == null) {
                         matrixList = new MatrixList(feature, true, 128);
                     } else {
