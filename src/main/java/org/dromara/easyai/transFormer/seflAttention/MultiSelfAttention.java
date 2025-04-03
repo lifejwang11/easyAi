@@ -233,7 +233,7 @@ public class MultiSelfAttention {//多头自注意力层
         matrixOperation = new MatrixOperation(coreNumber);
         this.transWordVector = transWordVector;
         this.selfTimeCode = selfTimeCode;
-        this.maxLength = maxLength * 2;
+        this.maxLength = maxLength;
         this.codecBlock = codecBlock;
         this.encoder = encoder;
         int yiZhi = wordVectorDimension * multiNumber;

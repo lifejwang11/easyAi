@@ -90,11 +90,11 @@ public class LayNorm {//残差与归一化
         Matrix subMatrix = new Matrix(1, sub.getY());
         for (int i = 0; i < sub.getY(); i++) {
             float subValue = sub.getNumber(0, i);
-            float value = (subValue * n + subMatrix.getNumber(0, i)) / 2;
+            float value = subValue * n + subMatrix.getNumber(0, i);
             subMatrix.setNub(0, i, value);
             for (int j = 0; j < sub.getY(); j++) {
                 if (i != j) {
-                    float otherValue = (subValue * nt + subMatrix.getNumber(0, j)) / 2;
+                    float otherValue = subValue * nt + subMatrix.getNumber(0, j);
                     subMatrix.setNub(0, j, otherValue);
                 }
             }
