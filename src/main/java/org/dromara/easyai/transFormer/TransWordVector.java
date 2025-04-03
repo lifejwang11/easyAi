@@ -58,7 +58,7 @@ public class TransWordVector {
         return transWordVectorModel;
     }
 
-    public int insertModel(TransWordVectorModel transWordVectorModel) {
+    public void insertModel(TransWordVectorModel transWordVectorModel) {
         int x = transWordVectorModel.getX();
         int y = transWordVectorModel.getY();
         wordList.clear();
@@ -70,7 +70,6 @@ public class TransWordVector {
             matrix.insertMatrixModel(floats);
             wordVectorList.add(matrix);
         }
-        return wordList.size();
     }
 
     public void backEncoderError(Matrix error) throws Exception {
@@ -236,7 +235,7 @@ public class TransWordVector {
         }
     }
 
-    public int init(List<String> sentenceList) throws Exception {
+    public void init(List<String> sentenceList) throws Exception {
         for (String sentence : sentenceList) {
             if (sentence != null && !sentence.isEmpty()) {
                 if (splitWord == null) {
@@ -251,7 +250,9 @@ public class TransWordVector {
                 }
             }
         }
-        return wordList.size();
     }
 
+    public int getWordSize() {
+        return wordList.size();
+    }
 }
