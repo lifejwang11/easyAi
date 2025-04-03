@@ -49,7 +49,7 @@ public class TransWordVector {
 
     private void updateWordVector(List<Integer> ids, Matrix error) throws Exception {
         int size = ids.size();
-       // matrixOperation.mathMul(error, studyRate);
+        matrixOperation.mathMul(error, studyRate);
         for (int i = 0; i < size; i++) {
             int index = ids.get(i);
             Matrix wordError = error.getRow(i);

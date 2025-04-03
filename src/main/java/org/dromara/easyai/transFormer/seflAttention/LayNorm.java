@@ -89,7 +89,7 @@ public class LayNorm {//残差与归一化
         float nt = -n / (n - 1);
         Matrix subMatrix = new Matrix(1, sub.getY());
         for (int i = 0; i < sub.getY(); i++) {
-            float subValue = sub.getNumber(0, i);
+            float subValue = sub.getNumber(0, i) * study;
             float value = subValue * n + subMatrix.getNumber(0, i);
             subMatrix.setNub(0, i, value);
             for (int j = 0; j < sub.getY(); j++) {
