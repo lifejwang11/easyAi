@@ -68,11 +68,13 @@ public class TransFormerManager {
      */
     private void init(TfConfig tfConfig, List<String> sentenceList, TransWordVectorModel transWordVectorModel) throws Exception {
         transWordVector = new TransWordVector(tfConfig);
-        int typeNumber;
-        if (transWordVectorModel == null) {
-            typeNumber = transWordVector.init(sentenceList);
-        } else {
-            typeNumber = transWordVector.insertModel(transWordVectorModel);
+        int typeNumber = tfConfig.getTypeNumber();
+        if (typeNumber < 2) {
+            if (transWordVectorModel == null) {
+                typeNumber = transWordVector.init(sentenceList);
+            } else {
+                typeNumber = transWordVector.insertModel(transWordVectorModel);
+            }
         }
         int multiNumber = tfConfig.getMultiNumber();
         int maxLength = tfConfig.getMaxLength();
