@@ -75,6 +75,12 @@ public class TransFormerManager {
             } else {
                 typeNumber = transWordVector.insertModel(transWordVectorModel);
             }
+        } else {
+            if (transWordVectorModel == null) {
+                transWordVector.init(sentenceList);
+            } else {
+                transWordVector.insertModel(transWordVectorModel);
+            }
         }
         int multiNumber = tfConfig.getMultiNumber();
         int maxLength = tfConfig.getMaxLength();
