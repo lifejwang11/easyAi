@@ -16,6 +16,7 @@ import java.util.*;
 public class TransWordVector {
     private final List<String> wordList = new ArrayList<>();//词离散id
     private final List<Matrix> wordVectorList = new ArrayList<>();//词向量
+    private final Matrix positionCodeMatrix;//位置编码矩阵
     private final WordIds wordIds = new WordIds();
     private final String splitWord;
     private final int featureDimension;//词向量维度
@@ -24,6 +25,7 @@ public class TransWordVector {
     private final String endWord;
     private final MatrixOperation matrixOperation = new MatrixOperation();
     private final float studyRate;
+    private final int maxLength;//最大长度
 
     public int getEndID() {//返回结束离散id，约定为2
         return 2;
@@ -39,10 +41,28 @@ public class TransWordVector {
         this.featureDimension = tfConfig.getFeatureDimension();
         startWord = tfConfig.getStartWord();
         endWord = tfConfig.getEndWord();
+        maxLength = tfConfig.getMaxLength() + 2;
+        positionCodeMatrix = new Matrix(maxLength, featureDimension);
         wordList.add(startWord);
         wordList.add(endWord);
         initWordVector();
         initWordVector();
+        initPositionMatrix();
+    }
+
+    private void initPositionMatrix() throws Exception {//初始化位置嵌入编码
+        int x = positionCodeMatrix.getX();
+        int y = positionCodeMatrix.getY();
+        Random random = new Random();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float value = random.nextFloat();
+                if (i == 0) {
+                    value = value + 1f;
+                }
+                positionCodeMatrix.setNub(i, j, value);
+            }
+        }
     }
 
     public TransWordVectorModel getModel() {
@@ -83,9 +103,21 @@ public class TransWordVector {
         }
     }
 
+    private void updatePositionCode(Matrix error) throws Exception {
+        int x = error.getX();
+        int y = error.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float value = positionCodeMatrix.getNumber(i, j) + error.getNumber(i, j);
+                positionCodeMatrix.setNub(i, j, value);
+            }
+        }
+    }
+
     private void updateWordVector(List<Integer> ids, Matrix error) throws Exception {
         int size = ids.size();
         matrixOperation.mathMul(error, studyRate);
+        updatePositionCode(error);
         for (int i = 0; i < size; i++) {
             int index = ids.get(i);
             Matrix wordError = error.getRow(i);
@@ -181,15 +213,18 @@ public class TransWordVector {
             if (study) {
                 wordIds.getDecoder().add(0);
             }
-            matrixList = new MatrixList(wordVectorList.get(0), true, 128);
+            matrixList = new MatrixList(wordVectorList.get(0), true, maxLength + 10);
         }
         if (word != null && !word.isEmpty()) {
+            if (word.length() > maxLength - 2) {
+                throw new Exception("语句长度超过设定的最大值");
+            }
             if (splitWord == null) {
                 int size = word.length();
                 for (int i = 0; i < size; i++) {
                     Matrix feature = getVectorByStudy(word.substring(i, i + 1), decoder, study);
                     if (matrixList == null) {
-                        matrixList = new MatrixList(feature, true, 128);
+                        matrixList = new MatrixList(feature, true, maxLength + 10);
                     } else {
                         matrixList.add(feature);
                     }
@@ -199,14 +234,21 @@ public class TransWordVector {
                 for (String s : myWord) {
                     Matrix feature = getVectorByStudy(s, decoder, study);
                     if (matrixList == null) {
-                        matrixList = new MatrixList(feature, true, 128);
+                        matrixList = new MatrixList(feature, true, maxLength + 10);
                     } else {
                         matrixList.add(feature);
                     }
                 }
             }
         }
-        return matrixList.getMatrix();
+        return addPositionMatrix(matrixList.getMatrix());
+    }
+
+    private Matrix addPositionMatrix(Matrix matrix) throws Exception {//与位置编码相加
+        int x = matrix.getX();
+        int y = matrix.getY();
+        Matrix positionCode = positionCodeMatrix.getSonOfMatrix(0, 0, x, y);
+        return matrixOperation.add(matrix, positionCode);
     }
 
     private void initWordVector() throws Exception {

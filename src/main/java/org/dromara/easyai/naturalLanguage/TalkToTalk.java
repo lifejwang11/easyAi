@@ -51,12 +51,10 @@ public class TalkToTalk {
         WordBack wordBack = new WordBack();
         int id;
         StringBuilder answer = new StringBuilder();
+        answer.append(tfConfig.getStartWord());
         int index = 0;
         do {
-            String myAnswer = null;
-            if (answer.length() > 0) {
-                myAnswer = answer.toString();
-            }
+            String myAnswer = answer.toString();
             sensoryNerve.postSentence(eventID, question, myAnswer, false, wordBack);
             id = wordBack.getId();
             if (id != end) {//没有结束
@@ -69,7 +67,8 @@ public class TalkToTalk {
             }
             index++;
         } while (id == end && index < maxLength);
-        return answer.toString();
+        String result = answer.toString();
+        return result.replace(tfConfig.startWord, "");
     }
 
     public void insertModel(TransFormerModel transFormerModel) throws Exception {

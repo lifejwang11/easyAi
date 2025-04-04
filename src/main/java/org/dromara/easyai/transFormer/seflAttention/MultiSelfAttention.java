@@ -175,47 +175,47 @@ public class MultiSelfAttention {//多头自注意力层
         return eventBody;
     }
 
-    private void addTimeCode(Matrix feature) throws Exception {
-        int x = feature.getX();
-        int y = feature.getY();
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                int k = j / 2;
-                float wk = 1 / ((float) Math.pow(10000, 2f * k / y));
-                float pe;
-                if (j % 2 == 0) {//当列数是偶数
-                    pe = (float) Math.sin(wk * i);
-                } else {//当列数是奇数
-                    pe = (float) Math.cos(wk * i);
-                }
-                float value = feature.getNumber(i, j) + pe;
-                feature.setNub(i, j, value);
-            }
-        }
-    }
-
-    private void addTimeCodeBySelf(Matrix feature) throws Exception {//添加时间编码
-        float timeStep = 1f / maxLength;
-        int x = feature.getX();
-        int y = feature.getY();
-        for (int i = 1; i < x; i++) {
-            float step = i * timeStep;
-            for (int j = 0; j < y; j++) {
-                float value = feature.getNumber(i, j) + step;
-                feature.setNub(i, j, value);
-            }
-        }
-    }
+//    private void addTimeCode(Matrix feature) throws Exception {
+//        int x = feature.getX();
+//        int y = feature.getY();
+//        for (int i = 0; i < x; i++) {
+//            for (int j = 0; j < y; j++) {
+//                int k = j / 2;
+//                float wk = 1 / ((float) Math.pow(10000, 2f * k / y));
+//                float pe;
+//                if (j % 2 == 0) {//当列数是偶数
+//                    pe = (float) Math.sin(wk * i);
+//                } else {//当列数是奇数
+//                    pe = (float) Math.cos(wk * i);
+//                }
+//                float value = feature.getNumber(i, j) + pe;
+//                feature.setNub(i, j, value);
+//            }
+//        }
+//    }
+//
+//    private void addTimeCodeBySelf(Matrix feature) throws Exception {//添加时间编码
+//        float timeStep = 1f / maxLength;
+//        int x = feature.getX();
+//        int y = feature.getY();
+//        for (int i = 1; i < x; i++) {
+//            float step = i * timeStep;
+//            for (int j = 0; j < y; j++) {
+//                float value = feature.getNumber(i, j) + step;
+//                feature.setNub(i, j, value);
+//            }
+//        }
+//    }
 
     public void sendMatrixMessage(long eventID, Matrix feature, boolean isStudy
             , OutBack outBack, List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {//从输入神经元
-        if (depth == 1) {//如果是第一层，则添加时间序列参数
-            if (selfTimeCode) {
-                addTimeCodeBySelf(feature);
-            } else {
-                addTimeCode(feature);
-            }
-        }
+//        if (depth == 1) {//如果是第一层，则添加时间序列参数
+//            if (selfTimeCode) {
+//                addTimeCodeBySelf(feature);
+//            } else {
+//                addTimeCode(feature);
+//            }
+//        }
         List<EventBody> eventBodies = new ArrayList<>();
         for (SelfAttention selfAttention : selfAttentions) {
             EventBody eventBody = selfAttention.sendMatrixFeature(eventID, isStudy, feature, encoderFeature);
