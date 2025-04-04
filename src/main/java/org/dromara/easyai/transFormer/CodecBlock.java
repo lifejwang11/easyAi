@@ -82,16 +82,15 @@ public class CodecBlock {
     }
 
     public CodecBlock(int multiNumber, int featureDimension, float studyPoint, int depth,
-                      boolean encoder, int regularModel, float regular, int maxLength, boolean selfTimeCode
-            , int coreNumber, TransWordVector transWordVector) throws Exception {//进行初始化
+                      boolean encoder, int regularModel, float regular, int coreNumber, TransWordVector transWordVector) throws Exception {//进行初始化
         matrixOperation = new MatrixOperation(coreNumber);
         this.encoder = encoder;
         this.transWordVector = transWordVector;
         this.coreNumber = coreNumber;
         attentionLayNorm = new LayNorm(1, featureDimension, this, null, studyPoint, coreNumber, encoder, depth);
         lineLayNorm = new LayNorm(2, featureDimension, this, null, studyPoint, coreNumber, encoder, depth);
-        multiSelfAttention = new MultiSelfAttention(multiNumber, studyPoint, depth, featureDimension, encoder, this, maxLength
-                , selfTimeCode, coreNumber, null);
+        multiSelfAttention = new MultiSelfAttention(multiNumber, studyPoint, depth, featureDimension, encoder, this, coreNumber,
+                null);
         multiSelfAttention.setLayNorm(attentionLayNorm);
         attentionLayNorm.setMultiSelfAttention(multiSelfAttention);
         initLine(featureDimension, studyPoint, regularModel, regular);

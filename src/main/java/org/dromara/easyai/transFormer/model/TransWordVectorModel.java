@@ -10,8 +10,17 @@ import java.util.List;
 public class TransWordVectorModel {
     private List<String> wordList;//词离散id
     private List<Float[]> wordVectorModel;//词向量
+    private Float[] positionMatrix;//位置编码
     private int x;//词向量行数
     private int y;//词向量列数
+
+    public Float[] getPositionMatrix() {
+        return positionMatrix;
+    }
+
+    public void setPositionMatrix(Float[] positionMatrix) {
+        this.positionMatrix = positionMatrix;
+    }
 
     public int getX() {
         return x;

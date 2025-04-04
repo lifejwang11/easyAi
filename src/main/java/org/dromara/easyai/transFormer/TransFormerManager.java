@@ -80,30 +80,25 @@ public class TransFormerManager {
             typeNumber = transWordVector.getWordSize();
         }
         int multiNumber = tfConfig.getMultiNumber();
-        int maxLength = tfConfig.getMaxLength();
-        //使用自增时间序列编码
-        boolean selfTimeCode = tfConfig.isSelfTimeCode();
         int featureDimension = tfConfig.getFeatureDimension();
         if (featureDimension % 2 != 0) {
             throw new Exception("TransFormer 词向量维度必须为偶数");
         }
         int allDepth = tfConfig.getAllDepth();
-        float studyPoint = tfConfig.getStudyPoint();
+        float studyPoint = tfConfig.getStudyRate();
         boolean showLog = tfConfig.isShowLog();
         int regularModel = tfConfig.getRegularModel();
         float regular = tfConfig.getRegular();
         if (multiNumber > 1 && featureDimension > 0 && allDepth > 0 && typeNumber > 1) {
             for (int i = 0; i < allDepth; i++) {
                 CodecBlock encoderBlock = new CodecBlock(multiNumber, featureDimension, studyPoint,
-                        i + 1, true, regularModel, regular, maxLength,
-                        selfTimeCode, tfConfig.getCoreNumber(), transWordVector);
+                        i + 1, true, regularModel, regular, tfConfig.getCoreNumber(), transWordVector);
                 encoderBlocks.add(encoderBlock);
             }
             CodecBlock lastEnCoderBlock = encoderBlocks.get(encoderBlocks.size() - 1);//最后一层编码器
             for (int i = 0; i < allDepth; i++) {
                 CodecBlock decoderBlock = new CodecBlock(multiNumber, featureDimension, studyPoint,
-                        i + 2, false, regularModel, regular, maxLength,
-                        selfTimeCode, tfConfig.getCoreNumber(), transWordVector);
+                        i + 2, false, regularModel, regular, tfConfig.getCoreNumber(), transWordVector);
                 decoderBlock.setLastEncoderBlock(lastEnCoderBlock);//放入最优一层编码器
                 decoderBlocks.add(decoderBlock);
             }
@@ -113,8 +108,8 @@ public class TransFormerManager {
             lineBlock = new LineBlock(typeNumber, featureDimension, studyPoint, lastDecoderBlock, showLog, regularModel
                     , regular, tfConfig.getCoreNumber(), tfConfig.getTimePunValue());
             lastDecoderBlock.setLineBlock(lineBlock);
-            firstDecoderBlock = new FirstDecoderBlock(multiNumber, featureDimension, studyPoint, decoderBlocks.get(0), maxLength
-                    , selfTimeCode, tfConfig.getCoreNumber(), transWordVector);
+            firstDecoderBlock = new FirstDecoderBlock(multiNumber, featureDimension, studyPoint, decoderBlocks.get(0),
+                    tfConfig.getCoreNumber(), transWordVector);
             firstDecoderBlock.setLastEncoderBlock(lastEnCoderBlock);
             decoderBlocks.get(0).setFirstDecoderBlock(firstDecoderBlock);
             sensoryNerve = new SensoryNerve(encoderBlocks.get(0), firstDecoderBlock, transWordVector);

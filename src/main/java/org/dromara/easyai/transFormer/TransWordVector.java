@@ -37,7 +37,7 @@ public class TransWordVector {
 
     public TransWordVector(TfConfig tfConfig) throws Exception {
         this.splitWord = tfConfig.getSplitWord();
-        this.studyRate = tfConfig.getStudyPoint();
+        this.studyRate = tfConfig.getStudyRate();
         this.featureDimension = tfConfig.getFeatureDimension();
         startWord = tfConfig.getStartWord();
         endWord = tfConfig.getEndWord();
@@ -68,6 +68,7 @@ public class TransWordVector {
     public TransWordVectorModel getModel() {
         TransWordVectorModel transWordVectorModel = new TransWordVectorModel();
         transWordVectorModel.setWordList(wordList);
+        transWordVectorModel.setPositionMatrix(positionCodeMatrix.getMatrixModel());
         transWordVectorModel.setX(wordVectorList.get(0).getX());
         transWordVectorModel.setY(wordVectorList.get(0).getY());
         List<Float[]> wordVectorModel = new ArrayList<>();
@@ -84,6 +85,7 @@ public class TransWordVector {
         wordList.clear();
         wordVectorList.clear();
         wordList.addAll(transWordVectorModel.getWordList());
+        positionCodeMatrix.insertMatrixModel(transWordVectorModel.getPositionMatrix());
         List<Float[]> wordVectorModel = transWordVectorModel.getWordVectorModel();
         for (Float[] floats : wordVectorModel) {
             Matrix matrix = new Matrix(x, y);
