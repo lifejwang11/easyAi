@@ -63,7 +63,9 @@ public class TransFormerManager {
     /**
      * 初始化神经元参数
      *
-     * @param tfConfig 配置参数
+     * @param tfConfig             配置参数
+     * @param sentenceList         样本语句
+     * @param transWordVectorModel 词向量模型
      * @throws Exception 如果参数错误则抛异常
      */
     private void init(TfConfig tfConfig, List<String> sentenceList, TransWordVectorModel transWordVectorModel) throws Exception {
@@ -74,7 +76,7 @@ public class TransFormerManager {
         } else {
             transWordVector.insertModel(transWordVectorModel);
         }
-        if (typeNumber < 2) {
+        if (tfConfig.isNorm()) {
             typeNumber = transWordVector.getWordSize();
         }
         int multiNumber = tfConfig.getMultiNumber();

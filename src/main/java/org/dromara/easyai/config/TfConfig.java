@@ -16,8 +16,17 @@ public class TfConfig {
     private boolean outAllPro = false;//是否输出全概率，注意，若输出全概率只能用来分类概率,否则将消耗大量内存
     private float timePunValue = 0.5f;//时间惩罚系数
     private int typeNumber = 0;//类别数量
+    private boolean norm = true;//生成模式，当为false的时候 使用自定义模式 typeNumber会生效
     public String startWord = "<start>";//开始符
     public String endWord = "<end>";//结束符
+
+    public boolean isNorm() {
+        return norm;
+    }
+
+    public void setNorm(boolean norm) {
+        this.norm = norm;
+    }
 
     public int getTypeNumber() {
         return typeNumber;
