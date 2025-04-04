@@ -22,7 +22,6 @@ public class TalkToTalk {
     private final TransFormerManager transFormerManager = new TransFormerManager();
     private final boolean splitAnswer;//回答是否带隔断符
     private final String splitWord;//隔断符
-    private boolean init = false;//TransFormer未初始化或者注入模型
 
     public TalkToTalk(TfConfig tfConfig) throws Exception {
         splitWord = tfConfig.getSplitWord();
@@ -35,9 +34,13 @@ public class TalkToTalk {
         }
     }
 
-    public void init(List<String> sentenceList) throws Exception {
+    private void init(List<TalkBody> talkBodies) throws Exception {
+        List<String> sentenceList = new ArrayList<>();
+        for (TalkBody talkBody : talkBodies) {
+            sentenceList.add(talkBody.getQuestion());
+            sentenceList.add(talkBody.getAnswer());
+        }
         transFormerManager.init(tfConfig, sentenceList);
-        init = true;
     }
 
 
@@ -71,14 +74,11 @@ public class TalkToTalk {
 
     public void insertModel(TransFormerModel transFormerModel) throws Exception {
         transFormerManager.insertModel(transFormerModel, tfConfig);
-        init = true;
     }
 
 
     public TransFormerModel study(List<TalkBody> talkBodies) throws Exception {
-        if (!init) {
-            throw new Exception("未执行初始化或者注入模型方法，训练前需先执行初始化或者注入模型方法");
-        }
+        init(talkBodies);
         SensoryNerve sensoryNerve = transFormerManager.getSensoryNerve();
         int size = talkBodies.size();
         for (int k = 0; k < times; k++) {
