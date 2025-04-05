@@ -57,7 +57,11 @@ public class TransFormerManager {
     }
 
     public void init(TfConfig tfConfig, List<String> sentenceList) throws Exception {
-        init(tfConfig, sentenceList, null);
+        if (transWordVector == null) {
+            init(tfConfig, sentenceList, null);
+        } else {
+            transWordVector.init(sentenceList);
+        }
     }
 
     /**

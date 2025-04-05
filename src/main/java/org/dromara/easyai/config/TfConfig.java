@@ -7,7 +7,7 @@ public class TfConfig {
     private int allDepth = 1;//深度
     private float studyRate = 0.004f;
     private boolean showLog = true;
-    private int times = 200;//循环增强次数
+    private int times = 500;//循环增强次数
     private int regularModel = RZ.NOT_RZ;//正则模式
     private float regular = 0;//正则系数
     private String splitWord = null;//词向量默认隔断符，无隔断则会逐字隔断
