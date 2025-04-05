@@ -51,7 +51,10 @@ public class SensoryNerve {
     public void postSentence(long eventId, String encoderSentence, String decoderSentence, boolean isStudy, OutBack outBack) throws Exception {
         Matrix encoderFeature = transWordVector.getWordVector(encoderSentence, false, isStudy);//编码器特征
         Matrix decoderFeature = transWordVector.getWordVector(decoderSentence, true, isStudy);//解码器特征
-        List<Integer> E = transWordVector.getE(decoderSentence);
+        List<Integer> E = null;
+        if (isStudy) {
+            E = transWordVector.getE(decoderSentence);
+        }
         postMessage(eventId, encoderFeature, decoderFeature, isStudy, E, outBack, false);
     }
 

@@ -101,7 +101,7 @@ public class TransWordVector {
             updateWordVector(ids, error);
             wordIds.getEncoder().clear();
         } else {
-            throw new Exception("编码器误差返回长度不一致");
+            throw new Exception("编码器误差返回长度不一致,size:" + size + ",errorSize:" + error.getX());
         }
     }
 
