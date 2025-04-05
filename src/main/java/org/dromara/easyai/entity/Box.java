@@ -1,5 +1,7 @@
 package org.dromara.easyai.entity;
 
+import org.dromara.easyai.matrixTools.Matrix;
+
 /**
  * @param
  * @DATA
@@ -13,10 +15,18 @@ public class Box {
     private int ySize;
     private float confidence;
     private int typeID;//类别id
+    private Matrix featureMatrix;//特征矩阵
     //识别参数
     private int realX;//识别X
     private int realY;//识别Y
 
+    public Matrix getFeatureMatrix() {
+        return featureMatrix;
+    }
+
+    public void setFeatureMatrix(Matrix featureMatrix) {
+        this.featureMatrix = featureMatrix;
+    }
 
     public int getTypeID() {
         return typeID;

@@ -29,6 +29,8 @@ public class LayNorm {//残差与归一化
     private Matrix myFinalError;//从FNN传来的总误差
     private int number;//记录fnn传来的误差次数
     private final MatrixOperation matrixOperation;
+    private final boolean encoder;
+    private final int depth;
 
     public LayNormModel getModel() throws Exception {
         LayNormModel layNormModel = new LayNormModel();
@@ -51,9 +53,11 @@ public class LayNorm {//残差与归一化
     }
 
     public LayNorm(int type, int featureDimension, CodecBlock myEncoderBlock, FirstDecoderBlock firstDecoderBlock
-            , float study, int coreNumber) throws Exception {
+            , float study, int coreNumber, boolean encoder, int depth) throws Exception {
         this.study = study;
         this.myEncoderBlock = myEncoderBlock;
+        this.encoder = encoder;
+        this.depth = depth;
         this.type = type;
         this.featureDimension = featureDimension;
         this.firstDecoderBlock = firstDecoderBlock;
@@ -61,7 +65,10 @@ public class LayNorm {//残差与归一化
         bTa = new Matrix(1, featureDimension);
         power = new Matrix(featureDimension, featureDimension);
         Random random = new Random();
-        float sh = (float) Math.sqrt(featureDimension);
+        float sh = 1;
+        if (!encoder && depth == 1) {
+            sh = featureDimension * featureDimension;
+        }
         for (int i = 0; i < featureDimension; i++) {
             float value = random.nextFloat() / sh;
             bTa.setNub(0, i, value);
@@ -82,12 +89,12 @@ public class LayNorm {//残差与归一化
         float nt = -n / (n - 1);
         Matrix subMatrix = new Matrix(1, sub.getY());
         for (int i = 0; i < sub.getY(); i++) {
-            float subValue = sub.getNumber(0, i);
-            float value = subValue * n * study + subMatrix.getNumber(0, i);
+            float subValue = sub.getNumber(0, i) * study;
+            float value = subValue * n + subMatrix.getNumber(0, i);
             subMatrix.setNub(0, i, value);
             for (int j = 0; j < sub.getY(); j++) {
                 if (i != j) {
-                    float otherValue = subValue * nt * study + subMatrix.getNumber(0, j);
+                    float otherValue = subValue * nt + subMatrix.getNumber(0, j);
                     subMatrix.setNub(0, j, otherValue);
                 }
             }
@@ -157,6 +164,10 @@ public class LayNorm {//残差与归一化
             , OutBack outBack, List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {//残差及归一化
         Matrix myMatrix = matrixOperation.add(feature, outMatrix);//残差相加
         Matrix out = layNorm(myMatrix, isStudy);
+//        if (!encoder && depth > 1 && type == 1) {
+//            System.out.println(feature);
+//            System.out.println(outMatrix);
+//        }
         if (type == 1) {
             if (myEncoderBlock != null) {
                 sendHiddenParameter(out, eventID, isStudy, outBack, E, encoderFeature, outAllPro);//发送线性第一层
@@ -194,7 +205,7 @@ public class LayNorm {//残差与归一化
     private Matrix norm(Matrix row) throws Exception {
         Matrix result = new Matrix(1, row.getY());
         float avg = row.getAVG();//平均值
-        float sd = matrixOperation.getSdByMatrix(row, avg, 0.00001f);//标准差
+        float sd = matrixOperation.getSdByMatrix(row, avg, 0.0000001f);//标准差
         for (int i = 0; i < row.getY(); i++) {
             float value = (row.getNumber(0, i) - avg) / sd;
             result.setNub(0, i, value);

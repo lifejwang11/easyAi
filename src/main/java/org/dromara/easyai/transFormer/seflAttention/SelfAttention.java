@@ -62,15 +62,18 @@ public class SelfAttention {//自注意力层
 
 
     public AttentionError backError(Matrix feature, long eventID) throws Exception {//返回误差
+        Matrix myError = matrixOperation.mathMulBySelf(feature, studyPoint);
         MyFeature featureBody = this.featureMatrix.get(eventID);
-        matrixOperation.mathMul(feature, studyPoint);
         Matrix q = featureBody.q;
         Matrix kt = featureBody.kt;
         Matrix v = featureBody.v;
         Matrix qkt = featureBody.qkt;
-        Matrix errorV = matrixOperation.matrixMulPd(feature, qkt, v, false);//先求V的偏导
+        Matrix errorV = matrixOperation.matrixMulPd(myError, qkt, v, false);//先求V的偏导
         Matrix subQktMax = matrixOperation.matrixMulPd(feature, qkt, v, true);
         Matrix grMatrix = matrixOperation.matrixSoftMaxPd(qkt, subQktMax, wordVectorDimension);//对softMax做误差求导
+        if (depth == 1 && !encoder) {
+            backMask(grMatrix);
+        }
         Matrix errorKt = matrixOperation.matrixMulPd(grMatrix, q, kt, false);
         Matrix errorQ = matrixOperation.matrixMulPd(grMatrix, q, kt, true);
         Matrix errorK = matrixOperation.transPosition(errorKt);
@@ -110,6 +113,16 @@ public class SelfAttention {//自注意力层
         return errorFeature;
     }
 
+    private void backMask(Matrix matrix) throws Exception {
+        int x = matrix.getX();
+        int y = matrix.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = i + 1; j < y; j++) {
+                matrix.setNub(i, j, 0f);
+            }
+        }
+    }
+
     private void mask(Matrix matrix) throws Exception {
         int x = matrix.getX();
         int y = matrix.getY();
@@ -126,6 +139,7 @@ public class SelfAttention {//自注意力层
         Matrix kvFeature;
         if (!encoder && depth > 1) {//大于1层的解码模块 使用 编码器输出的矩阵来生成kv矩阵
             kvFeature = featureBody.encoderFeature;
+            //System.out.println(kvFeature);
         } else {
             kvFeature = featureBody.allFeature;
         }

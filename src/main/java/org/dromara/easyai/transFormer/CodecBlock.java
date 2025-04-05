@@ -21,6 +21,7 @@ public class CodecBlock {
     private final List<HiddenNerve> fistHiddenNerves = new ArrayList<>();//线性层第一层
     private final List<HiddenNerve> secondHiddenNerves = new ArrayList<>();//线性层第二层
     private final LayNorm lineLayNorm;//线性层残差归一化
+    private final TransWordVector transWordVector;//内置词向量
     ////////////////////////////////////
     private CodecBlock afterEncoderBlock;//后编码模块
     private CodecBlock beforeEncoderBlock;//前编码模块
@@ -81,15 +82,15 @@ public class CodecBlock {
     }
 
     public CodecBlock(int multiNumber, int featureDimension, float studyPoint, int depth,
-                      boolean encoder, int regularModel, float regular, int maxLength, boolean selfTimeCode
-            , int coreNumber) throws Exception {//进行初始化
+                      boolean encoder, int regularModel, float regular, int coreNumber, TransWordVector transWordVector) throws Exception {//进行初始化
         matrixOperation = new MatrixOperation(coreNumber);
         this.encoder = encoder;
+        this.transWordVector = transWordVector;
         this.coreNumber = coreNumber;
-        attentionLayNorm = new LayNorm(1, featureDimension, this, null, studyPoint, coreNumber);
-        lineLayNorm = new LayNorm(2, featureDimension, this, null, studyPoint, coreNumber);
-        multiSelfAttention = new MultiSelfAttention(multiNumber, studyPoint, depth, featureDimension, encoder, this, maxLength
-                , selfTimeCode, coreNumber);
+        attentionLayNorm = new LayNorm(1, featureDimension, this, null, studyPoint, coreNumber, encoder, depth);
+        lineLayNorm = new LayNorm(2, featureDimension, this, null, studyPoint, coreNumber, encoder, depth);
+        multiSelfAttention = new MultiSelfAttention(multiNumber, studyPoint, depth, featureDimension, encoder, this, coreNumber,
+                null);
         multiSelfAttention.setLayNorm(attentionLayNorm);
         attentionLayNorm.setMultiSelfAttention(multiSelfAttention);
         initLine(featureDimension, studyPoint, regularModel, regular);
@@ -126,6 +127,8 @@ public class CodecBlock {
             afterEncoderBlock.backError(eventID, error);
         } else if (firstDecoderBlock != null) {//将误差反给第一层解码器
             firstDecoderBlock.backError(eventID, error);
+        } else {//返回给词向量
+            transWordVector.backEncoderError(error);
         }
     }
 

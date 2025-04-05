@@ -23,6 +23,21 @@ public class Matrix extends MatrixOperation {
         return matrix;
     }
 
+    public Float[] getMatrixModel() {
+        Float[] matrixModel = new Float[matrix.length];
+        for (int i = 0; i < matrix.length; i++) {
+            matrixModel[i] = matrix[i];
+        }
+        return matrixModel;
+    }
+
+    public void insertMatrixModel(Float[] matrixModel) {
+        matrix = new float[matrixModel.length];
+        for (int i = 0; i < matrix.length; i++) {
+            matrix[i] = matrixModel[i];
+        }
+    }
+
     /**
      * 注入Cuda一维数组(列主序)
      *

@@ -1,5 +1,6 @@
 package org.dromara.easyai.transFormer;
 
+import org.dromara.easyai.function.ReLu;
 import org.dromara.easyai.function.Tanh;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
@@ -57,7 +58,7 @@ public class LineBlock {//线性层模块
         //隐层
         List<Nerve> hiddenNerves = new ArrayList<>();
         for (int i = 0; i < featureDimension; i++) {
-            HiddenNerve hiddenNerve = new HiddenNerve(i + 1, 1, studyPoint, new Tanh(), featureDimension,
+            HiddenNerve hiddenNerve = new HiddenNerve(i + 1, 1, studyPoint, new ReLu(), featureDimension,
                     typeNumber, this, regularModel, regular, coreNumber);
             hiddenNerves.add(hiddenNerve);
             hiddenNerveList.add(hiddenNerve);

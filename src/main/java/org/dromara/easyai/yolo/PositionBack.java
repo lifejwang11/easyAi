@@ -12,6 +12,11 @@ public class PositionBack implements OutBack {
     private float width;
     private float height;
     private float trust;
+    private Matrix featureMatrix;
+
+    public Matrix getFeatureMatrix() {
+        return featureMatrix;
+    }
 
     public float getTrust() {
         return trust;
@@ -67,7 +72,7 @@ public class PositionBack implements OutBack {
 
     @Override
     public void getBackMatrix(Matrix matrix, int id, long eventId) {
-
+        featureMatrix = matrix;
     }
 
     @Override
