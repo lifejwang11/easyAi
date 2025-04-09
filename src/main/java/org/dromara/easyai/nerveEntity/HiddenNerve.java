@@ -1,6 +1,7 @@
 package org.dromara.easyai.nerveEntity;
 
 import org.dromara.easyai.entity.ThreeChannelMatrix;
+import org.dromara.easyai.i.CustomEncoding;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixList;
 import org.dromara.easyai.matrixTools.MatrixOperation;
@@ -22,10 +23,11 @@ public class HiddenNerve extends Nerve {
 
     public HiddenNerve(int id, int depth, int upNub, int downNub, float studyPoint,
                        boolean init, ActiveFunction activeFunction, boolean isDynamic, int rzType, float lParam
-            , int kernLen, int matrixX, int matrixY, boolean isConvFinish, int coreNumber, int channelNo, float oneConvStudy, boolean norm) throws Exception {//隐层神经元
+            , int kernLen, int matrixX, int matrixY, boolean isConvFinish, int coreNumber, int channelNo, float oneConvStudy, boolean norm
+            , CustomEncoding customEncoding) throws Exception {//隐层神经元
         super(id, upNub, "HiddenNerve", downNub, studyPoint,
                 init, activeFunction, isDynamic, rzType, lParam, kernLen, depth, matrixX, matrixY
-                , coreNumber, channelNo, oneConvStudy, norm);
+                , coreNumber, channelNo, oneConvStudy, norm, customEncoding);
         this.isConvFinish = isConvFinish;
     }
 

@@ -3,6 +3,7 @@ package org.dromara.easyai.nerveEntity;
 import org.dromara.easyai.conv.ConvCount;
 import org.dromara.easyai.conv.ConvResult;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
+import org.dromara.easyai.i.CustomEncoding;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixList;
 import org.dromara.easyai.matrixTools.MatrixOperation;
@@ -50,6 +51,7 @@ public abstract class Nerve extends ConvCount {
     private final ConvParameter convParameter = new ConvParameter();//内存中卷积层模型及临时数据
     protected final float oneConvRate;
     private final boolean norm;//是否进行1v1卷积升降维
+    private final CustomEncoding customEncoding;//自定义编码模块
 
     public Map<Integer, Float> getDendrites() {
         return dendrites;
@@ -74,9 +76,10 @@ public abstract class Nerve extends ConvCount {
     protected Nerve(int id, int upNub, String name, int downNub,
                     float studyPoint, boolean init, ActiveFunction activeFunction
             , boolean isDynamic, int rzType, float lParam, int kernLen, int depth
-            , int matrixX, int matrixY, int coreNumber, int channelNo, float onConvRate, boolean norm) throws Exception {//该神经元在同层神经元中的编号
+            , int matrixX, int matrixY, int coreNumber, int channelNo, float onConvRate, boolean norm, CustomEncoding customEncoding) throws Exception {//该神经元在同层神经元中的编号
         matrixOperation = new MatrixOperation(coreNumber);
         this.matrixX = matrixX;
+        this.customEncoding = customEncoding;
         this.norm = norm;
         this.matrixY = matrixY;
         this.channelNo = channelNo;
@@ -189,6 +192,8 @@ public abstract class Nerve extends ConvCount {
                 errorMatrixList.add(errorMatrix);
             }
             fatherOnly.backMatrix(errorMatrixList);
+        } else if (customEncoding != null && depth == 1) {//最后一层返回给第一层
+            customEncoding.backError(wg, id);
         }
     }
 

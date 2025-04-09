@@ -1,6 +1,7 @@
 package org.dromara.easyai.nerveCenter;
 
 import org.dromara.easyai.conv.ConvCount;
+import org.dromara.easyai.i.CustomEncoding;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.nerveEntity.*;
@@ -251,7 +252,7 @@ public class NerveManager extends ConvCount {
                 isConvFinish = true;
             }
             HiddenNerve hiddenNerve = new HiddenNerve(1, i + 1, 1, downNub, studyPoint, initPower, convFunction, true
-                    , rzType, lParam, kernLen, 0, 0, isConvFinish, coreNumber, channelNo, oneConvRate, norm);
+                    , rzType, lParam, kernLen, 0, 0, isConvFinish, coreNumber, channelNo, oneConvRate, norm, null);
             depthNerves.add(hiddenNerve);
         }
         for (int i = 0; i < conHiddenDepth - 1; i++) {//遍历深度
@@ -315,7 +316,7 @@ public class NerveManager extends ConvCount {
         convInput = new SensoryNerve(1, 0, channelNo);//输入神经元
         //感知神经元与卷积第一层隐层神经元进行连接
         convInput.connectSonOnly(convFirstNerve);
-        initDepthNerve(kernLen, getNerveNub(deep, xSize, kernLen), getNerveNub(deep, ySize, kernLen), channelNo);//初始化深度隐层神经元 depthNerves
+        initDepthNerve(kernLen, getNerveNub(deep, xSize, kernLen), getNerveNub(deep, ySize, kernLen), channelNo, null);//初始化深度隐层神经元 depthNerves
         List<Nerve> firstNerves = depthNerves.get(0);//线性层第一层隐层神经元
         List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);//线性层最后一层隐层神经元
         convLastNerve.connect(firstNerves);//卷积最后一层链接线性层第一层
@@ -355,9 +356,9 @@ public class NerveManager extends ConvCount {
      * @param isShowLog 是否打印学习参数
      * @param isSoftMax 最后一层是否用softMax激活
      */
-    public void init(boolean initPower, boolean isShowLog, boolean isSoftMax) throws Exception {//进行神经网络的初始化构建
+    public void init(boolean initPower, boolean isShowLog, boolean isSoftMax, CustomEncoding customEncoding) throws Exception {//进行神经网络的初始化构建
         this.initPower = initPower;
-        initDepthNerve(0, 0, 0, 0);//初始化深度隐层神经元
+        initDepthNerve(0, 0, 0, 0, customEncoding);//初始化深度隐层神经元
         List<Nerve> nerveList = depthNerves.get(0);//第一层隐层神经元
         //最后一层隐层神经元啊
         List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);
@@ -395,12 +396,16 @@ public class NerveManager extends ConvCount {
 
     }
 
-    private void initDepthNerve(int kernLen, int matrixX, int matrixY, int channelNo) throws Exception {//初始化隐层神经元1
+    private void initDepthNerve(int kernLen, int matrixX, int matrixY, int channelNo, CustomEncoding customEncoding) throws Exception {//初始化隐层神经元1
         for (int i = 0; i < hiddenDepth; i++) {//遍历深度
             List<Nerve> hiddenNerveList = new ArrayList<>();
             float studyPoint = this.studyPoint;
             if (studyPoint <= 0 || studyPoint > 1) {
                 throw new Exception("studyPoint Values range from 0 to 1");
+            }
+            CustomEncoding myCustomEncoding = null;
+            if (i == 0) {
+                myCustomEncoding = customEncoding;
             }
             for (int j = 1; j < hiddenNerveNub + 1; j++) {//遍历同级
                 int upNub;
@@ -424,7 +429,8 @@ public class NerveManager extends ConvCount {
                     downNub = hiddenNerveNub;
                 }
                 HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction, false
-                        , rzType, lParam, kernLen, myMatrixX, myMatrixY, false, coreNumber, 0, oneConvRate, false);
+                        , rzType, lParam, kernLen, myMatrixX, myMatrixY, false, coreNumber, 0, oneConvRate, false
+                        , myCustomEncoding);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);
