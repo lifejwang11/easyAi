@@ -96,7 +96,7 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
         <dependency>
              <groupId>org.dromara.easyai</groupId>
              <artifactId>easyAi</artifactId>
-             <version>1.4.2</version>
+             <version>1.4.3</version>
         </dependency>
 ```
 
