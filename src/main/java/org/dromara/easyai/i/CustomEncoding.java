@@ -8,5 +8,5 @@ import java.util.Map;
  * @des 自定义编码模块
  */
 public interface CustomEncoding {
-    void backError(Map<Integer, Float> wg, int id);//返回最后一层误差
+    void backError(Map<Integer, Float> wg, int id) throws Exception;//返回最后一层误差
 }

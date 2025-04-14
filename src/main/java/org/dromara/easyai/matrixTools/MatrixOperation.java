@@ -619,8 +619,10 @@ public class MatrixOperation {
     public float getSdByMatrix(Matrix m, float avg, float e) throws Exception {//计算矩阵元素的标准差
         float var = 0;
         float size = m.getX() * m.getY();
-        for (int i = 0; i < m.getX(); i++) {
-            for (int j = 0; j < m.getY(); j++) {
+        int x = m.getX();
+        int y = m.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
                 var = var + (float) Math.pow(m.getNumber(i, j) - avg, 2);
             }
         }

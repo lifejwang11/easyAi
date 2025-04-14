@@ -1,5 +1,7 @@
 package org.dromara.easyai.matrixTools;
 
+import org.dromara.easyai.entity.ThreeChannelMatrix;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,6 +108,31 @@ public class Matrix extends MatrixOperation {
             }
         }
         return sigma;
+    }
+
+    public Matrix scale(boolean scaleX, float size) throws Exception {//缩放矩阵
+        float value;
+        if (!scaleX) {//将宽度等比缩放至指定尺寸
+            value = y / size;
+        } else {//将高度等比缩放至指定尺寸
+            value = x / size;
+        }
+        int narrowX = (int) (x / value);
+        int narrowY = (int) (y / value);
+        if (!scaleX) {
+            narrowY = (int) size;
+        } else {
+            narrowX = (int) size;
+        }
+        Matrix matrix = new Matrix(narrowX, narrowY);
+        for (int i = 0; i < narrowX; i++) {
+            for (int j = 0; j < narrowY; j++) {
+                int indexX = (int) (i * value);
+                int indexY = (int) (j * value);
+                matrix.setNub(i, j, getNumber(indexX, indexY));
+            }
+        }
+        return matrix;
     }
 
     /**
