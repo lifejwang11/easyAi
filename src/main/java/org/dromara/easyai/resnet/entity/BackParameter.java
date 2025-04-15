@@ -13,7 +13,25 @@ import java.util.List;
  */
 public class BackParameter {
     private List<List<ConvResult>> convResultList;//记录卷积核与每个通道的计算结果与参数矩阵
+    private List<ConvResult> convResults;//普通通道参数
     private List<Matrix> outMatrixList;//卷积最终输出矩阵
+    private int im2clSize;//im2col变化前的X大小
+
+    public List<ConvResult> getConvResults() {
+        return convResults;
+    }
+
+    public void setConvResults(List<ConvResult> convResults) {
+        this.convResults = convResults;
+    }
+
+    public int getIm2clSize() {
+        return im2clSize;
+    }
+
+    public void setIm2clSize(int im2clSize) {
+        this.im2clSize = im2clSize;
+    }
 
     public List<Matrix> getOutMatrixList() {
         return outMatrixList;

@@ -4,9 +4,7 @@ import org.dromara.easyai.conv.ResConvCount;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixNorm;
-import org.dromara.easyai.nerveEntity.ConvSize;
 import org.dromara.easyai.nerveEntity.SensoryNerve;
-import org.dromara.easyai.resnet.entity.BackParameter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,12 +34,14 @@ public class ResBlock extends ResConvCount {
         this.channelNo = channelNo;
         this.deep = deep;
         this.studyRate = studyRate;
+        boolean initOneConv = true;
         Random random = new Random();
         if (deep == 1) {
+            initOneConv = false;
             firstConvPower = initMatrixPower(random, 7, channelNo, true);
         }
-        initBlock(fistResConvPower, random);//初始化两个残差块
-        initBlock(secondResConvPower, random);//初始化两个残差块
+        initBlock(fistResConvPower, random, initOneConv);//初始化两个残差块
+        initBlock(secondResConvPower, random, false);//初始化两个残差块
     }
 
     private void fillZero(List<Matrix> matrixList) throws Exception {
@@ -57,9 +57,9 @@ public class ResBlock extends ResConvCount {
     }
 
     private void convMatrix(List<Matrix> feature, int step, boolean study, OutBack outBack, Map<Integer, Float> E, long eventID) throws Exception {// feature 准备跳层用
-        boolean one = step != 1;
-        List<Matrix> featureList = oneConvMatrix(feature, step, fistResConvPower, study, one);
-        List<Matrix> lastFeatureList = oneConvMatrix(featureList, 1, secondResConvPower, study, false);
+        boolean one = step == 1;
+        List<Matrix> featureList = oneConvMatrix(feature, fistResConvPower, study, one);
+        List<Matrix> lastFeatureList = oneConvMatrix(featureList, secondResConvPower, study, true);
         if (sonResBlock != null) {
             sonResBlock.sendMatrixList(lastFeatureList, outBack, study, E, eventID);
         } else {//最后卷积层了，求平均值
@@ -78,17 +78,20 @@ public class ResBlock extends ResConvCount {
         }
     }
 
-    private List<Matrix> oneConvMatrix(List<Matrix> feature, int step, ResConvPower resConvPower, boolean study, boolean one) throws Exception {
+    private List<Matrix> oneConvMatrix(List<Matrix> feature, ResConvPower resConvPower, boolean study, boolean one) throws Exception {
         ConvLay firstConvLay = resConvPower.getFirstConvPower();
         ConvLay secondConvLay = resConvPower.getSecondConvPower();
-        List<List<Float>> oneConvPower = null;
-        if (one) {
-            oneConvPower = resConvPower.getOneConvPower();
+        List<List<Float>> oneConvPower = resConvPower.getOneConvPower();
+        List<Matrix> firstOutMatrix;
+        if (one) {//步长为1
+            firstOutMatrix = downConvMany2(feature, firstConvLay.getConvPower(), study, firstConvLay.getBackParameter(),
+                    firstConvLay.getMatrixNormList(), null, null);
+        } else {//步长为2
+            firstOutMatrix = downConvMany(feature, firstConvLay.getConvPower(), 3, study, firstConvLay.getBackParameter(),
+                    firstConvLay.getMatrixNormList());
         }
-        List<Matrix> firstOutMatrix = downConvMany(feature, firstConvLay.getConvPower(), 3, step, study, firstConvLay.getBackParameter(),
-                firstConvLay.getMatrixNorm(), null, null);
-        return downConvMany(firstOutMatrix, secondConvLay.getConvPower(), 3, 1, study, secondConvLay.getBackParameter()
-                , secondConvLay.getMatrixNorm(), feature, oneConvPower);
+        return downConvMany2(firstOutMatrix, secondConvLay.getConvPower(), study, secondConvLay.getBackParameter()
+                , secondConvLay.getMatrixNormList(), feature, oneConvPower);
     }
 
     public void sendMatrixList(List<Matrix> matrixList, OutBack outBack, boolean study, Map<Integer, Float> E, long eventID) throws Exception {
@@ -97,8 +100,8 @@ public class ResBlock extends ResConvCount {
             fillZero(matrixList);
         }
         if (deep == 1) {
-            List<Matrix> myMatrixList = downConvMany(matrixList, firstConvPower.getConvPower(), 7, 2, study, firstConvPower.getBackParameter(),
-                    firstConvPower.getMatrixNorm(), null, null);
+            List<Matrix> myMatrixList = downConvMany(matrixList, firstConvPower.getConvPower(), 7, study, firstConvPower.getBackParameter(),
+                    firstConvPower.getMatrixNormList());
             if (fill(deep, imageSize, false)) {//池化需要补0
                 fillZero(myMatrixList);
             }
@@ -118,10 +121,10 @@ public class ResBlock extends ResConvCount {
         return (int) (channelNo * Math.pow(2, deep - 1));//卷积层输出特征大小
     }
 
-    private void initBlock(ResConvPower resConvPower, Random random) throws Exception {
-        resConvPower.setFirstConvPower(initMatrixPower(random, 3, channelNo, false));
-        resConvPower.setSecondConvPower(initMatrixPower(random, 3, channelNo, false));
-        if (deep > 1) {//初始化11卷积层
+    private void initBlock(ResConvPower resConvPower, Random random, boolean initOneConv) throws Exception {
+        resConvPower.setFirstConvPower(initMatrixPower(random, 3, getChannelNo(), false));
+        resConvPower.setSecondConvPower(initMatrixPower(random, 3, getChannelNo(), false));
+        if (deep > 1 && initOneConv) {//初始化11卷积层
             int featureLength = getChannelNo();//卷积层输出特征大小
             List<List<Float>> onePowers = new ArrayList<>();
             resConvPower.setOneConvPower(onePowers);
@@ -140,6 +143,8 @@ public class ResBlock extends ResConvCount {
         int nerveNub = kernLen * kernLen;
         ConvLay convLay = new ConvLay();
         List<Matrix> nerveMatrixList = new ArrayList<>();//一层当中所有的深度卷积核
+        List<MatrixNorm> matrixNormList = new ArrayList<>();
+        int size = getFeatureSize(deep, imageSize, seven);
         for (int k = 0; k < channelNo; k++) {//遍历通道
             Matrix nerveMatrix = new Matrix(nerveNub, 1);//一组通道创建一组卷积核
             for (int i = 0; i < nerveMatrix.getX(); i++) {//初始化深度卷积核权重
@@ -147,11 +152,11 @@ public class ResBlock extends ResConvCount {
                 nerveMatrix.setNub(i, 0, nub);
             }
             nerveMatrixList.add(nerveMatrix);
+            MatrixNorm matrixNorm = new MatrixNorm(size, studyRate);
+            matrixNormList.add(matrixNorm);
         }
-        int size = getFeatureSize(deep, imageSize, seven);
-        MatrixNorm matrixNorm = new MatrixNorm(size, studyRate);
         convLay.setConvPower(nerveMatrixList);
-        convLay.setMatrixNorm(matrixNorm);
+        convLay.setMatrixNormList(matrixNormList);
         return convLay;
     }
 

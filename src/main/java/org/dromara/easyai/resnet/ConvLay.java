@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class ConvLay {
     private List<Matrix> convPower;//第一层卷积权重
-    private MatrixNorm matrixNorm;//归一化层
+    private List<MatrixNorm> matrixNormList;//归一化层
     private final BackParameter backParameter = new BackParameter();
 
     public BackParameter getBackParameter() {
@@ -28,11 +28,11 @@ public class ConvLay {
         this.convPower = convPower;
     }
 
-    public MatrixNorm getMatrixNorm() {
-        return matrixNorm;
+    public List<MatrixNorm> getMatrixNormList() {
+        return matrixNormList;
     }
 
-    public void setMatrixNorm(MatrixNorm matrixNorm) {
-        this.matrixNorm = matrixNorm;
+    public void setMatrixNormList(List<MatrixNorm> matrixNormList) {
+        this.matrixNormList = matrixNormList;
     }
 }

@@ -107,16 +107,20 @@ public abstract class ResConvCount {
         return sigmaMatrix;
     }
 
-    protected List<Matrix> downConvMany(List<Matrix> featureList, List<Matrix> powerMatrixList, int kerSize, int step, boolean study
-            , BackParameter backParameter, MatrixNorm matrixNorm, List<Matrix> resFeatureList, List<List<Float>> oneConvPower) throws Exception {//多维度卷积运算
+    //不是第一层
+    protected List<Matrix> downConvMany2(List<Matrix> featureList, List<Matrix> powerMatrixList, boolean study, BackParameter backParameter,
+                                         List<MatrixNorm> matrixNormList, List<Matrix> resFeatureList, List<List<Float>> oneConvPower) throws Exception {//多维度卷积运算
         //featureList resFeatureList特征默认进来就是偶数了
         int size = powerMatrixList.size();//卷积通道数
         int featureSize = featureList.size();//特征通道数
-        List<List<ConvResult>> convResultList = new ArrayList<>();
+        if (size != featureSize) {
+            throw new Exception("卷积通道数与特征通道数不一致");
+        }
+        List<ConvResult> convResults = new ArrayList<>();
         ReLu reLu = new ReLu();
         List<Matrix> outMatrixList = new ArrayList<>();
         if (study) {
-            backParameter.setConvResultList(convResultList);
+            backParameter.setConvResults(convResults);
             backParameter.setOutMatrixList(outMatrixList);
         }
         int matrixSize = 0;
@@ -129,28 +133,68 @@ public abstract class ResConvCount {
         if (resFeatureList != null && resFeatureList.size() != size) {
             throw new Exception("残差与卷积核维度不相等");
         }
+        for (int i = 0; i < size; i++) {
+            Matrix powerMatrix = powerMatrixList.get(i);//卷积
+            MatrixNorm matrixNorm = matrixNormList.get(i);
+            Matrix featureMatrix = padding(featureList.get(i));
+            if (i == 0) {
+                matrixSize = featureMatrix.getX();
+                backParameter.setIm2clSize(matrixSize);
+            }
+            ConvResult convResult = downConv(featureMatrix, 3, powerMatrix, 1);
+            convResults.add(convResult);
+            Matrix outMatrix = convResult.getResultMatrix();
+            int sub = 3 - 1;
+            int mySize = matrixSize - sub;//线性变换后矩阵的行数 （图片长度-（核长-步长））/步长
+            //位置重新摆正
+            outMatrix = rePosition(outMatrix, mySize);
+            //批量归一化 处理
+            Matrix normMatrix = matrixNorm.norm(outMatrix);
+            // 这个地方要决定是否有跳层
+            if (resFeatureList != null) {//与残差相加
+                Matrix resFeatureMatrix = resFeatureList.get(i);
+                normMatrix = matrixOperation.add(resFeatureMatrix, normMatrix);
+            }
+            // ReLu
+            Matrix myOutMatrix = reluMatrix(normMatrix, reLu);
+            outMatrixList.add(myOutMatrix);
+        }
+        return outMatrixList;
+    }
+
+    //第一层
+    protected List<Matrix> downConvMany(List<Matrix> featureList, List<Matrix> powerMatrixList, int kerSize, boolean study
+            , BackParameter backParameter, List<MatrixNorm> matrixNormList) throws Exception {//多维度卷积运算
+        int size = powerMatrixList.size();//卷积通道数
+        int featureSize = featureList.size();//特征通道数
+        List<List<ConvResult>> convResultList = new ArrayList<>();
+        ReLu reLu = new ReLu();
+        List<Matrix> outMatrixList = new ArrayList<>();
+        if (study) {
+            backParameter.setConvResultList(convResultList);
+            backParameter.setOutMatrixList(outMatrixList);
+        }
+        int matrixSize = 0;
         List<Matrix> myFeatureList = new ArrayList<>();
         for (int j = 0; j < featureSize; j++) {//进行padding操作
             Matrix featureMatrix;
             //这个地方决定是否要padding
-            if (step == 1) {
-                featureMatrix = padding(featureList.get(j));
-            } else {//步长为2
-                featureMatrix = padding2(featureList.get(j), kerSize - step);
-            }
+            featureMatrix = padding2(featureList.get(j), kerSize - 2);
             if (j == 0) {
                 matrixSize = featureMatrix.getX();
+                backParameter.setIm2clSize(matrixSize);
             }
             myFeatureList.add(featureMatrix);
         }
         for (int i = 0; i < size; i++) {
             Matrix powerMatrix = powerMatrixList.get(i);//卷积
+            MatrixNorm matrixNorm = matrixNormList.get(i);
             Matrix addMatrix = null;
             List<ConvResult> convResults = new ArrayList<>();
             convResultList.add(convResults);
             for (int j = 0; j < featureSize; j++) {
                 Matrix featureMatrix = myFeatureList.get(j);
-                ConvResult convResult = downConv(featureMatrix, kerSize, powerMatrix, step);
+                ConvResult convResult = downConv(featureMatrix, kerSize, powerMatrix, 2);
                 convResults.add(convResult);
                 Matrix outMatrix = convResult.getResultMatrix();
                 if (addMatrix == null) {
@@ -159,22 +203,77 @@ public abstract class ResConvCount {
                     addMatrix = matrixOperation.add(addMatrix, outMatrix);
                 }
             }
-            int sub = kerSize - step;
-            int mySize = (matrixSize - sub) / step;//线性变换后矩阵的行数 （图片长度-（核长-步长））/步长
+            int sub = kerSize - 2;
+            int mySize = (matrixSize - sub) / 2;//线性变换后矩阵的行数 （图片长度-（核长-步长））/步长
             //位置重新摆正
             addMatrix = rePosition(addMatrix, mySize);
             //批量归一化 处理
             Matrix normMatrix = matrixNorm.norm(addMatrix);
-            // 这个地方要决定是否有跳层
-            if (resFeatureList != null) {//与残差相加
-                Matrix resFeatureMatrix = resFeatureList.get(i);
-                normMatrix = matrixOperation.add(resFeatureMatrix, normMatrix);
-            }
             // ReLu
             Matrix outMatrix = reluMatrix(normMatrix, reLu);
             outMatrixList.add(outMatrix);
         }
         return outMatrixList;
+    }
+
+    protected void ResBlockError(List<Matrix> errorMatrixList, BackParameter backParameter, List<MatrixNorm> matrixNormList
+            , List<Matrix> powerMatrixList, float studyRate, int kernSize) throws Exception {
+        ReLu reLu = new ReLu();
+        int size = errorMatrixList.size();
+        List<Matrix> outMatrixList = backParameter.getOutMatrixList();
+        int im2calSize = backParameter.getIm2clSize();
+        List<List<ConvResult>> convResultList = backParameter.getConvResultList();
+        List<Matrix> resErrorMatrixList = new ArrayList<>();//残差误差
+        for (int i = 0; i < size; i++) {
+            Matrix errorMatrix = errorMatrixList.get(i);
+            Matrix outMatrix = outMatrixList.get(i);
+            MatrixNorm matrixNorm = matrixNormList.get(i);
+            Matrix powerMatrix = powerMatrixList.get(i);
+            List<ConvResult> convResults = convResultList.get(i);
+            Matrix errorRelu = backActive(errorMatrix, outMatrix, reLu);//脱掉第一层激活函数
+            resErrorMatrixList.add(errorRelu);
+            Matrix normError = matrixNorm.backError(errorRelu);//脱掉归一化误差
+
+            // backDownConv(normError, )
+        }
+    }
+
+    private ConvResult backDownConv(Matrix errorMatrix, Matrix im2col, Matrix nerveMatrix, float studyRate, int kernSize, int im2colSize
+            , int step) throws Exception {
+        //下采样卷积误差反向传播
+        ConvResult convResult = new ConvResult();
+        int x = errorMatrix.getX();
+        int y = errorMatrix.getY();
+        Matrix resultError = new Matrix(x * y, 1);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float error = errorMatrix.getNumber(i, j);
+                resultError.setNub(y * i + j, 0, error);
+            }
+        }
+        Matrix wSub = matrixOperation.matrixMulPd(resultError, im2col, nerveMatrix, false);
+        Matrix im2colSub = matrixOperation.matrixMulPd(resultError, im2col, nerveMatrix, true);
+        matrixOperation.mathMul(wSub, studyRate);
+        Matrix gNext = matrixOperation.reverseIm2col(im2colSub, kernSize, step, im2colSize, im2colSize);//其余误差
+        convResult.setNervePowerMatrix(wSub);
+        convResult.setResultMatrix(gNext);
+        return convResult;
+    }
+
+    private Matrix backActive(Matrix errorMatrix, Matrix outMatrix, ActiveFunction activeFunction) throws Exception {
+        //下采样卷积误差反向传播
+        int x = errorMatrix.getX();
+        int y = errorMatrix.getY();
+        Matrix resultError = new Matrix(x, y);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float error = errorMatrix.getNumber(i, j);
+                float out = outMatrix.getNumber(i, j);
+                error = error * activeFunction.functionG(out);
+                resultError.setNub(i, j, error);
+            }
+        }
+        return resultError;
     }
 
     protected Matrix downPooling(Matrix matrix) throws Exception {//下池化

@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class ResNetConnectionLine implements CustomEncoding {
     private ResBlock lastBlock;//最后一层残差块
-    private int lastSize;//最后一层的大小
+    private int lastSize;//最后一层的特征大小
     private int allTimes;//隐层神经数量
     private int nerveSize;//输入神经元数量
     private int number = 0;
@@ -26,7 +26,10 @@ public class ResNetConnectionLine implements CustomEncoding {
         this.nerveSize = nerveSize;
     }
 
-    private void addError(Map<Integer, Float> wg) {
+    private void addError(Map<Integer, Float> wg) throws Exception {
+        if (wg.size() != nerveSize) {
+            throw new Exception("线性层回传误差数量与预设值不相等");
+        }
         for (int i = 1; i <= nerveSize; i++) {
             float error = wg.get(i);
             if (number == 1) {

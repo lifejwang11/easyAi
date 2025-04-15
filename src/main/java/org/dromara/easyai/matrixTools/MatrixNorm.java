@@ -60,9 +60,9 @@ public class MatrixNorm {
     }
 
     public Matrix backError(Matrix errorMatrix) throws Exception {
-        matrixOperation.mathMul(errorMatrix, studyRate);
-        bTa = matrixOperation.add(errorMatrix, bTa);//更新bTa
-        return back(errorMatrix, norm);
+        Matrix error = matrixOperation.mathMulBySelf(errorMatrix, studyRate);
+        bTa = matrixOperation.add(error, bTa);//更新bTa
+        return back(error, norm);
     }
 
     public Matrix norm(Matrix matrix) throws Exception {
