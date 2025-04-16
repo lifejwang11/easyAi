@@ -15,7 +15,16 @@ public class BackParameter {
     private List<List<ConvResult>> convResultList;//记录卷积核与每个通道的计算结果与参数矩阵
     private List<ConvResult> convResults;//普通通道参数
     private List<Matrix> outMatrixList;//卷积最终输出矩阵
+    private List<Matrix> scaleMatrixList;//池化后的矩阵
     private int im2clSize;//im2col变化前的X大小
+
+    public List<Matrix> getScaleMatrixList() {
+        return scaleMatrixList;
+    }
+
+    public void setScaleMatrixList(List<Matrix> scaleMatrixList) {
+        this.scaleMatrixList = scaleMatrixList;
+    }
 
     public List<ConvResult> getConvResults() {
         return convResults;

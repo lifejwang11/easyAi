@@ -6,6 +6,7 @@ import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixNorm;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.resnet.entity.BackParameter;
+import org.dromara.easyai.resnet.entity.ResnetError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,10 +95,8 @@ public abstract class ResConvCount {
         Matrix sigmaMatrix = null;//所有通道加权求和
         for (int i = 0; i < size; i++) {
             Matrix featureMatrix = feature.get(i);
-            int xSize = featureMatrix.getX() / 2;
-            Matrix scaleFeature = featureMatrix.scale(true, xSize);
             float power = oneConvPower.get(i);
-            Matrix pMatrix = matrixOperation.mathMulBySelf(scaleFeature, power);//通道加权
+            Matrix pMatrix = matrixOperation.mathMulBySelf(featureMatrix, power);//通道加权
             if (i == 0) {
                 sigmaMatrix = pMatrix;
             } else {
@@ -105,6 +104,82 @@ public abstract class ResConvCount {
             }
         }
         return sigmaMatrix;
+    }
+
+    protected Matrix backDownPooling(Matrix matrix) throws Exception {//退下池化
+        int x = matrix.getX();
+        int y = matrix.getY();
+        Matrix myMatrix = new Matrix(x * 2, y * 2);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float value = matrix.getNumber(i, j) / 4;
+                insertMatrixValue(i * 2, j * 2, value, myMatrix);
+            }
+        }
+        return myMatrix;
+    }
+
+    private void insertMatrixValue(int x, int y, float value, Matrix matrix) throws Exception {
+        int xSize = x + 2;
+        int ySize = y + 2;
+        for (int i = x; i < xSize; i++) {
+            for (int j = y; j < ySize; j++) {
+                matrix.setNub(i, j, value);
+            }
+        }
+    }
+
+
+    protected List<Matrix> backOneConvByList(List<Matrix> errorMatrixList, List<Matrix> matrixList, List<List<Float>> oneConvPower, float studyRate) throws Exception {
+        int size = errorMatrixList.size();//addMatrixList
+        if (size == oneConvPower.size()) {
+            List<Matrix> allErrorMatrixList = null;
+            for (int i = 0; i < size; i++) {
+                Matrix errorMatrix = errorMatrixList.get(i);
+                List<Float> oneConvPowerList = oneConvPower.get(i);
+                List<Matrix> nextErrorMatrixList = backOneConv(errorMatrix, matrixList, oneConvPowerList, studyRate);
+                if (i == 0) {
+                    allErrorMatrixList = nextErrorMatrixList;
+                } else {
+                    allErrorMatrixList = matrixOperation.addMatrixList(allErrorMatrixList, nextErrorMatrixList);
+                }
+            }
+            //退下池化
+            for (int i = 0; i < allErrorMatrixList.size(); i++) {
+                Matrix errorMatrix = allErrorMatrixList.get(i);
+                allErrorMatrixList.set(i, backDownPooling(errorMatrix));
+            }
+            return allErrorMatrixList;
+        } else {
+            throw new Exception("误差矩阵大小与通道数不相符");
+        }
+
+    }
+
+    protected List<Matrix> backOneConv(Matrix errorMatrix, List<Matrix> matrixList, List<Float> oneConvPower, float studyRate) throws Exception {//单卷积降维回传
+        int size = oneConvPower.size();
+        List<Matrix> nextErrorMatrixList = new ArrayList<>();
+        for (int t = 0; t < size; t++) {
+            Matrix myMatrix = matrixList.get(t);
+            int x = myMatrix.getX();
+            int y = myMatrix.getY();
+            Matrix errorMyMatrix = new Matrix(x, y);
+            nextErrorMatrixList.add(errorMyMatrix);
+            float power = oneConvPower.get(t);
+            float allSubPower = 0;
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    float error = errorMatrix.getNumber(i, j);
+                    float subPower = myMatrix.getNumber(i, j) * error * studyRate;
+                    float subG = power * error * studyRate;
+                    allSubPower = allSubPower + subPower;
+                    errorMyMatrix.setNub(i, j, subG);
+                }
+            }
+            power = power + allSubPower;
+            oneConvPower.set(t, power);
+        }
+        return nextErrorMatrixList;
     }
 
     //不是第一层
@@ -128,7 +203,15 @@ public abstract class ResConvCount {
             if (oneConvPower == null) {
                 throw new Exception("1v1 卷积核空了");
             }
-            resFeatureList = manyOneConv(resFeatureList, oneConvPower);
+            //对残差进行池化后保存
+            List<Matrix> poolingMatrixList = new ArrayList<>();
+            if (study) {
+                backParameter.setScaleMatrixList(poolingMatrixList);
+            }
+            for (Matrix matrix : resFeatureList) {
+                poolingMatrixList.add(downPooling(matrix));
+            }
+            resFeatureList = manyOneConv(poolingMatrixList, oneConvPower);
         }
         if (resFeatureList != null && resFeatureList.size() != size) {
             throw new Exception("残差与卷积核维度不相等");
@@ -216,26 +299,39 @@ public abstract class ResConvCount {
         return outMatrixList;
     }
 
-    protected void ResBlockError(List<Matrix> errorMatrixList, BackParameter backParameter, List<MatrixNorm> matrixNormList
-            , List<Matrix> powerMatrixList, float studyRate, int kernSize) throws Exception {
+    protected ResnetError ResBlockError(List<Matrix> errorMatrixList, BackParameter backParameter, List<MatrixNorm> matrixNormList
+            , List<Matrix> powerMatrixList, float studyRate, int kernSize, boolean resError, List<List<Float>> oneConvPower) throws Exception {
+        ResnetError resnetError = new ResnetError();
         ReLu reLu = new ReLu();
         int size = errorMatrixList.size();
         List<Matrix> outMatrixList = backParameter.getOutMatrixList();
         int im2calSize = backParameter.getIm2clSize();
-        List<List<ConvResult>> convResultList = backParameter.getConvResultList();
+        List<ConvResult> convResultList = backParameter.getConvResults();
         List<Matrix> resErrorMatrixList = new ArrayList<>();//残差误差
+        List<Matrix> nextErrorMatrixList = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             Matrix errorMatrix = errorMatrixList.get(i);
             Matrix outMatrix = outMatrixList.get(i);
             MatrixNorm matrixNorm = matrixNormList.get(i);
-            Matrix powerMatrix = powerMatrixList.get(i);
-            List<ConvResult> convResults = convResultList.get(i);
+            Matrix powerMatrix = powerMatrixList.get(i);//卷积核
+            ConvResult convResult = convResultList.get(i);
             Matrix errorRelu = backActive(errorMatrix, outMatrix, reLu);//脱掉第一层激活函数
-            resErrorMatrixList.add(errorRelu);
+            if (resError) {
+                resErrorMatrixList.add(errorRelu);
+            }
             Matrix normError = matrixNorm.backError(errorRelu);//脱掉归一化误差
-
-            // backDownConv(normError, )
+            ConvResult myConvResult = backDownConv(normError, convResult.getLeftMatrix(), powerMatrix, studyRate, kernSize, im2calSize, 1);
+            powerMatrix = matrixOperation.add(powerMatrix, myConvResult.getNervePowerMatrix());
+            powerMatrixList.set(i, powerMatrix);//更新卷积核
+            Matrix nextErrorMatrix = unPadding(myConvResult.getResultMatrix());
+            nextErrorMatrixList.add(nextErrorMatrix);
         }
+        if (resError && oneConvPower != null) {
+            resErrorMatrixList = backOneConvByList(resErrorMatrixList, backParameter.getScaleMatrixList(), oneConvPower, studyRate);
+        }
+        resnetError.setNextErrorMatrixList(nextErrorMatrixList);
+        resnetError.setResErrorMatrixList(resErrorMatrixList);
+        return resnetError;
     }
 
     private ConvResult backDownConv(Matrix errorMatrix, Matrix im2col, Matrix nerveMatrix, float studyRate, int kernSize, int im2colSize
@@ -302,6 +398,12 @@ public abstract class ResConvCount {
             }
         }
         return outMatrix;
+    }
+
+    private Matrix unPadding(Matrix matrix) {
+        int x = matrix.getX();
+        int y = matrix.getY();
+        return matrix.getSonOfMatrix(1, 1, x - 2, y - 2);
     }
 
     private Matrix padding(Matrix matrix) throws Exception {//padding
