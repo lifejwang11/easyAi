@@ -299,8 +299,48 @@ public abstract class ResConvCount {
         return outMatrixList;
     }
 
-    protected ResnetError ResBlockError(List<Matrix> errorMatrixList, BackParameter backParameter, List<MatrixNorm> matrixNormList
-            , List<Matrix> powerMatrixList, float studyRate, int kernSize, boolean resError, List<List<Float>> oneConvPower) throws Exception {
+    protected List<Matrix> ResBlockError(List<Matrix> errorMatrixList, BackParameter backParameter, List<MatrixNorm> matrixNormList
+            , List<Matrix> powerMatrixList, float studyRate, int kernSize, List<Matrix> resErrorMatrix) throws Exception {
+        ReLu reLu = new ReLu();
+        int size = errorMatrixList.size();
+        List<Matrix> outMatrixList = backParameter.getOutMatrixList();
+        List<List<ConvResult>> convResultList = backParameter.getConvResultList();
+        int im2calSize = backParameter.getIm2clSize();
+        List<Matrix> nextAllErrorMatrixList = null;//要回传的误差
+        for (int i = 0; i < size; i++) {
+            Matrix errorMatrix = errorMatrixList.get(i);
+            Matrix outMatrix = outMatrixList.get(i);
+            MatrixNorm matrixNorm = matrixNormList.get(i);
+            List<ConvResult> convResults = convResultList.get(i);
+            Matrix powerMatrix = powerMatrixList.get(i);//卷积核
+            Matrix errorRelu = backActive(errorMatrix, outMatrix, reLu);//脱掉第一层激活函数
+            Matrix normError = matrixNorm.backError(errorRelu);//脱掉归一化误差
+            List<Matrix> nextErrorMatrixList = new ArrayList<>();
+            Matrix nerveAllError = null;//权重总误差
+            for (ConvResult convResult : convResults) {
+                ConvResult myConvResult = backDownConv(normError, convResult.getLeftMatrix(), powerMatrix, studyRate, kernSize, im2calSize, 2);
+                Matrix subPower = myConvResult.getNervePowerMatrix();
+                Matrix nextErrorMatrix = myConvResult.getResultMatrix();
+                nextErrorMatrixList.add(unPadding2(nextErrorMatrix, kernSize - 2));
+                if (nerveAllError == null) {
+                    nerveAllError = subPower;
+                } else {
+                    nerveAllError = matrixOperation.add(nerveAllError, subPower);
+                }
+            }
+            powerMatrixList.set(i, matrixOperation.add(powerMatrix, nerveAllError));//更新权重
+            if (nextAllErrorMatrixList == null) {
+                nextAllErrorMatrixList = nextErrorMatrixList;
+            } else {
+                nextAllErrorMatrixList = matrixOperation.addMatrixList(nextAllErrorMatrixList, nextErrorMatrixList);
+            }
+        }
+        return matrixOperation.addMatrixList(nextAllErrorMatrixList, resErrorMatrix);
+    }
+
+    protected ResnetError ResBlockError2(List<Matrix> errorMatrixList, BackParameter backParameter, List<MatrixNorm> matrixNormList
+            , List<Matrix> powerMatrixList, float studyRate, int kernSize, boolean resError, List<List<Float>> oneConvPower,
+                                         List<Matrix> resErrorMatrix) throws Exception {
         ResnetError resnetError = new ResnetError();
         ReLu reLu = new ReLu();
         int size = errorMatrixList.size();
@@ -328,6 +368,8 @@ public abstract class ResConvCount {
         }
         if (resError && oneConvPower != null) {
             resErrorMatrixList = backOneConvByList(resErrorMatrixList, backParameter.getScaleMatrixList(), oneConvPower, studyRate);
+        } else if (!resError) {//与误差求和
+            nextErrorMatrixList = matrixOperation.addMatrixList(nextErrorMatrixList, resErrorMatrix);
         }
         resnetError.setNextErrorMatrixList(nextErrorMatrixList);
         resnetError.setResErrorMatrixList(resErrorMatrixList);
@@ -384,6 +426,12 @@ public abstract class ResConvCount {
             }
         }
         return myMatrix;
+    }
+
+    protected Matrix unPadding2(Matrix matrix, int paddingSize) {
+        int x = matrix.getX() - paddingSize;
+        int y = matrix.getY() - paddingSize;
+        return matrix.getSonOfMatrix(0, 0, x, y);
     }
 
     protected Matrix padding2(Matrix matrix, int paddingSize) throws Exception {
