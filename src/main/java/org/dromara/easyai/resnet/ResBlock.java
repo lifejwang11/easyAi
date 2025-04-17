@@ -5,6 +5,7 @@ import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixNorm;
 import org.dromara.easyai.nerveEntity.SensoryNerve;
+import org.dromara.easyai.resnet.entity.ResnetError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,16 +45,61 @@ public class ResBlock extends ResConvCount {
         initBlock(secondResConvPower, random, false);//初始化两个残差块
     }
 
-    private void fillZero(List<Matrix> matrixList) throws Exception {
+    private void fillZero(List<Matrix> matrixList, boolean fill) throws Exception {
         int size = matrixList.size();
         for (int i = 0; i < size; i++) {
             Matrix matrix = matrixList.get(i);
-            matrixList.set(i, padding2(matrix, 1));
+            if (fill) {
+                matrixList.set(i, padding2(matrix, 1));
+            } else {
+                matrixList.set(i, unPadding2(matrix, 1));
+            }
         }
     }
 
     public void backError(List<Matrix> errorMatrixList) throws Exception {//返回误差
+        List<Matrix> errorList = backOneConvMatrix(errorMatrixList, secondResConvPower, 2);
+        if (deep > 1) {
+            List<Matrix> errorFinalMatrix = backOneConvMatrix(errorList, fistResConvPower, 1);
+            backFatherError(errorFinalMatrix);
+        } else {
+            List<Matrix> errorFinalMatrix = backOneConvMatrix(errorList, fistResConvPower, 2);
+            errorFinalMatrix = backDownPoolingByList(errorFinalMatrix);//退下池化
+            if (fill(deep, imageSize, false)) {//判断是否需要补0
+                fillZero(errorFinalMatrix, false);
+            }
+            ResBlockError(errorFinalMatrix, firstConvPower.getBackParameter(), firstConvPower.getMatrixNormList(),
+                    firstConvPower.getConvPower(), studyRate, 7, null);
+        }
+    }
 
+    private void backFatherError(List<Matrix> errorMatrixList) throws Exception {//返回上一层误差
+        if (fill(deep, imageSize, true)) {//不是偶数,要补0
+            fillZero(errorMatrixList, false);
+        }
+        fatherResBlock.backError(errorMatrixList);
+    }
+
+    private List<Matrix> backOneConvMatrix(List<Matrix> errorMatrixList, ResConvPower resConvPower, int deep) throws Exception {
+        ConvLay firstConv = resConvPower.getFirstConvPower();
+        ConvLay secondConv = resConvPower.getSecondConvPower();
+        List<List<Float>> oneConvPower = null;
+        if (deep == 1) {
+            oneConvPower = resConvPower.getOneConvPower();
+        }
+        ResnetError resnetError = ResBlockError2(errorMatrixList, secondConv.getBackParameter(), secondConv.getMatrixNormList(),
+                secondConv.getConvPower(), studyRate, true, oneConvPower, null);
+        List<Matrix> resErrorMatrixList = resnetError.getResErrorMatrixList();//残差误差
+        List<Matrix> nextErrorMatrixList = resnetError.getNextErrorMatrixList();//下一层误差
+        List<Matrix> errorList;
+        if (deep == 2) {
+            errorList = ResBlockError2(nextErrorMatrixList, firstConv.getBackParameter(), firstConv.getMatrixNormList(),
+                    firstConv.getConvPower(), studyRate, false, oneConvPower, resErrorMatrixList).getNextErrorMatrixList();
+        } else {
+            errorList = ResBlockError(nextErrorMatrixList, firstConv.getBackParameter(), firstConv.getMatrixNormList(),
+                    firstConv.getConvPower(), studyRate, 3, resErrorMatrixList);
+        }
+        return errorList;
     }
 
     private void convMatrix(List<Matrix> feature, int step, boolean study, OutBack outBack, Map<Integer, Float> E, long eventID) throws Exception {// feature 准备跳层用
@@ -97,13 +143,13 @@ public class ResBlock extends ResConvCount {
     public void sendMatrixList(List<Matrix> matrixList, OutBack outBack, boolean study, Map<Integer, Float> E, long eventID) throws Exception {
         //判定特征大小是否为偶数
         if (fill(deep, imageSize, true)) {//不是偶数,要补0
-            fillZero(matrixList);
+            fillZero(matrixList, true);
         }
         if (deep == 1) {
             List<Matrix> myMatrixList = downConvMany(matrixList, firstConvPower.getConvPower(), 7, study, firstConvPower.getBackParameter(),
                     firstConvPower.getMatrixNormList());
             if (fill(deep, imageSize, false)) {//池化需要补0
-                fillZero(myMatrixList);
+                fillZero(myMatrixList, true);
             }
             //池化
             List<Matrix> nextMatrixList = new ArrayList<>();

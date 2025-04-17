@@ -106,7 +106,15 @@ public abstract class ResConvCount {
         return sigmaMatrix;
     }
 
-    protected Matrix backDownPooling(Matrix matrix) throws Exception {//退下池化
+    protected List<Matrix> backDownPoolingByList(List<Matrix> matrixList) throws Exception {
+        List<Matrix> result = new ArrayList<>();
+        for (Matrix matrix : matrixList) {
+            result.add(backDownPooling(matrix));
+        }
+        return result;
+    }
+
+    private Matrix backDownPooling(Matrix matrix) throws Exception {//退下池化
         int x = matrix.getX();
         int y = matrix.getY();
         Matrix myMatrix = new Matrix(x * 2, y * 2);
@@ -335,12 +343,14 @@ public abstract class ResConvCount {
                 nextAllErrorMatrixList = matrixOperation.addMatrixList(nextAllErrorMatrixList, nextErrorMatrixList);
             }
         }
-        return matrixOperation.addMatrixList(nextAllErrorMatrixList, resErrorMatrix);
+        if (resErrorMatrix != null) {
+            return matrixOperation.addMatrixList(nextAllErrorMatrixList, resErrorMatrix);
+        }
+        return nextAllErrorMatrixList;
     }
 
     protected ResnetError ResBlockError2(List<Matrix> errorMatrixList, BackParameter backParameter, List<MatrixNorm> matrixNormList
-            , List<Matrix> powerMatrixList, float studyRate, int kernSize, boolean resError, List<List<Float>> oneConvPower,
-                                         List<Matrix> resErrorMatrix) throws Exception {
+            , List<Matrix> powerMatrixList, float studyRate, boolean resError, List<List<Float>> oneConvPower, List<Matrix> resErrorMatrix) throws Exception {
         ResnetError resnetError = new ResnetError();
         ReLu reLu = new ReLu();
         int size = errorMatrixList.size();
@@ -360,7 +370,7 @@ public abstract class ResConvCount {
                 resErrorMatrixList.add(errorRelu);
             }
             Matrix normError = matrixNorm.backError(errorRelu);//脱掉归一化误差
-            ConvResult myConvResult = backDownConv(normError, convResult.getLeftMatrix(), powerMatrix, studyRate, kernSize, im2calSize, 1);
+            ConvResult myConvResult = backDownConv(normError, convResult.getLeftMatrix(), powerMatrix, studyRate, 3, im2calSize, 1);
             powerMatrix = matrixOperation.add(powerMatrix, myConvResult.getNervePowerMatrix());
             powerMatrixList.set(i, powerMatrix);//更新卷积核
             Matrix nextErrorMatrix = unPadding(myConvResult.getResultMatrix());
@@ -368,7 +378,7 @@ public abstract class ResConvCount {
         }
         if (resError && oneConvPower != null) {
             resErrorMatrixList = backOneConvByList(resErrorMatrixList, backParameter.getScaleMatrixList(), oneConvPower, studyRate);
-        } else if (!resError) {//与误差求和
+        } else if (!resError) {//残差与误差求和
             nextErrorMatrixList = matrixOperation.addMatrixList(nextErrorMatrixList, resErrorMatrix);
         }
         resnetError.setNextErrorMatrixList(nextErrorMatrixList);
