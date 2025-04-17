@@ -13,11 +13,11 @@ import java.util.Map;
  * @time 2025/4/17 13:04
  * @des restNet输出类
  */
-public class RestNetInput {
+public class ResnetInput {
     private final ResBlock fistBlock;//第一个残差块
     private final int imageSize;//图像大小
 
-    public RestNetInput(ResBlock fistBlock, int imageSize) {
+    public ResnetInput(ResBlock fistBlock, int imageSize) {
         this.fistBlock = fistBlock;
         this.imageSize = imageSize;
     }

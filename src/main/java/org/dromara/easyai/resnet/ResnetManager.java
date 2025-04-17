@@ -14,16 +14,16 @@ import java.util.List;
  * @time 2025/4/11 10:51
  * @des resnet管理器
  */
-public class ResNetManager extends ResConvCount {
+public class ResnetManager extends ResConvCount {
     private final NerveManager nerveManager;
     private final List<ResBlock> resBlockList = new ArrayList<>();//残差集合
-    private final RestNetInput restNetInput;
+    private final ResnetInput restNetInput;
 
-    public RestNetInput getRestNetInput() {
+    public ResnetInput getRestNetInput() {
         return restNetInput;
     }
 
-    public ResNetManager(ResNetConfig resNetConfig, ActiveFunction activeFunction) throws Exception {
+    public ResnetManager(ResNetConfig resNetConfig, ActiveFunction activeFunction) throws Exception {
         int deep = getConvDeep(resNetConfig.getSize(), resNetConfig.getMinFeatureSize());//获取深度
         int channelNo = resNetConfig.getChannelNo();//通道数
         int lastSize = getFeatureSize(deep, resNetConfig.getSize(), true);//最后一层特征大小
@@ -45,7 +45,7 @@ public class ResNetManager extends ResConvCount {
             ResBlock resBlock = new ResBlock(channelNo, i + 1, studyRate, resNetConfig.getSize(), sensoryNerves);
             resBlockList.add(resBlock);
         }
-        restNetInput = new RestNetInput(resBlockList.get(0), resNetConfig.getSize());
+        restNetInput = new ResnetInput(resBlockList.get(0), resNetConfig.getSize());
         connection();//残差块进行互相连接
         resNetConnectionLine.setLastBlock(resBlockList.get(deep - 1), lastSize, resNetConfig.getHiddenNerveNumber(), featureLength);
     }
