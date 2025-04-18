@@ -3,7 +3,6 @@ package org.dromara.easyai.resnet.entity;
 import org.dromara.easyai.conv.ConvResult;
 import org.dromara.easyai.matrixTools.Matrix;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

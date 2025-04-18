@@ -5,6 +5,8 @@ import org.dromara.easyai.conv.ResConvCount;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.nerveCenter.NerveManager;
 import org.dromara.easyai.nerveEntity.SensoryNerve;
+import org.dromara.easyai.resnet.entity.ResBlockModel;
+import org.dromara.easyai.resnet.entity.ResnetModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,26 @@ public class ResnetManager extends ResConvCount {
 
     public ResnetInput getRestNetInput() {
         return restNetInput;
+    }
+
+    public ResnetModel getModel() throws Exception {
+        ResnetModel resnetModel = new ResnetModel();
+        List<ResBlockModel> resBlockModelList = new ArrayList<>();
+        resnetModel.setResBlockModelList(resBlockModelList);
+        for (ResBlock resBlock : resBlockList) {
+            resBlockModelList.add(resBlock.getModel());
+        }
+        resnetModel.setParameter(nerveManager.getDnnModel());
+        return resnetModel;
+    }
+
+    public void insertModel(ResnetModel resnetModel) {
+        List<ResBlockModel> resBlockModelList = resnetModel.getResBlockModelList();
+        int size = resBlockList.size();
+        for (int i = 0; i < size; i++) {
+            resBlockList.get(i).insertModel(resBlockModelList.get(i));
+        }
+        nerveManager.insertDnnModel(resnetModel.getParameter());
     }
 
     public ResnetManager(ResNetConfig resNetConfig, ActiveFunction activeFunction) throws Exception {

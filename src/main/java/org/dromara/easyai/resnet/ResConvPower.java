@@ -1,6 +1,8 @@
 package org.dromara.easyai.resnet;
 
 
+import org.dromara.easyai.resnet.entity.DoubleResConvModel;
+
 import java.util.List;
 
 /**
@@ -11,8 +13,21 @@ import java.util.List;
 public class ResConvPower {
     private ConvLay firstConvPower;//第一层卷积权重
     private ConvLay secondConvPower;//第二层卷积权重
-    private List<List<Float>> oneConvPower;//1v1卷积层
+    private List<List<Float>> oneConvPower;//1v1卷积层 需要作为模型取出
 
+    public DoubleResConvModel getModel() {
+        DoubleResConvModel model = new DoubleResConvModel();
+        model.setFirstResConvModel(firstConvPower.getModel());
+        model.setSecondResConvModel(secondConvPower.getModel());
+        model.setOneConvPowerModel(oneConvPower);
+        return model;
+    }
+
+    public void insertModel(DoubleResConvModel model) {
+        firstConvPower.insertModel(model.getFirstResConvModel());
+        secondConvPower.insertModel(model.getSecondResConvModel());
+        oneConvPower = model.getOneConvPowerModel();
+    }
 
     public ConvLay getFirstConvPower() {
         return firstConvPower;

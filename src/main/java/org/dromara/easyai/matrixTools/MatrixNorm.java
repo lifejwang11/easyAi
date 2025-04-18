@@ -1,5 +1,7 @@
 package org.dromara.easyai.matrixTools;
 
+import org.dromara.easyai.resnet.entity.NormModel;
+
 import java.util.Random;
 
 /**
@@ -13,6 +15,18 @@ public class MatrixNorm {
     private final float studyRate;//全局学习率
     private final MatrixOperation matrixOperation = new MatrixOperation();
     private Matrix norm;
+
+    public NormModel getModel() {
+        NormModel normModel = new NormModel();
+        normModel.setBtaParameter(bTa.getMatrixModel());
+        normModel.setPowerParameter(power.getMatrixModel());
+        return normModel;
+    }
+
+    public void insertModel(NormModel normModel) {
+        bTa.insertMatrixModel(normModel.getBtaParameter());
+        power.insertMatrixModel(normModel.getPowerParameter());
+    }
 
     public MatrixNorm(int size, float studyRate) throws Exception {
         bTa = new Matrix(size, size);

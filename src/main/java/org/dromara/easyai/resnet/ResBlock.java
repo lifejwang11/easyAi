@@ -5,6 +5,7 @@ import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixNorm;
 import org.dromara.easyai.nerveEntity.SensoryNerve;
+import org.dromara.easyai.resnet.entity.ResBlockModel;
 import org.dromara.easyai.resnet.entity.ResnetError;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.Random;
  */
 public class ResBlock extends ResConvCount {
     private ConvLay firstConvPower;//第一层卷积
-    private final ResConvPower fistResConvPower = new ResConvPower();
+    private final ResConvPower firstResConvPower = new ResConvPower();
     private final ResConvPower secondResConvPower = new ResConvPower();
     private final int channelNo;
     private final int deep;
@@ -28,6 +29,24 @@ public class ResBlock extends ResConvCount {
     private ResBlock fatherResBlock;
     private ResBlock sonResBlock;
     private final List<SensoryNerve> sensoryNerves;//输出神经元
+
+    public ResBlockModel getModel() {
+        ResBlockModel model = new ResBlockModel();
+        model.setFirstResConvModel(firstResConvPower.getModel());
+        model.setSecondResConvModel(secondResConvPower.getModel());
+        if (deep == 1) {
+            model.setFirstConvModel(firstConvPower.getModel());
+        }
+        return model;
+    }
+
+    public void insertModel(ResBlockModel resBlockModel) {
+        firstResConvPower.insertModel(resBlockModel.getFirstResConvModel());
+        secondResConvPower.insertModel(resBlockModel.getSecondResConvModel());
+        if (deep == 1) {
+            firstConvPower.insertModel(resBlockModel.getFirstConvModel());
+        }
+    }
 
     public ResBlock(int channelNo, int deep, float studyRate, int imageSize, List<SensoryNerve> sensoryNerves) throws Exception {
         this.imageSize = imageSize;
@@ -41,7 +60,7 @@ public class ResBlock extends ResConvCount {
             initOneConv = false;
             firstConvPower = initMatrixPower(random, 7, channelNo, true);
         }
-        initBlock(fistResConvPower, random, initOneConv);//初始化两个残差块
+        initBlock(firstResConvPower, random, initOneConv);//初始化两个残差块
         initBlock(secondResConvPower, random, false);//初始化两个残差块
     }
 
@@ -60,10 +79,10 @@ public class ResBlock extends ResConvCount {
     public void backError(List<Matrix> errorMatrixList) throws Exception {//返回误差
         List<Matrix> errorList = backOneConvMatrix(errorMatrixList, secondResConvPower, 2);
         if (deep > 1) {
-            List<Matrix> errorFinalMatrix = backOneConvMatrix(errorList, fistResConvPower, 1);
+            List<Matrix> errorFinalMatrix = backOneConvMatrix(errorList, firstResConvPower, 1);
             backFatherError(errorFinalMatrix);
         } else {
-            List<Matrix> errorFinalMatrix = backOneConvMatrix(errorList, fistResConvPower, 2);
+            List<Matrix> errorFinalMatrix = backOneConvMatrix(errorList, firstResConvPower, 2);
             errorFinalMatrix = backDownPoolingByList(errorFinalMatrix);//退下池化
             if (fill(deep, imageSize, false)) {//判断是否需要补0
                 fillZero(errorFinalMatrix, false);
@@ -104,7 +123,7 @@ public class ResBlock extends ResConvCount {
 
     private void convMatrix(List<Matrix> feature, int step, boolean study, OutBack outBack, Map<Integer, Float> E, long eventID) throws Exception {// feature 准备跳层用
         boolean one = step == 1;
-        List<Matrix> featureList = oneConvMatrix(feature, fistResConvPower, study, one);
+        List<Matrix> featureList = oneConvMatrix(feature, firstResConvPower, study, one);
         List<Matrix> lastFeatureList = oneConvMatrix(featureList, secondResConvPower, study, true);
         if (sonResBlock != null) {
             sonResBlock.sendMatrixList(lastFeatureList, outBack, study, E, eventID);
