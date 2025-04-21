@@ -14,6 +14,15 @@ public class ResConvPower {
     private ConvLay firstConvPower;//第一层卷积权重
     private ConvLay secondConvPower;//第二层卷积权重
     private List<List<Float>> oneConvPower;//1v1卷积层 需要作为模型取出
+    private List<List<Float>> dymStudyRateList;//梯度平方和
+
+    public List<List<Float>> getDymStudyRateList() {
+        return dymStudyRateList;
+    }
+
+    public void setDymStudyRateList(List<List<Float>> dymStudyRateList) {
+        this.dymStudyRateList = dymStudyRateList;
+    }
 
     public DoubleResConvModel getModel() {
         DoubleResConvModel model = new DoubleResConvModel();

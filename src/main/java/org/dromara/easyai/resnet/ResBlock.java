@@ -88,7 +88,7 @@ public class ResBlock extends ResConvCount {
                 fillZero(errorFinalMatrix, false);
             }
             ResBlockError(errorFinalMatrix, firstConvPower.getBackParameter(), firstConvPower.getMatrixNormList(),
-                    firstConvPower.getConvPower(), studyRate, 7, null);
+                    firstConvPower.getConvPower(), studyRate, 7, null, firstConvPower.getDymStudyRateList());
         }
     }
 
@@ -103,20 +103,24 @@ public class ResBlock extends ResConvCount {
         ConvLay firstConv = resConvPower.getFirstConvPower();
         ConvLay secondConv = resConvPower.getSecondConvPower();
         List<List<Float>> oneConvPower = null;
+        List<List<Float>> dymStudyRateList = null;
         if (deep == 1) {
             oneConvPower = resConvPower.getOneConvPower();
+            dymStudyRateList = resConvPower.getDymStudyRateList();
         }
         ResnetError resnetError = ResBlockError2(errorMatrixList, secondConv.getBackParameter(), secondConv.getMatrixNormList(),
-                secondConv.getConvPower(), studyRate, true, oneConvPower, null);
+                secondConv.getConvPower(), studyRate, true, oneConvPower, null, secondConv.getDymStudyRateList()
+                , dymStudyRateList);
         List<Matrix> resErrorMatrixList = resnetError.getResErrorMatrixList();//残差误差
         List<Matrix> nextErrorMatrixList = resnetError.getNextErrorMatrixList();//下一层误差
         List<Matrix> errorList;
         if (deep == 2) {
             errorList = ResBlockError2(nextErrorMatrixList, firstConv.getBackParameter(), firstConv.getMatrixNormList(),
-                    firstConv.getConvPower(), studyRate, false, oneConvPower, resErrorMatrixList).getNextErrorMatrixList();
+                    firstConv.getConvPower(), studyRate, false, oneConvPower, resErrorMatrixList,
+                    firstConv.getDymStudyRateList(), dymStudyRateList).getNextErrorMatrixList();
         } else {
             errorList = ResBlockError(nextErrorMatrixList, firstConv.getBackParameter(), firstConv.getMatrixNormList(),
-                    firstConv.getConvPower(), studyRate, 3, resErrorMatrixList);
+                    firstConv.getConvPower(), studyRate, 3, resErrorMatrixList, firstConv.getDymStudyRateList());
         }
         return errorList;
     }
@@ -192,13 +196,18 @@ public class ResBlock extends ResConvCount {
         if (deep > 1 && initOneConv) {//初始化11卷积层
             int featureLength = getChannelNo();//卷积层输出特征大小
             List<List<Float>> onePowers = new ArrayList<>();
+            List<List<Float>> dymStudyRateList = new ArrayList<>();
             resConvPower.setOneConvPower(onePowers);
+            resConvPower.setDymStudyRateList(dymStudyRateList);
             int length = featureLength / 2;
             for (int i = 0; i < featureLength; i++) {
                 List<Float> oneConvPowerList = new ArrayList<>();
+                List<Float> dymStudyRage = new ArrayList<>();
                 for (int j = 0; j < length; j++) {
                     oneConvPowerList.add(random.nextFloat() / length);
+                    dymStudyRage.add(0f);
                 }
+                dymStudyRateList.add(dymStudyRage);
                 onePowers.add(oneConvPowerList);
             }
         }
@@ -208,10 +217,13 @@ public class ResBlock extends ResConvCount {
         int nerveNub = kernLen * kernLen;
         ConvLay convLay = new ConvLay();
         List<Matrix> nerveMatrixList = new ArrayList<>();//一层当中所有的深度卷积核
+        List<Matrix> sumOfSquares = new ArrayList<>();//动态学习率
         List<MatrixNorm> matrixNormList = new ArrayList<>();
         int size = getFeatureSize(deep, imageSize, seven);
         for (int k = 0; k < channelNo; k++) {//遍历通道
             Matrix nerveMatrix = new Matrix(nerveNub, 1);//一组通道创建一组卷积核
+            Matrix dymStudyRate = new Matrix(nerveNub, 1);
+            sumOfSquares.add(dymStudyRate);
             for (int i = 0; i < nerveMatrix.getX(); i++) {//初始化深度卷积核权重
                 float nub = random.nextFloat() / kernLen;
                 nerveMatrix.setNub(i, 0, nub);
@@ -220,6 +232,7 @@ public class ResBlock extends ResConvCount {
             MatrixNorm matrixNorm = new MatrixNorm(size, studyRate);
             matrixNormList.add(matrixNorm);
         }
+        convLay.setDymStudyRateList(sumOfSquares);
         convLay.setConvPower(nerveMatrixList);
         convLay.setMatrixNormList(matrixNormList);
         return convLay;

@@ -1,6 +1,7 @@
 package org.dromara.easyai.yolo;
 
 import org.dromara.easyai.nerveCenter.ModelParameter;
+import org.dromara.easyai.resnet.entity.ResnetModel;
 
 public class TypeModel {
     private int typeID;//该类型的类别id

@@ -1,6 +1,6 @@
 package org.dromara.easyai.resnet;
 
-import org.dromara.easyai.config.ResNetConfig;
+import org.dromara.easyai.config.ResnetConfig;
 import org.dromara.easyai.conv.ResConvCount;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.nerveCenter.NerveManager;
@@ -45,7 +45,7 @@ public class ResnetManager extends ResConvCount {
         nerveManager.insertDnnModel(resnetModel.getParameter());
     }
 
-    public ResnetManager(ResNetConfig resNetConfig, ActiveFunction activeFunction) throws Exception {
+    public ResnetManager(ResnetConfig resNetConfig, ActiveFunction activeFunction) throws Exception {
         int deep = getConvDeep(resNetConfig.getSize(), resNetConfig.getMinFeatureSize());//获取深度
         int channelNo = resNetConfig.getChannelNo();//通道数
         int lastSize = getFeatureSize(deep, resNetConfig.getSize(), true);//最后一层特征大小

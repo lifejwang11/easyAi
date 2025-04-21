@@ -5,7 +5,7 @@ package org.dromara.easyai.config;
  * @time 2025/4/11 10:53
  * @des resNet 配置参数
  */
-public class ResNetConfig {
+public class ResnetConfig {
     private int size;//图像尺寸 图像必须为正方形
     private float studyRate = 0.0025f;//全局学习率
     private int regularModel = RZ.NOT_RZ;//正则模式

@@ -16,8 +16,17 @@ import java.util.List;
  */
 public class ConvLay {
     private List<Matrix> convPower;//第一层卷积权重 需要作为模型取出
+    private List<Matrix> dymStudyRateList;//动态学习率
     private List<MatrixNorm> matrixNormList;//归一化层// 需要作为模型取出
     private final BackParameter backParameter = new BackParameter();
+
+    public List<Matrix> getDymStudyRateList() {
+        return dymStudyRateList;
+    }
+
+    public void setDymStudyRateList(List<Matrix> dymStudyRateList) {
+        this.dymStudyRateList = dymStudyRateList;
+    }
 
     public ResConvModel getModel() {
         ResConvModel resConvModel = new ResConvModel();

@@ -1,5 +1,6 @@
 package org.dromara.easyai.matrixTools;
 
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.resnet.entity.NormModel;
 
 import java.util.Random;
@@ -12,6 +13,9 @@ import java.util.Random;
 public class MatrixNorm {
     private Matrix bTa;//偏移值
     private Matrix power;//膨胀系数矩阵
+    private final Matrix bTaDymStudyRate;//偏移系数动态学习率
+    private final Matrix powerDymStudyRate;//膨胀系数动态学习率
+    private final DymStudy dymStudy = new DymStudy();
     private final float studyRate;//全局学习率
     private final MatrixOperation matrixOperation = new MatrixOperation();
     private Matrix norm;
@@ -31,6 +35,8 @@ public class MatrixNorm {
     public MatrixNorm(int size, float studyRate) throws Exception {
         bTa = new Matrix(size, size);
         power = new Matrix(size, size);
+        bTaDymStudyRate = new Matrix(size, size);
+        powerDymStudyRate = new Matrix(size, size);
         this.studyRate = studyRate;
         initPower(power);
         initPower(bTa);
@@ -51,13 +57,14 @@ public class MatrixNorm {
         Matrix sub = matrixOperation.matrixMulPd(errorMatrix, myData, power, true);
         int x = sub.getX();
         int y = sub.getY();
-        power = matrixOperation.add(subPower, power);
+        Matrix errorPower = dymStudy.getErrorMatrixByStudy(studyRate, powerDymStudyRate, subPower);
+        power = matrixOperation.add(errorPower, power);
         float n = (float) Math.sqrt(x * y);
         float nt = -n / (n - 1);
         Matrix subMatrix = new Matrix(x, y);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                float subValue = sub.getNumber(i, j) * studyRate;
+                float subValue = sub.getNumber(i, j);
                 float value = subValue * n + subMatrix.getNumber(i, j);
                 subMatrix.setNub(i, j, value);
                 for (int k = 0; k < x; k++) {
@@ -74,9 +81,9 @@ public class MatrixNorm {
     }
 
     public Matrix backError(Matrix errorMatrix) throws Exception {
-        Matrix error = matrixOperation.mathMulBySelf(errorMatrix, studyRate);
+        Matrix error = dymStudy.getErrorMatrixByStudy(studyRate, bTaDymStudyRate, errorMatrix);
         bTa = matrixOperation.add(error, bTa);//更新bTa
-        return back(error, norm);
+        return back(errorMatrix, norm);
     }
 
     public Matrix norm(Matrix matrix) throws Exception {

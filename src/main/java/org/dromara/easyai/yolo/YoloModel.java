@@ -1,6 +1,7 @@
 package org.dromara.easyai.yolo;
 
 import org.dromara.easyai.nerveCenter.ModelParameter;
+import org.dromara.easyai.resnet.entity.ResnetModel;
 
 import java.util.List;
 
