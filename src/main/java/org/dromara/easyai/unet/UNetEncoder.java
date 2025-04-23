@@ -31,11 +31,17 @@ public class UNetEncoder extends ConvCount {
     private final int xSize;
     private final int ySize;
     private final float oneStudyRate;
+    private final float gaMa;
+    private final float gMaxTh;
+    private final boolean aoTu;
 
     public UNetEncoder(int kerSize, int channelNo, int deep, ActiveFunction activeFunction
-            , float studyRate, int xSize, int ySize, float oneStudyRate) throws Exception {//核心大小
+            , float studyRate, int xSize, int ySize, float oneStudyRate, float gaMa, float gMaxTh, boolean aoTu) throws Exception {//核心大小
         Random random = new Random();
         this.xSize = xSize;
+        this.aoTu = aoTu;
+        this.gMaxTh = gMaxTh;
+        this.gaMa = gaMa;
         this.ySize = ySize;
         this.oneStudyRate = oneStudyRate;
         this.studyRate = studyRate;
@@ -45,21 +51,27 @@ public class UNetEncoder extends ConvCount {
         this.channelNo = channelNo;
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
         List<ConvSize> convSizeList = convParameter.getConvSizeList();
+        List<Matrix> dymStudyRateList = convParameter.getDymStudyRateList();
         for (int i = 0; i < channelNo; i++) {
-            initNervePowerMatrix(random, nerveMatrixList);
+            initNervePowerMatrix(random, nerveMatrixList, dymStudyRateList);
             convSizeList.add(new ConvSize());
         }
         if (deep == 1) {
             List<List<Float>> oneConvPowers = new ArrayList<>();
+            List<List<Float>> oneDymStudyRateList = new ArrayList<>();
             for (int k = 0; k < channelNo; k++) {
                 List<Float> oneConvPower = new ArrayList<>();
+                List<Float> oneDymStudyRate = new ArrayList<>();
                 oneConvPowers.add(oneConvPower);
+                oneDymStudyRateList.add(oneDymStudyRate);
                 //通道数
                 int channelNum = 3;
                 for (int i = 0; i < channelNum; i++) {
                     oneConvPower.add(random.nextFloat() / channelNum);
+                    oneDymStudyRate.add(0f);
                 }
             }
+            convParameter.setOneDymStudyRateList(oneDymStudyRateList);
             convParameter.setOneConvPower(oneConvPowers);
         }
     }
@@ -110,11 +122,13 @@ public class UNetEncoder extends ConvCount {
     protected void backError(List<Matrix> errorMatrix) throws Exception {//接收误差
         List<Matrix> errorList = backDownPoolingByList(errorMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
         List<Matrix> errorMatrixList = matrixOperation.addMatrixList(errorList, decodeErrorMatrix);
-        List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize);
+        List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize,
+                gaMa, gMaxTh, aoTu);
         if (beforeEncoder != null) {
             beforeEncoder.backError(myErrorMatrix);
         } else {//最后一层 调整1v1卷积
-            backOneConvByList(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), oneStudyRate, true);
+            backOneConvByList(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), oneStudyRate
+                    , convParameter.getOneDymStudyRateList(), gaMa, gMaxTh, aoTu);
         }
     }
 
@@ -129,13 +143,14 @@ public class UNetEncoder extends ConvCount {
         }
     }
 
-    private void initNervePowerMatrix(Random random, List<Matrix> nervePowerMatrixList) throws Exception {
+    private void initNervePowerMatrix(Random random, List<Matrix> nervePowerMatrixList, List<Matrix> dymStudyRageList) throws Exception {
         int convSize = kerSize * kerSize;
         Matrix nervePowerMatrix = new Matrix(convSize, 1);
         for (int i = 0; i < convSize; i++) {
             float power = random.nextFloat() / kerSize;
             nervePowerMatrix.setNub(i, 0, power);
         }
+        dymStudyRageList.add(new Matrix(convSize, 1));
         nervePowerMatrixList.add(nervePowerMatrix);
     }
 

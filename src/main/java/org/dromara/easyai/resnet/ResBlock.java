@@ -29,6 +29,9 @@ public class ResBlock extends ResConvCount {
     private ResBlock fatherResBlock;
     private ResBlock sonResBlock;
     private final List<SensoryNerve> sensoryNerves;//输出神经元
+    private final float gaMa;
+    private final float gMaxTh;
+    private final boolean auto;
 
     public ResBlockModel getModel() {
         ResBlockModel model = new ResBlockModel();
@@ -48,12 +51,16 @@ public class ResBlock extends ResConvCount {
         }
     }
 
-    public ResBlock(int channelNo, int deep, float studyRate, int imageSize, List<SensoryNerve> sensoryNerves) throws Exception {
+    public ResBlock(int channelNo, int deep, float studyRate, int imageSize, List<SensoryNerve> sensoryNerves, float gaMa, float gMaxTh
+            , boolean auto) throws Exception {
         this.imageSize = imageSize;
         this.sensoryNerves = sensoryNerves;
         this.channelNo = channelNo;
         this.deep = deep;
+        this.gMaxTh = gMaxTh;
         this.studyRate = studyRate;
+        this.auto = auto;
+        this.gaMa = gaMa;
         boolean initOneConv = true;
         Random random = new Random();
         if (deep == 1) {
@@ -88,7 +95,8 @@ public class ResBlock extends ResConvCount {
                 fillZero(errorFinalMatrix, false);
             }
             ResBlockError(errorFinalMatrix, firstConvPower.getBackParameter(), firstConvPower.getMatrixNormList(),
-                    firstConvPower.getConvPower(), studyRate, 7, null, firstConvPower.getDymStudyRateList());
+                    firstConvPower.getConvPower(), studyRate, 7, null, firstConvPower.getDymStudyRateList(),
+                    gaMa, gMaxTh, auto);
         }
     }
 
@@ -110,17 +118,18 @@ public class ResBlock extends ResConvCount {
         }
         ResnetError resnetError = ResBlockError2(errorMatrixList, secondConv.getBackParameter(), secondConv.getMatrixNormList(),
                 secondConv.getConvPower(), studyRate, true, oneConvPower, null, secondConv.getDymStudyRateList()
-                , dymStudyRateList);
+                , dymStudyRateList, gaMa, gMaxTh, auto);
         List<Matrix> resErrorMatrixList = resnetError.getResErrorMatrixList();//残差误差
         List<Matrix> nextErrorMatrixList = resnetError.getNextErrorMatrixList();//下一层误差
         List<Matrix> errorList;
         if (deep == 2) {
             errorList = ResBlockError2(nextErrorMatrixList, firstConv.getBackParameter(), firstConv.getMatrixNormList(),
                     firstConv.getConvPower(), studyRate, false, oneConvPower, resErrorMatrixList,
-                    firstConv.getDymStudyRateList(), dymStudyRateList).getNextErrorMatrixList();
+                    firstConv.getDymStudyRateList(), dymStudyRateList, gaMa, gMaxTh, auto).getNextErrorMatrixList();
         } else {
             errorList = ResBlockError(nextErrorMatrixList, firstConv.getBackParameter(), firstConv.getMatrixNormList(),
-                    firstConv.getConvPower(), studyRate, 3, resErrorMatrixList, firstConv.getDymStudyRateList());
+                    firstConv.getConvPower(), studyRate, 3, resErrorMatrixList, firstConv.getDymStudyRateList(), gaMa, gMaxTh
+                    , auto);
         }
         return errorList;
     }
@@ -229,7 +238,7 @@ public class ResBlock extends ResConvCount {
                 nerveMatrix.setNub(i, 0, nub);
             }
             nerveMatrixList.add(nerveMatrix);
-            MatrixNorm matrixNorm = new MatrixNorm(size, studyRate);
+            MatrixNorm matrixNorm = new MatrixNorm(size, studyRate, gaMa, gMaxTh, auto);
             matrixNormList.add(matrixNorm);
         }
         convLay.setDymStudyRateList(sumOfSquares);

@@ -18,7 +18,6 @@ import java.util.List;
  */
 public abstract class ResConvCount {
     private final MatrixOperation matrixOperation = new MatrixOperation();
-    private final DymStudy dymStudy = new DymStudy();
 
     protected int getConvDeep(int size, int minFeatureValue) {//获取卷积层深度
         int x = size;
@@ -139,15 +138,16 @@ public abstract class ResConvCount {
 
 
     protected List<Matrix> backOneConvByList(List<Matrix> errorMatrixList, List<Matrix> matrixList, List<List<Float>> oneConvPower, float studyRate
-            , List<List<Float>> dymStudyList) throws Exception {
+            , List<List<Float>> dymStudyList, float gaMa, float gMaxTh, boolean auto) throws Exception {
         int size = errorMatrixList.size();//addMatrixList
+        DymStudy dym = new DymStudy(gaMa, gMaxTh, auto);
         if (size == oneConvPower.size()) {
             List<Matrix> allErrorMatrixList = null;
             for (int i = 0; i < size; i++) {
                 Matrix errorMatrix = errorMatrixList.get(i);
                 List<Float> oneConvPowerList = oneConvPower.get(i);
                 List<Float> dymStudy = dymStudyList.get(i);
-                List<Matrix> nextErrorMatrixList = backOneConv(errorMatrix, matrixList, oneConvPowerList, studyRate, dymStudy);
+                List<Matrix> nextErrorMatrixList = backOneConv(errorMatrix, matrixList, oneConvPowerList, studyRate, dymStudy, dym);
                 if (i == 0) {
                     allErrorMatrixList = nextErrorMatrixList;
                 } else {
@@ -167,10 +167,9 @@ public abstract class ResConvCount {
     }
 
     protected List<Matrix> backOneConv(Matrix errorMatrix, List<Matrix> matrixList, List<Float> oneConvPower, float studyRate
-            , List<Float> sList) throws Exception {//单卷积降维回传
+            , List<Float> sList, DymStudy dym) throws Exception {//单卷积降维回传
         int size = oneConvPower.size();
         List<Matrix> nextErrorMatrixList = new ArrayList<>();
-        float gaMa = 0.9f;
         for (int t = 0; t < size; t++) {
             Matrix myMatrix = matrixList.get(t);
             int x = myMatrix.getX();
@@ -178,7 +177,6 @@ public abstract class ResConvCount {
             Matrix errorMyMatrix = new Matrix(x, y);
             nextErrorMatrixList.add(errorMyMatrix);
             float power = oneConvPower.get(t);
-            float s = sList.get(t);
             float allSubPower = 0;
             for (int i = 0; i < x; i++) {
                 for (int j = 0; j < y; j++) {
@@ -189,10 +187,8 @@ public abstract class ResConvCount {
                     errorMyMatrix.setNub(i, j, subG);
                 }
             }
-            float sNext = gaMa * s + (1 - gaMa) * (float) Math.pow(allSubPower, 2);
-            float myStudyRate = studyRate / (float) Math.sqrt(sNext + 0.00000001f);
-            sList.set(t, sNext);
-            power = power + allSubPower * myStudyRate;
+            float error = dym.getErrorValueByStudy(studyRate, sList, allSubPower, t);
+            power = power + error;
             oneConvPower.set(t, power);
         }
         return nextErrorMatrixList;
@@ -317,7 +313,7 @@ public abstract class ResConvCount {
 
     protected List<Matrix> ResBlockError(List<Matrix> errorMatrixList, BackParameter backParameter, List<MatrixNorm> matrixNormList
             , List<Matrix> powerMatrixList, float studyRate, int kernSize, List<Matrix> resErrorMatrix
-            , List<Matrix> sMatrixList) throws Exception {
+            , List<Matrix> sMatrixList, float gaMa, float gMaxTh, boolean auto) throws Exception {
         ReLu reLu = new ReLu();
         int size = errorMatrixList.size();
         List<Matrix> outMatrixList = backParameter.getOutMatrixList();
@@ -337,7 +333,7 @@ public abstract class ResConvCount {
             Matrix nerveAllError = null;//权重总误差
             for (ConvResult convResult : convResults) {
                 ConvResult myConvResult = backDownConv(normError, convResult.getLeftMatrix(), powerMatrix, studyRate, kernSize,
-                        im2calSize, 2, sMatrix);
+                        im2calSize, 2, sMatrix, gaMa, gMaxTh, auto);
                 Matrix subPower = myConvResult.getNervePowerMatrix();
                 Matrix nextErrorMatrix = myConvResult.getResultMatrix();
                 nextErrorMatrixList.add(unPadding2(nextErrorMatrix, kernSize - 2));
@@ -362,7 +358,7 @@ public abstract class ResConvCount {
 
     protected ResnetError ResBlockError2(List<Matrix> errorMatrixList, BackParameter backParameter, List<MatrixNorm> matrixNormList
             , List<Matrix> powerMatrixList, float studyRate, boolean resError, List<List<Float>> oneConvPower, List<Matrix> resErrorMatrix
-            , List<Matrix> sMatrixList, List<List<Float>> dymStudyRateList) throws Exception {
+            , List<Matrix> sMatrixList, List<List<Float>> dymStudyRateList, float gaMa, float gMaxTh, boolean auto) throws Exception {
         ResnetError resnetError = new ResnetError();
         ReLu reLu = new ReLu();
         int size = errorMatrixList.size();
@@ -384,14 +380,15 @@ public abstract class ResConvCount {
             }
             Matrix normError = matrixNorm.backError(errorRelu);//脱掉归一化误差
             ConvResult myConvResult = backDownConv(normError, convResult.getLeftMatrix(), powerMatrix, studyRate, 3, im2calSize, 1
-                    , sMatrix);
+                    , sMatrix, gaMa, gMaxTh, auto);
             powerMatrix = matrixOperation.add(powerMatrix, myConvResult.getNervePowerMatrix());
             powerMatrixList.set(i, powerMatrix);//更新卷积核
             Matrix nextErrorMatrix = unPadding(myConvResult.getResultMatrix());
             nextErrorMatrixList.add(nextErrorMatrix);
         }
         if (resError && oneConvPower != null) {
-            resErrorMatrixList = backOneConvByList(resErrorMatrixList, backParameter.getScaleMatrixList(), oneConvPower, studyRate, dymStudyRateList);
+            resErrorMatrixList = backOneConvByList(resErrorMatrixList, backParameter.getScaleMatrixList(), oneConvPower, studyRate, dymStudyRateList
+                    , gaMa, gMaxTh, auto);
         } else if (!resError) {//残差与误差求和
             nextErrorMatrixList = matrixOperation.addMatrixList(nextErrorMatrixList, resErrorMatrix);
         }
@@ -401,7 +398,8 @@ public abstract class ResConvCount {
     }
 
     private ConvResult backDownConv(Matrix errorMatrix, Matrix im2col, Matrix nerveMatrix, float studyRate, int kernSize, int im2colSize
-            , int step, Matrix sMatrix) throws Exception {
+            , int step, Matrix sMatrix, float gaMa, float gMaxTh, boolean auto) throws Exception {
+        DymStudy dymStudy = new DymStudy(gaMa, gMaxTh, auto);
         //下采样卷积误差反向传播
         ConvResult convResult = new ConvResult();
         int x = errorMatrix.getX();

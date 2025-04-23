@@ -56,7 +56,8 @@ public class ResnetManager extends ResConvCount {
         }
         int featureLength = (int) (channelNo * Math.pow(2, deep - 1));//卷积层输出特征大小
         nerveManager = new NerveManager(featureLength, resNetConfig.getHiddenNerveNumber(), resNetConfig.getTypeNumber(), resNetConfig.getHiddenDeep()
-                , activeFunction, studyRate, resNetConfig.getRegularModel(), resNetConfig.getRegular(), 0);
+                , activeFunction, studyRate, resNetConfig.getRegularModel(), resNetConfig.getRegular(), 0, resNetConfig.getGaMa()
+                , resNetConfig.getGMaxTh(), resNetConfig.isAuto());
         ResNetConnectionLine resNetConnectionLine = new ResNetConnectionLine();
         nerveManager.init(true, resNetConfig.isShowLog(), resNetConfig.isSoftMax(), resNetConnectionLine);
         for (int i = 0; i < deep; i++) {
@@ -64,7 +65,8 @@ public class ResnetManager extends ResConvCount {
             if (i == deep - 1) {
                 sensoryNerves = nerveManager.getSensoryNerves();
             }
-            ResBlock resBlock = new ResBlock(channelNo, i + 1, studyRate, resNetConfig.getSize(), sensoryNerves);
+            ResBlock resBlock = new ResBlock(channelNo, i + 1, studyRate, resNetConfig.getSize(), sensoryNerves, resNetConfig.getGaMa()
+                    , resNetConfig.getGMaxTh(), resNetConfig.isAuto());
             resBlockList.add(resBlock);
         }
         restNetInput = new ResnetInput(resBlockList.get(0), resNetConfig.getSize());

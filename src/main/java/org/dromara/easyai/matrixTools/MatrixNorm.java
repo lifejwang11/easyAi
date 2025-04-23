@@ -15,7 +15,7 @@ public class MatrixNorm {
     private Matrix power;//膨胀系数矩阵
     private final Matrix bTaDymStudyRate;//偏移系数动态学习率
     private final Matrix powerDymStudyRate;//膨胀系数动态学习率
-    private final DymStudy dymStudy = new DymStudy();
+    private final DymStudy dymStudy;
     private final float studyRate;//全局学习率
     private final MatrixOperation matrixOperation = new MatrixOperation();
     private Matrix norm;
@@ -32,7 +32,8 @@ public class MatrixNorm {
         power.insertMatrixModel(normModel.getPowerParameter());
     }
 
-    public MatrixNorm(int size, float studyRate) throws Exception {
+    public MatrixNorm(int size, float studyRate, float gaMa, float gMaxTh, boolean auTo) throws Exception {
+        dymStudy = new DymStudy(gaMa, gMaxTh, auTo);
         bTa = new Matrix(size, size);
         power = new Matrix(size, size);
         bTaDymStudyRate = new Matrix(size, size);

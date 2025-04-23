@@ -1,6 +1,7 @@
 package org.dromara.easyai.unet;
 
 import org.dromara.easyai.conv.ConvCount;
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
@@ -32,10 +33,16 @@ public class UNetDecoder extends ConvCount {
     private final ConvSize convSize = new ConvSize();
     private final Cutting cutting;//输出语义切割图像
     private final float oneConvStudyRate;//
+    private final float gaMa;
+    private final float gMaxTh;
+    private final boolean autoStudyRate;//自动学习率
 
     public UNetDecoder(int kerSize, int deep, int channelNo, ActiveFunction activeFunction
-            , boolean lastLay, float studyRate, Cutting cutting, float oneConvStudyRate) throws Exception {
+            , boolean lastLay, float studyRate, Cutting cutting, float oneConvStudyRate, float gaMa, float gMaxTh, boolean autoStudyRate) throws Exception {
         this.cutting = cutting;
+        this.autoStudyRate = autoStudyRate;
+        this.gMaxTh = gMaxTh;
+        this.gaMa = gaMa;
         this.kerSize = kerSize;
         this.oneConvStudyRate = oneConvStudyRate;
         this.deep = deep;
@@ -45,18 +52,25 @@ public class UNetDecoder extends ConvCount {
         this.activeFunction = activeFunction;
         Random random = new Random();
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
+        List<Matrix> dymStudyRateList = convParameter.getDymStudyRateList();
         List<Matrix> upNeverMatrixList = convParameter.getUpNerveMatrixList();//上卷积采样权重
+        List<Matrix> upDYmStudyRateList = convParameter.getUpDymStudyRateList();
         List<ConvSize> convSizeList = convParameter.getConvSizeList();
         for (int i = 0; i < channelNo; i++) {
+            int convSize = kerSize * kerSize;
+            upDYmStudyRateList.add(new Matrix(1, convSize));
             upNeverMatrixList.add(initUpNervePowerMatrix(random));
-            initNervePowerMatrix(random, nerveMatrixList);
+            initNervePowerMatrix(random, nerveMatrixList, dymStudyRateList);
             convSizeList.add(new ConvSize());
         }
         if (lastLay) {
             List<Float> oneConvPower = new ArrayList<>();
+            List<Float> oneDymStudyRate = new ArrayList<>();
             for (int i = 0; i < channelNo; i++) {
                 oneConvPower.add(random.nextFloat() / channelNo);
+                oneDymStudyRate.add(0f);
             }
+            convParameter.setUpOneDymStudyRateList(oneDymStudyRate);
             convParameter.setUpOneConvPower(oneConvPower);
         }
     }
@@ -146,7 +160,8 @@ public class UNetDecoder extends ConvCount {
                 Matrix error = matrixOperation.mathMulBySelf(errorMatrix, power);
                 errorMatrixList.add(error);
             }
-            backOneConv(errorMatrix, features, upOneConvPower, oneConvStudyRate, true);//更新1v1卷积核
+            DymStudy dymStudy = new DymStudy(gaMa, gMaxTh, autoStudyRate);
+            backOneConv(errorMatrix, features, upOneConvPower, oneConvStudyRate, convParameter.getUpOneDymStudyRateList(), dymStudy);//更新1v1卷积核
             backLastError(errorMatrixList);
             //误差矩阵开始back
         } else {//输出
@@ -175,7 +190,8 @@ public class UNetDecoder extends ConvCount {
     }
 
     private void backLastError(List<Matrix> errorMatrixList) throws Exception {//最后一层的误差反向传播
-        List<Matrix> errorList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize);
+        List<Matrix> errorList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize, gaMa, gMaxTh
+                , autoStudyRate);
         sendEncoderError(errorList);//给同级解码器发送误差
         beforeDecoder.backErrorMatrix(errorList);
     }
@@ -205,8 +221,9 @@ public class UNetDecoder extends ConvCount {
     protected void backErrorMatrix(List<Matrix> myErrorMatrixList) throws Exception {//接收解码器误差
         //退上池化，退上卷积 退下卷积 并返回编码器误差
         List<Matrix> errorList = backManyUpPooling(myErrorMatrixList);//退上池化
-        List<Matrix> errorMatrixList = backManyUpConv(errorList, kerSize, convParameter, studyRate, activeFunction);//退上卷积
-        List<Matrix> backList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize);//退下卷积
+        List<Matrix> errorMatrixList = backManyUpConv(errorList, kerSize, convParameter, studyRate, activeFunction, gaMa, gMaxTh, autoStudyRate);//退上卷积
+        List<Matrix> backList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize, gaMa, gMaxTh
+                , autoStudyRate);//退下卷积
         if (myUNetEncoder != null) {
             sendEncoderError(backList);//给同级编码器发送误差
         }
@@ -241,13 +258,14 @@ public class UNetDecoder extends ConvCount {
         return nervePowerMatrix;
     }
 
-    private void initNervePowerMatrix(Random random, List<Matrix> nervePowerMatrixList) throws Exception {
+    private void initNervePowerMatrix(Random random, List<Matrix> nervePowerMatrixList, List<Matrix> dymStudyRateList) throws Exception {
         int convSize = kerSize * kerSize;
         Matrix nervePowerMatrix = new Matrix(convSize, 1);
         for (int i = 0; i < convSize; i++) {
             float power = random.nextFloat() / kerSize;
             nervePowerMatrix.setNub(i, 0, power);
         }
+        dymStudyRateList.add(new Matrix(convSize, 1));
         nervePowerMatrixList.add(nervePowerMatrix);
     }
 

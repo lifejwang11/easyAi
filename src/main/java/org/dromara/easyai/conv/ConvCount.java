@@ -146,18 +146,19 @@ public abstract class ConvCount {
     }
 
     protected List<Matrix> backManyUpConv(List<Matrix> errorMatrixList, int kerSize, ConvParameter convParameter, float studyRate,
-                                          ActiveFunction activeFunction) throws Exception {
+                                          ActiveFunction activeFunction, float gaMa, float gMaxTh, boolean auto) throws Exception {
         List<Matrix> result = new ArrayList<>();
         int size = errorMatrixList.size();
         for (int i = 0; i < size; i++) {
             Matrix errorMatrix = errorMatrixList.get(i);
-            result.add(backUpConv(errorMatrix, kerSize, convParameter, studyRate, activeFunction, i));
+            result.add(backUpConv(errorMatrix, kerSize, convParameter, studyRate, activeFunction, i, gaMa, gMaxTh, auto));
         }
         return result;
     }
 
     protected Matrix backUpConv(Matrix errorMatrix, int kerSize, ConvParameter convParameter, float studyRate, ActiveFunction activeFunction
-            , int index) throws Exception {//退上卷积
+            , int index, float gaMa, float gMaxTh, boolean auto) throws Exception {//退上卷积
+        DymStudy dymStudy = new DymStudy(gaMa, gMaxTh, auto);
         int myX = errorMatrix.getX();
         int myY = errorMatrix.getY();
         Matrix outMatrix = convParameter.getUpOutMatrixList().get(index);
@@ -170,11 +171,12 @@ public abstract class ConvCount {
         int x = backUpSize(myX, kerSize);
         int y = backUpSize(myY, kerSize);
         Matrix upNerveMatrix = convParameter.getUpNerveMatrixList().get(index);//上采样卷积权重
+        Matrix upDymStudyRate = convParameter.getUpDymStudyRateList().get(index);
         Matrix vector = convParameter.getUpFeatureMatrixList().get(index);
         Matrix error = matrixOperation.im2col(errorMatrix, kerSize, 1);
         Matrix subNerveMatrix = matrixOperation.matrixMulPd(error, vector, upNerveMatrix, false);
         Matrix errorFeature = matrixOperation.matrixMulPd(error, vector, upNerveMatrix, true);
-        matrixOperation.mathMul(subNerveMatrix, studyRate);
+        subNerveMatrix = dymStudy.getErrorMatrixByStudy(studyRate, upDymStudyRate, subNerveMatrix);
         convParameter.getUpNerveMatrixList().set(index, matrixOperation.add(subNerveMatrix, upNerveMatrix));
         return matrixOperation.vectorToMatrix(errorFeature, x, y);
     }
@@ -286,13 +288,15 @@ public abstract class ConvCount {
     }
 
     protected void backOneConvByList(List<Matrix> errorMatrixList, List<Matrix> matrixList, List<List<Float>> oneConvPower,
-                                     float studyRate, boolean UNet) throws Exception {
+                                     float studyRate, List<List<Float>> oneDymStudyRateList, float gaMa, float gMaxTh, boolean auto) throws Exception {
         int size = errorMatrixList.size();
+        DymStudy dymStudy = new DymStudy(gaMa, gMaxTh, auto);
         if (size == oneConvPower.size()) {
             for (int i = 0; i < size; i++) {
                 Matrix errorMatrix = errorMatrixList.get(i);
                 List<Float> oneConvPowerList = oneConvPower.get(i);
-                backOneConv(errorMatrix, matrixList, oneConvPowerList, studyRate, UNet);
+                List<Float> oneDymStudyRate = oneDymStudyRateList.get(i);
+                backOneConv(errorMatrix, matrixList, oneConvPowerList, studyRate, oneDymStudyRate, dymStudy);
             }
         } else {
             throw new Exception("误差矩阵大小与通道数不相符");
@@ -301,7 +305,7 @@ public abstract class ConvCount {
     }
 
     protected void backOneConv(Matrix errorMatrix, List<Matrix> matrixList, List<Float> oneConvPower,
-                               float studyRate, boolean uNet) throws Exception {//单卷积降维回传
+                               float studyRate, List<Float> sList, DymStudy dym) throws Exception {//单卷积降维回传
         int size = oneConvPower.size();
         for (int t = 0; t < size; t++) {
             Matrix myMatrix = matrixList.get(t);
@@ -309,30 +313,25 @@ public abstract class ConvCount {
             int y = myMatrix.getY();
             float power = oneConvPower.get(t);
             float allSubPower = 0;
-            float len = (float) Math.sqrt(x * y);
             for (int i = 0; i < x; i++) {
                 for (int j = 0; j < y; j++) {
-                    float subPower = myMatrix.getNumber(i, j) * errorMatrix.getNumber(i, j) * studyRate;
+                    float subPower = myMatrix.getNumber(i, j) * errorMatrix.getNumber(i, j);
                     allSubPower = allSubPower + subPower;
                 }
             }
-            float sup;
-            if (uNet) {
-                sup = allSubPower / len;
-            } else {
-                sup = allSubPower;
-            }
-            power = power + sup;
+            float error = dym.getErrorValueByStudy(studyRate, sList, allSubPower, t);
+            power = power + error;
             oneConvPower.set(t, power);
         }
     }
 
     protected List<Matrix> backAllDownConv(ConvParameter convParameter, List<Matrix> errorMatrixList, float studyPoint
-            , ActiveFunction activeFunction, int channelNo, int kernLen) throws Exception {
+            , ActiveFunction activeFunction, int channelNo, int kernLen, float gaMa, float gMaxTh, boolean auto) throws Exception {
         List<Matrix> outMatrixList = convParameter.getOutMatrixList();
         List<Matrix> im2colMatrixList = convParameter.getIm2colMatrixList();
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
         List<ConvSize> convSizeList = convParameter.getConvSizeList();
+        List<Matrix> sMatrixList = convParameter.getDymStudyRateList();
         List<Matrix> resultMatrixList = new ArrayList<>();
         for (int i = 0; i < channelNo; i++) {
             Matrix errorMatrix = errorMatrixList.get(i);
@@ -340,19 +339,21 @@ public abstract class ConvCount {
             Matrix im2col = im2colMatrixList.get(i);
             Matrix nerveMatrix = nerveMatrixList.get(i);
             ConvSize convSize = convSizeList.get(i);
+            Matrix sMatrix = sMatrixList.get(i);
             int xInput = convSize.getXInput();
             int yInput = convSize.getYInput();
             ConvResult convResult = backDownConv(errorMatrix, outMatrix, activeFunction, im2col,
-                    nerveMatrix, studyPoint, kernLen, xInput, yInput);
+                    nerveMatrix, studyPoint, kernLen, xInput, yInput, sMatrix, gaMa, gMaxTh, auto);
             nerveMatrixList.set(i, convResult.getNervePowerMatrix());//更新权重
             resultMatrixList.add(convResult.getResultMatrix());
         }
         return resultMatrixList;
     }
 
-    private ConvResult backDownConv(Matrix errorMatrix, Matrix outMatrix, ActiveFunction activeFunction
-            , Matrix im2col, Matrix nerveMatrix, float studyRate, int kernSize, int xInput, int yInput) throws Exception {
+    private ConvResult backDownConv(Matrix errorMatrix, Matrix outMatrix, ActiveFunction activeFunction, Matrix im2col, Matrix nerveMatrix,
+                                    float studyRate, int kernSize, int xInput, int yInput, Matrix sMatrix, float gaMa, float gMaxTh, boolean auto) throws Exception {
         //下采样卷积误差反向传播
+        DymStudy dymStudy = new DymStudy(gaMa, gMaxTh, auto);
         ConvResult convResult = new ConvResult();
         int x = errorMatrix.getX();
         int y = errorMatrix.getY();
@@ -367,7 +368,7 @@ public abstract class ConvCount {
         }
         Matrix wSub = matrixOperation.matrixMulPd(resultError, im2col, nerveMatrix, false);
         Matrix im2colSub = matrixOperation.matrixMulPd(resultError, im2col, nerveMatrix, true);
-        matrixOperation.mathMul(wSub, studyRate);
+        wSub = dymStudy.getErrorMatrixByStudy(studyRate, sMatrix, wSub);
         nerveMatrix = matrixOperation.add(nerveMatrix, wSub);//调整卷积核
         Matrix gNext = matrixOperation.reverseIm2col(im2colSub, kernSize, 1, xInput, yInput);//其余误差
         convResult.setNervePowerMatrix(nerveMatrix);

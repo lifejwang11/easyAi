@@ -35,7 +35,7 @@ public class FastYolo {//yolo
         if (stepReduce <= 1 && widthStep > 0 && heightStep > 0) {
             typeNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), yoloConfig.getTypeNub() + 1,
                     1, new ReLu(), yoloConfig.getStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
-                    , yoloConfig.getCoreNumber());
+                    , yoloConfig.getCoreNumber(), yoloConfig.getGaMa(), yoloConfig.getGMaxTh(), yoloConfig.isAuto());
             typeNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), winHeight, winWidth, true,
                     yoloConfig.isShowLog(), yoloConfig.getStudyRate(), new ReLu(), yoloConfig.getMinFeatureValue(), yoloConfig.getOneConvStudy()
                     , yoloConfig.isNorm());
@@ -104,8 +104,8 @@ public class FastYolo {//yolo
         float centerY = j - positionBack.getDistY() * zhou;
         int width = (int) typeBody.getRealWidth(positionBack.getWidth());
         int height = (int) typeBody.getRealHeight(positionBack.getHeight());
-        int realX = (int) (centerX - height / 2);
-        int realY = (int) (centerY - width / 2);
+        int realX = (int) (centerX - height / 2f);
+        int realY = (int) (centerY - width / 2f);
         if (realX < 0) {
             realX = 0;
         }
@@ -325,7 +325,7 @@ public class FastYolo {//yolo
                 positionE.put(4, yoloMessage.getHeight());
                 positionE.put(5, yoloMessage.getTrust());
                 NerveManager position = yoloMessage.getTypeBody().getPositionNerveManager();
-                study(1, position.getConvInput(), small, true, positionE, null);
+                study(2, position.getConvInput(), small, true, positionE, null);
             }
         }
 
