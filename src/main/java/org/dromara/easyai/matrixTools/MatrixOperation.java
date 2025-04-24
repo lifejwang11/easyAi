@@ -672,6 +672,20 @@ public class MatrixOperation {
         }
     }
 
+    public List<Matrix> mulMatrixList(List<Matrix> matrixList1, List<Matrix> matrixList2) throws Exception {//两个矩阵集合相乘
+        if (matrixList1.size() == matrixList2.size()) {
+            List<Matrix> mulMatrixList = new ArrayList<>();
+            int size = matrixList1.size();
+            for (int i = 0; i < size; i++) {
+                Matrix mulMatrix = mulMatrix(matrixList1.get(i), matrixList2.get(i));
+                mulMatrixList.add(mulMatrix);
+            }
+            return mulMatrixList;
+        } else {
+            throw new IllegalArgumentException("两个矩阵集合的大小不相等");
+        }
+    }
+
     //重重点
     public Matrix mulMatrix(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘
         if (null != cudaMatrix) {

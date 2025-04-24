@@ -18,7 +18,7 @@ public class ResnetConfig {
     private int hiddenDeep = 1;//线性层隐层神经元深度
     private int minFeatureSize = 5;//卷积层最小特征大小
     private float gaMa = 0.9f;//自适应学习率衰减系数
-    private float GMaxTh = 0.9f;//梯度最大值
+    private float GMaxTh = 500f;//梯度最大值
     private boolean auto = true;//是否使用自适应学习率
 
     public boolean isAuto() {
