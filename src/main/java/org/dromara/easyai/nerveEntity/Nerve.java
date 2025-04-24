@@ -2,6 +2,7 @@ package org.dromara.easyai.nerveEntity;
 
 import org.dromara.easyai.conv.ConvCount;
 import org.dromara.easyai.conv.ConvResult;
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.CustomEncoding;
 import org.dromara.easyai.matrixTools.Matrix;
@@ -24,7 +25,9 @@ public abstract class Nerve extends ConvCount {
     private final List<Nerve> father = new ArrayList<>();//树突上一层的连接神经元
     private Nerve sonOnly;
     private Nerve fatherOnly;
+    protected final float gaMa;//自适应学习率衰减系数
     protected Map<Integer, Float> dendrites = new HashMap<>();//上一层权重(需要取出)
+    private final Map<Integer, Float> dymStudyRate = new HashMap<>();//动态学习率
     protected Map<Integer, Float> wg = new HashMap<>();//上一层权重与梯度的积
     private final int id;//同级神经元编号,注意在同层编号中ID应有唯一性
     protected int upNub;//上一层神经元数量
@@ -52,6 +55,9 @@ public abstract class Nerve extends ConvCount {
     protected final float oneConvRate;
     private final boolean norm;//是否进行1v1卷积升降维
     private final CustomEncoding customEncoding;//自定义编码模块
+    private final float gMaxTh;
+    private final DymStudy dymStudy;
+    private final boolean auto;
 
     public Map<Integer, Float> getDendrites() {
         return dendrites;
@@ -76,8 +82,21 @@ public abstract class Nerve extends ConvCount {
     protected Nerve(int id, int upNub, String name, int downNub,
                     float studyPoint, boolean init, ActiveFunction activeFunction
             , boolean isDynamic, int rzType, float lParam, int kernLen, int depth
-            , int matrixX, int matrixY, int coreNumber, int channelNo, float onConvRate, boolean norm, CustomEncoding customEncoding) throws Exception {//该神经元在同层神经元中的编号
+            , int matrixX, int matrixY, int coreNumber, int channelNo, float onConvRate, boolean norm, CustomEncoding customEncoding
+            , float gaMa, float gMaxTh, boolean auto) throws Exception {//该神经元在同层神经元中的编号
+        if (auto) {
+            if (gaMa <= 0 || gaMa >= 1) {
+                throw new IllegalArgumentException("gaMa 取值范围是(0,1)，当前值:" + gaMa);
+            }
+            if (gMaxTh <= 0) {
+                throw new IllegalArgumentException("gMaxTh 必须比0大,当前值:" + gMaxTh);
+            }
+        }
         matrixOperation = new MatrixOperation(coreNumber);
+        dymStudy = new DymStudy(gaMa, gMaxTh, auto);
+        this.gaMa = gaMa;
+        this.auto = auto;
+        this.gMaxTh = gMaxTh;
         this.matrixX = matrixX;
         this.customEncoding = customEncoding;
         this.norm = norm;
@@ -241,11 +260,13 @@ public abstract class Nerve extends ConvCount {
         if (backNub == downNub) {
             backNub = 0;
             List<Matrix> errorMatrix = backDownPoolingByList(sigmaMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
-            List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrix, studyPoint, activeFunction, channelNo, kernLen);
+            List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrix, studyPoint, activeFunction, channelNo, kernLen,
+                    gaMa, gMaxTh, auto);
             sigmaMatrix = null;
             if (depth == 1) {//1*1 卷积调整
                 if (norm) {
-                    backOneConvByList(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), oneConvRate, false);
+                    backOneConvByList(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), oneConvRate
+                            , convParameter.getOneDymStudyRateList(), gaMa, gMaxTh, auto);
                 }
             } else {
                 //将梯度继续回传
@@ -255,9 +276,9 @@ public abstract class Nerve extends ConvCount {
     }
 
     protected void updatePower(long eventId) throws Exception {//修改阈值
-        float h = gradient * studyPoint;
-        threshold = threshold - h;
-        updateW(h, eventId);
+        float thError = dymStudy.getOneValueError(studyPoint, gradient, convParameter);
+        threshold = threshold - thError;
+        updateW(gradient, eventId);
         sigmaW = 0;//求和结果归零
         backSendMessage(eventId);
     }
@@ -296,8 +317,9 @@ public abstract class Nerve extends ConvCount {
             int key = entry.getKey();//上层隐层神经元的编号
             float w = entry.getValue();//接收到编号为KEY的上层隐层神经元的权重
             float bn = list.get(key - 1);//接收到编号为KEY的上层隐层神经元的输入
-            float wp = bn * h;
-            float dm = w * gradient;
+            float error = dymStudy.getNerveStudyError(dymStudyRate, key, h, studyPoint);
+            float wp = bn * error;
+            float dm = w * h;
             float regular = regularization(w, param);//正则化抑制权重s
             w = w + regular;
             w = w + wp;
@@ -363,6 +385,7 @@ public abstract class Nerve extends ConvCount {
                         nub = random.nextFloat() / (float) Math.sqrt(upNub);
                     }
                     dendrites.put(i, nub);//random.nextFloat()
+                    dymStudyRate.put(i, 0f);
                 }
                 //生成随机阈值
                 float nub = 0;
@@ -379,8 +402,10 @@ public abstract class Nerve extends ConvCount {
     private void initMatrixPower(Random random) throws Exception {
         int nerveNub = kernLen * kernLen;
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();//一层当中所有的深度卷积核
+        List<Matrix> dymStudyRateList = convParameter.getDymStudyRateList();
         List<ConvSize> convSizeList = convParameter.getConvSizeList();
         List<List<Float>> onePowers = new ArrayList<>();//1*1卷积核
+        List<List<Float>> oneDymStudyRateList = new ArrayList<>();
         for (int k = 0; k < channelNo; k++) {//遍历通道
             Matrix nerveMatrix = new Matrix(nerveNub, 1);//一组通道创建一组卷积核
             convSizeList.add(new ConvSize());
@@ -389,15 +414,20 @@ public abstract class Nerve extends ConvCount {
                 nerveMatrix.setNub(i, 0, nub);
             }
             nerveMatrixList.add(nerveMatrix);
+            dymStudyRateList.add(new Matrix(nerveNub, 1));
             if (depth == 1) {
                 List<Float> oneConvPowerList = new ArrayList<>();
+                List<Float> oneDymStudyRate = new ArrayList<>();
                 for (int i = 0; i < 3; i++) {
                     oneConvPowerList.add(random.nextFloat() / 3);
+                    oneDymStudyRate.add(0f);
                 }
+                oneDymStudyRateList.add(oneDymStudyRate);
                 onePowers.add(oneConvPowerList);
             }
         }
         if (depth == 1) {
+            convParameter.setOneDymStudyRateList(oneDymStudyRateList);
             convParameter.setOneConvPower(onePowers);
         }
     }

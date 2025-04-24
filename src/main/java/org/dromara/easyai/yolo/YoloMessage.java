@@ -4,6 +4,9 @@ package org.dromara.easyai.yolo;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 
 public class YoloMessage {
+    private String url;//图像地址
+    private int x;//图像坐标
+    private int y;
     private float distX;
     private float distY;
     private float width;
@@ -13,6 +16,30 @@ public class YoloMessage {
     private ThreeChannelMatrix pic;
     private TypeBody typeBody;
     private boolean backGround = false;//背景
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
 
     public boolean isBackGround() {
         return backGround;

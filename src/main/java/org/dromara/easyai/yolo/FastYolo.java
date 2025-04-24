@@ -1,5 +1,6 @@
 package org.dromara.easyai.yolo;
 
+import org.dromara.easyai.config.ResnetConfig;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.entity.Box;
@@ -8,6 +9,8 @@ import org.dromara.easyai.function.ReLu;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.nerveCenter.NerveManager;
 import org.dromara.easyai.nerveEntity.SensoryNerve;
+import org.dromara.easyai.resnet.ResnetInput;
+import org.dromara.easyai.resnet.ResnetManager;
 import org.dromara.easyai.tools.NMS;
 import org.dromara.easyai.tools.Picture;
 
@@ -32,7 +35,7 @@ public class FastYolo {//yolo
         if (stepReduce <= 1 && widthStep > 0 && heightStep > 0) {
             typeNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), yoloConfig.getTypeNub() + 1,
                     1, new ReLu(), yoloConfig.getStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
-                    , yoloConfig.getCoreNumber());
+                    , yoloConfig.getCoreNumber(), yoloConfig.getGaMa(), yoloConfig.getGMaxTh(), yoloConfig.isAuto());
             typeNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), winHeight, winWidth, true,
                     yoloConfig.isShowLog(), yoloConfig.getStudyRate(), new ReLu(), yoloConfig.getMinFeatureValue(), yoloConfig.getOneConvStudy()
                     , yoloConfig.isNorm());
@@ -70,7 +73,7 @@ public class FastYolo {//yolo
             typeBody.setMinHeight(typeModel.getMinHeight());
             typeBody.setMaxWidth(typeModel.getMaxWidth());
             typeBody.setMaxHeight(typeModel.getMaxHeight());
-            typeBody.getPositonNerveManager().insertConvModel(typeModel.getPositionModel());
+            typeBody.getPositionNerveManager().insertConvModel(typeModel.getPositionModel());
             typeBodies.add(typeBody);
         }
     }
@@ -87,7 +90,7 @@ public class FastYolo {//yolo
             typeModel.setMinWidth(typeBody.getMinWidth());
             typeModel.setMaxWidth(typeBody.getMaxWidth());
             typeModel.setMaxHeight(typeBody.getMaxHeight());
-            typeModel.setPositionModel(typeBody.getPositonNerveManager().getConvModel());
+            typeModel.setPositionModel(typeBody.getPositionNerveManager().getConvModel());
             typeModels.add(typeModel);
         }
         yoloModel.setTypeModels(typeModels);
@@ -101,8 +104,8 @@ public class FastYolo {//yolo
         float centerY = j - positionBack.getDistY() * zhou;
         int width = (int) typeBody.getRealWidth(positionBack.getWidth());
         int height = (int) typeBody.getRealHeight(positionBack.getHeight());
-        int realX = (int) (centerX - height / 2);
-        int realY = (int) (centerY - width / 2);
+        int realX = (int) (centerX - height / 2f);
+        int realY = (int) (centerY - width / 2f);
         if (realX < 0) {
             realX = 0;
         }
@@ -153,7 +156,7 @@ public class FastYolo {//yolo
                 int mappingID = yoloTypeBack.getId();//映射id
                 if (mappingID != typeBodies.size() + 1 && yoloTypeBack.getOut() > pth) {
                     TypeBody typeBody = getTypeBodyByMappingID(mappingID);
-                    SensoryNerve convInput = typeBody.getPositonNerveManager().getConvInput();
+                    SensoryNerve convInput = typeBody.getPositionNerveManager().getConvInput();
                     study(eventID, convInput, myTh, false, null, positionBack);
                     boxes.add(getBox(i, j, x, y, positionBack, typeBody));
                 }
@@ -321,8 +324,8 @@ public class FastYolo {//yolo
                 positionE.put(3, yoloMessage.getWidth());
                 positionE.put(4, yoloMessage.getHeight());
                 positionE.put(5, yoloMessage.getTrust());
-                NerveManager position = yoloMessage.getTypeBody().getPositonNerveManager();
-                study(1, position.getConvInput(), small, true, positionE, null);
+                NerveManager position = yoloMessage.getTypeBody().getPositionNerveManager();
+                study(2, position.getConvInput(), small, true, positionE, null);
             }
         }
 

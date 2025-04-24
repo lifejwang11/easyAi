@@ -619,8 +619,10 @@ public class MatrixOperation {
     public float getSdByMatrix(Matrix m, float avg, float e) throws Exception {//计算矩阵元素的标准差
         float var = 0;
         float size = m.getX() * m.getY();
-        for (int i = 0; i < m.getX(); i++) {
-            for (int j = 0; j < m.getY(); j++) {
+        int x = m.getX();
+        int y = m.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
                 var = var + (float) Math.pow(m.getNumber(i, j) - avg, 2);
             }
         }
@@ -667,6 +669,20 @@ public class MatrixOperation {
             return matrix;
         } else {
             throw new Exception("row is not equals column");
+        }
+    }
+
+    public List<Matrix> mulMatrixList(List<Matrix> matrixList1, List<Matrix> matrixList2) throws Exception {//两个矩阵集合相乘
+        if (matrixList1.size() == matrixList2.size()) {
+            List<Matrix> mulMatrixList = new ArrayList<>();
+            int size = matrixList1.size();
+            for (int i = 0; i < size; i++) {
+                Matrix mulMatrix = mulMatrix(matrixList1.get(i), matrixList2.get(i));
+                mulMatrixList.add(mulMatrix);
+            }
+            return mulMatrixList;
+        } else {
+            throw new IllegalArgumentException("两个矩阵集合的大小不相等");
         }
     }
 

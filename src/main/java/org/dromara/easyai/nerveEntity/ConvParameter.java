@@ -14,12 +14,16 @@ import java.util.Map;
  */
 public class ConvParameter {
     private final List<Matrix> nerveMatrixList = new ArrayList<>();//下采样卷积权重矩阵 需取出模型
+    private final List<Matrix> dymStudyRateList = new ArrayList<>();//动态学习率
     private final List<ConvSize> convSizeList = new ArrayList<>();
     private final List<Matrix> im2colMatrixList = new ArrayList<>();
     private final List<Matrix> outMatrixList = new ArrayList<>();
     private List<List<Float>> oneConvPower;//1*1卷积核 需取出模型
+    private List<List<Float>> oneDymStudyRateList;//
+    private List<Float> upOneDymStudyRateList;
     private List<Float> upOneConvPower;//上采样降维卷积核 需要取出模型
     private List<Matrix> featureMatrixList;//所有通道特征矩阵集合
+    private final List<Matrix> upDymStudyRateList = new ArrayList<>();
     private final List<Matrix> upNerveMatrixList = new ArrayList<>();//上采样卷积权重  需要取出模型
     private List<Matrix> upFeatureMatrixList;//上采样输入特征
     private List<Matrix> upOutMatrixList;//上卷积输出矩阵集合
@@ -28,6 +32,39 @@ public class ConvParameter {
     private int outY;
     private int encoderX;
     private int encoderY;
+    private float studyRateTh = 0;//记录线性模型动态偏移值学习率
+
+    public float getStudyRateTh() {
+        return studyRateTh;
+    }
+
+    public void setStudyRateTh(float studyRateTh) {
+        this.studyRateTh = studyRateTh;
+    }
+
+    public List<Matrix> getUpDymStudyRateList() {
+        return upDymStudyRateList;
+    }
+
+    public List<Float> getUpOneDymStudyRateList() {
+        return upOneDymStudyRateList;
+    }
+
+    public void setUpOneDymStudyRateList(List<Float> upOneDymStudyRateList) {
+        this.upOneDymStudyRateList = upOneDymStudyRateList;
+    }
+
+    public List<List<Float>> getOneDymStudyRateList() {
+        return oneDymStudyRateList;
+    }
+
+    public void setOneDymStudyRateList(List<List<Float>> oneDymStudyRateList) {
+        this.oneDymStudyRateList = oneDymStudyRateList;
+    }
+
+    public List<Matrix> getDymStudyRateList() {
+        return dymStudyRateList;
+    }
 
     public List<Matrix> getUpFeatureMatrixList() {
         return upFeatureMatrixList;

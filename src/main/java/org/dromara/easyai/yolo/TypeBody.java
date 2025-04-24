@@ -1,8 +1,10 @@
 package org.dromara.easyai.yolo;
 
+import org.dromara.easyai.config.ResnetConfig;
 import org.dromara.easyai.function.ReLu;
 import org.dromara.easyai.function.Tanh;
 import org.dromara.easyai.nerveCenter.NerveManager;
+import org.dromara.easyai.resnet.ResnetManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +16,19 @@ public class TypeBody {
     private int maxHeight = 0;//该类别映射的最大高度
     private int minWidth = -1;//该类别最小宽度
     private int minHeight = -1;//该类别最小高度
-    private int winWidth = 0;
-    private int winHeight = 0;
-    private final NerveManager positonNerveManager;//定位网络
+    private int times = 0;//训练出现次数
+    private final int winWidth;
+    private final int winHeight;
+    private final NerveManager positionNerveManager;//定位网络
+
+    public int getTimes() {
+        return times;
+    }
+
+    public void setTimes(int times) {
+        this.times = times;
+    }
+
     private List<YoloBody> yoloBodies = new ArrayList<>();//该类别下所有的数据集合
 
     public int getWinWidth() {
@@ -27,18 +39,19 @@ public class TypeBody {
         return winHeight;
     }
 
-    public NerveManager getPositonNerveManager() {
-        return positonNerveManager;
+    public NerveManager getPositionNerveManager() {
+        return positionNerveManager;
     }
 
     public TypeBody(YoloConfig yoloConfig, int minWinWidth, int minWinHeight) throws Exception {
+        //是否为轻量模型
         winWidth = minWinWidth;
         winHeight = minWinHeight;
-        positonNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), 5, 1,
-                new Tanh(), yoloConfig.getStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
-                , yoloConfig.getCoreNumber());
-        positonNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
-                false, yoloConfig.isShowLog(), yoloConfig.getStudyRate(), new ReLu(),
+        positionNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), 5, 1,
+                new Tanh(), yoloConfig.getPositionStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
+                , yoloConfig.getCoreNumber(), yoloConfig.getGaMa(), yoloConfig.getGMaxTh(), yoloConfig.isAuto());
+        positionNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
+                false, false, yoloConfig.getPositionStudyRate(), new ReLu(),
                 yoloConfig.getMinFeatureValue(), yoloConfig.getOneConvStudy(), yoloConfig.isNorm());
     }
 

@@ -1,6 +1,7 @@
 package org.dromara.easyai.yolo;
 
 import org.dromara.easyai.config.RZ;
+import org.dromara.easyai.config.ResnetConfig;
 
 public class YoloConfig {
     private int windowWidth = 90;//检测窗口宽
@@ -8,6 +9,7 @@ public class YoloConfig {
     private int typeNub = 10;//类别数量
     private int hiddenNerveNub = 16;//线性层隐层神经元数量
     private float studyRate = 0.0025f;//学习率
+    private float positionStudyRate = 0.0025f;//位置学习率
     private int kernelSize = 3;//卷积核尺寸
     private boolean showLog = false;//是否打印学习过程中的log
     private int enhance = 1;//数据增强
@@ -23,6 +25,41 @@ public class YoloConfig {
     private int minFeatureValue = 3;//输出特征维度大小
     private float oneConvStudy = 0.0025f;//降维层学习率
     private boolean norm = true;//是否进行维度调节
+    private float gaMa = 0.9f;//自适应学习率衰减系数
+    private float GMaxTh = 0.9f;//梯度裁剪阈值
+    private boolean auto = false;//是否使用自适应学习率
+
+    public boolean isAuto() {
+        return auto;
+    }
+
+    public void setAuto(boolean auto) {
+        this.auto = auto;
+    }
+
+    public float getGMaxTh() {
+        return GMaxTh;
+    }
+
+    public void setGMaxTh(float GMaxTh) {
+        this.GMaxTh = GMaxTh;
+    }
+
+    public float getGaMa() {
+        return gaMa;
+    }
+
+    public void setGaMa(float gaMa) {
+        this.gaMa = gaMa;
+    }
+
+    public float getPositionStudyRate() {
+        return positionStudyRate;
+    }
+
+    public void setPositionStudyRate(float positionStudyRate) {
+        this.positionStudyRate = positionStudyRate;
+    }
 
     public boolean isNorm() {
         return norm;
