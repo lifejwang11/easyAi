@@ -105,9 +105,6 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * 华为云年度杰出开源开发者
 <div><img src="https://myeasyai.cn/img/cup1.jpg" width="400",height="400" alt="huawei"></div>
 
-* Gitee GVP最有价值开源项目
-<div><img src="https://myeasyai.cn/img/cup3.jpg" width="400",height="400" alt="Gitee"></div>
-
 
 ### 微信交流群
 
