@@ -108,7 +108,6 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * Gitee GVP最有价值开源项目
 <div><img src="https://myeasyai.cn/img/cup3.jpg" width="400",height="400" alt="Gitee"></div>
 
-
 ### 微信交流群
 
 * 加微信技术交流群（目前只有微信交流群，QQ交流群已经不再拉新，凡是QQ交流群拉进去的，都不是我的群！大家注意！！）

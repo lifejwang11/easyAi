@@ -11,6 +11,22 @@ public class MatrixOperation {
     private ExecutorService POOL;//线程池
 
     private static final CudaMatrix cudaMatrix = getCudaMatrix();
+    private static final AscendMatrix ascendMatrix = getAscendMatrix();
+
+    private static AscendMatrix getAscendMatrix() {
+        ServiceLoader<AscendMatrix> loader = ServiceLoader.load(AscendMatrix.class);
+        Iterator<AscendMatrix> iterator = loader.iterator();
+        if (iterator.hasNext()) {
+            AscendMatrix cm = iterator.next();
+            try {
+                cm.init();
+                return cm;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
 
     private static CudaMatrix getCudaMatrix() {
         ServiceLoader<CudaMatrix> loader = ServiceLoader.load(CudaMatrix.class);
@@ -690,6 +706,8 @@ public class MatrixOperation {
     public Matrix mulMatrix(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘
         if (null != cudaMatrix) {
             return cudaMatrix.mulMatrix(matrix1, matrix2);
+        } else if (null != ascendMatrix) {
+            return ascendMatrix.mulMatrix(matrix1, matrix2);
         }
 
         if (coreNumber > 1) {
