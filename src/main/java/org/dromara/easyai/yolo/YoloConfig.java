@@ -28,6 +28,15 @@ public class YoloConfig {
     private float gaMa = 0.9f;//自适应学习率衰减系数
     private float GMaxTh = 0.9f;//梯度裁剪阈值
     private boolean auto = false;//是否使用自适应学习率
+    private boolean proTrust = false;//是否用概率当作可信度
+
+    public boolean isProTrust() {
+        return proTrust;
+    }
+
+    public void setProTrust(boolean proTrust) {
+        this.proTrust = proTrust;
+    }
 
     public boolean isAuto() {
         return auto;
