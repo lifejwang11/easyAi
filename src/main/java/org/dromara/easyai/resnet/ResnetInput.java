@@ -23,7 +23,7 @@ public class ResnetInput {
     }
 
     public void postThreeChannelMatrix(ThreeChannelMatrix threeChannelMatrix, boolean study, Map<Integer, Float> E, OutBack outBack
-            , long eventID) throws Exception {
+            , long eventID, boolean outFeature) throws Exception {
         int x = threeChannelMatrix.getX();
         int y = threeChannelMatrix.getY();
         if (x == y && x == imageSize) {
@@ -31,7 +31,7 @@ public class ResnetInput {
             matrixList.add(threeChannelMatrix.getMatrixR());
             matrixList.add(threeChannelMatrix.getMatrixG());
             matrixList.add(threeChannelMatrix.getMatrixB());
-            fistBlock.sendMatrixList(matrixList, outBack, study, E, eventID);
+            fistBlock.sendMatrixList(matrixList, outBack, study, E, eventID, outFeature);
         } else {
             throw new Exception("输入的图像必须为正方形，且尺寸必须等同于初始化配置的值：" + imageSize);
         }

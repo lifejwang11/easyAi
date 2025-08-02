@@ -26,7 +26,7 @@ public class YoloConfig {
     private float oneConvStudy = 0.0025f;//降维层学习率
     private boolean norm = true;//是否进行维度调节
     private float gaMa = 0.9f;//自适应学习率衰减系数
-    private float GMaxTh = 0.9f;//梯度裁剪阈值
+    private float GMaxTh = 1000f;//梯度裁剪阈值
     private boolean auto = false;//是否使用自适应学习率
     private boolean proTrust = false;//是否用概率当作可信度
 

@@ -9,10 +9,22 @@ import java.util.List;
 public class YoloTypeBack implements OutBack {
     private float out = -1;
     private int id = 0;
+    private List<Float> softMax;
 
+    public void setOut(float out) {
+        this.out = out;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public float getOut() {
         return out;
+    }
+
+    public List<Float> getSoftMax() {
+        return softMax;
     }
 
     public int getId() {
@@ -34,7 +46,7 @@ public class YoloTypeBack implements OutBack {
 
     @Override
     public void getSoftMaxBack(long eventId, List<Float> softMax) {
-
+        this.softMax = softMax;
     }
 
 

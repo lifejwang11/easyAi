@@ -4,6 +4,7 @@ import org.dromara.easyai.conv.ResConvCount;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixNorm;
+import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.nerveEntity.SensoryNerve;
 import org.dromara.easyai.resnet.entity.ResBlockModel;
 import org.dromara.easyai.resnet.entity.ResnetError;
@@ -32,6 +33,8 @@ public class ResBlock extends ResConvCount {
     private final float gaMa;
     private final float gMaxTh;
     private final boolean auto;
+    private final float GRate;//梯度衰减
+    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public ResBlockModel getModel() {
         ResBlockModel model = new ResBlockModel();
@@ -52,8 +55,9 @@ public class ResBlock extends ResConvCount {
     }
 
     public ResBlock(int channelNo, int deep, float studyRate, int imageSize, List<SensoryNerve> sensoryNerves, float gaMa, float gMaxTh
-            , boolean auto) throws Exception {
+            , boolean auto, float GRate) throws Exception {
         this.imageSize = imageSize;
+        this.GRate = GRate;
         this.sensoryNerves = sensoryNerves;
         this.channelNo = channelNo;
         this.deep = deep;
@@ -131,27 +135,41 @@ public class ResBlock extends ResConvCount {
                     firstConv.getConvPower(), studyRate, 3, resErrorMatrixList, firstConv.getDymStudyRateList(), gaMa, gMaxTh
                     , auto);
         }
+        matrixOperation.mathMulByList(errorList, GRate);
         return errorList;
     }
 
-    private void convMatrix(List<Matrix> feature, int step, boolean study, OutBack outBack, Map<Integer, Float> E, long eventID) throws Exception {// feature 准备跳层用
+    private void convMatrix(List<Matrix> feature, int step, boolean study, OutBack outBack, Map<Integer, Float> E, long eventID, boolean outFeature) throws Exception {// feature 准备跳层用
         boolean one = step == 1;
         List<Matrix> featureList = oneConvMatrix(feature, firstResConvPower, study, one);
         List<Matrix> lastFeatureList = oneConvMatrix(featureList, secondResConvPower, study, true);
         if (sonResBlock != null) {
-            sonResBlock.sendMatrixList(lastFeatureList, outBack, study, E, eventID);
+            sonResBlock.sendMatrixList(lastFeatureList, outBack, study, E, eventID, outFeature);
         } else {//最后卷积层了，求平均值
             List<Float> outFeatures = new ArrayList<>();
             for (Matrix matrix : lastFeatureList) {
                 outFeatures.add(matrix.getAVG());
             }
-            if (sensoryNerves.size() == outFeatures.size()) {
-                int size = sensoryNerves.size();
-                for (int i = 0; i < size; i++) {
-                    sensoryNerves.get(i).postMessage(eventID, outFeatures.get(i), study, E, outBack);
+            if (!study && outFeature) {
+                int size = outFeatures.size();
+                Matrix matrix = new Matrix(1, size);
+                for (int j = 0; j < size; j++) {
+                    matrix.setNub(0, j, outFeatures.get(j));
+                }
+                if (outBack != null) {
+                    outBack.getBackMatrix(matrix, 1, eventID);
+                } else {
+                    throw new Exception("没有传入OutBack输出回调类");
                 }
             } else {
-                throw new Exception("线性层与特征层特征维度不相等");
+                if (sensoryNerves.size() == outFeatures.size()) {
+                    int size = sensoryNerves.size();
+                    for (int i = 0; i < size; i++) {
+                        sensoryNerves.get(i).postMessage(eventID, outFeatures.get(i), study, E, outBack);
+                    }
+                } else {
+                    throw new Exception("线性层与特征层特征维度不相等");
+                }
             }
         }
     }
@@ -172,7 +190,7 @@ public class ResBlock extends ResConvCount {
                 , secondConvLay.getMatrixNormList(), feature, oneConvPower);
     }
 
-    public void sendMatrixList(List<Matrix> matrixList, OutBack outBack, boolean study, Map<Integer, Float> E, long eventID) throws Exception {
+    public void sendMatrixList(List<Matrix> matrixList, OutBack outBack, boolean study, Map<Integer, Float> E, long eventID, boolean outFeature) throws Exception {
         //判定特征大小是否为偶数
         if (fill(deep, imageSize, true)) {//不是偶数,要补0
             fillZero(matrixList, true);
@@ -188,9 +206,9 @@ public class ResBlock extends ResConvCount {
             for (Matrix matrix : myMatrixList) {
                 nextMatrixList.add(downPooling(matrix));
             }
-            convMatrix(nextMatrixList, 1, study, outBack, E, eventID);
+            convMatrix(nextMatrixList, 1, study, outBack, E, eventID, outFeature);
         } else {
-            convMatrix(matrixList, 2, study, outBack, E, eventID);
+            convMatrix(matrixList, 2, study, outBack, E, eventID, outFeature);
         }
 
     }
