@@ -6,6 +6,15 @@ public class OutBox {
     private int width;//宽度
     private int height;//高度
     private String typeID;//类别id
+    private float trust;
+
+    public float getTrust() {
+        return trust;
+    }
+
+    public void setTrust(float trust) {
+        this.trust = trust;
+    }
 
     public int getX() {
         return x;

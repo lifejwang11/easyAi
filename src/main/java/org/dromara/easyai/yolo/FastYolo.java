@@ -1,16 +1,12 @@
 package org.dromara.easyai.yolo;
 
-import org.dromara.easyai.config.ResnetConfig;
-import org.dromara.easyai.matrixTools.Matrix;
-import org.dromara.easyai.config.RZ;
+
 import org.dromara.easyai.entity.Box;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.function.ReLu;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.nerveCenter.NerveManager;
 import org.dromara.easyai.nerveEntity.SensoryNerve;
-import org.dromara.easyai.resnet.ResnetInput;
-import org.dromara.easyai.resnet.ResnetManager;
 import org.dromara.easyai.tools.NMS;
 import org.dromara.easyai.tools.Picture;
 
@@ -144,6 +140,7 @@ public class FastYolo {//yolo
             outBox.setHeight(box.getxSize());
             outBox.setWidth(box.getySize());
             outBox.setTypeID(String.valueOf(box.getTypeID()));
+            outBox.setTrust(box.getConfidence());
             outBoxes.add(outBox);
         }
         return outBoxes;
@@ -163,7 +160,7 @@ public class FastYolo {//yolo
                 study(eventID, typeNerveManager.getConvInput(), myTh, false, null, yoloTypeBack);
                 int mappingID = yoloTypeBack.getId();//映射id
                 float out = yoloTypeBack.getOut();
-                if (mappingID != typeBodies.size() + 1 && yoloTypeBack.getOut() > pth) {
+                if (mappingID != typeBodies.size() + 1 && out > pth) {
                     TypeBody typeBody = getTypeBodyByMappingID(mappingID);
                     SensoryNerve convInput = typeBody.getPositionNerveManager().getConvInput();
                     study(eventID, convInput, myTh, false, null, positionBack);
@@ -297,7 +294,7 @@ public class FastYolo {//yolo
         }
     }
 
-    private TypeBody getTypeBodyByMappingID(int mappingID) {
+    public TypeBody getTypeBodyByMappingID(int mappingID) {
         TypeBody ty = null;
         for (TypeBody yb : typeBodies) {
             if (yb.getMappingID() == mappingID) {
@@ -308,7 +305,7 @@ public class FastYolo {//yolo
         return ty;
     }
 
-    private TypeBody getTypeBodyByTypeID(int typeID) {
+    public TypeBody getTypeBodyByTypeID(int typeID) {
         TypeBody ty = null;
         for (TypeBody yb : typeBodies) {
             if (yb.getTypeID() == typeID) {

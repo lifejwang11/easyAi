@@ -659,7 +659,11 @@ public class MatrixOperation {
                         float nowNumber = columnNumber * rowNumber;
                         columnAllNumber = columnAllNumber + nowNumber;
                     }
-                    matrix.setNub(i, j, columnAllNumber);
+                    if (!Float.isNaN(columnAllNumber)) {
+                        matrix.setNub(i, j, columnAllNumber);
+                    } else {
+                        throw new Exception("计算时出现数值溢出，梯度爆炸!");
+                    }
                 }
             }
             return matrix;
@@ -728,6 +732,12 @@ public class MatrixOperation {
             }
         }
         return myMatrix;
+    }
+
+    public void mathMulByList(List<Matrix> matrixList, float value) throws Exception {
+        for (Matrix matrix : matrixList) {
+            mathMul(matrix, value);
+        }
     }
 
     //重点

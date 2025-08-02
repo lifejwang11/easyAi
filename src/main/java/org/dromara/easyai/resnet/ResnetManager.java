@@ -66,7 +66,7 @@ public class ResnetManager extends ResConvCount {
                 sensoryNerves = nerveManager.getSensoryNerves();
             }
             ResBlock resBlock = new ResBlock(channelNo, i + 1, studyRate, resNetConfig.getSize(), sensoryNerves, resNetConfig.getGaMa()
-                    , resNetConfig.getGMaxTh(), resNetConfig.isAuto());
+                    , resNetConfig.getGMaxTh(), resNetConfig.isAuto(), resNetConfig.getGRate());
             resBlockList.add(resBlock);
         }
         restNetInput = new ResnetInput(resBlockList.get(0), resNetConfig.getSize());
