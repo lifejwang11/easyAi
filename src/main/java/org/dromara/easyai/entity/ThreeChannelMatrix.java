@@ -72,7 +72,38 @@ public class ThreeChannelMatrix {
         return matrix;
     }
 
-    public Matrix CalculateAvgGrayscale() throws Exception {//计算均值灰度
+    public ThreeChannelMatrix rotate(double rotateSize) throws Exception {//旋转
+        ThreeChannelMatrix outPic = new ThreeChannelMatrix();
+        Matrix matrixRR = new Matrix(x, y);
+        Matrix matrixGG = new Matrix(x, y);
+        Matrix matrixBB = new Matrix(x, y);
+        outPic.setX(x);
+        outPic.setY(y);
+        outPic.setMatrixR(matrixRR);
+        outPic.setMatrixG(matrixGG);
+        outPic.setMatrixB(matrixBB);
+        double centerX = x / 2d;//中心点坐标
+        double centerY = y / 2d;//中心点坐标
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                double nj = (j - centerY) * Math.cos(rotateSize) - (i - centerX) * Math.sin(rotateSize) + centerY;
+                double ni = (j - centerY) * Math.sin(rotateSize) + (i - centerX) * Math.cos(rotateSize) + centerX;
+                int tj = (int) nj;
+                int ti = (int) ni;
+                float r = matrixR.getNumber(i, j);
+                float g = matrixG.getNumber(i, j);
+                float b = matrixB.getNumber(i, j);
+                if (ti > 0 && ti < x && tj > 0 && tj < y) {
+                    matrixRR.setNub(ti, tj, r);
+                    matrixGG.setNub(ti, tj, g);
+                    matrixBB.setNub(ti, tj, b);
+                }
+            }
+        }
+        return outPic;
+    }
+
+    public Matrix calculateAvgGrayscale() throws Exception {//计算均值灰度
         Matrix matrix = new Matrix(x, y);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {

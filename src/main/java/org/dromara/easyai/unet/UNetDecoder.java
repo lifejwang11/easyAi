@@ -151,7 +151,7 @@ public class UNetDecoder extends ConvCount {
             if (fe == null) {
                 fe = sfe;
             }
-            Matrix he = fe.CalculateAvgGrayscale();
+            Matrix he = fe.calculateAvgGrayscale();
             Matrix errorMatrix = matrixOperation.sub(he, feature);//总误差
             //先更新分矩阵误差
             List<Matrix> errorMatrixList = new ArrayList<>();

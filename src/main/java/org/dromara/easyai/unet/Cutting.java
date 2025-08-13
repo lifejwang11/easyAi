@@ -29,7 +29,7 @@ public class Cutting {
         Matrix pr = picture.getMatrixR();
         Matrix pg = picture.getMatrixG();
         Matrix pb = picture.getMatrixB();
-        Matrix outMatrix = outPicture.CalculateAvgGrayscale();
+        Matrix outMatrix = outPicture.calculateAvgGrayscale();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 if (i < tx && j < ty) {
