@@ -58,6 +58,7 @@ public abstract class Nerve extends ConvCount {
     private final float gMaxTh;
     private final DymStudy dymStudy;
     private final boolean auto;
+    private final float GRate;//梯度衰减
 
     public Map<Integer, Float> getDendrites() {
         return dendrites;
@@ -83,7 +84,7 @@ public abstract class Nerve extends ConvCount {
                     float studyPoint, boolean init, ActiveFunction activeFunction
             , boolean isDynamic, int rzType, float lParam, int kernLen, int depth
             , int matrixX, int matrixY, int coreNumber, int channelNo, float onConvRate, boolean norm, CustomEncoding customEncoding
-            , float gaMa, float gMaxTh, boolean auto) throws Exception {//该神经元在同层神经元中的编号
+            , float gaMa, float gMaxTh, boolean auto, float GRate) throws Exception {//该神经元在同层神经元中的编号
         if (auto) {
             if (gaMa <= 0 || gaMa >= 1) {
                 throw new IllegalArgumentException("gaMa 取值范围是(0,1)，当前值:" + gaMa);
@@ -94,6 +95,7 @@ public abstract class Nerve extends ConvCount {
         }
         matrixOperation = new MatrixOperation(coreNumber);
         dymStudy = new DymStudy(gaMa, gMaxTh, auto);
+        this.GRate = GRate;
         this.gaMa = gaMa;
         this.auto = auto;
         this.gMaxTh = gMaxTh;
@@ -260,6 +262,7 @@ public abstract class Nerve extends ConvCount {
         if (backNub == downNub) {
             backNub = 0;
             List<Matrix> errorMatrix = backDownPoolingByList(sigmaMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
+            matrixOperation.mathMulByList(errorMatrix, GRate);
             List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrix, studyPoint, activeFunction, channelNo, kernLen,
                     gaMa, gMaxTh, auto);
             sigmaMatrix = null;

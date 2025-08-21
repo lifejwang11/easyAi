@@ -52,7 +52,7 @@ public class TypeBody {
                 , yoloConfig.getCoreNumber(), yoloConfig.getGaMa(), yoloConfig.getGMaxTh(), yoloConfig.isAuto());
         positionNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
                 false, false, yoloConfig.getPositionStudyRate(), new ReLu(),
-                yoloConfig.getMinFeatureValue(), yoloConfig.getOneConvStudy(), yoloConfig.isNorm());
+                yoloConfig.getMinFeatureValue(), yoloConfig.getOneConvStudy(), yoloConfig.isNorm(), yoloConfig.getGRate());
     }
 
     public float getRealWidth(float width) {
