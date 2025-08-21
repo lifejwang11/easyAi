@@ -299,6 +299,7 @@ public class NerveManager extends ConvCount {
      * @param minFeatureValue 卷积层最小特征数量的开方 取值范围 [1,50]
      * @param norm            是否进行维度调节，true 进行调节， false不进行维度调节
      * @param oneConvRate     降维层学习率
+     * @param GRate           每层的梯度衰减阈值
      */
     public void initImageNet(int channelNo, int kernLen, int xSize, int ySize, boolean isSoftMax, boolean isShowLog,
                              float convStudyPoint, ActiveFunction convFunction, int minFeatureValue, float oneConvRate
