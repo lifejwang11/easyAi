@@ -89,7 +89,7 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * 目前easyAI只有微信交流群，QQ交流群已经不再拉新，凡是QQ交流群拉进去的，都不是我的群！大家注意！！
 
 ## 部署
-* 最新版本(若国内镜像还未同步则使用1.4.6，或者自行下载发行版)
+* 最新版本(若国内镜像还未同步则使用1.4.8，或者自行下载发行版)
 ```    
     <dependency>
       <groupId>org.dromara.easyai</groupId>
@@ -104,7 +104,7 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
     <dependency>
       <groupId>org.dromara.easyai</groupId>
       <artifactId>easyAi</artifactId>
-      <version>1.4.6</version>
+      <version>1.4.8</version>
     </dependency>
 ```
 
