@@ -3,6 +3,7 @@ package org.dromara.easyai.nerveEntity;
 import org.dromara.easyai.conv.ConvCount;
 import org.dromara.easyai.conv.ConvResult;
 import org.dromara.easyai.conv.DymStudy;
+import org.dromara.easyai.conv.MyStudy;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.CustomEncoding;
 import org.dromara.easyai.matrixTools.Matrix;
@@ -58,7 +59,6 @@ public abstract class Nerve extends ConvCount {
     private final float gMaxTh;
     private final DymStudy dymStudy;
     private final boolean auto;
-    private final float GRate;//梯度衰减
 
     public Map<Integer, Float> getDendrites() {
         return dendrites;
@@ -84,7 +84,7 @@ public abstract class Nerve extends ConvCount {
                     float studyPoint, boolean init, ActiveFunction activeFunction
             , boolean isDynamic, int rzType, float lParam, int kernLen, int depth
             , int matrixX, int matrixY, int coreNumber, int channelNo, float onConvRate, boolean norm, CustomEncoding customEncoding
-            , float gaMa, float gMaxTh, boolean auto, float GRate) throws Exception {//该神经元在同层神经元中的编号
+            , float gaMa, float gMaxTh, boolean auto) throws Exception {//该神经元在同层神经元中的编号
         if (auto) {
             if (gaMa <= 0 || gaMa >= 1) {
                 throw new IllegalArgumentException("gaMa 取值范围是(0,1)，当前值:" + gaMa);
@@ -95,7 +95,6 @@ public abstract class Nerve extends ConvCount {
         }
         matrixOperation = new MatrixOperation(coreNumber);
         dymStudy = new DymStudy(gaMa, gMaxTh, auto);
-        this.GRate = GRate;
         this.gaMa = gaMa;
         this.auto = auto;
         this.gMaxTh = gMaxTh;
@@ -262,7 +261,6 @@ public abstract class Nerve extends ConvCount {
         if (backNub == downNub) {
             backNub = 0;
             List<Matrix> errorMatrix = backDownPoolingByList(sigmaMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
-            matrixOperation.mathMulByList(errorMatrix, GRate);
             List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrix, studyPoint, activeFunction, channelNo, kernLen,
                     gaMa, gMaxTh, auto);
             sigmaMatrix = null;
@@ -286,46 +284,35 @@ public abstract class Nerve extends ConvCount {
         backSendMessage(eventId);
     }
 
-    private float regularization(float w, float param) {//正则化类型
+    private float regularization(float w, float studyRate) {//正则化类型
         float re = 0.0f;
         if (rzType != RZ.NOT_RZ) {
             if (rzType == RZ.L2) {
-                re = param * -w;
+                re = lParam * -w;
             } else if (rzType == RZ.L1) {
                 if (w > 0) {
-                    re = -param;
+                    re = -lParam;
                 } else if (w < 0) {
-                    re = param;
+                    re = lParam;
                 }
             }
+            re = re * studyRate;
         }
         return re;
     }
 
     private void updateW(float h, long eventId) {//h是学习率 * 当前g（梯度）
         List<Float> list = features.get(eventId);
-        float param = 0;
-        if (rzType != RZ.NOT_RZ) {
-            float sigma = 0;
-            for (Map.Entry<Integer, Float> entry : dendrites.entrySet()) {
-                if (rzType == RZ.L2) {
-                    sigma = sigma + (float) Math.pow(entry.getValue(), 2);
-                } else {
-                    sigma = sigma + Math.abs(entry.getValue());
-                }
-            }
-            param = sigma * lParam * studyPoint;
-        }
         for (Map.Entry<Integer, Float> entry : dendrites.entrySet()) {
             int key = entry.getKey();//上层隐层神经元的编号
             float w = entry.getValue();//接收到编号为KEY的上层隐层神经元的权重
             float bn = list.get(key - 1);//接收到编号为KEY的上层隐层神经元的输入
-            float error = dymStudy.getNerveStudyError(dymStudyRate, key, h, studyPoint);
+            MyStudy myStudy = dymStudy.getNerveStudyError(dymStudyRate, key, h, studyPoint);
+            float error = myStudy.getError();
             float wp = bn * error;
             float dm = w * h;
-            float regular = regularization(w, param);//正则化抑制权重s
-            w = w + regular;
-            w = w + wp;
+            float regular = regularization(w, myStudy.getMyStudyRate());//正则化抑制权重s
+            w = w + wp + regular;
             wg.put(key, dm);//保存上一层权重与梯度的积
             dendrites.put(key, w);//保存修正结果
         }

@@ -20,15 +20,6 @@ public class ResnetConfig {
     private float gaMa = 0.9f;//自适应学习率衰减系数
     private float GMaxTh = 500f;//梯度最大值
     private boolean auto = true;//是否使用自适应学习率
-    private float GRate = 0.01f;//梯度衰减
-
-    public float getGRate() {
-        return GRate;
-    }
-
-    public void setGRate(float GRate) {
-        this.GRate = GRate;
-    }
 
     public boolean isAuto() {
         return auto;

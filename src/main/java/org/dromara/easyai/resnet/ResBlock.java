@@ -33,8 +33,6 @@ public class ResBlock extends ResConvCount {
     private final float gaMa;
     private final float gMaxTh;
     private final boolean auto;
-    private final float GRate;//梯度衰减
-    private final MatrixOperation matrixOperation = new MatrixOperation();
 
     public ResBlockModel getModel() {
         ResBlockModel model = new ResBlockModel();
@@ -55,9 +53,8 @@ public class ResBlock extends ResConvCount {
     }
 
     public ResBlock(int channelNo, int deep, float studyRate, int imageSize, List<SensoryNerve> sensoryNerves, float gaMa, float gMaxTh
-            , boolean auto, float GRate) throws Exception {
+            , boolean auto) throws Exception {
         this.imageSize = imageSize;
-        this.GRate = GRate;
         this.sensoryNerves = sensoryNerves;
         this.channelNo = channelNo;
         this.deep = deep;
@@ -135,7 +132,6 @@ public class ResBlock extends ResConvCount {
                     firstConv.getConvPower(), studyRate, 3, resErrorMatrixList, firstConv.getDymStudyRateList(), gaMa, gMaxTh
                     , auto);
         }
-        matrixOperation.mathMulByList(errorList, GRate);
         return errorList;
     }
 

@@ -36,7 +36,7 @@ public class FastYolo {//yolo
                     , yoloConfig.getCoreNumber(), yoloConfig.getGaMa(), yoloConfig.getGMaxTh(), yoloConfig.isAuto());
             typeNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), winHeight, winWidth, true,
                     yoloConfig.isShowLog(), yoloConfig.getStudyRate(), new ReLu(), yoloConfig.getMinFeatureValue(), yoloConfig.getOneConvStudy()
-                    , yoloConfig.isNorm(), yoloConfig.getGRate());
+                    , yoloConfig.isNorm());
         } else {
             throw new Exception("The stepReduce must be (0,1] and widthStep ,heightStep must Greater than 0");
         }

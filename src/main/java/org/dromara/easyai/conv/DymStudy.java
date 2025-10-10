@@ -36,23 +36,28 @@ public class DymStudy {
         return error * studyRate;
     }
 
-    public float getNerveStudyError(Map<Integer, Float> dymStudyRate, int key, float g, float studyRate) {
-        if (!auto) {
-            return getErrorNotAuto(studyRate, g);
-        }
+    public MyStudy getNerveStudyError(Map<Integer, Float> dymStudyRate, int key, float g, float studyRate) {
         float gc = gCropping(g);
+        MyStudy myStudy = new MyStudy();
+        if (!auto) {
+            myStudy.setMyStudyRate(studyRate);
+            myStudy.setError(getErrorNotAuto(studyRate, gc));
+            return myStudy;
+        }
         float s = dymStudyRate.get(key);
         float sNext = gaMa * s + (1 - gaMa) * (float) Math.pow(gc, 2);
         float myStudyRate = studyRate / (float) Math.sqrt(sNext + 0.00000001f);
         dymStudyRate.put(key, sNext);
-        return myStudyRate * gc;
+        myStudy.setMyStudyRate(myStudyRate);
+        myStudy.setError(myStudyRate * gc);
+        return myStudy;
     }
 
     public float getOneValueError(float studyRate, float g, ConvParameter convParameter) {
-        if (!auto) {
-            return getErrorNotAuto(studyRate, g);
-        }
         float gc = gCropping(g);
+        if (!auto) {
+            return getErrorNotAuto(studyRate, gc);
+        }
         float s = convParameter.getStudyRateTh();
         float sNext = gaMa * s + (1 - gaMa) * (float) Math.pow(gc, 2);
         convParameter.setStudyRateTh(sNext);
@@ -72,29 +77,42 @@ public class DymStudy {
     }
 
     public float getErrorValueByStudy(float studyRate, List<Float> sList, float g, int t) {
+        g = gCropping(g);
         if (!auto) {
             return getErrorNotAuto(studyRate, g);
         }
         float s = sList.get(t);
-        g = gCropping(g);
         float sNext = gaMa * s + (1 - gaMa) * (float) Math.pow(g, 2);
         float myStudyRate = studyRate / (float) Math.sqrt(sNext + 0.00000001f);
         sList.set(t, sNext);
         return g * myStudyRate;
     }
 
+    private Matrix getClipMatrix(Matrix gMatrix) throws Exception {
+        float norm = matrixOperation.getNorm(gMatrix);
+        Matrix gcMatrix;
+        if (norm > gMaxTh) {
+            float s = gMaxTh / norm;
+            gcMatrix = matrixOperation.mathMulBySelf(gMatrix, s);
+        } else {
+            gcMatrix = gMatrix;
+        }
+        return gcMatrix;
+    }
+
     public Matrix getErrorMatrixByStudy(float studyRate, Matrix sMatrix, Matrix gMatrix) throws Exception {//获取动态学习率
+        Matrix gcMatrix = getClipMatrix(gMatrix);
         if (!auto) {
-            return matrixOperation.mathMulBySelf(gMatrix, studyRate);
+            return matrixOperation.mathMulBySelf(gcMatrix, studyRate);
         }
         int x = sMatrix.getX();
         int y = sMatrix.getY();
         Matrix errorMatrix = new Matrix(x, y);
-        if (x == gMatrix.getX() && y == gMatrix.getY()) {
+        if (x == gcMatrix.getX() && y == gcMatrix.getY()) {
             for (int i = 0; i < x; i++) {
                 for (int j = 0; j < y; j++) {
                     float s = sMatrix.getNumber(i, j);
-                    float g = gCropping(gMatrix.getNumber(i, j));
+                    float g = gcMatrix.getNumber(i, j);
                     float sNext = gaMa * s + (1 - gaMa) * (float) Math.pow(g, 2);
                     sMatrix.setNub(i, j, sNext);
                     float myStudyRate = studyRate / (float) Math.sqrt(sNext + 0.00000001f);

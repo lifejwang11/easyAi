@@ -18,7 +18,7 @@ public class SensoryNerve extends Nerve {
     public SensoryNerve(int id, int upNub, int channelNo) throws Exception {
         super(id, upNub, "SensoryNerve", 0, 0.1f, false,
                 null, false, 0, 0, 0, 0, 0, 0
-                , 0, channelNo, 0, false, null, 0.9f, 0.9f, false, 1);
+                , 0, channelNo, 0, false, null, 0.9f, 0.9f, false);
     }
 
     /**

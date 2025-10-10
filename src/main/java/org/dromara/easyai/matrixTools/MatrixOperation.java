@@ -418,17 +418,13 @@ public class MatrixOperation {
     }
 
     public float getNorm(Matrix matrix) throws Exception {//求向量范数
-        if (matrix.getY() == 1 || matrix.getX() == 1) {
-            float nub = 0;
-            for (int i = 0; i < matrix.getX(); i++) {
-                for (int j = 0; j < matrix.getY(); j++) {
-                    nub = (float) Math.pow(matrix.getNumber(i, j), 2) + nub;
-                }
+        double nub = 0;
+        for (int i = 0; i < matrix.getX(); i++) {
+            for (int j = 0; j < matrix.getY(); j++) {
+                nub = Math.pow(matrix.getNumber(i, j), 2) + nub;
             }
-            return (float) Math.sqrt(nub);
-        } else {
-            throw new Exception("this matrix is not vector");
         }
+        return (float) Math.sqrt(nub);
     }
 
     public float getNormCos(Matrix matrix1, Matrix matrix2) throws Exception {//求两个向量之间的余弦
