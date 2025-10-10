@@ -27,7 +27,7 @@ public class YoloConfig {
     private boolean norm = true;//是否进行维度调节
     private float gaMa = 0.9f;//自适应学习率衰减系数
     private float GMaxTh = 100f;//梯度裁剪阈值
-    private boolean auto = false;//是否使用自适应学习率
+    private boolean auto = true;//是否使用自适应学习率
     private boolean proTrust = false;//是否用概率当作可信度
 
     public boolean isProTrust() {
