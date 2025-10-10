@@ -14,15 +14,31 @@ public class SoftMax extends Nerve {
     public SoftMax(int upNub, boolean isDynamic, List<OutNerve> outNerves, boolean isShowLog, int coreNumber) throws Exception {
         super(0, upNub, "softMax", 0, 0, false, null, isDynamic
                 , RZ.NOT_RZ, 0, 0, 0, 0, 0, coreNumber, 0
-                , 0, false, null, 0.9f, 0.9f, false, 1);
+                , 0, false, null, 0.9f, 0.9f, false);
         this.outNerves = outNerves;
         this.isShowLog = isShowLog;
+    }
+
+    private void normMax(long eventId) {//max归一化
+        List<Float> featuresList = features.get(eventId);
+        float max = featuresList.get(0);
+        for (float feature : featuresList) {
+            if (feature > max) {
+                max = feature;
+            }
+        }
+        for (int i = 0; i < featuresList.size(); i++) {
+            float feature = featuresList.get(i);
+            float value = feature - max;
+            featuresList.set(i, value);
+        }
     }
 
     @Override
     protected void input(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E, OutBack outBack) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {
+            normMax(eventId);
             Mes mes = softMax(eventId);//输出值
             int key = 0;
             if (isStudy) {//学习

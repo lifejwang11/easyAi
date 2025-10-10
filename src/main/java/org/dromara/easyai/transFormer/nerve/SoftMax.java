@@ -38,11 +38,40 @@ public class SoftMax extends Nerve {
         return myMatrix;
     }
 
+    private float getMaxValueByMatrix(Matrix matrix) throws Exception {
+        int x = matrix.getX();
+        int y = matrix.getY();
+        float max = matrix.getNumber(0, 0);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float value = matrix.getNumber(i, j);
+                if (value > max) {
+                    max = value;
+                }
+            }
+        }
+        return max;
+    }
+
+    private void normMax(Matrix feature) throws Exception {
+        int x = feature.getX();
+        int y = feature.getY();
+        for (int i = 0; i < x; i++) {
+            Matrix row = feature.getRow(i);
+            float max = getMaxValueByMatrix(row);
+            for (int j = 0; j < y; j++) {
+                float value = feature.getNumber(i, j);
+                feature.setNub(i, j, value - max);
+            }
+        }
+    }
+
     @Override
     protected void toOut(long eventId, Matrix parameter, boolean isStudy, OutBack outBack, List<Integer> E, boolean outAllPro) throws Exception {
         boolean allReady = insertMatrixParameter(eventId, parameter);
         if (allReady) {
             Matrix feature = reMatrixFeatures.get(eventId).getMatrix();//特征
+            normMax(feature);
             reMatrixFeatures.remove(eventId);
             int x = feature.getX();
             if (isStudy) {
