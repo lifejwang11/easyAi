@@ -19,7 +19,8 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * 官方网站地址(及文档)： https://www.myeasyai.cn
 * 部分案例Demo代码地址: https://gitee.com/ldp_dpsmax/easy-ai-demo
 * 若对您的学习或生产有帮助，请留下您的STAR，您的一个简单的举动，对我来说却非常重要。
-* 我正在参加 Gitee 2025 最受欢迎的开源软件投票活动，快来给我投票吧！https://gitee.com/activity/2025opensource?ident=IU4I6M
+
+### 我正在参加 Gitee 2025 最受欢迎的开源软件投票活动，快来给我投票吧！https://gitee.com/activity/2025opensource?ident=IU4I6M
 
 ### 图像检测部分
 
@@ -28,12 +29,14 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 <div align=center> <img src="https://myeasyai.cn/img/drink.png"></div>
 
 ### 图像抠图
+
 * 对图像语义进行像素级切割，前者输入原图像，后者进行输出抠图后的图像
 
 <img src="https://myeasyai.cn/img/cut.png" alt="Image 1" style="vertical-align:middle; display:inline-block; width:48%; margin-right:2%;">
 <img src="https://myeasyai.cn/img/cutting.png" alt="Image 2" style="vertical-align:middle; display:inline-block; width:48%;">
 
 ### 人脸识别
+
 * 人脸识别是对人的脸部进行定位后进行识别，是常用的人工智能图像项目
 * seeFace是基于EasyAi框架开发的开源社区级人脸识别内核算法
 * 算法源码地址：https://gitee.com/ldp_dpsmax/see-face
@@ -90,7 +93,9 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * 目前easyAI只有微信交流群，QQ交流群已经不再拉新，凡是QQ交流群拉进去的，都不是我的群！大家注意！！
 
 ## 部署
+
 * 最新版本,POM文件配置以下坐标既可
+
 ```    
     <dependency>
       <groupId>org.dromara.easyai</groupId>
@@ -102,9 +107,11 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 ## 获得荣誉
 
 * 华为云年度杰出开源开发者
+
 <div><img src="https://myeasyai.cn/img/cup1.jpg" width="400",height="400" alt="huawei"></div>
 
 * Gitee GVP最有价值开源项目
+
 <div><img src="https://myeasyai.cn/img/cup3.jpg" width="400",height="400" alt="Gitee"></div>
 
 ### 微信交流群
