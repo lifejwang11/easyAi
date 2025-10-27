@@ -1,106 +1,132 @@
 package org.dromara.easyai.tools;
 
+import org.dromara.easyai.entity.*;
 import org.dromara.easyai.matrixTools.Matrix;
-import org.dromara.easyai.entity.RGBNorm;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
  * @param
  * @DATA
  * @Author LiDaPeng
- * @Description
+ * @Description 混高聚类
  */
-public class GMClustering extends MeanClustering {
-    private float regionSize;//单区域面积
+public class GMClustering {
+    private final Map<Integer, Cluster> clusters = new HashMap<>();
+    private final List<Matrix> featureMatrix = new ArrayList<>();
+    private final int maxTimes;//最大迭代次数
+    private final int xSize;
+    private final int ySize;
 
-    public float getRegionSize() {
-        return regionSize;
+    public GMClustering(int speciesQuantity, int maxTimes, int xSize, int ySize) throws Exception {
+        this.maxTimes = maxTimes;
+        this.xSize = xSize;
+        this.ySize = ySize;
+        double a = 1d / speciesQuantity;
+        for (int i = 0; i < speciesQuantity; i++) {
+            Cluster cluster = new Cluster();
+            cluster.init(a, xSize, ySize, i + 1);
+            clusters.put(i + 1, cluster);
+        }
     }
 
-    public void setRegionSize(float regionSize) {
-        this.regionSize = regionSize;
-    }
-
-    public GMClustering(int speciesQuantity, int maxTimes) throws Exception {
-        super(speciesQuantity, maxTimes);
-    }
-
-    public int getProbabilityDensity(float[] feature) throws Exception {//获取簇id
-        float maxPower = 0;
-        int id = 0;
-        int index = 0;
-        for (RGBNorm rgbNorm : matrices) {
-            float power = rgbNorm.getGMProbability(feature);
-            if (power > maxPower) {
-                maxPower = power;
-                id = index;
+    public void insertModel(GMModel gmModel) {
+        List<ClusterModel> cmList = gmModel.getGmmBodyList();
+        if (cmList.size() == clusters.size()) {
+            for (ClusterModel cm : cmList) {
+                int key = cm.getKey();
+                Cluster cluster = clusters.get(key);
+                if (cluster != null) {
+                    cluster.insertModel(cm);
+                } else {
+                    throw new IllegalArgumentException("模型出现损坏，不合法的主键");
+                }
             }
-            index++;
+        } else {
+            throw new IllegalArgumentException("模型的蔟数与构造函数蔟数不匹配");
         }
-        return id;
     }
 
-    @Override
-    public void start() throws Exception {
-        super.start();
-        for (RGBNorm rgbNorm : matrices) {//高斯系数初始化
-            rgbNorm.gm();
+    public GMModel getModel() {
+        GMModel model = new GMModel();
+        List<ClusterModel> cmList = new ArrayList<>();
+        for (Map.Entry<Integer, Cluster> entry : clusters.entrySet()) {
+            cmList.add(entry.getValue().getModel());
         }
-        for (int i = 0; i < 50; i++) {
-            gmClustering();
+        model.setGmmBodyList(cmList);
+        return model;
+    }
+
+    private double getSigMa(Map<Integer, Double> map, Matrix feature) throws Exception {
+        double sigMa = 0;//概率求和
+        for (Map.Entry<Integer, Cluster> entry : clusters.entrySet()) {
+            Cluster cluster = entry.getValue();
+            double power = cluster.getPro(feature);
+            sigMa = sigMa + power;
+            map.put(entry.getKey(), power);
+        }
+        return sigMa;
+    }
+
+    public GMMBody getType(Matrix feature) throws Exception {//获取所属蔟类别id
+        int key = 0;
+        if (feature.getX() == xSize && feature.getY() == ySize) {
+            GMMBody gmmBody = new GMMBody();
+            Map<Integer, Double> map = new HashMap<>();
+            double sigMa = getSigMa(map, feature);
+            double maxValue = 0;
+            for (Map.Entry<Integer, Double> entry : map.entrySet()) {
+                double power = entry.getValue() / sigMa;//该样本属于key的概率
+                if (power > maxValue) {
+                    maxValue = power;
+                    key = entry.getKey();
+                }
+            }
+            gmmBody.setType(key);
+            gmmBody.setPower(maxValue);
+            return gmmBody;
+        } else {
+            throw new Exception("特征矩阵大小与构造函数预设大小不符");
+        }
+    }
+
+    private void clusterAllocation() throws Exception {//分配蔟
+        for (Matrix matrix : featureMatrix) {//遍历所有蔟
+            Map<Integer, Double> map = new HashMap<>();
+            double sigMa = getSigMa(map, matrix);
+            int key = 0;
+            double maxValue = 0;
+            for (Map.Entry<Integer, Double> entry : map.entrySet()) {
+                double power = entry.getValue() / sigMa;//该样本属于key的概率
+                clusters.get(entry.getKey()).insertPower(power);
+                if (power > maxValue) {
+                    maxValue = power;
+                    key = entry.getKey();
+                }
+            }
+            clusters.get(key).insertFeature(matrix);
+        }
+        for (Map.Entry<Integer, Cluster> entry : clusters.entrySet()) {
+            entry.getValue().update();
+        }
+    }
+
+    public void start() throws Exception {
+        for (int i = 0; i < maxTimes; i++) {
+            clusterAllocation();
         }
     }
 
     public void insertParameter(Matrix matrix) throws Exception {
-        int y = matrix.getY();
-        int size = y / speciesQuantity;
-        for (int i = 0; i <= y - size; i += size) {
-            float[] feature = new float[size];
-            RGBNorm rgbNorm = new RGBNorm();
-            matrices.add(rgbNorm);
-            for (int j = i; j < i + size; j++) {
-                feature[j - i] = matrix.getNumber(0, j);
-            }
-            rgbNorm.insertFeature(feature);
+        if (matrix.getX() == xSize && matrix.getY() == ySize) {
+            featureMatrix.add(matrix);
+        } else {
+            throw new Exception("特征矩阵大小与构造函数预设大小不符");
         }
     }
 
-    private void clear() {
-        for (RGBNorm rgbNorm : matrices) {//高斯系数初始化
-            rgbNorm.clearRGB();
-        }
-    }
-
-    private void gmClustering() throws Exception {//进行gm聚类
-        clear();
-        for (float[] rgb : matrixList) {//遍历当前集合
-            float allProbability = 0;//全概率
-            float[] pro = new float[speciesQuantity];
-            for (int i = 0; i < speciesQuantity; i++) {
-                RGBNorm rgbNorm = matrices.get(i);
-                float probability = rgbNorm.getGMProbability(rgb);
-                //System.out.println("pro===" + probability);
-                allProbability = allProbability + probability;
-                pro[i] = probability;
-            }
-            //求每个簇的后验概率
-            for (int i = 0; i < speciesQuantity; i++) {
-                pro[i] = pro[i] / allProbability;
-            }
-            //判断概率最大的簇
-            int index = 0;
-            float max = 0;
-            for (int i = 0; i < speciesQuantity; i++) {
-                if (pro[i] > max) {
-                    max = pro[i];
-                    index = i;
-                }
-            }
-            //注入特征
-            matrices.get(index).setGmFeature(rgb, pro[index]);
-        }
-        for (RGBNorm rgbNorm : matrices) {//高斯系数初始化
-            rgbNorm.gm();
-        }
-    }
 }
