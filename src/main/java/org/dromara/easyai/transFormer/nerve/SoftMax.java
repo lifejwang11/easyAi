@@ -87,7 +87,11 @@ public class SoftMax extends Nerve {
                     Mes mes = softMax(true, row, false);//输出值
                     int key = E.get(i);
                     if (isShowLog) {
-                        System.out.println("softMax==" + key + ",out==" + mes.poi + ",nerveId==" + mes.typeID);
+                        if (outBack == null) {
+                            System.out.println("softMax==" + key + ",out==" + mes.poi + ",nerveId==" + mes.typeID);
+                        } else {
+                            outBack.getStudyLog(key, mes.poi, mes.typeID);
+                        }
                     }
                     Matrix errors = error(mes, key, i, x);
                     if (i == 0) {

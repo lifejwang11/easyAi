@@ -60,6 +60,11 @@ public class PositionBack implements OutBack {
     }
 
     @Override
+    public void getStudyLog(float e, float out, int nerveId) {
+
+    }
+
+    @Override
     public void getSoftMaxBack(long eventId, List<Float> softMax) {
 
     }

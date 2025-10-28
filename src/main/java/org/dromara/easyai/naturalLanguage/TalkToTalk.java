@@ -2,6 +2,7 @@ package org.dromara.easyai.naturalLanguage;
 
 import org.dromara.easyai.config.TfConfig;
 import org.dromara.easyai.entity.TalkBody;
+import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.naturalLanguage.word.WordBack;
@@ -78,7 +79,7 @@ public class TalkToTalk {
     }
 
 
-    public TransFormerModel study(List<TalkBody> talkBodies) throws Exception {
+    public TransFormerModel study(List<TalkBody> talkBodies, OutBack logOutBack) throws Exception {
         init(talkBodies);
         SensoryNerve sensoryNerve = transFormerManager.getSensoryNerve();
         int size = talkBodies.size();
@@ -89,7 +90,7 @@ public class TalkToTalk {
                 String question = talkBody.getQuestion();
                 String answer = talkBody.getAnswer();
                 System.out.println("问题:" + question + ", 回答:" + answer + ",训练语句下标:" + index + ",总数量:" + size + ",当前次数：" + k + ",总次数:" + times);
-                sensoryNerve.postSentence(1, question, answer, true, null);
+                sensoryNerve.postSentence(1, question, answer, true, logOutBack);
             }
         }
         return transFormerManager.getModel();
