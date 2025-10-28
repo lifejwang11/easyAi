@@ -49,7 +49,11 @@ public class SoftMax extends Nerve {
                     }
                 }
                 if (isShowLog) {
-                    System.out.println("softMax==" + key + ",out==" + mes.poi + ",nerveId==" + mes.typeID);
+                    if (outBack == null) {
+                        System.out.println("softMax==" + key + ",out==" + mes.poi + ",nerveId==" + mes.typeID);
+                    } else {
+                        outBack.getStudyLog(key, mes.poi, mes.typeID);
+                    }
                 }
                 List<Float> errors = error(mes, key);
                 features.remove(eventId); //清空当前上层输入参数参数

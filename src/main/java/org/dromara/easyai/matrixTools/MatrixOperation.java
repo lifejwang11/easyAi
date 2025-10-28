@@ -691,6 +691,9 @@ public class MatrixOperation {
     }
 
     public List<Matrix> mulMatrixList(List<Matrix> matrixList1, List<Matrix> matrixList2) throws Exception {//两个矩阵集合相乘
+        if (null != cudaMatrix) {
+            return cudaMatrix.mulMatrix(matrixList1, matrixList2);
+        }
         if (matrixList1.size() == matrixList2.size()) {
             List<Matrix> mulMatrixList = new ArrayList<>();
             int size = matrixList1.size();

@@ -175,7 +175,7 @@ public class FastYolo {//yolo
     }
 
 
-    public void toStudy(List<YoloSample> yoloSamples) throws Exception {
+    public void toStudy(List<YoloSample> yoloSamples, OutBack logOutBack) throws Exception {
         for (YoloSample yoloSample : yoloSamples) {
             List<YoloBody> yoloBodies = yoloSample.getYoloBodies();
             for (YoloBody yoloBody : yoloBodies) {
@@ -189,7 +189,7 @@ public class FastYolo {//yolo
             for (YoloSample yoloSample : yoloSamples) {
                 index++;
                 System.out.println("index:" + index + ",size:" + yoloSamples.size());
-                study(yoloSample);
+                study(yoloSample, logOutBack);
             }
         }
     }
@@ -264,7 +264,7 @@ public class FastYolo {//yolo
         return sent;
     }
 
-    private void study(YoloSample yoloSample) throws Exception {//
+    private void study(YoloSample yoloSample, OutBack logOutBack) throws Exception {//
         List<YoloBody> yoloBodies = yoloSample.getYoloBodies();//集合
         List<Box> boxes = getBoxes(yoloBodies);
         String url = yoloSample.getLocationURL();//地址
@@ -290,7 +290,7 @@ public class FastYolo {//yolo
             }
         }
         if (!yoloMessageList.isEmpty()) {
-            studyImage(anySort(yoloMessageList));
+            studyImage(anySort(yoloMessageList), logOutBack);
         }
     }
 
@@ -316,13 +316,13 @@ public class FastYolo {//yolo
         return ty;
     }
 
-    private void studyImage(List<YoloMessage> yoloMessageList) throws Exception {
+    private void studyImage(List<YoloMessage> yoloMessageList, OutBack logOutBack) throws Exception {
         for (YoloMessage yoloMessage : yoloMessageList) {
             Map<Integer, Float> typeE = new HashMap<>();
             ThreeChannelMatrix small = yoloMessage.getPic();
             int mappingID = yoloMessage.getMappingID();
             typeE.put(mappingID, 1f);
-            study(1, typeNerveManager.getConvInput(), small, true, typeE, null);
+            study(1, typeNerveManager.getConvInput(), small, true, typeE, logOutBack);
             if (!yoloMessage.isBackGround()) {
                 Map<Integer, Float> positionE = new HashMap<>();
                 positionE.put(1, yoloMessage.getDistX());
@@ -331,7 +331,7 @@ public class FastYolo {//yolo
                 positionE.put(4, yoloMessage.getHeight());
                 positionE.put(5, yoloMessage.getTrust());
                 NerveManager position = yoloMessage.getTypeBody().getPositionNerveManager();
-                study(2, position.getConvInput(), small, true, positionE, null);
+                study(2, position.getConvInput(), small, true, positionE, logOutBack);
             }
         }
 

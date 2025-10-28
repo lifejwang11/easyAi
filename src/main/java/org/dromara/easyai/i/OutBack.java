@@ -23,6 +23,15 @@ public interface OutBack {
     void getBack(float out, int id, long eventId);
 
     /**
+     * 训练日志
+     *
+     * @param e       期望
+     * @param out     实际输出值
+     * @param nerveId 输出神经元ID
+     */
+    void getStudyLog(float e, float out, int nerveId);
+
+    /**
      * 多分类回调
      *
      * @param eventId 事件ID

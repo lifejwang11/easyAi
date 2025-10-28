@@ -299,29 +299,6 @@ public class ThreeChannelMatrix {
         }
     }
 
-    public ThreeChannelMatrix cutChannel(int x, int y, int XSize, int YSize) throws Exception {
-        ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
-        threeChannelMatrix.setX(XSize);
-        threeChannelMatrix.setY(YSize);
-        int xLen = this.matrixR.getX();
-        int yLen = this.matrixR.getY();
-        if (x < 0 || y < 0 || x + XSize > xLen || y + YSize > yLen) {
-            throw new Exception("size out,xLen:" + xLen + ",yLen:" + yLen + "," +
-                    "x:" + x + ",y:" + y + ",xSize:" + (x + XSize) + ",ySize:" + (y + YSize));
-        }
-        Matrix matrixR = this.matrixR.getSonOfMatrix(x, y, XSize, YSize);
-        Matrix matrixG = this.matrixG.getSonOfMatrix(x, y, XSize, YSize);
-        Matrix matrixB = this.matrixB.getSonOfMatrix(x, y, XSize, YSize);
-        Matrix matrixH = H.getSonOfMatrix(x, y, XSize, YSize);
-        threeChannelMatrix.setX(XSize);
-        threeChannelMatrix.setY(YSize);
-        threeChannelMatrix.setMatrixR(matrixR);
-        threeChannelMatrix.setMatrixG(matrixG);
-        threeChannelMatrix.setMatrixB(matrixB);
-        threeChannelMatrix.setH(matrixH);
-        return threeChannelMatrix;
-    }
-
     public Matrix getH() {
         return H;
     }
@@ -352,5 +329,37 @@ public class ThreeChannelMatrix {
 
     public void setMatrixB(Matrix matrixB) {
         this.matrixB = matrixB;
+    }
+
+    public ThreeChannelMatrix cutChannel(int x, int y, int XSize, int YSize) throws Exception {
+        ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
+        threeChannelMatrix.setX(XSize);
+        threeChannelMatrix.setY(YSize);
+        int xLen = this.matrixR.getX();
+        int yLen = this.matrixR.getY();
+        if (x < 0 || y < 0 || x + XSize > xLen || y + YSize > yLen) {
+            throw new Exception("size out,xLen:" + xLen + ",yLen:" + yLen + "," +
+                    "x:" + x + ",y:" + y + ",xSize:" + (x + XSize) + ",ySize:" + (y + YSize));
+        }
+        Matrix matrixTR = new Matrix(XSize, YSize);
+        Matrix matrixTG = new Matrix(XSize, YSize);
+        Matrix matrixTB = new Matrix(XSize, YSize);
+        int xr;
+        int yr;
+        for (int i = 0; i < XSize; i++) {
+            xr = i + x;
+            for (int j = 0; j < YSize; j++) {
+                yr = j + y;
+                matrixTR.setNub(i, j, matrixR.getNumber(xr, yr));
+                matrixTG.setNub(i, j, matrixG.getNumber(xr, yr));
+                matrixTB.setNub(i, j, matrixB.getNumber(xr, yr));
+            }
+        }
+        threeChannelMatrix.setX(XSize);
+        threeChannelMatrix.setY(YSize);
+        threeChannelMatrix.setMatrixR(matrixTR);
+        threeChannelMatrix.setMatrixG(matrixTG);
+        threeChannelMatrix.setMatrixB(matrixTB);
+        return threeChannelMatrix;
     }
 }

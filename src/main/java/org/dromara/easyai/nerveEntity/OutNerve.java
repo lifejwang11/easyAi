@@ -51,7 +51,11 @@ public class OutNerve extends Nerve {
                         this.E = -1;
                     }
                     if (isShowLog) {
-                        System.out.println("E==" + this.E + ",out==" + out + ",nerveId==" + getId());
+                        if (outBack == null) {
+                            System.out.println("E==" + this.E + ",out==" + out + ",nerveId==" + getId());
+                        } else {
+                            outBack.getStudyLog(this.E, out, getId());
+                        }
                     }
                     gradient = outGradient();//当前梯度变化
                     //调整权重 修改阈值 并进行反向传播
