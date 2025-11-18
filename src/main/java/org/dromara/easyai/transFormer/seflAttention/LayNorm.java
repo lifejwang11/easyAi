@@ -9,10 +9,11 @@ import org.dromara.easyai.transFormer.FirstDecoderBlock;
 import org.dromara.easyai.transFormer.model.LayNormModel;
 import org.dromara.easyai.transFormer.nerve.HiddenNerve;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LayNorm {//残差与归一化
     private MultiSelfAttention multiSelfAttention;//多头
@@ -20,7 +21,7 @@ public class LayNorm {//残差与归一化
     private final int featureDimension;//特征维度
     private List<HiddenNerve> hiddenNerves;//第一层隐层
     private final int type;//类别层模型需要保存
-    private final Map<Long, MatrixList> reMatrixMap = new HashMap<>();
+    private final Map<Long, MatrixList> reMatrixMap = new ConcurrentHashMap<>();
     private final FirstDecoderBlock firstDecoderBlock;
     private Matrix bTa;//模型需要保存
     private Matrix power;//模型需要保存

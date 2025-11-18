@@ -3,9 +3,10 @@ package org.dromara.easyai.nerveEntity;
 import org.dromara.easyai.matrixTools.Matrix;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -27,7 +28,7 @@ public class ConvParameter {
     private final List<Matrix> upNerveMatrixList = new ArrayList<>();//上采样卷积权重  需要取出模型
     private List<Matrix> upFeatureMatrixList;//上采样输入特征
     private List<Matrix> upOutMatrixList;//上卷积输出矩阵集合
-    private final Map<Long, List<Matrix>> featureMap = new HashMap<>();
+    private final Map<Long, List<Matrix>> featureMap = new ConcurrentHashMap<>();
     private int outX;
     private int outY;
     private int encoderX;

@@ -16,7 +16,7 @@ import org.dromara.easyai.rnnNerveCenter.NerveManager;
 import org.dromara.easyai.rnnNerveEntity.SensoryNerve;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -106,7 +106,7 @@ public class WordEmbedding extends MatrixOperation {
     private void studyDNN(long eventId, int featureIndex, int resIndex, OutBack outBack, boolean isStudy) throws Exception {
         List<SensoryNerve> sensoryNerves = nerveManager.getSensoryNerves();
         int size = sensoryNerves.size();
-        Map<Integer, Float> map = new HashMap<>();
+        Map<Integer, Float> map = new ConcurrentHashMap<>();
         if (resIndex > 0) {
             map.put(resIndex + 1, 1f);
         }

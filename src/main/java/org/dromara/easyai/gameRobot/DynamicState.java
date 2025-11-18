@@ -1,6 +1,7 @@
 package org.dromara.easyai.gameRobot;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -13,8 +14,8 @@ public class DynamicState {
     private float value = 0;//该状态价值
     private int number = 0;//该状态被执行了几次 被执行的时候需要修改
     private boolean isFinish = false;//是否是终结态
-    private Map<Integer, List<DynamicState>> sonStatesMap = new HashMap<>();//动作-子状态集合 被执行的时候需要修改
-    private Map<Integer, Integer> profitMap = new HashMap<>();//该状态的收益集合，主键是收益，值是次数 被执行的时候需要修改
+    private final Map<Integer, List<DynamicState>> sonStatesMap = new ConcurrentHashMap<>();//动作-子状态集合 被执行的时候需要修改
+    private final Map<Integer, Integer> profitMap = new ConcurrentHashMap<>();//该状态的收益集合，主键是收益，值是次数 被执行的时候需要修改
 
     public void add() {
         number++;

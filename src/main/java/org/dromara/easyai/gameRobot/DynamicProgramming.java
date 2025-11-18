@@ -3,6 +3,7 @@ package org.dromara.easyai.gameRobot;
 import org.dromara.easyai.matrixTools.Matrix;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -11,7 +12,7 @@ import java.util.*;
  */
 public class DynamicProgramming {
     private final List<DynamicState> dynamicStateList = new ArrayList<>();//状态集合
-    private final Map<Integer, Action> actionMap = new HashMap<>();//动作列表
+    private final Map<Integer, Action> actionMap = new ConcurrentHashMap<>();//动作列表
     private final List<Integer> bestStrategy = new ArrayList<>();//最佳策略
     private float gaMa = 0.5F; //贴现因子
     private float valueTh = 0.0001f;//价值阈值

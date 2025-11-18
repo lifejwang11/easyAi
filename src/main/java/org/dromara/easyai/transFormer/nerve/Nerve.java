@@ -10,6 +10,7 @@ import org.dromara.easyai.transFormer.LineBlock;
 import org.dromara.easyai.transFormer.seflAttention.LayNorm;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -26,7 +27,7 @@ public abstract class Nerve {
     private final int hiddenNerveNub;//隐层神经元个数
     private final int sensoryNerveNub;//输入神经元个数
     private final int outNerveNub;//输出神经元个数
-    protected Map<Long, MatrixList> reMatrixFeatures = new HashMap<>();
+    protected Map<Long, MatrixList> reMatrixFeatures = new ConcurrentHashMap<>();
     protected String name;//该神经元所属类型
     protected Matrix featureMatrix;
     protected float E;//模板期望值

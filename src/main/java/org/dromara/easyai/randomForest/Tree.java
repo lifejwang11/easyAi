@@ -3,6 +3,7 @@ package org.dromara.easyai.randomForest;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -54,7 +55,7 @@ public class Tree {//决策树
 
     private float getEnt(List<Integer> list) {
         //记录了每个类别有几个
-        Map<Integer, Integer> myType = new HashMap<>();
+        Map<Integer, Integer> myType = new ConcurrentHashMap<>();
         for (int index : list) {
             int type = endList.get(index);//最终结果的类别
             if (myType.containsKey(type)) {
@@ -80,7 +81,7 @@ public class Tree {//决策树
         Set<String> attributes = node.attribute;
         List<Integer> fatherList = node.fatherList;
         if (!attributes.isEmpty()) {
-            Map<String, Map<Integer, List<Integer>>> mapAll = new HashMap<>();//主键：可用属性 次主键该属性的属性值，集合该值对应的id
+            Map<String, Map<Integer, List<Integer>>> mapAll = new ConcurrentHashMap<>();//主键：可用属性 次主键该属性的属性值，集合该值对应的id
             float fatherEnt = getEnt(fatherList);
             int fatherNub = fatherList.size();//总样本数
             //该属性每个离散数据分类的集合
@@ -88,7 +89,7 @@ public class Tree {//决策树
                 int index = fatherList.get(i);//编号
                 for (String attr : attributes) {
                     if (!mapAll.containsKey(attr)) {
-                        mapAll.put(attr, new HashMap<>());
+                        mapAll.put(attr, new ConcurrentHashMap<>());
                     }
                     Map<Integer, List<Integer>> map = mapAll.get(attr);
                     int attrValue = table.get(attr).get(index);//获取当前属性值
@@ -99,10 +100,10 @@ public class Tree {//决策树
                     list.add(index);
                 }
             }
-            Map<String, List<Node>> nodeMap = new HashMap<>();
+            Map<String, List<Node>> nodeMap = new ConcurrentHashMap<>();
             int i = 0;
             float sigmaG = 0;
-            Map<String, Gain> gainMap = new HashMap<>();
+            Map<String, Gain> gainMap = new ConcurrentHashMap<>();
             for (Map.Entry<String, Map<Integer, List<Integer>>> mapEntry : mapAll.entrySet()) {
                 Map<Integer, List<Integer>> map = mapEntry.getValue();//当前属性的 属性值及id
                 //求信息增益
@@ -169,7 +170,7 @@ public class Tree {//决策树
     }
 
     private int getType(List<Integer> list) {
-        Map<Integer, Integer> myType = new HashMap<>();
+        Map<Integer, Integer> myType = new ConcurrentHashMap<>();
         for (int index : list) {
             int type = endList.get(index);//最终结果的类别
             if (myType.containsKey(type)) {

@@ -11,6 +11,7 @@ import org.dromara.easyai.tools.NMS;
 import org.dromara.easyai.tools.Picture;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FastYolo {//yolo
     private final YoloConfig yoloConfig;
@@ -318,13 +319,13 @@ public class FastYolo {//yolo
 
     private void studyImage(List<YoloMessage> yoloMessageList, OutBack logOutBack) throws Exception {
         for (YoloMessage yoloMessage : yoloMessageList) {
-            Map<Integer, Float> typeE = new HashMap<>();
+            Map<Integer, Float> typeE = new ConcurrentHashMap<>();
             ThreeChannelMatrix small = yoloMessage.getPic();
             int mappingID = yoloMessage.getMappingID();
             typeE.put(mappingID, 1f);
             study(1, typeNerveManager.getConvInput(), small, true, typeE, logOutBack);
             if (!yoloMessage.isBackGround()) {
-                Map<Integer, Float> positionE = new HashMap<>();
+                Map<Integer, Float> positionE = new ConcurrentHashMap<>();
                 positionE.put(1, yoloMessage.getDistX());
                 positionE.put(2, yoloMessage.getDistY());
                 positionE.put(3, yoloMessage.getWidth());

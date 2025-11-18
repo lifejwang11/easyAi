@@ -3,6 +3,7 @@ package org.dromara.easyai.randomForest;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -10,8 +11,8 @@ import java.util.*;
  * @date 3:48 下午 2020/2/17
  */
 public class DataTable {//数据表
-    private final Map<String, List<Integer>> table = new HashMap<>();
-    private Set<String> keyType;//表的属性
+    private final Map<String, List<Integer>> table = new ConcurrentHashMap<>();
+    private final Set<String> keyType;//表的属性
     private String key;//最终分类字段
     private int length;
 

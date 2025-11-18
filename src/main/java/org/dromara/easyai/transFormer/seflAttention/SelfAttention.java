@@ -4,12 +4,12 @@ import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.transFormer.model.QKVModel;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SelfAttention {//自注意力层
-    private final Map<Long, MyFeature> featureMatrix = new HashMap<>();//特征矩阵
+    private final Map<Long, MyFeature> featureMatrix = new ConcurrentHashMap<>();//特征矩阵
     private Matrix powerQ;//q权重矩阵
     private Matrix powerK;//k权重矩阵
     private Matrix powerV;//v权重矩阵

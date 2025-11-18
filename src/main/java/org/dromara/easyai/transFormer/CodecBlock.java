@@ -11,9 +11,10 @@ import org.dromara.easyai.transFormer.seflAttention.LayNorm;
 import org.dromara.easyai.transFormer.seflAttention.MultiSelfAttention;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CodecBlock {
     private final MultiSelfAttention multiSelfAttention;
@@ -26,7 +27,7 @@ public class CodecBlock {
     private CodecBlock afterEncoderBlock;//后编码模块
     private CodecBlock beforeEncoderBlock;//前编码模块
     private CodecBlock lastEncoderBlock;//最后一层编码器
-    private final Map<Long, Matrix> outMatrixMap = new HashMap<>();
+    private final Map<Long, Matrix> outMatrixMap = new ConcurrentHashMap<>();
     private final boolean encoder;//是否为编码器
     private LineBlock lineBlock;//解码器最后的线性分类器
     private FirstDecoderBlock firstDecoderBlock;//解码器第一层

@@ -7,7 +7,7 @@ import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.nerveEntity.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +46,7 @@ public class NerveManager extends ConvCount {
     }
 
     private Map<String, Float> conversion(Map<Integer, Float> map) {
-        Map<String, Float> cMap = new HashMap<>();
+        Map<String, Float> cMap = new ConcurrentHashMap<>();
         for (Map.Entry<Integer, Float> entry : map.entrySet()) {
             cMap.put(String.valueOf(entry.getKey()), entry.getValue());
         }
@@ -54,7 +54,7 @@ public class NerveManager extends ConvCount {
     }
 
     private Map<Integer, Float> unConversion(Map<String, Float> map) {
-        Map<Integer, Float> cMap = new HashMap<>();
+        Map<Integer, Float> cMap = new ConcurrentHashMap<>();
         for (Map.Entry<String, Float> entry : map.entrySet()) {
             cMap.put(Integer.parseInt(entry.getKey()), entry.getValue());
         }
