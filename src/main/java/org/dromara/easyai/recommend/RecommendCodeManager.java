@@ -8,7 +8,7 @@ import org.dromara.easyai.rnnNerveCenter.NerveManager;
 import org.dromara.easyai.rnnNerveEntity.SensoryNerve;
 import org.dromara.easyai.tools.IdCreator;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -40,7 +40,7 @@ public class RecommendCodeManager {//推荐id管理
     }
 
     public Map<Integer, Float> getMap(float[] feature) {
-        Map<Integer, Float> map = new HashMap<>();
+        Map<Integer, Float> map = new ConcurrentHashMap<>();
         for (int i = 0; i < feature.length; i++) {
             int t = i + 1;
             map.put(t, feature[i]);

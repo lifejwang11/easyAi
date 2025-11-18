@@ -3,6 +3,7 @@ package org.dromara.easyai.randomForest;
 import org.dromara.easyai.tools.ArithUtil;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -10,7 +11,7 @@ import java.util.*;
  * @date 3:50 下午 2020/2/22
  */
 public class RandomForest {
-    private Random random = new Random();
+    private final Random random = new Random();
     private Tree[] forest;
     private float trustTh = 0.1F;//信任阈值
     private float trustPunishment = 0.1F;//信任惩罚
@@ -44,7 +45,7 @@ public class RandomForest {
 
     public RfModel getModel() {//获取模型
         RfModel rfModel = new RfModel();
-        Map<Integer, Node> nodeMap = new HashMap<>();
+        Map<Integer, Node> nodeMap = new ConcurrentHashMap<>();
         for (int i = 0; i < forest.length; i++) {
             Node node = forest[i].getRootNode();
             nodeMap.put(i, node);
@@ -54,7 +55,7 @@ public class RandomForest {
     }
 
     public int forest(Object object) throws Exception {//随机森林识别
-        Map<Integer, Float> map = new HashMap<>();
+        Map<Integer, Float> map = new ConcurrentHashMap<>();
         for (int i = 0; i < forest.length; i++) {
             Tree tree = forest[i];
             TreeWithTrust treeWithTrust = tree.judge(object);

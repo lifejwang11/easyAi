@@ -5,7 +5,7 @@ import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 /**
@@ -14,7 +14,7 @@ import java.util.Map;
  * &#064;date  9:30 上午 2019/12/21
  */
 public class HiddenNerve extends Nerve {
-    private final Map<Long, Float> outMap = new HashMap<>();
+    private final Map<Long, Float> outMap = new ConcurrentHashMap<>();
 
     public HiddenNerve(int id, int depth, float studyPoint, boolean init, ActiveFunction activeFunction,
                        int rzType, float lParam, int sensoryNerveNub,

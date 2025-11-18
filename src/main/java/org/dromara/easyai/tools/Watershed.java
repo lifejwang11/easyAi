@@ -6,7 +6,7 @@ import org.dromara.easyai.entity.Box;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +23,7 @@ public class Watershed {
     private final int ySize;//单元宽度
     private final float rainTh;//灰度阈值
     private final int regionNub;//一张图分多少份
-    private final Map<Integer, RegionBody> regionBodyMap = new HashMap<>();
+    private final Map<Integer, RegionBody> regionBodyMap = new ConcurrentHashMap<>();
     private final int xMax;
     private final int yMax;
     private final int cutMinXSize;//分水岭切割最小取样X

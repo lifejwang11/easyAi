@@ -13,6 +13,7 @@ import org.dromara.easyai.rnnJumpNerveEntity.NerveCenter;
 import org.dromara.easyai.rnnJumpNerveEntity.SensoryNerve;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Deprecated()
 public class CustomManager {//
@@ -178,7 +179,7 @@ public class CustomManager {//
         if (question.length() > 1 && !answer.isEmpty()) {
             int[] questionStoreys = getStoreys(question.length(), random, 0);
             int[] answerStoreys = getStoreys(answer.length() + 1, random, maxFeatureLength);
-            Map<Integer, Float> E = new HashMap<>();
+            Map<Integer, Float> E = new ConcurrentHashMap<>();
             for (int i = 0; i < answerStoreys.length - 1; i++) {
                 //System.out.println("=====================================");
                 E.clear();

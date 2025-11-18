@@ -2,12 +2,12 @@ package org.dromara.easyai.rnnNerveEntity;
 
 
 import org.dromara.easyai.matrixTools.Matrix;
-import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -18,14 +18,14 @@ public abstract class Nerve {
     private final List<Nerve> son = new ArrayList<>();//轴突下一层的连接神经元
     private final List<Nerve> rnnOut = new ArrayList<>();//rnn隐层输出神经元集合
     private final List<Nerve> father = new ArrayList<>();//树突上一层的连接神经元
-    protected Map<Integer, Float> dendrites = new HashMap<>();//上一层权重(需要取出)
-    protected Map<Integer, Float> wg = new HashMap<>();//上一层权重与梯度的积
+    protected Map<Integer, Float> dendrites = new ConcurrentHashMap<>();//上一层权重(需要取出)
+    protected Map<Integer, Float> wg = new ConcurrentHashMap<>();//上一层权重与梯度的积
     private final int id;//同级神经元编号,注意在同层编号中ID应有唯一性
     boolean fromOutNerve = false;//是否是输出神经元
     protected int upNub;//上一层神经元数量
     protected int downNub;//下一层神经元的数量
     protected int rnnOutNub;//rnn输出神经元数量
-    protected Map<Long, List<Float>> features = new HashMap<>();//上一层神经元输入的数值
+    protected Map<Long, List<Float>> features = new ConcurrentHashMap<>();//上一层神经元输入的数值
     protected Matrix nerveMatrix;//权重矩阵可获取及注入
     protected float threshold;//此神经元的阈值需要取出
     protected String name;//该神经元所属类型
@@ -38,7 +38,7 @@ public abstract class Nerve {
     protected ActiveFunction activeFunction;
     private final int rzType;//正则化类型，默认不进行正则化
     private final float lParam;//正则参数
-    private final Map<Long, Integer> embeddingIndex = new HashMap<>();//记录词向量下标位置
+    private final Map<Long, Integer> embeddingIndex = new ConcurrentHashMap<>();//记录词向量下标位置
 
     public Map<Integer, Float> getDendrites() {
         return dendrites;

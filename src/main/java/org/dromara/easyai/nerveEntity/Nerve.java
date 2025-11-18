@@ -15,6 +15,7 @@ import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.rnnJumpNerveCenter.CustomManager;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -27,13 +28,13 @@ public abstract class Nerve extends ConvCount {
     private Nerve sonOnly;
     private Nerve fatherOnly;
     protected final float gaMa;//自适应学习率衰减系数
-    protected Map<Integer, Float> dendrites = new HashMap<>();//上一层权重(需要取出)
-    private final Map<Integer, Float> dymStudyRate = new HashMap<>();//动态学习率
-    protected Map<Integer, Float> wg = new HashMap<>();//上一层权重与梯度的积
+    protected Map<Integer, Float> dendrites = new ConcurrentHashMap<>();//上一层权重(需要取出)
+    private final Map<Integer, Float> dymStudyRate = new ConcurrentHashMap<>();//动态学习率
+    protected Map<Integer, Float> wg = new ConcurrentHashMap<>();//上一层权重与梯度的积
     private final int id;//同级神经元编号,注意在同层编号中ID应有唯一性
     protected int upNub;//上一层神经元数量
     protected int downNub;//下一层神经元的数量
-    protected Map<Long, List<Float>> features = new HashMap<>();//上一层神经元输入的数值
+    protected Map<Long, List<Float>> features = new ConcurrentHashMap<>();//上一层神经元输入的数值
     protected float threshold;//此神经元的阈值需要取出
     protected String name;//该神经元所属类型
     protected float outNub;//输出数值（ps:只有训练模式的时候才可保存输出过的数值）

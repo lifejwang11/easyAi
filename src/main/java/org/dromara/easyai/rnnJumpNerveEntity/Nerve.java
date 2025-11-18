@@ -1,12 +1,12 @@
 package org.dromara.easyai.rnnJumpNerveEntity;
 
 import org.dromara.easyai.matrixTools.Matrix;
-import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -14,17 +14,17 @@ import java.util.*;
  * &#064;date  9:36 上午 2019/12/21
  */
 public abstract class Nerve {
-    private final Map<Integer, List<Nerve>> son = new HashMap<>();//轴突下一层的连接神经元
-    private final Map<Integer, List<Nerve>> father = new HashMap<>();//树突上一层的连接神经元
+    private final Map<Integer, List<Nerve>> son = new ConcurrentHashMap<>();//轴突下一层的连接神经元
+    private final Map<Integer, List<Nerve>> father = new ConcurrentHashMap<>();//树突上一层的连接神经元
     private final List<Nerve> rnnOut = new ArrayList<>();//rnn隐层输出神经元集合
-    protected Map<Integer, Float> dendrites = new HashMap<>();//上一层权重(需要取出)
-    protected Map<Integer, Float> wg = new HashMap<>();//上一层权重与梯度的积
+    protected Map<Integer, Float> dendrites = new ConcurrentHashMap<>();//上一层权重(需要取出)
+    protected Map<Integer, Float> wg = new ConcurrentHashMap<>();//上一层权重与梯度的积
     private final int id;//同级神经元编号,注意在同层编号中ID应有唯一性
     boolean fromOutNerve = false;//是否是输出神经元
     private final int hiddenNerveNub;//隐层神经元个数
     private final int sensoryNerveNub;//输入神经元个数
     private final int outNerveNub;//输出神经元个数
-    protected Map<Long, List<Float>> features = new HashMap<>();//上一层神经元输入的数值
+    protected Map<Long, List<Float>> features = new ConcurrentHashMap<>();//上一层神经元输入的数值
     protected Matrix nerveMatrix;//权重矩阵可获取及注入
     protected float threshold;//此神经元的阈值需要取出
     protected String name;//该神经元所属类型

@@ -4,6 +4,7 @@ import org.dromara.easyai.randomForest.DataTable;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class NativeBayesian {
     private DataTable dataTable;
@@ -13,8 +14,8 @@ public class NativeBayesian {
     private final Map<String, Map<Integer, Map<Integer, Double>>> conditionalProbabilities;
 
     public NativeBayesian() {
-        priorProbabilities = new HashMap<>();
-        conditionalProbabilities = new HashMap<>();
+        priorProbabilities = new ConcurrentHashMap<>();
+        conditionalProbabilities = new ConcurrentHashMap<>();
     }
 
     public NativeBayesian(DataTable dataTable) {
@@ -32,7 +33,7 @@ public class NativeBayesian {
 
     public int classify(Object object) {
         // 存储每个类别的后验概率
-        Map<Integer, Double> posteriorProbabilities = new HashMap<>();
+        Map<Integer, Double> posteriorProbabilities = new ConcurrentHashMap<>();
         try {
             // 获取所有可能的类别
             List<Integer> classValues = dataTable.getTable().get(dataTable.getKey());
@@ -74,7 +75,7 @@ public class NativeBayesian {
 
         // 计算先验概率
         List<Integer> classValues = dataTable.getTable().get(dataTable.getKey());
-        Map<Integer, Integer> classCounts = new HashMap<>();
+        Map<Integer, Integer> classCounts = new ConcurrentHashMap<>();
         for (int value : classValues) {
             classCounts.put(value, classCounts.getOrDefault(value, 0) + 1);
         }
@@ -85,18 +86,18 @@ public class NativeBayesian {
         // 计算条件概率
         for (String feature : dataTable.getKeyType()) {
             if (!feature.equals(dataTable.getKey())) {
-                Map<Integer, Map<Integer, Integer>> featureCounts = new HashMap<>();
+                Map<Integer, Map<Integer, Integer>> featureCounts = new ConcurrentHashMap<>();
                 List<Integer> featureValues = dataTable.getTable().get(feature);
                 for (int i = 0; i < dataTable.getLength(); i++) {
                     int classValue = classValues.get(i);
                     int featureValue = featureValues.get(i);
-                    featureCounts.computeIfAbsent(classValue, k -> new HashMap<>()).put(featureValue, featureCounts.get(classValue).getOrDefault(featureValue, 0) + 1);
+                    featureCounts.computeIfAbsent(classValue, k -> new ConcurrentHashMap<>()).put(featureValue, featureCounts.get(classValue).getOrDefault(featureValue, 0) + 1);
                 }
-                Map<Integer, Map<Integer, Double>> featureProbabilities = new HashMap<>();
+                Map<Integer, Map<Integer, Double>> featureProbabilities = new ConcurrentHashMap<>();
                 for (Map.Entry<Integer, Map<Integer, Integer>> entry : featureCounts.entrySet()) {
                     int classValue = entry.getKey();
                     Map<Integer, Integer> counts = entry.getValue();
-                    Map<Integer, Double> probabilities = new HashMap<>();
+                    Map<Integer, Double> probabilities = new ConcurrentHashMap<>();
                     for (Map.Entry<Integer, Integer> countEntry : counts.entrySet()) {
                         int featureValue = countEntry.getKey();
                         int count = countEntry.getValue();

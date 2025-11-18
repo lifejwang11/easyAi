@@ -12,10 +12,11 @@ import org.dromara.easyai.rnnJumpNerveEntity.MyWordFeature;
 import org.dromara.easyai.rnnJumpNerveEntity.SensoryNerve;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RRNerveManager {
     private final WordEmbedding wordEmbedding;
-    private final Map<Integer, Integer> mapping = new HashMap<>();//主键是真实id,值是映射识别用id
+    private final Map<Integer, Integer> mapping = new ConcurrentHashMap<>();//主键是真实id,值是映射识别用id
     private NerveJumpManager typeNerveManager;//类别网络
     private int typeNub;//分类数量
     private int vectorDimension;//特征纵向维度
@@ -156,7 +157,7 @@ public class RRNerveManager {
 
     private void myStudy(int maxNumber, Map<Integer, List<String>> model, int time) throws Exception {
         int index = 0;
-        Map<Integer, Float> E = new HashMap<>();
+        Map<Integer, Float> E = new ConcurrentHashMap<>();
         do {
             for (Map.Entry<Integer, List<String>> entry : model.entrySet()) {
                 System.out.println("index======" + index + "," + time + "次");

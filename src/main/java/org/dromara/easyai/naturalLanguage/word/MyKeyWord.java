@@ -12,7 +12,7 @@ import org.dromara.easyai.rnnNerveCenter.ModelParameter;
 import org.dromara.easyai.rnnNerveCenter.NerveManager;
 import org.dromara.easyai.rnnNerveEntity.SensoryNerve;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +39,7 @@ public class MyKeyWord extends MatrixOperation {
         for (KeyWordForSentence keyWordForSentence : keyWordForSentenceList) {
             String word = keyWordForSentence.getSentence();
             String keyWord = keyWordForSentence.getKeyWord();
-            myStudy(true, 1, word, keyWord, new HashMap<>());
+            myStudy(true, 1, word, keyWord, new ConcurrentHashMap<>());
         }
         return typeNerveManager.getModelParameter();
     }

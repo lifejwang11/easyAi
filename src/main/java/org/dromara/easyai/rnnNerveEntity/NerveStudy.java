@@ -1,6 +1,6 @@
 package org.dromara.easyai.rnnNerveEntity;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 /**
@@ -9,7 +9,7 @@ import java.util.Map;
  * @date 3:36 下午 2020/1/8
  */
 public class NerveStudy {
-    private Map<String, Float> dendrites = new HashMap<>();//上一层权重(需要取出)
+    private Map<String, Float> dendrites = new ConcurrentHashMap<>();//上一层权重(需要取出)
     private float threshold;//此神经元的阈值需要取出
 
     public Map<String, Float> getDendrites() {

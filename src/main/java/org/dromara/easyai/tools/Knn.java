@@ -4,9 +4,10 @@ import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Knn extends MatrixOperation {//KNN分类器
-    private Map<Integer, List<Matrix>> featureMap = new HashMap<>();
+    private Map<Integer, List<Matrix>> featureMap = new ConcurrentHashMap<>();
     private int length;//向量长度(需要返回)
     private final int nub;//选择几个人投票
 
@@ -105,7 +106,7 @@ public class Knn extends MatrixOperation {//KNN分类器
             }
         }
         System.out.println(Arrays.toString(types));
-        Map<Integer, Integer> map = new HashMap<>();
+        Map<Integer, Integer> map = new ConcurrentHashMap<>();
         for (int i = 0; i < nub; i++) {
             int type = types[i];
             if (map.containsKey(type)) {

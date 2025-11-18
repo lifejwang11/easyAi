@@ -4,7 +4,7 @@ import org.dromara.easyai.entity.*;
 import org.dromara.easyai.matrixTools.Matrix;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +16,7 @@ import java.util.Map;
  * @Description 混高聚类
  */
 public class GMClustering {
-    private final Map<Integer, Cluster> clusters = new HashMap<>();
+    private final Map<Integer, Cluster> clusters = new ConcurrentHashMap<>();
     private final List<Matrix> featureMatrix = new ArrayList<>();
     private final int maxTimes;//最大迭代次数
     private final int xSize;
@@ -76,7 +76,7 @@ public class GMClustering {
         int key = 0;
         if (feature.getX() == xSize && feature.getY() == ySize) {
             GMMBody gmmBody = new GMMBody();
-            Map<Integer, Double> map = new HashMap<>();
+            Map<Integer, Double> map = new ConcurrentHashMap<>();
             double sigMa = getSigMa(map, feature);
             double maxValue = 0;
             for (Map.Entry<Integer, Double> entry : map.entrySet()) {
@@ -96,7 +96,7 @@ public class GMClustering {
 
     private void clusterAllocation() throws Exception {//分配蔟
         for (Matrix matrix : featureMatrix) {//遍历所有蔟
-            Map<Integer, Double> map = new HashMap<>();
+            Map<Integer, Double> map = new ConcurrentHashMap<>();
             double sigMa = getSigMa(map, matrix);
             int key = 0;
             double maxValue = 0;
