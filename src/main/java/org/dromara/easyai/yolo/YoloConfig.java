@@ -29,6 +29,15 @@ public class YoloConfig {
     private float GMaxTh = 100f;//梯度裁剪阈值
     private boolean auto = true;//是否使用自适应学习率
     private boolean proTrust = false;//是否用概率当作可信度
+    private int hiddenDeep = 1;//分类网络线性层隐层神经元深度
+
+    public int getHiddenDeep() {
+        return hiddenDeep;
+    }
+
+    public void setHiddenDeep(int hiddenDeep) {
+        this.hiddenDeep = hiddenDeep;
+    }
 
     public boolean isProTrust() {
         return proTrust;
