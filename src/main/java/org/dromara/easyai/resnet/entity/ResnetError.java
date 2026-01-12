@@ -10,7 +10,6 @@ import java.util.List;
  */
 public class ResnetError {
     private List<Matrix> resErrorMatrixList;//残差误差
-    private List<Matrix> nextErrorMatrixList;
 
     public List<Matrix> getResErrorMatrixList() {
         return resErrorMatrixList;
@@ -20,11 +19,4 @@ public class ResnetError {
         this.resErrorMatrixList = resErrorMatrixList;
     }
 
-    public List<Matrix> getNextErrorMatrixList() {
-        return nextErrorMatrixList;
-    }
-
-    public void setNextErrorMatrixList(List<Matrix> nextErrorMatrixList) {
-        this.nextErrorMatrixList = nextErrorMatrixList;
-    }
 }

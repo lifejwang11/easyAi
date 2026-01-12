@@ -176,7 +176,7 @@ public abstract class ConvCount {
         Matrix error = matrixOperation.im2col(errorMatrix, kerSize, 1);
         Matrix subNerveMatrix = matrixOperation.matrixMulPd(error, vector, upNerveMatrix, false);
         Matrix errorFeature = matrixOperation.matrixMulPd(error, vector, upNerveMatrix, true);
-        subNerveMatrix = dymStudy.getErrorMatrixByStudy(studyRate, upDymStudyRate, subNerveMatrix);
+        subNerveMatrix = dymStudy.getErrorMatrixByStudy(studyRate, upDymStudyRate, subNerveMatrix).getErrorMatrix();
         convParameter.getUpNerveMatrixList().set(index, matrixOperation.add(subNerveMatrix, upNerveMatrix));
         return matrixOperation.vectorToMatrix(errorFeature, x, y);
     }
@@ -368,7 +368,7 @@ public abstract class ConvCount {
         }
         Matrix wSub = matrixOperation.matrixMulPd(resultError, im2col, nerveMatrix, false);
         Matrix im2colSub = matrixOperation.matrixMulPd(resultError, im2col, nerveMatrix, true);
-        wSub = dymStudy.getErrorMatrixByStudy(studyRate, sMatrix, wSub);
+        wSub = dymStudy.getErrorMatrixByStudy(studyRate, sMatrix, wSub).getErrorMatrix();
         nerveMatrix = matrixOperation.add(nerveMatrix, wSub);//调整卷积核
         Matrix gNext = matrixOperation.reverseIm2col(im2colSub, kernSize, 1, xInput, yInput);//其余误差
         convResult.setNervePowerMatrix(nerveMatrix);
