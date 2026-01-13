@@ -19,7 +19,7 @@ public class MatrixNorm {
     private final DymStudy dymStudy;
     private final float studyRate;//全局学习率
     private final MatrixOperation matrixOperation = new MatrixOperation();
-    private Map<Integer, Matrix> normMap = new ConcurrentHashMap<>();
+    private final Map<Integer, Matrix> normMap = new ConcurrentHashMap<>();
 
     public NormModel getModel() {
         NormModel normModel = new NormModel();
