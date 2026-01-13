@@ -2,6 +2,7 @@ package org.dromara.easyai.resnet;
 
 import org.dromara.easyai.i.CustomEncoding;
 import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.resnet.entity.BatchBody;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,31 +15,10 @@ import java.util.Map;
 public class ResNetConnectionLine implements CustomEncoding {
     private ResBlock lastBlock;//最后一层残差块
     private int lastSize;//最后一层的特征大小
-    private int allTimes;//隐层神经数量
-    private int nerveSize;//输入神经元数量
-    private int number = 0;
-    private final List<Float> errorValues = new ArrayList<>();
 
-    public void setLastBlock(ResBlock lastBlock, int lastSize, int allTimes, int nerveSize) {
+    public void setLastBlock(ResBlock lastBlock, int lastSize) {
         this.lastBlock = lastBlock;
         this.lastSize = lastSize;
-        this.allTimes = allTimes;
-        this.nerveSize = nerveSize;
-    }
-
-    private void addError(Map<Integer, Float> wg) throws Exception {
-        if (wg.size() != nerveSize) {
-            throw new Exception("线性层回传误差数量与预设值不相等");
-        }
-        for (int i = 1; i <= nerveSize; i++) {
-            float error = wg.get(i);
-            if (number == 1) {
-                errorValues.add(error);
-            } else {
-                float value = error + errorValues.get(i - 1);
-                errorValues.set(i - 1, value);
-            }
-        }
     }
 
     private void fill(Matrix feature, float value) throws Exception {
@@ -52,25 +32,27 @@ public class ResNetConnectionLine implements CustomEncoding {
         }
     }
 
-    private void toError() throws Exception {
-        List<Matrix> errorMatrix = new ArrayList<>();
-        for (Float errorValue : errorValues) {
-            Matrix feature = new Matrix(lastSize, lastSize);
-            float error = errorValue;
-            fill(feature, error);
-            errorMatrix.add(feature);
-        }
-        errorValues.clear();
-        lastBlock.backError(errorMatrix);
+    @Override
+    public void backError(Map<Integer, Float> wg, int id) throws Exception {
+
     }
 
     @Override
-    public void backError(Map<Integer, Float> wg, int id) throws Exception {
-        number++;
-        addError(wg);
-        if (number == allTimes) {
-            number = 0;
-            toError();
+    public void backErrorList(List<Matrix> nextErrorMatrixList) throws Exception {
+        List<BatchBody> batchBodies = new ArrayList<>();
+        for (Matrix matrix : nextErrorMatrixList) {//遍历每一张图的特征
+            BatchBody batchBody = new BatchBody();
+            batchBodies.add(batchBody);
+            int size = matrix.getY();//通道数
+            List<Matrix> errorMatrixList = new ArrayList<>();//每个通道的误差矩阵集合
+            batchBody.setFeatureList(errorMatrixList);
+            for (int j = 0; j < size; j++) {//遍历所有通道
+                float error = matrix.getNumber(0, j);//该通道误差
+                Matrix feature = new Matrix(lastSize, lastSize);//通道的误差矩阵
+                fill(feature, error);
+                errorMatrixList.add(feature);
+            }
         }
+        lastBlock.backError(batchBodies);
     }
 }

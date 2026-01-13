@@ -20,8 +20,6 @@ EasyAi无任何依赖，它是一个原生Java人工智能算法框架。首先�
 * 部分案例Demo代码地址: https://gitee.com/ldp_dpsmax/easy-ai-demo
 * 若对您的学习或生产有帮助，请留下您的STAR，您的一个简单的举动，对我来说却非常重要。
 
-### 我正在参加 Gitee 2025 最受欢迎的开源软件投票活动，快来给我投票吧！https://gitee.com/activity/2025opensource?ident=IU4I6M
-
 ### 图像检测部分
 
 * 使用EasyAi实现图像结算自动贩卖机视觉内核：

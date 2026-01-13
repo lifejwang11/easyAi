@@ -1,5 +1,8 @@
 package org.dromara.easyai.i;
 
+import org.dromara.easyai.matrixTools.Matrix;
+
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -9,4 +12,6 @@ import java.util.Map;
  */
 public interface CustomEncoding {
     void backError(Map<Integer, Float> wg, int id) throws Exception;//返回最后一层误差
+
+    void backErrorList(List<Matrix> nextErrorMatrixList) throws Exception;//返回最后一层批量误差
 }

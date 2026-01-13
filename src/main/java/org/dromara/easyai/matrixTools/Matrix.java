@@ -85,6 +85,23 @@ public class Matrix extends MatrixOperation {
     }
 
     /**
+     * 获取矩阵元素最大值
+     *
+     */
+    public float getMaxValue() throws Exception {
+        float max = getNumber(0, 0);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float value = getNumber(i, j);
+                if (value > max) {
+                    max = value;
+                }
+            }
+        }
+        return max;
+    }
+
+    /**
      * 设置矩阵属性
      *
      * @param x 行数

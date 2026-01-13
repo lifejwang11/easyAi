@@ -18,7 +18,17 @@ public class ConvLay {
     private List<Matrix> convPower;//第一层卷积权重 需要作为模型取出
     private List<Matrix> dymStudyRateList;//动态学习率
     private List<MatrixNorm> matrixNormList;//归一化层// 需要作为模型取出
-    private final BackParameter backParameter = new BackParameter();
+    private final List<BackParameter> backParameterList = new ArrayList<>();
+
+    public ConvLay(int batchSize) {
+        for (int i = 0; i < batchSize; i++) {
+            backParameterList.add(new BackParameter());
+        }
+    }
+
+    public List<BackParameter> getBackParameterList() {
+        return backParameterList;
+    }
 
     public List<Matrix> getDymStudyRateList() {
         return dymStudyRateList;
@@ -56,9 +66,9 @@ public class ConvLay {
         }
     }
 
-    public BackParameter getBackParameter() {
-        return backParameter;
-    }
+//    public BackParameter getBackParameter() {
+//        return backParameter;
+//    }
 
     public List<Matrix> getConvPower() {
         return convPower;

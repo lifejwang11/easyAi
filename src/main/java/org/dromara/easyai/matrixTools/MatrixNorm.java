@@ -3,7 +3,8 @@ package org.dromara.easyai.matrixTools;
 import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.resnet.entity.NormModel;
 
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -18,7 +19,7 @@ public class MatrixNorm {
     private final DymStudy dymStudy;
     private final float studyRate;//全局学习率
     private final MatrixOperation matrixOperation = new MatrixOperation();
-    private Matrix norm;
+    private Map<Integer, Matrix> normMap = new ConcurrentHashMap<>();
 
     public NormModel getModel() {
         NormModel normModel = new NormModel();
@@ -53,41 +54,65 @@ public class MatrixNorm {
         }
     }
 
-    private Matrix back(Matrix errorMatrix, Matrix myData) throws Exception {
-        Matrix subPower = matrixOperation.matrixMulPd(errorMatrix, myData, power, false);
-        Matrix sub = matrixOperation.matrixMulPd(errorMatrix, myData, power, true);
-        int x = sub.getX();
-        int y = sub.getY();
-        Matrix errorPower = dymStudy.getErrorMatrixByStudy(studyRate, powerDymStudyRate, subPower);
-        power = matrixOperation.add(errorPower, power);
-        float n = (float) Math.sqrt(x * y);
-        float nt = -n / (n - 1);
-        Matrix subMatrix = new Matrix(x, y);
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                float subValue = sub.getNumber(i, j);
-                float value = subValue * n + subMatrix.getNumber(i, j);
-                subMatrix.setNub(i, j, value);
-                for (int k = 0; k < x; k++) {
-                    for (int l = 0; l < y; l++) {
-                        if (k != i || l != j) {
-                            float otherValue = subValue * nt + subMatrix.getNumber(k, l);
-                            subMatrix.setNub(k, l, otherValue);
+    private List<Matrix> back(List<Matrix> errorMatrixList) throws Exception {
+        int size = errorMatrixList.size();
+        Matrix allSubPower = null;
+        List<Matrix> nextErrorMatrixList = new ArrayList<>();
+        for (int m = 0; m < size; m++) {//遍历没每张图片的误差
+            Matrix errorMatrix = errorMatrixList.get(m);
+            Matrix myData = normMap.get(m);
+            Matrix subPower = matrixOperation.matrixMulPd(errorMatrix, myData, power, false);
+            if (allSubPower == null) {
+                allSubPower = subPower;
+            } else {
+                allSubPower = matrixOperation.add(allSubPower, subPower);
+            }
+            Matrix sub = matrixOperation.matrixMulPd(errorMatrix, myData, power, true);
+            int x = sub.getX();
+            int y = sub.getY();
+            float n = (float) Math.sqrt(x * y);
+            float nt = -n / (n - 1);
+            Matrix subMatrix = new Matrix(x, y);
+            nextErrorMatrixList.add(subMatrix);
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    float subValue = sub.getNumber(i, j);
+                    float value = subValue * n + subMatrix.getNumber(i, j);
+                    subMatrix.setNub(i, j, value);
+                    for (int k = 0; k < x; k++) {
+                        for (int l = 0; l < y; l++) {
+                            if (k != i || l != j) {
+                                float otherValue = subValue * nt + subMatrix.getNumber(k, l);
+                                subMatrix.setNub(k, l, otherValue);
+                            }
                         }
                     }
                 }
             }
         }
-        return subMatrix;
+        matrixOperation.mathDiv(allSubPower, size);
+        Matrix errorPower = dymStudy.getErrorMatrixByStudy(studyRate, powerDymStudyRate, allSubPower).getErrorMatrix();
+        power = matrixOperation.add(errorPower, power);
+        return nextErrorMatrixList;
     }
 
-    public Matrix backError(Matrix errorMatrix) throws Exception {
-        Matrix error = dymStudy.getErrorMatrixByStudy(studyRate, bTaDymStudyRate, errorMatrix);
+    public List<Matrix> backError(List<Matrix> errorMatrixList) throws Exception {
+        Matrix avgError = null;
+        int size = errorMatrixList.size();
+        for (Matrix errorMatrix : errorMatrixList) {
+            if (avgError == null) {
+                avgError = errorMatrix.copy();
+            } else {
+                avgError = matrixOperation.add(errorMatrix, avgError);
+            }
+        }
+        matrixOperation.mathDiv(avgError, size);
+        Matrix error = dymStudy.getErrorMatrixByStudy(studyRate, bTaDymStudyRate, avgError).getErrorMatrix();
         bTa = matrixOperation.add(error, bTa);//更新bTa
-        return back(errorMatrix, norm);
+        return back(errorMatrixList);
     }
 
-    public Matrix norm(Matrix matrix) throws Exception {
+    public Matrix norm(Matrix matrix, int m) throws Exception {
         int x = matrix.getX();
         int y = matrix.getY();
         if (x != y) {
@@ -102,7 +127,7 @@ public class MatrixNorm {
                 result.setNub(i, j, value);
             }
         }
-        norm = result;
+        normMap.put(m, result);
         return matrixOperation.add(matrixOperation.mulMatrix(result, power), bTa);
     }
 }

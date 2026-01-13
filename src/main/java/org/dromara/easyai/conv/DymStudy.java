@@ -100,14 +100,18 @@ public class DymStudy {
         return gcMatrix;
     }
 
-    public Matrix getErrorMatrixByStudy(float studyRate, Matrix sMatrix, Matrix gMatrix) throws Exception {//获取动态学习率
+    public MyStudy getErrorMatrixByStudy(float studyRate, Matrix sMatrix, Matrix gMatrix) throws Exception {//获取动态学习率
         Matrix gcMatrix = getClipMatrix(gMatrix);
+        MyStudy myStudy = new MyStudy();
         if (!auto) {
-            return matrixOperation.mathMulBySelf(gcMatrix, studyRate);
+            myStudy.setErrorMatrix(matrixOperation.mathMulBySelf(gcMatrix, studyRate));
+            myStudy.setMyStudyRate(studyRate);
+            return myStudy;
         }
         int x = sMatrix.getX();
         int y = sMatrix.getY();
         Matrix errorMatrix = new Matrix(x, y);
+        Matrix studyRateMatrix = new Matrix(x, y);
         if (x == gcMatrix.getX() && y == gcMatrix.getY()) {
             for (int i = 0; i < x; i++) {
                 for (int j = 0; j < y; j++) {
@@ -116,11 +120,14 @@ public class DymStudy {
                     float sNext = gaMa * s + (1 - gaMa) * (float) Math.pow(g, 2);
                     sMatrix.setNub(i, j, sNext);
                     float myStudyRate = studyRate / (float) Math.sqrt(sNext + 0.00000001f);
+                    studyRateMatrix.setNub(i, j, myStudyRate);
                     errorMatrix.setNub(i, j, myStudyRate * g);
                 }
             }
         }
-        return errorMatrix;
+        myStudy.setStudyRateMatrix(studyRateMatrix);
+        myStudy.setErrorMatrix(errorMatrix);
+        return myStudy;
     }
 
 }
