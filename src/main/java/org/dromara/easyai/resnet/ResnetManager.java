@@ -23,6 +23,21 @@ public class ResnetManager extends ResConvCount {
     private final BatchNerveManager batchNerveManager;
     private final List<ResBlock> resBlockList = new ArrayList<>();//残差集合
     private final ResnetInput restNetInput;
+    private final int deep;//深度
+    private final int featureLength;//最后一层通道数
+    private final int lastSize;//最后一层卷积层大小
+
+    public int getDeep() {
+        return deep;
+    }
+
+    public int getFeatureLength() {
+        return featureLength;
+    }
+
+    public int getLastSize() {
+        return lastSize;
+    }
 
     public ResnetInput getRestNetInput() {
         return restNetInput;
@@ -58,7 +73,9 @@ public class ResnetManager extends ResConvCount {
             throw new Exception("图像尺寸太小了，不能用resnet进行训练");
         }
         int featureLength = (int) (channelNo * Math.pow(2, deep - 1));//卷积层输出特征大小
-        System.out.println("最后一层特征大小:" + lastSize + ",深度:" + deep + ",最终通道数:" + featureLength);
+        this.lastSize = lastSize;
+        this.deep = deep;
+        this.featureLength = featureLength;
         BatchNerveConfig batchNerveConfig = getBatchNerveConfig(resNetConfig, featureLength, studyRate);
         ResNetConnectionLine resNetConnectionLine = new ResNetConnectionLine();
         batchNerveManager = new BatchNerveManager(batchNerveConfig, activeFunction, resNetConnectionLine);

@@ -20,7 +20,7 @@ public class ResnetConfig {
     private float gaMa = 0.9f;//自适应学习率衰减系数
     private float GMaxTh = 500f;//梯度最大值
     private boolean auto = true;//是否使用自适应学习率
-    private int batchSize = 1;//小批量训练数量
+    private int batchSize = 32;//小批量训练数量
 
     public int getBatchSize() {
         return batchSize;

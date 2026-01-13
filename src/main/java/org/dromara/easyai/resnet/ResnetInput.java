@@ -25,8 +25,8 @@ public class ResnetInput {
         this.batchSize = batchSize;
     }
 
-    public void postFeature(List<BatchBody> batchBodies, OutBack outBack, long eventID, boolean outFeature, boolean study) throws Exception {
-        if ((study && batchSize == batchBodies.size()) || (!study && batchBodies.size() == 1)) {
+    public void studyFeature(List<BatchBody> batchBodies, OutBack outBack, long eventID) throws Exception {
+        if (batchSize == batchBodies.size()) {
             for (BatchBody batchBody : batchBodies) {
                 Matrix matrix = batchBody.getFeatureList().get(0);
                 int x = matrix.getX();
@@ -35,10 +35,23 @@ public class ResnetInput {
                     throw new Exception("输入的图像必须为正方形，且尺寸必须等同于初始化配置的值：" + imageSize);
                 }
             }
-            fistBlock.sendMatrixList(batchBodies, outBack, study, eventID, outFeature);
+            fistBlock.sendMatrixList(batchBodies, outBack, true, eventID, false);
         } else {
             throw new Exception("训练批次数量与预设数量不符");
         }
+    }
+
+    public void postFeature(ThreeChannelMatrix image, OutBack outBack, long eventID, boolean outFeature) throws Exception {
+        int x = image.getX();
+        int y = image.getY();
+        if (x != y || x != imageSize) {
+            throw new Exception("输入的图像必须为正方形，且尺寸必须等同于初始化配置的值：" + imageSize);
+        }
+        BatchBody batchBody = new BatchBody();
+        batchBody.insertPicture(image);
+        List<BatchBody> batchBodies = new ArrayList<>();
+        batchBodies.add(batchBody);
+        fistBlock.sendMatrixList(batchBodies, outBack, false, eventID, outFeature);
     }
 
 }
