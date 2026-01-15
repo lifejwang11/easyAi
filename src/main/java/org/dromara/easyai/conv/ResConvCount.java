@@ -208,8 +208,10 @@ public abstract class ResConvCount {
             }
             int matrixSize = 0;
             List<Matrix> resFeatureList = null;
-            if (resBatchBody != null && resBatchBody.get(0).getFeatureList().size() != size) {//要通过1v1卷积层进行升维
+            if (resBatchBody != null) {
                 resFeatureList = resBatchBody.get(m).getFeatureList();
+            }
+            if (resFeatureList != null && resFeatureList.size() != size) {//要通过1v1卷积层进行升维
                 if (oneConvPower == null) {
                     throw new Exception("1v1 卷积核空了");
                 }
