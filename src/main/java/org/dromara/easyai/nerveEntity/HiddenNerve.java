@@ -33,7 +33,7 @@ public class HiddenNerve extends Nerve {
 
     @Override
     public void input(long eventId, float parameter, boolean isKernelStudy, Map<Integer, Float> E
-            , OutBack outBack) throws Exception {//接收上一层的输入
+            , OutBack outBack, Map<Integer, Float> pd) throws Exception {//接收上一层的输入
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
             float sigma = calculation(eventId);
@@ -43,12 +43,13 @@ public class HiddenNerve extends Nerve {
             } else {
                 destoryParameter(eventId);
             }
-            sendMessage(eventId, out, isKernelStudy, E, outBack);
+            sendMessage(eventId, out, isKernelStudy, E, outBack, pd);
         }
     }
 
     @Override
-    protected void inputMatrixFeature(long eventId, List<Float> parameters, boolean isStudy, Map<Integer, Float> E, OutBack imageBack) throws Exception {
+    protected void inputMatrixFeature(long eventId, List<Float> parameters, boolean isStudy, Map<Integer, Float> E,
+                                      OutBack imageBack, Map<Integer, Float> pd) throws Exception {
         insertParameters(eventId, parameters);
         float sigma = calculation(eventId);
         float out = activeFunction.function(sigma);//激活函数输出数值
@@ -57,12 +58,12 @@ public class HiddenNerve extends Nerve {
         } else {
             destoryParameter(eventId);
         }
-        sendMessage(eventId, out, isStudy, E, imageBack);
+        sendMessage(eventId, out, isStudy, E, imageBack, pd);
     }
 
     @Override
     protected void inputMatrix(long eventId, List<Matrix> matrix, boolean isStudy
-            , Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
+            , Map<Integer, Float> E, OutBack outBack, boolean needMatrix, Map<Integer, Float> pd) throws Exception {
         List<Matrix> myMatrix = conv(matrix);//处理过的矩阵
         if (isConvFinish) {
             Matrix ourMatrix;
@@ -78,19 +79,20 @@ public class HiddenNerve extends Nerve {
             if (!isStudy && needMatrix) {
                 outBack.getBackMatrix(ourMatrix, getId(), eventId);
             }
-            sendMatrixList(eventId, matrixOperation.matrixToList(ourMatrix), isStudy, E, outBack);
+            sendMatrixList(eventId, matrixOperation.matrixToList(ourMatrix), isStudy, E, outBack, pd);
         } else {
-            sendMatrix(eventId, myMatrix, isStudy, E, outBack, needMatrix);
+            sendMatrix(eventId, myMatrix, isStudy, E, outBack, needMatrix, pd);
         }
     }
 
     @Override
-    protected void inputThreeChannelMatrix(long eventId, ThreeChannelMatrix picture, boolean isKernelStudy, Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
+    protected void inputThreeChannelMatrix(long eventId, ThreeChannelMatrix picture, boolean isKernelStudy, Map<Integer, Float> E,
+                                           OutBack outBack, boolean needMatrix, Map<Integer, Float> pd) throws Exception {
         //接收三通道矩阵
         List<Matrix> matrixList = new ArrayList<>();
         matrixList.add(picture.getMatrixR());
         matrixList.add(picture.getMatrixG());
         matrixList.add(picture.getMatrixB());
-        demRedByMatrixList(eventId, matrixList, isKernelStudy, E, outBack, needMatrix);
+        demRedByMatrixList(eventId, matrixList, isKernelStudy, E, outBack, needMatrix, pd);
     }
 }

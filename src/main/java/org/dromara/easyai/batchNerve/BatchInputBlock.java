@@ -4,6 +4,7 @@ import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lidapeng
@@ -19,10 +20,11 @@ public class BatchInputBlock {
         this.inputSize = inputSize;
     }
 
-    public void postMessage(List<FeatureBody> featureBodies, boolean study, OutBack outBack, long eventID) throws Exception {
+    public void postMessage(List<FeatureBody> featureBodies, boolean study, OutBack outBack, long eventID
+            , Map<Integer, Float> pd) throws Exception {
         Matrix matrix = featureBodies.get(0).getFeature();
         if (matrix.getX() == 1 && matrix.getY() == inputSize) {
-            firstBlock.postMassage(featureBodies, study, outBack, eventID);
+            firstBlock.postMassage(featureBodies, study, outBack, eventID, pd);
         } else {
             throw new Exception("特征矩阵的行数必须为1 且 列数要等于配置类中预设值：" + inputSize);
         }

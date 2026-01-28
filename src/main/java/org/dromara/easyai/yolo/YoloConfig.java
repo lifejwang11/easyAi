@@ -9,7 +9,6 @@ public class YoloConfig {
     private int typeNub = 10;//类别数量
     private int hiddenNerveNub = 16;//线性层隐层神经元数量
     private float studyRate = 0.0025f;//学习率
-    private float positionStudyRate = 0.0025f;//位置学习率
     private int kernelSize = 3;//卷积核尺寸
     private boolean showLog = false;//是否打印学习过程中的log
     private int enhance = 1;//数据增强
@@ -23,13 +22,38 @@ public class YoloConfig {
     private int coreNumber = 1;//是否使用多核并行计算进行提速
     private int channelNo = 1;//通道数
     private int minFeatureValue = 3;//输出特征维度大小
-    private float oneConvStudy = 0.0025f;//降维层学习率
     private boolean norm = true;//是否进行维度调节
     private float gaMa = 0.9f;//自适应学习率衰减系数
     private float GMaxTh = 100f;//梯度裁剪阈值
     private boolean auto = true;//是否使用自适应学习率
-    private boolean proTrust = false;//是否用概率当作可信度
-    private int hiddenDeep = 1;//分类网络线性层隐层神经元深度
+    private int hiddenDeep = 1;//网络线性层隐层神经元深度
+    private float otherPth = 0.1f;//负样本交并比阈值
+    private float trustTh = 0.5f;//可信度阈值
+    private float backGroundPD = 0.1f;//背景误差惩罚，该数值大于0.9 则相当于不施加惩罚
+
+    public float getBackGroundPD() {
+        return backGroundPD;
+    }
+
+    public void setBackGroundPD(float backGroundPD) {
+        this.backGroundPD = backGroundPD;
+    }
+
+    public float getTrustTh() {
+        return trustTh;
+    }
+
+    public void setTrustTh(float trustTh) {
+        this.trustTh = trustTh;
+    }
+
+    public float getOtherPth() {
+        return otherPth;
+    }
+
+    public void setOtherPth(float otherPth) {
+        this.otherPth = otherPth;
+    }
 
     public int getHiddenDeep() {
         return hiddenDeep;
@@ -39,13 +63,6 @@ public class YoloConfig {
         this.hiddenDeep = hiddenDeep;
     }
 
-    public boolean isProTrust() {
-        return proTrust;
-    }
-
-    public void setProTrust(boolean proTrust) {
-        this.proTrust = proTrust;
-    }
 
     public boolean isAuto() {
         return auto;
@@ -71,14 +88,6 @@ public class YoloConfig {
         this.gaMa = gaMa;
     }
 
-    public float getPositionStudyRate() {
-        return positionStudyRate;
-    }
-
-    public void setPositionStudyRate(float positionStudyRate) {
-        this.positionStudyRate = positionStudyRate;
-    }
-
     public boolean isNorm() {
         return norm;
     }
@@ -87,13 +96,6 @@ public class YoloConfig {
         this.norm = norm;
     }
 
-    public float getOneConvStudy() {
-        return oneConvStudy;
-    }
-
-    public void setOneConvStudy(float oneConvStudy) {
-        this.oneConvStudy = oneConvStudy;
-    }
 
     public int getMinFeatureValue() {
         return minFeatureValue;

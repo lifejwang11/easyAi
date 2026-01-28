@@ -47,12 +47,24 @@ public class TypeBody {
         //是否为轻量模型
         winWidth = minWinWidth;
         winHeight = minWinHeight;
-        positionNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), 5, 1,
-                new Tanh(), yoloConfig.getPositionStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
+        positionNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), 5, yoloConfig.getHiddenDeep(),
+                new Tanh(), yoloConfig.getStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
                 , yoloConfig.getCoreNumber(), yoloConfig.getGaMa(), yoloConfig.getGMaxTh(), yoloConfig.isAuto());
         positionNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
-                false, false, yoloConfig.getPositionStudyRate(), new ReLu(),
-                yoloConfig.getMinFeatureValue(), yoloConfig.getOneConvStudy(), yoloConfig.isNorm());
+                false, false, yoloConfig.getStudyRate(), new ReLu(),
+                yoloConfig.getMinFeatureValue(), yoloConfig.getStudyRate(), yoloConfig.isNorm());
+    }
+
+    public TypeBody(ResYoloConfig resYoloConfig, int size) throws Exception {
+        //是否为轻量模型
+        winWidth = size;
+        winHeight = size;
+        positionNerveManager = new NerveManager(3, resYoloConfig.getPositionHiddenNerveNub(), 5,
+                resYoloConfig.getPositionHiddenDeep(), new Tanh(), resYoloConfig.getPositionStudyRate(), resYoloConfig.getRegularModel(),
+                resYoloConfig.getRegular(), 0, resYoloConfig.getGaMa(), resYoloConfig.getPositionGMaxTh(), resYoloConfig.isAuto());
+        positionNerveManager.initImageNet(resYoloConfig.getPositionChannelNo(), 3, size, size,
+                false, resYoloConfig.isShowLog(), resYoloConfig.getPositionStudyRate(), new ReLu(),
+                resYoloConfig.getPositionMinFeatureValue(), resYoloConfig.getPositionStudyRate(), true);
     }
 
     public float getRealWidth(float width) {

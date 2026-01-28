@@ -8,6 +8,15 @@ import java.util.List;
 public class YoloModel {
     private List<TypeModel> typeModels;
     private ModelParameter typeModel;
+    private ResnetModel resnetModel;
+
+    public ResnetModel getResnetModel() {
+        return resnetModel;
+    }
+
+    public void setResnetModel(ResnetModel resnetModel) {
+        this.resnetModel = resnetModel;
+    }
 
     public List<TypeModel> getTypeModels() {
         return typeModels;

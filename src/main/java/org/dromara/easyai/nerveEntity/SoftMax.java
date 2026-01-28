@@ -35,7 +35,8 @@ public class SoftMax extends Nerve {
     }
 
     @Override
-    protected void input(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E, OutBack outBack) throws Exception {
+    protected void input(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E, OutBack outBack
+            , Map<Integer, Float> pd) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {
             normMax(eventId);
