@@ -35,7 +35,8 @@ public class SoftMax extends Nerve {
     }
 
     @Override
-    protected void input(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E, OutBack outBack) throws Exception {
+    protected void input(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E, OutBack outBack
+            , Map<Integer, Float> pd) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {
             normMax(eventId);
@@ -48,6 +49,12 @@ public class SoftMax extends Nerve {
                         break;
                     }
                 }
+                boolean errorPD = false;//误差惩罚
+                float pdRate = 1;
+                if (pd != null && pd.containsKey(key) && key != mes.typeID) {
+                    pdRate = pd.get(key);
+                    errorPD = true;
+                }
                 if (isShowLog) {
                     if (outBack == null) {
                         System.out.println("softMax==" + key + ",out==" + mes.poi + ",nerveId==" + mes.typeID);
@@ -55,7 +62,7 @@ public class SoftMax extends Nerve {
                         outBack.getStudyLog(key, mes.poi, mes.typeID);
                     }
                 }
-                List<Float> errors = error(mes, key);
+                List<Float> errors = error(mes, key, errorPD, pdRate);
                 features.remove(eventId); //清空当前上层输入参数参数
                 int size = outNerves.size();
                 for (int i = 0; i < size; i++) {
@@ -73,7 +80,7 @@ public class SoftMax extends Nerve {
         }
     }
 
-    private List<Float> error(Mes mes, int key) {
+    private List<Float> error(Mes mes, int key, boolean errorPD, float pdRate) {
         int t = key - 1;
         List<Float> softMax = mes.softMax;
         List<Float> error = new ArrayList<>();
@@ -84,6 +91,9 @@ public class SoftMax extends Nerve {
                 myError = -self;
             } else {
                 myError = 1 - self;
+            }
+            if (errorPD) {
+                myError = myError * pdRate;
             }
             error.add(myError);
         }

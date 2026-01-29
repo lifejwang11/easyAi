@@ -27,12 +27,13 @@ public class SensoryNerve extends Nerve {
      * @param isStudy   是否是学习 (学习状态没有输出)
      * @param E         标注
      * @param outBack   回调结果
+     * @param pd  误差惩罚系数
      * @throws Exception
      */
     public void postMessage(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E
-            , OutBack outBack) throws Exception {//感知神经元输出
+            , OutBack outBack, Map<Integer, Float> pd) throws Exception {//感知神经元输出
 
-        sendMessage(eventId, parameter, isStudy, E, outBack);
+        sendMessage(eventId, parameter, isStudy, E, outBack, pd);
     }
 
 
@@ -43,11 +44,12 @@ public class SensoryNerve extends Nerve {
      * @param E             标注
      * @param outBack       回调结果
      * @param needMatrix    需要矩阵输出
+     * @param pd  误差惩罚系数
      * @throws Exception
      */
     public void postThreeChannelMatrix(long eventId, ThreeChannelMatrix parameter, boolean isKernelStudy
-            , Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
-        sendThreeChannelMatrix(eventId, parameter, isKernelStudy, E, outBack, needMatrix);
+            , Map<Integer, Float> E, OutBack outBack, boolean needMatrix, Map<Integer, Float> pd) throws Exception {
+        sendThreeChannelMatrix(eventId, parameter, isKernelStudy, E, outBack, needMatrix, pd);
     }
 
     /**
@@ -57,11 +59,12 @@ public class SensoryNerve extends Nerve {
      * @param E             标注
      * @param outBack       回调结果
      * @param needMatrix    需要矩阵输出
+     * @param pd  误差惩罚系数
      * @throws Exception
      */
     public void postMatrixList(long eventId, List<Matrix> parameter, boolean isKernelStudy
-            , Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
-        sendListMatrix(eventId, parameter, isKernelStudy, E, outBack, needMatrix);
+            , Map<Integer, Float> E, OutBack outBack, boolean needMatrix, Map<Integer, Float> pd) throws Exception {
+        sendListMatrix(eventId, parameter, isKernelStudy, E, outBack, needMatrix, pd);
     }
 
     @Override

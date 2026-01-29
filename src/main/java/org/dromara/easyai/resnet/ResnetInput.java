@@ -25,7 +25,7 @@ public class ResnetInput {
         this.batchSize = batchSize;
     }
 
-    public void studyFeature(List<BatchBody> batchBodies, OutBack outBack, long eventID) throws Exception {
+    public void studyFeature(List<BatchBody> batchBodies, OutBack outBack, long eventID, Map<Integer, Float> pd) throws Exception {
         if (batchSize == batchBodies.size()) {
             for (BatchBody batchBody : batchBodies) {
                 Matrix matrix = batchBody.getFeatureList().get(0);
@@ -35,7 +35,7 @@ public class ResnetInput {
                     throw new Exception("输入的图像必须为正方形，且尺寸必须等同于初始化配置的值：" + imageSize);
                 }
             }
-            fistBlock.sendMatrixList(batchBodies, outBack, true, eventID, false);
+            fistBlock.sendMatrixList(batchBodies, outBack, true, eventID, false, pd);
         } else {
             throw new Exception("训练批次数量与预设数量不符");
         }
@@ -51,7 +51,7 @@ public class ResnetInput {
         batchBody.insertPicture(image);
         List<BatchBody> batchBodies = new ArrayList<>();
         batchBodies.add(batchBody);
-        fistBlock.sendMatrixList(batchBodies, outBack, false, eventID, outFeature);
+        fistBlock.sendMatrixList(batchBodies, outBack, false, eventID, outFeature, null);
     }
 
 }

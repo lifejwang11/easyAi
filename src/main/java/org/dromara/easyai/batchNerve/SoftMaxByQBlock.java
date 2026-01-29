@@ -2,6 +2,7 @@ package org.dromara.easyai.batchNerve;
 
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.matrixTools.MatrixOperation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Map;
  */
 public class SoftMaxByQBlock {
     private final QBlock fatherBlock;//向后模块
+    private final MatrixOperation matrixOperation = new MatrixOperation();
     private final boolean showLog;
 
     public SoftMaxByQBlock(QBlock fatherBlock, boolean showLog) {
@@ -33,7 +35,8 @@ public class SoftMaxByQBlock {
         }
     }
 
-    public void postMessage(List<FeatureBody> featureBodies, boolean study, OutBack outBack, long eventId) throws Exception {
+    public void postMessage(List<FeatureBody> featureBodies, boolean study, OutBack outBack, long eventId
+            , Map<Integer, Float> pd) throws Exception {
         List<Matrix> errorBodies = new ArrayList<>();
         for (FeatureBody featureBody : featureBodies) {
             Matrix feature = featureBody.getFeature();
@@ -48,6 +51,12 @@ public class SoftMaxByQBlock {
                         break;
                     }
                 }
+                boolean errorPD = false;//误差惩罚
+                float pdRate = 1;
+                if (pd != null && pd.containsKey(key) && key != mes.typeID) {
+                    pdRate = pd.get(key);
+                    errorPD = true;
+                }
                 if (showLog) {
                     if (outBack != null) {
                         outBack.getStudyLog(key, mes.poi, mes.typeID);
@@ -56,6 +65,9 @@ public class SoftMaxByQBlock {
                     }
                 }
                 Matrix errors = error(mes, key);
+                if (errorPD) {
+                    matrixOperation.mathMul(errors, pdRate);
+                }
                 errorBodies.add(errors);
             } else {//输出
                 if (outBack != null) {

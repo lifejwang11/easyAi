@@ -32,7 +32,7 @@ public class OutNerve extends Nerve {
 
     @Override
     public void input(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E
-            , OutBack outBack) throws Exception {
+            , OutBack outBack, Map<Integer, Float> pd) throws Exception {
         boolean allReady = insertParameter(eventId, parameter);
         if (allReady) {//参数齐了，开始计算 sigma - threshold
             float sigma = calculation(eventId);
@@ -40,7 +40,7 @@ public class OutNerve extends Nerve {
                 if (!isStudy) {
                     destoryParameter(eventId);
                 }
-                sendMessage(eventId, sigma, isStudy, E, outBack);
+                sendMessage(eventId, sigma, isStudy, E, outBack, pd);
             } else {
                 float out = activeFunction.function(sigma);
                 if (isStudy) {//输出结果并进行BP调整权重及阈值

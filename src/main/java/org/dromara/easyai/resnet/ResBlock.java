@@ -12,6 +12,7 @@ import org.dromara.easyai.resnet.entity.ResBlockModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -143,12 +144,13 @@ public class ResBlock extends ResConvCount {
         return errorList;
     }
 
-    private void convMatrix(List<BatchBody> batchBodies, int step, boolean study, OutBack outBack, long eventID, boolean outFeature) throws Exception {// feature 准备跳层用
+    private void convMatrix(List<BatchBody> batchBodies, int step, boolean study, OutBack outBack,
+                            long eventID, boolean outFeature, Map<Integer, Float> pd) throws Exception {// feature 准备跳层用
         boolean one = step == 1;
         oneConvMatrix(batchBodies, firstResConvPower, study, one);
         oneConvMatrix(batchBodies, secondResConvPower, study, true);
         if (sonResBlock != null) {
-            sonResBlock.sendMatrixList(batchBodies, outBack, study, eventID, outFeature);
+            sonResBlock.sendMatrixList(batchBodies, outBack, study, eventID, outFeature, pd);
         } else {//最后卷积层了，求平均值
             List<FeatureBody> featureBodies = new ArrayList<>();
             for (BatchBody batchBody : batchBodies) {
@@ -162,7 +164,7 @@ public class ResBlock extends ResConvCount {
                     throw new Exception("没有传入OutBack输出回调类");
                 }
             } else {
-                inputBlock.postMessage(featureBodies, study, outBack, eventID);
+                inputBlock.postMessage(featureBodies, study, outBack, eventID, pd);
             }
         }
     }
@@ -211,7 +213,8 @@ public class ResBlock extends ResConvCount {
                 , secondConvLay.getMatrixNormList(), copyBatchBody, oneConvPower);
     }
 
-    public void sendMatrixList(List<BatchBody> batchBodies, OutBack outBack, boolean study, long eventID, boolean outFeature) throws Exception {
+    public void sendMatrixList(List<BatchBody> batchBodies, OutBack outBack, boolean study, long eventID,
+                               boolean outFeature, Map<Integer, Float> pd) throws Exception {
         //判定特征大小是否为偶数
         if (fill(deep, imageSize, true)) {//不是偶数,要补0
             for (BatchBody batchBody : batchBodies) {
@@ -235,9 +238,9 @@ public class ResBlock extends ResConvCount {
                 }
                 batchBody.setFeatureList(nextMatrixList);
             }
-            convMatrix(batchBodies, 1, study, outBack, eventID, outFeature);
+            convMatrix(batchBodies, 1, study, outBack, eventID, outFeature, pd);
         } else {
-            convMatrix(batchBodies, 2, study, outBack, eventID, outFeature);
+            convMatrix(batchBodies, 2, study, outBack, eventID, outFeature, pd);
         }
 
     }

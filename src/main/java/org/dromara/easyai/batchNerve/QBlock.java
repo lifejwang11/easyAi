@@ -72,13 +72,14 @@ public class QBlock {
         powerMatrix.insertMatrixModel(qBlockModel.getPowerModel());
     }
 
-    public void postMassage(List<FeatureBody> featureBodies, boolean study, OutBack outBack, long eventID) throws Exception {
+    public void postMassage(List<FeatureBody> featureBodies, boolean study, OutBack outBack, long eventID,
+                            Map<Integer, Float> pd) throws Exception {
         calculation(featureBodies, study);
         if (sonBlock != null) {
-            sonBlock.postMassage(featureBodies, study, outBack, eventID);
+            sonBlock.postMassage(featureBodies, study, outBack, eventID, pd);
         } else {//走到尽头了
             if (softMaxByQBlock != null) {
-                softMaxByQBlock.postMessage(featureBodies, study, outBack, eventID);
+                softMaxByQBlock.postMessage(featureBodies, study, outBack, eventID, pd);
             } else {//
                 errorOperation(featureBodies, study, outBack, eventID);
             }

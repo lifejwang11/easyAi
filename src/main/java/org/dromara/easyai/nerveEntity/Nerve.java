@@ -123,10 +123,10 @@ public abstract class Nerve extends ConvCount {
     }
 
     public void sendMessage(long eventId, float parameter, boolean isStudy, Map<Integer, Float> E
-            , OutBack outBack) throws Exception {
+            , OutBack outBack, Map<Integer, Float> pd) throws Exception {
         if (!son.isEmpty()) {
             for (Nerve nerve : son) {
-                nerve.input(eventId, parameter, isStudy, E, outBack);
+                nerve.input(eventId, parameter, isStudy, E, outBack, pd);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -138,7 +138,7 @@ public abstract class Nerve extends ConvCount {
     }
 
     protected void demRedByMatrixList(long eventId, List<Matrix> matrixList, boolean study,
-                                      Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
+                                      Map<Integer, Float> E, OutBack outBack, boolean needMatrix, Map<Integer, Float> pd) throws Exception {
         if (study) {//训练临时保存
             convParameter.setFeatureMatrixList(matrixList);
         }
@@ -152,14 +152,14 @@ public abstract class Nerve extends ConvCount {
             feature = matrixList;
         }
         List<Matrix> convMatrix = conv(feature);
-        sendMatrix(eventId, convMatrix, study, E, outBack, needMatrix);
+        sendMatrix(eventId, convMatrix, study, E, outBack, needMatrix, pd);
     }
 
     public void sendMatrixList(long eventId, List<Float> parameter, boolean isStudy,
-                               Map<Integer, Float> E, OutBack outBack) throws Exception {
+                               Map<Integer, Float> E, OutBack outBack, Map<Integer, Float> pd) throws Exception {
         if (!son.isEmpty()) {
             for (Nerve nerve : son) {
-                nerve.inputMatrixFeature(eventId, parameter, isStudy, E, outBack);
+                nerve.inputMatrixFeature(eventId, parameter, isStudy, E, outBack, pd);
             }
         } else {
             throw new Exception("this layer is lastIndex");
@@ -167,27 +167,27 @@ public abstract class Nerve extends ConvCount {
     }
 
     public void sendMatrix(long eventId, List<Matrix> parameter, boolean isStudy,
-                           Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
+                           Map<Integer, Float> E, OutBack outBack, boolean needMatrix, Map<Integer, Float> pd) throws Exception {
         if (sonOnly != null) {
-            sonOnly.inputMatrix(eventId, parameter, isStudy, E, outBack, needMatrix);
+            sonOnly.inputMatrix(eventId, parameter, isStudy, E, outBack, needMatrix, pd);
         } else {
             throw new Exception("this layer is lastIndex");
         }
     }
 
     public void sendThreeChannelMatrix(long eventId, ThreeChannelMatrix parameter, boolean isStudy,
-                                       Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
+                                       Map<Integer, Float> E, OutBack outBack, boolean needMatrix, Map<Integer, Float> pd) throws Exception {
         if (sonOnly != null) {
-            sonOnly.inputThreeChannelMatrix(eventId, parameter, isStudy, E, outBack, needMatrix);
+            sonOnly.inputThreeChannelMatrix(eventId, parameter, isStudy, E, outBack, needMatrix, pd);
         } else {
             throw new Exception("this layer is lastIndex");
         }
     }
 
     public void sendListMatrix(long eventId, List<Matrix> parameter, boolean isStudy,
-                               Map<Integer, Float> E, OutBack outBack, boolean needMatrix) throws Exception {
+                               Map<Integer, Float> E, OutBack outBack, boolean needMatrix, Map<Integer, Float> pd) throws Exception {
         if (sonOnly != null) {
-            sonOnly.demRedByMatrixList(eventId, parameter, isStudy, E, outBack, needMatrix);
+            sonOnly.demRedByMatrixList(eventId, parameter, isStudy, E, outBack, needMatrix, pd);
         } else {
             throw new Exception("this layer is lastIndex");
         }
@@ -225,21 +225,21 @@ public abstract class Nerve extends ConvCount {
     }
 
     protected void input(long eventId, float parameter, boolean isStudy
-            , Map<Integer, Float> E, OutBack imageBack) throws Exception {//输入参数
+            , Map<Integer, Float> E, OutBack imageBack, Map<Integer, Float> pd) throws Exception {//输入参数
 
     }
 
     protected void inputMatrixFeature(long eventId, List<Float> parameters, boolean isStudy
-            , Map<Integer, Float> E, OutBack imageBack) throws Exception {//卷积层向网络发送参数
+            , Map<Integer, Float> E, OutBack imageBack, Map<Integer, Float> pd) throws Exception {//卷积层向网络发送参数
 
     }
 
     protected void inputMatrix(long eventId, List<Matrix> matrix, boolean isKernelStudy, Map<Integer, Float> E,
-                               OutBack outBack, boolean needMatrix) throws Exception {//输入动态矩阵
+                               OutBack outBack, boolean needMatrix, Map<Integer, Float> pd) throws Exception {//输入动态矩阵
     }
 
     protected void inputThreeChannelMatrix(long eventId, ThreeChannelMatrix picture, boolean isKernelStudy, Map<Integer, Float> E,
-                                           OutBack outBack, boolean needMatrix) throws Exception {//输入动态矩阵
+                                           OutBack outBack, boolean needMatrix, Map<Integer, Float> pd) throws Exception {//输入动态矩阵
     }
 
     private void backGetMessage(float parameter, long eventId) throws Exception {//反向传播

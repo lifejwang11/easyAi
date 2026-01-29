@@ -1,6 +1,5 @@
 package org.dromara.easyai.matrixTools;
 
-import org.dromara.easyai.entity.ThreeChannelMatrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +7,7 @@ import java.util.List;
 /**
  * 矩阵
  **/
-public class Matrix extends MatrixOperation {
+public class Matrix {
     private float[] matrix;//矩阵本体(列主序)
     private int x;//矩阵的行数
     private int y;//矩阵的列数
@@ -318,23 +317,23 @@ public class Matrix extends MatrixOperation {
         return isOk;
     }
 
-    private void defCalculation(List<Coordinate> coordinates) throws Exception {
+    private void defCalculation(List<Coordinate> coordinates, MatrixOperation matrixOperation) throws Exception {
         for (Coordinate coordinate : coordinates) {
             if (!coordinate.coordinateList.isEmpty()) {//继续向丛林深处进发
-                defCalculation(coordinate.coordinateList);
+                defCalculation(coordinate.coordinateList, matrixOperation);
             } else {//到道路的尽头了,进行核算
-                mulFather(coordinate, 1, new ArrayList<>());
+                mulFather(coordinate, 1, new ArrayList<>(), matrixOperation);
             }
         }
     }
 
-    private float mulFather(Coordinate coordinate, float element, List<Coordinate> div) throws Exception {
+    private float mulFather(Coordinate coordinate, float element, List<Coordinate> div, MatrixOperation matrixOperation) throws Exception {
         div.add(coordinate);
         element = getNumber(coordinate.x, coordinate.y) * element;
         if (coordinate.father != null) {
-            element = mulFather(coordinate.father, element, div);
+            element = mulFather(coordinate.father, element, div, matrixOperation);
         } else {//道路尽头
-            if (parity(div)) {//偶排列
+            if (parity(div, matrixOperation)) {//偶排列
                 defNub = defNub + element;
             } else {//奇排列
                 defNub = defNub - element;
@@ -353,18 +352,19 @@ public class Matrix extends MatrixOperation {
      */
     public float getDet() throws Exception {//求矩阵的行列式
         if (x == y) {
+            MatrixOperation matrixOperation = new MatrixOperation();
             coordinateRoot = new ArrayList<>();
             for (int i = 0; i < x; i++) {
                 findRout(null, 0, i, true);
             }
-            defCalculation(coordinateRoot);
+            defCalculation(coordinateRoot, matrixOperation);
         } else {
             throw new Exception("Matrix is not Square");
         }
         return defNub;
     }
 
-    private boolean parity(List<Coordinate> list) {//获取排列奇偶性
+    private boolean parity(List<Coordinate> list, MatrixOperation matrixOperation) {//获取排列奇偶性
         boolean parity = true;//默认是偶排列
         float[] row = new float[list.size()];
         float[] clo = new float[list.size()];
@@ -372,8 +372,8 @@ public class Matrix extends MatrixOperation {
             row[i] = list.get(i).x + 1;
             clo[i] = list.get(i).y + 1;
         }
-        int rowInv = inverseNumber(row);
-        int cloInv = inverseNumber(clo);
+        int rowInv = matrixOperation.inverseNumber(row);
+        int cloInv = matrixOperation.inverseNumber(clo);
         int inverserNumber = rowInv + cloInv;
         if (inverserNumber % 2 != 0) {//奇排列
             parity = false;

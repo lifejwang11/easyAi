@@ -190,23 +190,30 @@ public abstract class ResConvCount {
     protected void downConvMany2(List<BatchBody> batchBodies, List<Matrix> powerMatrixList, boolean study, List<BackParameter> backParameterList,
                                  List<MatrixNorm> matrixNormList, List<BatchBody> resBatchBody, List<List<Float>> oneConvPower) throws Exception {//多维度卷积运算
         //featureList resFeatureList特征默认进来就是偶数了
+        List<Matrix> firstMulMatrixList = new ArrayList<>();
+        List<Matrix> secondMulMatrixList = new ArrayList<>();
+        List<List<ConvResult>> allConvResultList = new ArrayList<>();
+        List<List<Matrix>> allOutMatrixList = new ArrayList<>();
+        List<List<Matrix>> allResFeatureList = new ArrayList<>();
+        ReLu reLu = new ReLu();
+        int size = powerMatrixList.size();//卷积通道数
+        int matrixSize = 0;
         for (int m = 0; m < batchBodies.size(); m++) {
             BatchBody batchBody = batchBodies.get(m);
             List<Matrix> featureList = batchBody.getFeatureList();
             BackParameter backParameter = backParameterList.get(m);
-            int size = powerMatrixList.size();//卷积通道数
             int featureSize = featureList.size();//特征通道数
             if (size != featureSize) {
                 throw new Exception("卷积通道数与特征通道数不一致");
             }
             List<ConvResult> convResults = new ArrayList<>();
-            ReLu reLu = new ReLu();
             List<Matrix> outMatrixList = new ArrayList<>();
+            allConvResultList.add(convResults);
+            allOutMatrixList.add(outMatrixList);
             if (study) {
                 backParameter.setConvResults(convResults);
                 backParameter.setOutMatrixList(outMatrixList);
             }
-            int matrixSize = 0;
             List<Matrix> resFeatureList = null;
             if (resBatchBody != null) {
                 resFeatureList = resBatchBody.get(m).getFeatureList();
@@ -228,8 +235,9 @@ public abstract class ResConvCount {
                     throw new Exception("残差与卷积核维度不相等");
                 }
             }
-            List<Matrix> firstMulMatrixList = new ArrayList<>();
-            List<Matrix> secondMulMatrixList = new ArrayList<>();
+            if (resFeatureList != null) {
+                allResFeatureList.add(resFeatureList);
+            }
             for (int i = 0; i < size; i++) {
                 ConvResult convResult = new ConvResult();
                 Matrix powerMatrix = powerMatrixList.get(i);//卷积
@@ -244,11 +252,23 @@ public abstract class ResConvCount {
                 secondMulMatrixList.add(powerMatrix);
                 convResults.add(convResult);
             }
-            List<Matrix> resultMatrixList = matrixOperation.mulMatrixList(firstMulMatrixList, secondMulMatrixList);
+        }
+        List<Matrix> resultMatrixList = matrixOperation.mulMatrixList(firstMulMatrixList, secondMulMatrixList);
+        for (int m = 0; m < batchBodies.size(); m++) {
+            int startIndex = m * size;
+            int endIndex = startIndex + size;
+            List<Matrix> result = resultMatrixList.subList(startIndex, endIndex);
+            BatchBody batchBody = batchBodies.get(m);
+            List<ConvResult> convResults = allConvResultList.get(m);
+            List<Matrix> outMatrixList = allOutMatrixList.get(m);
+            List<Matrix> resFeatureList = null;
+            if (!allResFeatureList.isEmpty()) {
+                resFeatureList = allResFeatureList.get(m);
+            }
             for (int i = 0; i < size; i++) {
                 MatrixNorm matrixNorm = matrixNormList.get(i);
                 ConvResult convResult = convResults.get(i);
-                Matrix outMatrix = resultMatrixList.get(i);
+                Matrix outMatrix = result.get(i);
                 convResult.setResultMatrix(outMatrix);
                 int sub = 3 - 1;
                 int mySize = matrixSize - sub;//线性变换后矩阵的行数 （图片长度-（核长-步长））/步长
@@ -273,21 +293,20 @@ public abstract class ResConvCount {
     protected void downConvMany(List<BatchBody> batchBodies, List<Matrix> powerMatrixList, int kerSize, boolean study
             , List<BackParameter> backParameterList, List<MatrixNorm> matrixNormList) throws Exception {//多维度卷积运算
         int batchSize = batchBodies.size();
+        int size = powerMatrixList.size();//卷积通道数
+        ReLu reLu = new ReLu();
+        int matrixSize = 0;
+        List<Matrix> firstMulMatrix = new ArrayList<>();
+        List<Matrix> secondMulMatrix = new ArrayList<>();
+        List<List<Matrix>> allFeatureList = new ArrayList<>();
+        int featureSize = 0;
         for (int m = 0; m < batchSize; m++) {
             BatchBody batchBody = batchBodies.get(m);
             List<Matrix> featureList = batchBody.getFeatureList();
             BackParameter backParameter = backParameterList.get(m);
-            int size = powerMatrixList.size();//卷积通道数
-            int featureSize = featureList.size();//特征通道数
-            List<List<ConvResult>> convResultList = new ArrayList<>();
-            ReLu reLu = new ReLu();
-            List<Matrix> outMatrixList = new ArrayList<>();
-            if (study) {
-                backParameter.setConvResultList(convResultList);
-                backParameter.setOutMatrixList(outMatrixList);
-            }
-            int matrixSize = 0;
+            featureSize = featureList.size();//特征通道数
             List<Matrix> myFeatureList = new ArrayList<>();
+            allFeatureList.add(myFeatureList);
             for (int j = 0; j < featureSize; j++) {//进行padding操作
                 Matrix featureMatrix;
                 //这个地方决定是否要padding
@@ -300,8 +319,6 @@ public abstract class ResConvCount {
                 //进行变换
                 myFeatureList.add(im2col);
             }
-            List<Matrix> firstMulMatrix = new ArrayList<>();
-            List<Matrix> secondMulMatrix = new ArrayList<>();
             for (int i = 0; i < size; i++) {
                 Matrix powerMatrix = powerMatrixList.get(i);//卷积
                 for (int j = 0; j < featureSize; j++) {
@@ -310,7 +327,21 @@ public abstract class ResConvCount {
                     secondMulMatrix.add(powerMatrix);
                 }
             }
-            List<Matrix> resultMatrixList = matrixOperation.mulMatrixList(firstMulMatrix, secondMulMatrix);
+        }
+        List<Matrix> resultMatrixList = matrixOperation.mulMatrixList(firstMulMatrix, secondMulMatrix);
+        for (int m = 0; m < batchSize; m++) {
+            List<Matrix> myFeatureList = allFeatureList.get(m);
+            int startIndex = m * size * featureSize;
+            int endIndex = startIndex + size * featureSize;
+            List<Matrix> result = resultMatrixList.subList(startIndex, endIndex);
+            BatchBody batchBody = batchBodies.get(m);
+            BackParameter backParameter = backParameterList.get(m);
+            List<List<ConvResult>> convResultList = new ArrayList<>();
+            List<Matrix> outMatrixList = new ArrayList<>();
+            if (study) {
+                backParameter.setConvResultList(convResultList);
+                backParameter.setOutMatrixList(outMatrixList);
+            }
             for (int i = 0; i < size; i++) {
                 MatrixNorm matrixNorm = matrixNormList.get(i);
                 Matrix addMatrix = null;
@@ -318,7 +349,7 @@ public abstract class ResConvCount {
                 convResultList.add(convResults);
                 for (int j = 0; j < featureSize; j++) {
                     Matrix featureMatrix = myFeatureList.get(j);
-                    Matrix outMatrix = resultMatrixList.get(i * featureSize + j);
+                    Matrix outMatrix = result.get(i * featureSize + j);
                     ConvResult convResult = new ConvResult();
                     convResult.setLeftMatrix(featureMatrix);
                     convResult.setResultMatrix(outMatrix);
