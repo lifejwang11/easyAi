@@ -51,7 +51,7 @@ public class TypeBody {
                 new Tanh(), yoloConfig.getStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
                 , yoloConfig.getCoreNumber(), yoloConfig.getGaMa(), yoloConfig.getGMaxTh(), yoloConfig.isAuto());
         positionNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
-                false, false, yoloConfig.getStudyRate(), new ReLu(),
+                false, yoloConfig.isShowLog(), yoloConfig.getStudyRate(), new ReLu(),
                 yoloConfig.getMinFeatureValue(), yoloConfig.getStudyRate(), yoloConfig.isNorm());
     }
 

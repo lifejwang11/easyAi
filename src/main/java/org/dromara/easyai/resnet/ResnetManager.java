@@ -69,7 +69,7 @@ public class ResnetManager extends ResConvCount {
         int lastSize = getFeatureSize(deep, resNetConfig.getSize(), true);//最后一层特征大小
         //全局学习率
         float studyRate = resNetConfig.getStudyRate();
-        if (deep < 2) {
+        if (deep < 1) {
             throw new Exception("图像尺寸太小了，不能用resnet进行训练");
         }
         int featureLength = (int) (channelNo * Math.pow(2, deep - 1));//卷积层输出特征大小

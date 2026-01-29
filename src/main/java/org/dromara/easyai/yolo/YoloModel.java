@@ -9,6 +9,15 @@ public class YoloModel {
     private List<TypeModel> typeModels;
     private ModelParameter typeModel;
     private ResnetModel resnetModel;
+    private int ready;
+
+    public int getReady() {
+        return ready;
+    }
+
+    public void setReady(int ready) {
+        this.ready = ready;
+    }
 
     public ResnetModel getResnetModel() {
         return resnetModel;

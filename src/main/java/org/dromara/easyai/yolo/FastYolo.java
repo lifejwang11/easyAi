@@ -36,6 +36,7 @@ public class FastYolo {//yolo
     private final float pth;//概率阈值
     private final float otherPTh;
     private final Map<Integer, Float> pd = new HashMap<>();
+    private int ready = 0;
 
     public FastYolo(YoloConfig yoloConfig) throws Exception {
         float stepReduce = yoloConfig.getCheckStepReduce();
@@ -155,6 +156,7 @@ public class FastYolo {//yolo
     }
 
     public void insertModel(YoloModel yoloModel) throws Exception {
+        ready = yoloModel.getReady();
         if (resnet) {
             resnetManager.insertModel(yoloModel.getResnetModel());
         } else {
@@ -186,6 +188,7 @@ public class FastYolo {//yolo
 
     public YoloModel getModel() throws Exception {
         YoloModel yoloModel = new YoloModel();
+        yoloModel.setReady(ready);
         if (resnet) {
             yoloModel.setResnetModel(resnetManager.getModel());
         } else {
@@ -257,6 +260,13 @@ public class FastYolo {//yolo
     }
 
     public List<OutBox> look(ThreeChannelMatrix th, long eventID) throws Exception {
+        if (ready == 0) {
+            throw new Exception("该模型没经过训练");
+        } else if (ready == 1) {
+            throw new Exception("该模型没经过位置训练 请加载模型后，再通过toStudy方法将其中的布尔参数 改为false 进行再次训练");
+        } else if (ready == 2) {
+            throw new Exception("该模型没有经过类别训练 请加载模型后，再通过toStudy方法将其中的布尔参数 改为true 进行再次训练");
+        }
         int x = th.getX();
         int y = th.getY();
         List<Box> boxes = new ArrayList<>();
@@ -338,6 +348,11 @@ public class FastYolo {//yolo
                 System.out.println("index:" + index + ",size:" + yoloSamples.size());
                 study(yoloSample, logOutBack, studyType);
             }
+        }
+        if (studyType) {
+            ready = ready | 1;
+        } else {
+            ready = ready | 2;
         }
     }
 
