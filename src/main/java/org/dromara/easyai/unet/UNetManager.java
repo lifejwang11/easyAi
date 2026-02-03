@@ -25,9 +25,8 @@ public class UNetManager extends ConvCount {
     private final float studyRate;
     private final float oneStudyRate;//1v1卷积权重学习率
     private UNetInput input;//输入类
-    private final float gaMa;
     private final float gMaxTh;
-    private final boolean auTo;
+    private final float layGMaxTh;
 
     public UNetInput getInput() {
         return input;
@@ -36,14 +35,13 @@ public class UNetManager extends ConvCount {
     public UNetManager(UNetConfig uNetConfig) throws Exception {
         int xSize = uNetConfig.getXSize();
         int ySize = uNetConfig.getYSize();
-        gaMa = uNetConfig.getGaMa();
         gMaxTh = uNetConfig.getGMaxTh();
-        auTo = uNetConfig.isAuto();
+        layGMaxTh = uNetConfig.getLayGMaxTh();
         int minFeatureValue = uNetConfig.getMinFeatureValue();
         this.kernLen = uNetConfig.getKerSize();
         this.channelNo = uNetConfig.getChannelNo();
         this.studyRate = uNetConfig.getStudyRate();
-        this.oneStudyRate = uNetConfig.getOneStudyRate();
+        this.oneStudyRate = uNetConfig.getStudyRate();
         this.deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue);//编码器深度深度
         if (deep > 1) {
             initEncoder(xSize, ySize);//初始化编码器
@@ -173,7 +171,7 @@ public class UNetManager extends ConvCount {
         }
         for (int i = 0; i < deep + 1; i++) {
             UNetDecoder uNetDecoder = new UNetDecoder(kernLen, i + 1, channelNo, new Tanh(),
-                    i == deep, studyRate, myCut, oneStudyRate, gaMa, gMaxTh, auTo);
+                    i == deep, studyRate, myCut, oneStudyRate, gMaxTh, layGMaxTh);
             decoderList.add(uNetDecoder);
         }
         for (int i = 0; i < deep; i++) {
@@ -187,7 +185,7 @@ public class UNetManager extends ConvCount {
     private void initEncoder(int xSize, int ySize) throws Exception {
         for (int i = 0; i < deep; i++) {
             UNetEncoder uNetEncoder = new UNetEncoder(kernLen, channelNo, i + 1, new ReLu(), studyRate
-                    , xSize, ySize, oneStudyRate, gaMa, gMaxTh, auTo);
+                    , xSize, ySize, oneStudyRate, gMaxTh, layGMaxTh);
             if (i == 0) {
                 input = new UNetInput(uNetEncoder);
             }

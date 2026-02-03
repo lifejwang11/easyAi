@@ -13,7 +13,6 @@ public class BatchNerveConfig {
     private boolean softMax = false;//是否需要 softMax
     private float studyRate = 0.001f;//学习率
     private boolean auto = false;//是否启用自适应学习率
-    private float gaMa = 0.9f;
     private float GMaxTh = 10;//梯度裁剪阈值
     private int deep = 1;//隐层深度
     private boolean showLog = true;
@@ -90,14 +89,6 @@ public class BatchNerveConfig {
 
     public void setAuto(boolean auto) {
         this.auto = auto;
-    }
-
-    public float getGaMa() {
-        return gaMa;
-    }
-
-    public void setGaMa(float gaMa) {
-        this.gaMa = gaMa;
     }
 
     public float getGMaxTh() {

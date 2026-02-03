@@ -658,8 +658,6 @@ public class MatrixOperation {
                     if (!Float.isNaN(columnAllNumber)) {
                         matrix.setNub(i, j, columnAllNumber);
                     } else {
-                        System.out.println(matrix1);
-                        System.out.println(matrix2);
                         throw new Exception("计算时出现数值溢出，梯度爆炸!");
                     }
                 }

@@ -17,10 +17,18 @@ public class ResnetConfig {
     private int channelNo = 2;//通道数
     private int hiddenDeep = 1;//线性层隐层神经元深度
     private int minFeatureSize = 5;//卷积层最小特征大小
-    private float gaMa = 0.9f;//自适应学习率衰减系数
-    private float GMaxTh = 500f;//梯度最大值
+    private float GMaxTh = 1f;//梯度最大值
+    private float layGMaxTh = 10000f;//层梯度裁剪阈值
     private boolean auto = true;//是否使用自适应学习率
     private int batchSize = 32;//小批量训练数量
+
+    public float getLayGMaxTh() {
+        return layGMaxTh;
+    }
+
+    public void setLayGMaxTh(float layGMaxTh) {
+        this.layGMaxTh = layGMaxTh;
+    }
 
     public int getBatchSize() {
         return batchSize;
@@ -44,14 +52,6 @@ public class ResnetConfig {
 
     public void setGMaxTh(float GMaxTh) {
         this.GMaxTh = GMaxTh;
-    }
-
-    public float getGaMa() {
-        return gaMa;
-    }
-
-    public void setGaMa(float gaMa) {
-        this.gaMa = gaMa;
     }
 
     public int getMinFeatureSize() {

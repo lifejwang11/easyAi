@@ -44,7 +44,7 @@ public class BatchNerveManager {
         int hiddenSize = batchNerveConfig.getHiddenSize();//隐层神经元数量
         int outSize = batchNerveConfig.getOutSize();//输出神经元数量
         boolean softMax = batchNerveConfig.isSoftMax();
-        DymStudy dymStudy = new DymStudy(batchNerveConfig.getGaMa(), batchNerveConfig.getGMaxTh(), batchNerveConfig.isAuto());
+        DymStudy dymStudy = new DymStudy(batchNerveConfig.getGMaxTh(), batchNerveConfig.isAuto(), 1f);
         for (int i = 0; i < deep; i++) {
             QBlock qBlock;
             if (i == 0) {

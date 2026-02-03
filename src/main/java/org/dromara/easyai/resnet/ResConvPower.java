@@ -14,7 +14,16 @@ public class ResConvPower {
     private ConvLay firstConvPower;//第一层卷积权重
     private ConvLay secondConvPower;//第二层卷积权重
     private List<List<Float>> oneConvPower;//1v1卷积层 需要作为模型取出
-    private List<List<Float>> dymStudyRateList;//梯度平方和
+    private List<List<Float>> dymStudyRateList;//1*1一阶动态学习率
+    private List<List<Float>> dymStudyRate2List;//1*1二阶动态学习率
+
+    public List<List<Float>> getDymStudyRate2List() {
+        return dymStudyRate2List;
+    }
+
+    public void setDymStudyRate2List(List<List<Float>> dymStudyRate2List) {
+        this.dymStudyRate2List = dymStudyRate2List;
+    }
 
     public List<List<Float>> getDymStudyRateList() {
         return dymStudyRateList;

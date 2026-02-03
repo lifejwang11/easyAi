@@ -23,13 +23,20 @@ public class YoloConfig {
     private int channelNo = 1;//通道数
     private int minFeatureValue = 3;//输出特征维度大小
     private boolean norm = true;//是否进行维度调节
-    private float gaMa = 0.9f;//自适应学习率衰减系数
-    private float GMaxTh = 100f;//梯度裁剪阈值
-    private boolean auto = true;//是否使用自适应学习率
+    private float GMaxTh = 1f;//梯度裁剪阈值
     private int hiddenDeep = 1;//网络线性层隐层神经元深度
     private float otherPth = 0.1f;//负样本交并比阈值
     private float trustTh = 0.5f;//可信度阈值
     private float backGroundPD = 0.1f;//背景误差惩罚，该数值大于0.9 则相当于不施加惩罚
+    private float layGMaxTh = 100000000;//层梯度裁剪阈值
+
+    public float getLayGMaxTh() {
+        return layGMaxTh;
+    }
+
+    public void setLayGMaxTh(float layGMaxTh) {
+        this.layGMaxTh = layGMaxTh;
+    }
 
     public float getBackGroundPD() {
         return backGroundPD;
@@ -63,29 +70,12 @@ public class YoloConfig {
         this.hiddenDeep = hiddenDeep;
     }
 
-
-    public boolean isAuto() {
-        return auto;
-    }
-
-    public void setAuto(boolean auto) {
-        this.auto = auto;
-    }
-
     public float getGMaxTh() {
         return GMaxTh;
     }
 
     public void setGMaxTh(float GMaxTh) {
         this.GMaxTh = GMaxTh;
-    }
-
-    public float getGaMa() {
-        return gaMa;
-    }
-
-    public void setGaMa(float gaMa) {
-        this.gaMa = gaMa;
     }
 
     public boolean isNorm() {

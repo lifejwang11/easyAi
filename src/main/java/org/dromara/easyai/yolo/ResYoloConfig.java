@@ -17,8 +17,7 @@ public class ResYoloConfig {
     private boolean showLog = false;//是否打印学习过程中的log
     private int enhance = 1;//数据增强
     private float iouTh = 0.05f;//合并框交并比阈值
-    private float containIouTh = 0.4f;//是否包含样本交并比阈值
-    private float positionContainIouTh = 0.25f;//位置拟合网络包含样本交并比
+    private float containIouTh = 0.25f;//是否包含样本交并比阈值
     private float pth = 0.4f;//可信概率阈值
     private float stepReduce = 0.25f;//训练步长收缩系数
     private float checkStepReduce = 0.5f;//检测步长收缩系数
@@ -28,23 +27,22 @@ public class ResYoloConfig {
     private int positionChannelNo = 1;//位置网络通道数
     private int minFeatureValue = 5;//输出特征维度大小
     private int positionMinFeatureValue = 3;//位置网络输出特征纬度大小
-    private float gaMa = 0.9f;//自适应学习率衰减系数
     private float GMaxTh = 1f;//梯度裁剪阈值
+    private float layGMaxTh = 10000f;//层梯度裁剪阈值
     private float positionGMaxTh = 100;//位置梯度裁剪阈值
-    private boolean auto = true;//是否使用自适应学习率
-    private float trustTh = 0.5f;//可信度阈值
+    private float trustTh = 0.1f;//可信度阈值
     private int hiddenDeep = 1;//分类网络线性层隐层神经元深度
     private int positionHiddenDeep = 1;//位置网络的线性层神经元深度
     private int batchSize = 32;//批量训练数量
     private float otherPth = 0.1f;//负样本阈值
     private float backGroundPD = 0.1f;//背景误差惩罚，该数值大于0.9 则相当于不施加惩罚
 
-    public float getPositionContainIouTh() {
-        return positionContainIouTh;
+    public float getLayGMaxTh() {
+        return layGMaxTh;
     }
 
-    public void setPositionContainIouTh(float positionContainIouTh) {
-        this.positionContainIouTh = positionContainIouTh;
+    public void setLayGMaxTh(float layGMaxTh) {
+        this.layGMaxTh = layGMaxTh;
     }
 
     public float getBackGroundPD() {
@@ -231,14 +229,6 @@ public class ResYoloConfig {
         this.positionMinFeatureValue = positionMinFeatureValue;
     }
 
-    public float getGaMa() {
-        return gaMa;
-    }
-
-    public void setGaMa(float gaMa) {
-        this.gaMa = gaMa;
-    }
-
     public float getGMaxTh() {
         return GMaxTh;
     }
@@ -247,13 +237,6 @@ public class ResYoloConfig {
         this.GMaxTh = GMaxTh;
     }
 
-    public boolean isAuto() {
-        return auto;
-    }
-
-    public void setAuto(boolean auto) {
-        this.auto = auto;
-    }
 
     public float getTrustTh() {
         return trustTh;

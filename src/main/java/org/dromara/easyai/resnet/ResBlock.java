@@ -31,10 +31,11 @@ public class ResBlock extends ResConvCount {
     private ResBlock fatherResBlock;
     private ResBlock sonResBlock;
     private final BatchInputBlock inputBlock;//输出神经元
-    private final float gaMa;
-    private final float gMaxTh;
-    private final boolean auto;
     private final int batchSize;
+    private int times = 0;//迭代次数
+    private final boolean rz;//是否正则
+    private final float rzRate;//正则系数
+    private final DymStudy dymStudy;
 
     public ResBlockModel getModel() {
         ResBlockModel model = new ResBlockModel();
@@ -54,18 +55,18 @@ public class ResBlock extends ResConvCount {
         }
     }
 
-    public ResBlock(int channelNo, int deep, float studyRate, int imageSize, BatchInputBlock inputBlock, float gaMa, float gMaxTh
-            , boolean auto, int batchSize) throws Exception {
+    public ResBlock(int channelNo, int deep, float studyRate, int imageSize, BatchInputBlock inputBlock, float gMaxTh
+            , boolean auto, int batchSize, boolean rz, float rzRate, float layGMaxTh) throws Exception {
+        this.rz = rz;
+        this.rzRate = rzRate;
         this.imageSize = imageSize;
         this.batchSize = batchSize;
         this.inputBlock = inputBlock;
         this.channelNo = channelNo;
         this.deep = deep;
-        this.gMaxTh = gMaxTh;
         this.studyRate = studyRate;
-        this.auto = auto;
-        this.gaMa = gaMa;
         boolean initOneConv = true;
+        dymStudy = new DymStudy(gMaxTh, auto, layGMaxTh);
         Random random = new Random();
         if (deep == 1) {
             initOneConv = false;
@@ -88,6 +89,7 @@ public class ResBlock extends ResConvCount {
     }
 
     public void backError(List<BatchBody> batchBodies) throws Exception {//返回误差
+        times++;
         List<BatchBody> errorList = backOneConvMatrix(batchBodies, secondResConvPower, 2);
         if (deep > 1) {
             List<BatchBody> errorFinalMatrix = backOneConvMatrix(errorList, firstResConvPower, 1);
@@ -103,10 +105,9 @@ public class ResBlock extends ResConvCount {
                     fillZero(batchBody.getFeatureList(), false);
                 }
             }
-            DymStudy dymStudy = new DymStudy(gaMa, gMaxTh, auto);
             ResBlockError(errorFinalMatrix, firstConvPower.getBackParameterList(), firstConvPower.getMatrixNormList(),
                     firstConvPower.getConvPower(), studyRate, 7, firstConvPower.getDymStudyRateList(),
-                    dymStudy);
+                    firstConvPower.getDymStudyRate2List(), dymStudy, times, rz, rzRate);
         }
     }
 
@@ -124,22 +125,25 @@ public class ResBlock extends ResConvCount {
         ConvLay secondConv = resConvPower.getSecondConvPower();
         List<List<Float>> oneConvPower = null;
         List<List<Float>> dymStudyRateList = null;
+        List<List<Float>> dymStudyRate2List = null;
         if (deep == 1) {
             oneConvPower = resConvPower.getOneConvPower();
             dymStudyRateList = resConvPower.getDymStudyRateList();
+            dymStudyRate2List = resConvPower.getDymStudyRate2List();
         }
-        DymStudy dymStudy = new DymStudy(gaMa, gMaxTh, auto);
         List<BatchBody> nextBatchBodies = ResBlockError2(batchBodies, secondConv.getBackParameterList(), secondConv.getMatrixNormList(),
-                secondConv.getConvPower(), studyRate, true, oneConvPower, secondConv.getDymStudyRateList()
-                , dymStudyRateList, dymStudy);
+                secondConv.getConvPower(), studyRate, true, oneConvPower, secondConv.getDymStudyRateList(), secondConv.getDymStudyRate2List()
+                , dymStudyRateList, dymStudyRate2List, dymStudy, times, rz, rzRate);
         List<BatchBody> errorList;
         if (deep == 2) {
             errorList = ResBlockError2(nextBatchBodies, firstConv.getBackParameterList(), firstConv.getMatrixNormList(),
                     firstConv.getConvPower(), studyRate, false, oneConvPower,
-                    firstConv.getDymStudyRateList(), dymStudyRateList, dymStudy);
+                    firstConv.getDymStudyRateList(), firstConv.getDymStudyRate2List(), dymStudyRateList, dymStudyRate2List,
+                    dymStudy, times, rz, rzRate);
         } else {
             errorList = ResBlockError(nextBatchBodies, firstConv.getBackParameterList(), firstConv.getMatrixNormList(),
-                    firstConv.getConvPower(), studyRate, 3, firstConv.getDymStudyRateList(), dymStudy);
+                    firstConv.getConvPower(), studyRate, 3, firstConv.getDymStudyRateList(), firstConv.getDymStudyRate2List(),
+                    dymStudy, times, rz, rzRate);
         }
         return errorList;
     }
@@ -256,17 +260,22 @@ public class ResBlock extends ResConvCount {
             int featureLength = getChannelNo();//卷积层输出特征大小
             List<List<Float>> onePowers = new ArrayList<>();
             List<List<Float>> dymStudyRateList = new ArrayList<>();
+            List<List<Float>> dymStudyRate2List = new ArrayList<>();
             resConvPower.setOneConvPower(onePowers);
             resConvPower.setDymStudyRateList(dymStudyRateList);
+            resConvPower.setDymStudyRate2List(dymStudyRate2List);
             int length = featureLength / 2;
             for (int i = 0; i < featureLength; i++) {
                 List<Float> oneConvPowerList = new ArrayList<>();
                 List<Float> dymStudyRage = new ArrayList<>();
+                List<Float> dymStudyRage2 = new ArrayList<>();
                 for (int j = 0; j < length; j++) {
                     oneConvPowerList.add(random.nextFloat() / length);
                     dymStudyRage.add(0f);
+                    dymStudyRage2.add(0f);
                 }
                 dymStudyRateList.add(dymStudyRage);
+                dymStudyRate2List.add(dymStudyRage2);
                 onePowers.add(oneConvPowerList);
             }
         }
@@ -277,21 +286,25 @@ public class ResBlock extends ResConvCount {
         ConvLay convLay = new ConvLay(batchSize);
         List<Matrix> nerveMatrixList = new ArrayList<>();//一层当中所有的深度卷积核
         List<Matrix> sumOfSquares = new ArrayList<>();//动态学习率
+        List<Matrix> sumOfSquares2 = new ArrayList<>();//二阶动态学习率
         List<MatrixNorm> matrixNormList = new ArrayList<>();
         int size = getFeatureSize(deep, imageSize, seven);
         for (int k = 0; k < channelNo; k++) {//遍历通道
             Matrix nerveMatrix = new Matrix(nerveNub, 1);//一组通道创建一组卷积核
             Matrix dymStudyRate = new Matrix(nerveNub, 1);
+            Matrix dymStudyRate2 = new Matrix(nerveNub, 1);
             sumOfSquares.add(dymStudyRate);
+            sumOfSquares2.add(dymStudyRate2);
             for (int i = 0; i < nerveMatrix.getX(); i++) {//初始化深度卷积核权重
                 float nub = random.nextFloat() / kernLen;
                 nerveMatrix.setNub(i, 0, nub);
             }
             nerveMatrixList.add(nerveMatrix);
-            MatrixNorm matrixNorm = new MatrixNorm(size, studyRate, gaMa, gMaxTh, auto);
+            MatrixNorm matrixNorm = new MatrixNorm(size, studyRate, dymStudy);
             matrixNormList.add(matrixNorm);
         }
         convLay.setDymStudyRateList(sumOfSquares);
+        convLay.setDymStudyRate2List(sumOfSquares2);
         convLay.setConvPower(nerveMatrixList);
         convLay.setMatrixNormList(matrixNormList);
         return convLay;
