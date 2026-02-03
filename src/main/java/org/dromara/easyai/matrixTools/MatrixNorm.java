@@ -14,12 +14,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MatrixNorm {
     private Matrix bTa;//偏移值
     private Matrix power;//膨胀系数矩阵
-    private final Matrix bTaDymStudyRate;//偏移系数动态学习率
-    private final Matrix powerDymStudyRate;//膨胀系数动态学习率
+    private final Matrix bTaDymStudyRate;//一阶偏移系数动态学习率
+    private final Matrix powerDymStudyRate;//一阶膨胀系数动态学习率
+    private final Matrix bTaDymStudyRate2;//二阶偏移系数动态学习率
+    private final Matrix powerDymStudyRate2;//二阶膨胀系数动态学习率
     private final DymStudy dymStudy;
     private final float studyRate;//全局学习率
     private final MatrixOperation matrixOperation = new MatrixOperation();
     private final Map<Integer, Matrix> normMap = new ConcurrentHashMap<>();
+    private int times = 0;//迭代次数
 
     public NormModel getModel() {
         NormModel normModel = new NormModel();
@@ -33,12 +36,14 @@ public class MatrixNorm {
         power.insertMatrixModel(normModel.getPowerParameter());
     }
 
-    public MatrixNorm(int size, float studyRate, float gaMa, float gMaxTh, boolean auTo) throws Exception {
-        dymStudy = new DymStudy(gaMa, gMaxTh, auTo);
+    public MatrixNorm(int size, float studyRate, DymStudy dymStudy) throws Exception {
+        this.dymStudy = dymStudy;
         bTa = new Matrix(size, size);
         power = new Matrix(size, size);
         bTaDymStudyRate = new Matrix(size, size);
         powerDymStudyRate = new Matrix(size, size);
+        bTaDymStudyRate2 = new Matrix(size, size);
+        powerDymStudyRate2 = new Matrix(size, size);
         this.studyRate = studyRate;
         initPower(power);
         initPower(bTa);
@@ -91,12 +96,13 @@ public class MatrixNorm {
             }
         }
         matrixOperation.mathDiv(allSubPower, size);
-        Matrix errorPower = dymStudy.getErrorMatrixByStudy(studyRate, powerDymStudyRate, allSubPower).getErrorMatrix();
+        Matrix errorPower = dymStudy.getErrorMatrixByStudy(studyRate, powerDymStudyRate, powerDymStudyRate2, allSubPower, times);
         power = matrixOperation.add(errorPower, power);
         return nextErrorMatrixList;
     }
 
     public List<Matrix> backError(List<Matrix> errorMatrixList) throws Exception {
+        times++;
         Matrix avgError = null;
         int size = errorMatrixList.size();
         for (Matrix errorMatrix : errorMatrixList) {
@@ -107,7 +113,7 @@ public class MatrixNorm {
             }
         }
         matrixOperation.mathDiv(avgError, size);
-        Matrix error = dymStudy.getErrorMatrixByStudy(studyRate, bTaDymStudyRate, avgError).getErrorMatrix();
+        Matrix error = dymStudy.getErrorMatrixByStudy(studyRate, bTaDymStudyRate, bTaDymStudyRate2, avgError, times);
         bTa = matrixOperation.add(error, bTa);//更新bTa
         return back(errorMatrixList);
     }

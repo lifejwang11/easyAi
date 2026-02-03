@@ -3,6 +3,7 @@ package org.dromara.easyai.resnet;
 import org.dromara.easyai.batchNerve.BatchInputBlock;
 import org.dromara.easyai.batchNerve.BatchNerveConfig;
 import org.dromara.easyai.batchNerve.BatchNerveManager;
+import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.config.ResnetConfig;
 import org.dromara.easyai.conv.ResConvCount;
 import org.dromara.easyai.i.ActiveFunction;
@@ -79,13 +80,15 @@ public class ResnetManager extends ResConvCount {
         BatchNerveConfig batchNerveConfig = getBatchNerveConfig(resNetConfig, featureLength, studyRate);
         ResNetConnectionLine resNetConnectionLine = new ResNetConnectionLine();
         batchNerveManager = new BatchNerveManager(batchNerveConfig, activeFunction, resNetConnectionLine);
+        boolean rz = resNetConfig.getRegularModel() != RZ.NOT_RZ;
         for (int i = 0; i < deep; i++) {
             BatchInputBlock batchInputBlock = null;
             if (i == deep - 1) {
                 batchInputBlock = batchNerveManager.getInputBlock();
             }
-            ResBlock resBlock = new ResBlock(channelNo, i + 1, studyRate, resNetConfig.getSize(), batchInputBlock, resNetConfig.getGaMa()
-                    , resNetConfig.getGMaxTh(), resNetConfig.isAuto(), resNetConfig.getBatchSize());
+            ResBlock resBlock = new ResBlock(channelNo, i + 1, studyRate, resNetConfig.getSize(), batchInputBlock
+                    , resNetConfig.getGMaxTh(), resNetConfig.isAuto(), resNetConfig.getBatchSize(),
+                    rz, resNetConfig.getRegular(), resNetConfig.getLayGMaxTh());
             resBlockList.add(resBlock);
         }
         restNetInput = new ResnetInput(resBlockList.get(0), resNetConfig.getSize(), resNetConfig.getBatchSize());
@@ -101,7 +104,6 @@ public class ResnetManager extends ResConvCount {
         batchNerveConfig.setSoftMax(resNetConfig.isSoftMax());
         batchNerveConfig.setStudyRate(studyRate);
         batchNerveConfig.setAuto(resNetConfig.isAuto());
-        batchNerveConfig.setGaMa(resNetConfig.getGaMa());
         batchNerveConfig.setGMaxTh(resNetConfig.getGMaxTh());
         batchNerveConfig.setDeep(resNetConfig.getHiddenDeep());
         batchNerveConfig.setShowLog(resNetConfig.isShowLog());

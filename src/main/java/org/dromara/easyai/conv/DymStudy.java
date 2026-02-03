@@ -10,22 +10,19 @@ import java.util.Map;
 /**
  * @author lidapeng
  * @time 2025/4/19 09:24
- * @des 学习率处理
+ * @des 学习率处理 AdamW
  */
 public class DymStudy {
-    private final float gaMa;//梯度衰减率
     private final float gMaxTh;//梯度最大阈值
+    private final float layGMaxTh;//层梯度最大阈值
     private final boolean auto;//是否自动调整学习率
     private final MatrixOperation matrixOperation = new MatrixOperation();
 
-    public DymStudy(float gaMa, float gMaxTh, boolean auto) {
-        this.gaMa = gaMa;
+    public DymStudy(float gMaxTh, boolean auto, float layGMaxTh) {
         this.gMaxTh = gMaxTh;
         this.auto = auto;
+        this.layGMaxTh = layGMaxTh;
         if (auto) {
-            if (gaMa <= 0 || gaMa >= 1) {
-                throw new IllegalArgumentException("gaMa 取值范围是(0,1)");
-            }
             if (gMaxTh <= 0) {
                 throw new IllegalArgumentException("gMaxTh 必须比0大");
             }
@@ -36,33 +33,31 @@ public class DymStudy {
         return error * studyRate;
     }
 
-    public MyStudy getNerveStudyError(Map<Integer, Float> dymStudyRate, int key, float g, float studyRate) {
-        float gc = gCropping(g);
-        MyStudy myStudy = new MyStudy();
-        if (!auto) {
-            myStudy.setMyStudyRate(studyRate);
-            myStudy.setError(getErrorNotAuto(studyRate, gc));
-            return myStudy;
-        }
-        float s = dymStudyRate.get(key);
-        float sNext = gaMa * s + (1 - gaMa) * (float) Math.pow(gc, 2);
-        float myStudyRate = studyRate / (float) Math.sqrt(sNext + 0.00000001f);
-        dymStudyRate.put(key, sNext);
-        myStudy.setMyStudyRate(myStudyRate);
-        myStudy.setError(myStudyRate * gc);
-        return myStudy;
-    }
-
-    public float getOneValueError(float studyRate, float g, ConvParameter convParameter) {
+    public float getNerveStudyError(Map<Integer, Float> dymStudyRate, Map<Integer, Float> dymStudyRate2,
+                                    int key, float g, float studyRate, int times) {
         float gc = gCropping(g);
         if (!auto) {
             return getErrorNotAuto(studyRate, gc);
         }
-        float s = convParameter.getStudyRateTh();
-        float sNext = gaMa * s + (1 - gaMa) * (float) Math.pow(gc, 2);
-        convParameter.setStudyRateTh(sNext);
-        float myStudyRate = studyRate / (float) Math.sqrt(sNext + 0.00000001f);
-        return myStudyRate * gc;
+        float s1 = dymStudyRate.get(key);
+        float s2 = dymStudyRate2.get(key);
+        float[] result = getAdamW(s1, s2, gc, times, studyRate);
+        dymStudyRate.put(key, result[0]);
+        dymStudyRate2.put(key, result[1]);
+        return result[2];
+    }
+
+    public float getOneValueError(float studyRate, float g, ConvParameter convParameter, int times) {
+        float gc = gCropping(g);
+        if (!auto) {
+            return getErrorNotAuto(studyRate, gc);
+        }
+        float s1 = convParameter.getStudyRateTh();
+        float s2 = convParameter.getStudyRateTh2();
+        float[] result = getAdamW(s1, s2, gc, times, studyRate);
+        convParameter.setStudyRateTh(result[0]);
+        convParameter.setStudyRateTh2(result[1]);
+        return result[2];
     }
 
     private float gCropping(float g) {//梯度裁剪
@@ -76,23 +71,41 @@ public class DymStudy {
         return g;
     }
 
-    public float getErrorValueByStudy(float studyRate, List<Float> sList, float g, int t) {
+    public float getErrorValueByStudy(float studyRate, List<Float> sList, List<Float> s2List, float g, int t, int times) {
         g = gCropping(g);
         if (!auto) {
             return getErrorNotAuto(studyRate, g);
         }
-        float s = sList.get(t);
-        float sNext = gaMa * s + (1 - gaMa) * (float) Math.pow(g, 2);
-        float myStudyRate = studyRate / (float) Math.sqrt(sNext + 0.00000001f);
-        sList.set(t, sNext);
-        return g * myStudyRate;
+        float s1 = sList.get(t);
+        float s2 = s2List.get(t);
+        float[] result = getAdamW(s1, s2, g, times, studyRate);
+        sList.set(t, result[0]);
+        s2List.set(t, result[1]);
+        return result[2];
     }
 
-    private Matrix getClipMatrix(Matrix gMatrix) throws Exception {
+    private float[] getAdamW(float s1, float s2, float g, int times, float studyRate) {//做adamW运算
+        //梯度衰减率 一阶矩衰减系数
+        float gaMa = 0.9f;
+        float sNext1 = gaMa * s1 + (1 - gaMa) * g;//更新一阶矩
+        //二阶矩
+        float gaMaSecond = 0.999f;
+        float sNext2 = gaMaSecond * s2 + (1 - gaMaSecond) * (float) Math.pow(g, 2);//更新二阶矩
+        double upNext1 = sNext1 / (1 - Math.pow(gaMa, times));//一阶矩修正
+        double upNext2 = sNext2 / (1 - Math.pow(gaMaSecond, times));//二阶矩修正
+        double error = (upNext1 / (Math.sqrt(upNext2) + 0.00000001)) * studyRate;
+        return new float[]{sNext1, sNext2, (float) error};
+    }
+
+    public Matrix getClipMatrix(Matrix gMatrix, boolean layNorm) throws Exception {
         float norm = matrixOperation.getNorm(gMatrix);
         Matrix gcMatrix;
-        if (norm > gMaxTh) {
-            float s = gMaxTh / norm;
+        float myGMaxTh = gMaxTh;
+        if (layNorm) {
+            myGMaxTh = layGMaxTh;
+        }
+        if (norm > myGMaxTh) {
+            float s = myGMaxTh / norm;
             gcMatrix = matrixOperation.mathMulBySelf(gMatrix, s);
         } else {
             gcMatrix = gMatrix;
@@ -100,34 +113,42 @@ public class DymStudy {
         return gcMatrix;
     }
 
-    public MyStudy getErrorMatrixByStudy(float studyRate, Matrix sMatrix, Matrix gMatrix) throws Exception {//获取动态学习率
-        Matrix gcMatrix = getClipMatrix(gMatrix);
-        MyStudy myStudy = new MyStudy();
+    public Matrix getErrorMatrixByStudy(float studyRate, Matrix s1Matrix, Matrix s2Matrix, Matrix gMatrix, int times) throws Exception {//获取动态学习率
+        Matrix gcMatrix = getClipMatrix(gMatrix, false);
         if (!auto) {
-            myStudy.setErrorMatrix(matrixOperation.mathMulBySelf(gcMatrix, studyRate));
-            myStudy.setMyStudyRate(studyRate);
-            return myStudy;
+            return matrixOperation.mathMulBySelf(gcMatrix, studyRate);
         }
-        int x = sMatrix.getX();
-        int y = sMatrix.getY();
+        int x = s1Matrix.getX();
+        int y = s1Matrix.getY();
         Matrix errorMatrix = new Matrix(x, y);
-        Matrix studyRateMatrix = new Matrix(x, y);
         if (x == gcMatrix.getX() && y == gcMatrix.getY()) {
             for (int i = 0; i < x; i++) {
                 for (int j = 0; j < y; j++) {
-                    float s = sMatrix.getNumber(i, j);
-                    float g = gcMatrix.getNumber(i, j);
-                    float sNext = gaMa * s + (1 - gaMa) * (float) Math.pow(g, 2);
-                    sMatrix.setNub(i, j, sNext);
-                    float myStudyRate = studyRate / (float) Math.sqrt(sNext + 0.00000001f);
-                    studyRateMatrix.setNub(i, j, myStudyRate);
-                    errorMatrix.setNub(i, j, myStudyRate * g);
+                    float s1 = s1Matrix.getNumber(i, j);//一阶矩
+                    float s2 = s2Matrix.getNumber(i, j);//二阶矩
+                    float g = gcMatrix.getNumber(i, j);//梯度
+                    float[] result = getAdamW(s1, s2, g, times, studyRate);
+                    s1Matrix.setNub(i, j, result[0]);
+                    s2Matrix.setNub(i, j, result[1]);
+                    errorMatrix.setNub(i, j, result[2]);
                 }
             }
         }
-        myStudy.setStudyRateMatrix(studyRateMatrix);
-        myStudy.setErrorMatrix(errorMatrix);
-        return myStudy;
+        return errorMatrix;
     }
 
+    public void regMatrix(Matrix power, float regRate, float studyRate) throws Exception {//正则化权重矩阵
+        int x = power.getX();
+        int y = power.getY();
+        float rate = regRate * studyRate;
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float value = power.getNumber(i, j);
+                if (value != 0) {
+                    float regValue = value - value * rate;
+                    power.setNub(i, j, regValue);
+                }
+            }
+        }
+    }
 }

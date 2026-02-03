@@ -141,7 +141,8 @@ public abstract class ResConvCount {
 
 
     protected List<List<Matrix>> backOneConvErrorMatrix(List<Matrix> errorMatrixList, List<List<Matrix>> resMatrixList, List<Float> oneConvPower,
-                                                        float studyRate, List<Float> dymStudyList, DymStudy dym) throws Exception {
+                                                        float studyRate, List<Float> dymStudyList,
+                                                        List<Float> dymStudy2List, DymStudy dym, int times) throws Exception {
         int size = errorMatrixList.size();//该通道的所有图像的残差误差
         int ds = oneConvPower.size();//1*1卷积核纬度
         Map<Integer, Float> dMap = new HashMap<>();//主键是1*1卷积核纬度 值是平均梯度矩阵
@@ -179,7 +180,7 @@ public abstract class ResConvCount {
             int key = entry.getKey();
             float gPower = entry.getValue() / size;//平均梯度
             float power = oneConvPower.get(key);//1*1卷积核每个纬度的权重系数
-            float error = dym.getErrorValueByStudy(studyRate, dymStudyList, gPower, key);
+            float error = dym.getErrorValueByStudy(studyRate, dymStudyList, dymStudy2List, gPower, key, times);
             power = power + error;
             oneConvPower.set(key, power);
         }
@@ -385,8 +386,8 @@ public abstract class ResConvCount {
 
     protected List<BatchBody> ResBlockError(List<BatchBody> batchBodies, List<BackParameter> backParameterList,
                                             List<MatrixNorm> matrixNormList, List<Matrix> powerMatrixList,
-                                            float studyRate, int kernSize, List<Matrix> sMatrixList,
-                                            DymStudy dymStudy) throws Exception {
+                                            float studyRate, int kernSize, List<Matrix> sMatrixList, List<Matrix> s2MatrixList,
+                                            DymStudy dymStudy, int times, boolean rz, float rzRate) throws Exception {
         ReLu reLu = new ReLu();
         Map<Integer, List<Matrix>> reluMatrixMap = new HashMap<>();//所有脱掉Relu 的图片的误差 主键是通道id，值是所有图片该通道的误差矩阵集合
         List<Matrix> nextAllErrorMatrixList = null;//要回传的误差
@@ -450,6 +451,7 @@ public abstract class ResConvCount {
             int pStartIndex = gStartIndex * convResultSize;
             int pEndIndex = pStartIndex + pictureSize * convResultSize;
             Matrix sMatrix = sMatrixList.get(i);
+            Matrix s2Matrix = s2MatrixList.get(i);
             Matrix powerMatrix = powerMatrixList.get(i);//卷积核
             List<Matrix> gErrorMatrixList = gResultMatrixList.subList(gStartIndex, gEndIndex);//每个通道的所有图的误差
             List<Matrix> pErrorMatrixList = pResultMatrixList.subList(pStartIndex, pEndIndex);//每个通道所有图所有权重波动矩阵
@@ -473,8 +475,12 @@ public abstract class ResConvCount {
                 }
             }
             matrixOperation.mathDiv(channelSubPower, pictureSize);
-            Matrix subPower = dymStudy.getErrorMatrixByStudy(studyRate, sMatrix, channelSubPower).getErrorMatrix();
-            powerMatrixList.set(i, matrixOperation.add(powerMatrix, subPower));//更新权重
+            Matrix subPower = dymStudy.getErrorMatrixByStudy(studyRate, sMatrix, s2Matrix, channelSubPower, times);
+            powerMatrix = matrixOperation.add(powerMatrix, subPower);
+            if (rz) {
+                dymStudy.regMatrix(powerMatrix, rzRate, studyRate);
+            }
+            powerMatrixList.set(i, powerMatrix);//更新权重
             if (nextAllErrorMatrixList == null) {
                 nextAllErrorMatrixList = gErrorMatrixList;
             } else {
@@ -499,12 +505,15 @@ public abstract class ResConvCount {
                 myBatchBody.setFeatureList(errorMatrixList);
             }
         }
+        clipErrorMatrixList(nextBatchBodies, dymStudy);
         return nextBatchBodies;
     }
 
     protected List<BatchBody> ResBlockError2(List<BatchBody> batchBodies, List<BackParameter> backParameterList, List<MatrixNorm> matrixNormList
             , List<Matrix> powerMatrixList, float studyRate, boolean resError, List<List<Float>> oneConvPower
-            , List<Matrix> sMatrixList, List<List<Float>> dymStudyRateList, DymStudy dymStudy) throws Exception {
+            , List<Matrix> sMatrixList, List<Matrix> s2MatrixList, List<List<Float>> dymStudyRateList,
+                                             List<List<Float>> dymStudyRate2List, DymStudy dymStudy,
+                                             int times, boolean rz, float rzRate) throws Exception {
         ReLu reLu = new ReLu();
         Map<Integer, List<Matrix>> reluMatrixMap = new HashMap<>();//所有脱掉Relu 的图片的误差 主键是通道id，值是所有图片该通道的误差矩阵集合
         Map<Integer, List<Matrix>> tpIm2colMatrixMap = new HashMap<>();//所有左乘矩阵 主键是通道id，值是所有图片该通道的左乘矩阵集合
@@ -582,7 +591,7 @@ public abstract class ResConvCount {
             for (int i = 0; i < channelSize; i++) {
                 List<Matrix> errorMatrixList = reluMatrixMap.get(i);//该通道所有特征误差
                 List<List<Matrix>> resNext = backOneConvErrorMatrix(errorMatrixList, resMatrixList, oneConvPower.get(i), studyRate,
-                        dymStudyRateList.get(i), dymStudy);//所有图像在该通道下的下一层残差误差
+                        dymStudyRateList.get(i), dymStudyRate2List.get(i), dymStudy, times);//所有图像在该通道下的下一层残差误差
                 for (int m = 0; m < nextBatchBodies.size(); m++) {//遍历该通道下的所有图像的 下一层残差误差
                     List<Matrix> matrixList = resNext.get(m);//当前通道下，每个图片的残差误差
                     if (resErrorByID.containsKey(m)) {
@@ -612,8 +621,12 @@ public abstract class ResConvCount {
             Matrix wSubMatrix = getAvgMatrixByList(wSubMatrixList);
             List<Matrix> nextErrorMatrixList = reverIm2colByMatrixList(gErrorMatrixList, im2calSize);//下一层的误差
             Matrix sMatrix = sMatrixList.get(i);
-            Matrix subPower = dymStudy.getErrorMatrixByStudy(studyRate, sMatrix, wSubMatrix).getErrorMatrix();
+            Matrix s2Matrix = s2MatrixList.get(i);
+            Matrix subPower = dymStudy.getErrorMatrixByStudy(studyRate, sMatrix, s2Matrix, wSubMatrix, times);
             powerMatrix = matrixOperation.add(powerMatrix, subPower);//更新卷积核
+            if (rz) {//正则化处理
+                dymStudy.regMatrix(powerMatrix, rzRate, studyRate);
+            }
             powerMatrixList.set(i, powerMatrix);//更新卷积核
             for (int m = 0; m < nextBatchBodies.size(); m++) {//遍历所有图片
                 BatchBody nextBatchBody = nextBatchBodies.get(m);
@@ -634,7 +647,19 @@ public abstract class ResConvCount {
                 nextBatchBody.setFeatureList(nextErrorMatrixList);
             }
         }
+        clipErrorMatrixList(nextBatchBodies, dymStudy);//损失裁剪
         return nextBatchBodies;
+    }
+
+    private void clipErrorMatrixList(List<BatchBody> nextBatchBodies, DymStudy dymStudy) throws Exception {
+        for (BatchBody nextBatchBody : nextBatchBodies) {//损失裁剪
+            List<Matrix> nextErrorMatrixList = nextBatchBody.getFeatureList();
+            int nextErrorSize = nextErrorMatrixList.size();
+            for (int i = 0; i < nextErrorSize; i++) {
+                Matrix gcMatrix = dymStudy.getClipMatrix(nextErrorMatrixList.get(i), true);
+                nextErrorMatrixList.set(i, gcMatrix);
+            }
+        }
     }
 
     private Matrix getAvgMatrixByList(List<Matrix> wSubMatrixList) throws Exception {

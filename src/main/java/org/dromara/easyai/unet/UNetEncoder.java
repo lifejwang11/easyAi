@@ -1,6 +1,7 @@
 package org.dromara.easyai.unet;
 
 import org.dromara.easyai.conv.ConvCount;
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
@@ -31,17 +32,14 @@ public class UNetEncoder extends ConvCount {
     private final int xSize;
     private final int ySize;
     private final float oneStudyRate;
-    private final float gaMa;
-    private final float gMaxTh;
-    private final boolean aoTu;
+    private final DymStudy dymStudy;
+    private int times = 0;
 
     public UNetEncoder(int kerSize, int channelNo, int deep, ActiveFunction activeFunction
-            , float studyRate, int xSize, int ySize, float oneStudyRate, float gaMa, float gMaxTh, boolean aoTu) throws Exception {//核心大小
+            , float studyRate, int xSize, int ySize, float oneStudyRate, float gMaxTh, float layGMaxTh) throws Exception {//核心大小
         Random random = new Random();
         this.xSize = xSize;
-        this.aoTu = aoTu;
-        this.gMaxTh = gMaxTh;
-        this.gaMa = gaMa;
+        dymStudy = new DymStudy(gMaxTh, false, layGMaxTh);
         this.ySize = ySize;
         this.oneStudyRate = oneStudyRate;
         this.studyRate = studyRate;
@@ -52,26 +50,32 @@ public class UNetEncoder extends ConvCount {
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
         List<ConvSize> convSizeList = convParameter.getConvSizeList();
         List<Matrix> dymStudyRateList = convParameter.getDymStudyRateList();
+        List<Matrix> dymStudyRate2List = convParameter.getDymStudyRate2List();
         for (int i = 0; i < channelNo; i++) {
-            initNervePowerMatrix(random, nerveMatrixList, dymStudyRateList);
+            initNervePowerMatrix(random, nerveMatrixList, dymStudyRateList, dymStudyRate2List);
             convSizeList.add(new ConvSize());
         }
         if (deep == 1) {
             List<List<Float>> oneConvPowers = new ArrayList<>();
             List<List<Float>> oneDymStudyRateList = new ArrayList<>();
+            List<List<Float>> oneDymStudyRate2List = new ArrayList<>();
             for (int k = 0; k < channelNo; k++) {
                 List<Float> oneConvPower = new ArrayList<>();
                 List<Float> oneDymStudyRate = new ArrayList<>();
+                List<Float> oneDymStudyRate2 = new ArrayList<>();
                 oneConvPowers.add(oneConvPower);
                 oneDymStudyRateList.add(oneDymStudyRate);
+                oneDymStudyRate2List.add(oneDymStudyRate2);
                 //通道数
                 int channelNum = 3;
                 for (int i = 0; i < channelNum; i++) {
                     oneConvPower.add(random.nextFloat() / channelNum);
                     oneDymStudyRate.add(0f);
+                    oneDymStudyRate2.add(0f);
                 }
             }
             convParameter.setOneDymStudyRateList(oneDymStudyRateList);
+            convParameter.setOneDymStudyRate2List(oneDymStudyRate2List);
             convParameter.setOneConvPower(oneConvPowers);
         }
     }
@@ -120,15 +124,16 @@ public class UNetEncoder extends ConvCount {
     }
 
     protected void backError(List<Matrix> errorMatrix) throws Exception {//接收误差
+        times++;
         List<Matrix> errorList = backDownPoolingByList(errorMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
         List<Matrix> errorMatrixList = matrixOperation.addMatrixList(errorList, decodeErrorMatrix);
         List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize,
-                gaMa, gMaxTh, aoTu);
+                dymStudy, times);
         if (beforeEncoder != null) {
             beforeEncoder.backError(myErrorMatrix);
         } else {//最后一层 调整1v1卷积
             backOneConvByList(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), oneStudyRate
-                    , convParameter.getOneDymStudyRateList(), gaMa, gMaxTh, aoTu);
+                    , convParameter.getOneDymStudyRateList(), convParameter.getOneDymStudyRate2List(), dymStudy, times);
         }
     }
 
@@ -143,7 +148,7 @@ public class UNetEncoder extends ConvCount {
         }
     }
 
-    private void initNervePowerMatrix(Random random, List<Matrix> nervePowerMatrixList, List<Matrix> dymStudyRageList) throws Exception {
+    private void initNervePowerMatrix(Random random, List<Matrix> nervePowerMatrixList, List<Matrix> dymStudyRageList, List<Matrix> dymStudyRate2List) throws Exception {
         int convSize = kerSize * kerSize;
         Matrix nervePowerMatrix = new Matrix(convSize, 1);
         for (int i = 0; i < convSize; i++) {
@@ -151,6 +156,7 @@ public class UNetEncoder extends ConvCount {
             nervePowerMatrix.setNub(i, 0, power);
         }
         dymStudyRageList.add(new Matrix(convSize, 1));
+        dymStudyRate2List.add(new Matrix(convSize, 1));
         nervePowerMatrixList.add(nervePowerMatrix);
     }
 

@@ -2,7 +2,6 @@ package org.dromara.easyai.batchNerve;
 
 import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.conv.DymStudy;
-import org.dromara.easyai.conv.MyStudy;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.CustomEncoding;
 import org.dromara.easyai.i.OutBack;
@@ -24,8 +23,10 @@ public class QBlock {
     private final ActiveFunction activeFunction;
     private Matrix powerMatrix;//权重矩阵
     private Matrix bMatrix;//偏移矩阵
-    private final Matrix bDymStudyRate;//偏移量动态学习率
-    private final Matrix powerDymStudyRate;//权重动态学习率
+    private final Matrix bDymStudyRate1;//偏移量动态学习率 一阶矩
+    private final Matrix powerDymStudyRate1;//权重动态学习率 一阶矩
+    private final Matrix bDymStudyRate2;//偏移量动态学习率 二阶矩
+    private final Matrix powerDymStudyRate2;//权重动态学习率 二阶矩
     private final MatrixOperation matrixOperation = new MatrixOperation();
     private final List<Matrix> inputMatrixList = new ArrayList<>();//输入矩阵
     private final List<Matrix> outputMatrixList = new ArrayList<>();
@@ -37,6 +38,7 @@ public class QBlock {
     private final boolean showLog;
     private final int regularModel;//正则模式
     private final float regular;//正则系数
+    private int times = 0;//训练次数
 
     public QBlock(DymStudy dymStudy, int inputSize, int outputSize, ActiveFunction activeFunction
             , float studyRate, CustomEncoding customEncoding, boolean showLog, int regularModel, float regular) throws Exception {
@@ -47,9 +49,11 @@ public class QBlock {
         this.dymStudy = dymStudy;
         this.activeFunction = activeFunction;
         this.powerMatrix = new Matrix(inputSize, outputSize);
-        this.powerDymStudyRate = new Matrix(inputSize, outputSize);
+        this.powerDymStudyRate1 = new Matrix(inputSize, outputSize);
+        this.bDymStudyRate1 = new Matrix(1, outputSize);
+        this.powerDymStudyRate2 = new Matrix(inputSize, outputSize);
+        this.bDymStudyRate2 = new Matrix(1, outputSize);
         this.bMatrix = new Matrix(1, outputSize);
-        this.bDymStudyRate = new Matrix(1, outputSize);
         this.regularModel = regularModel;
         this.regular = regular;
         initMatrix(powerMatrix, random);
@@ -125,7 +129,7 @@ public class QBlock {
     }
 
 
-    private Matrix getRegularMatrix(Matrix pMatrix, Matrix studyRateMatrix) throws Exception {//获取正则矩阵
+    private Matrix getRegularMatrix(Matrix pMatrix) throws Exception {//获取正则矩阵
         int x = pMatrix.getX();
         int y = pMatrix.getY();
         Matrix reMatrix = new Matrix(x, y);
@@ -133,9 +137,6 @@ public class QBlock {
             for (int j = 0; j < y; j++) {
                 float value = pMatrix.getNumber(i, j);
                 float studyRate = this.studyRate;
-                if (studyRateMatrix != null) {
-                    studyRate = studyRateMatrix.getNumber(i, j);
-                }
                 float re = 0;
                 if (regularModel == RZ.L2) {//L2正则
                     re = regular * -value * studyRate;
@@ -183,18 +184,15 @@ public class QBlock {
         }
         matrixOperation.mathDiv(avgGActiveMatrix, size);
         matrixOperation.mathDiv(avgGPowerMatrix, size);
-        MyStudy btErrorStudy = dymStudy.getErrorMatrixByStudy(studyRate, bDymStudyRate, avgGActiveMatrix);
-        MyStudy powerErrorStudy = dymStudy.getErrorMatrixByStudy(studyRate, powerDymStudyRate, avgGPowerMatrix);
-        Matrix btErrorMatrix = btErrorStudy.getErrorMatrix();
-        Matrix powerErrorMatrix = powerErrorStudy.getErrorMatrix();
+        times++;
+        Matrix btErrorMatrix = dymStudy.getErrorMatrixByStudy(studyRate, bDymStudyRate1, bDymStudyRate2, avgGActiveMatrix, times);
+        Matrix powerErrorMatrix = dymStudy.getErrorMatrixByStudy(studyRate, powerDymStudyRate1, powerDymStudyRate2, avgGPowerMatrix, times);
         bMatrix = matrixOperation.add(bMatrix, btErrorMatrix);
         powerMatrix = matrixOperation.add(powerMatrix, powerErrorMatrix);
         if (regularModel != RZ.NOT_RZ) {//有正则
             //这里处理正则
-            Matrix btStudyMatrix = btErrorStudy.getStudyRateMatrix();
-            Matrix powerStudyMatrix = powerErrorStudy.getStudyRateMatrix();
-            Matrix reBtMatrix = getRegularMatrix(bMatrix, btStudyMatrix);
-            Matrix rePowerMatrix = getRegularMatrix(powerMatrix, powerStudyMatrix);
+            Matrix reBtMatrix = getRegularMatrix(bMatrix);
+            Matrix rePowerMatrix = getRegularMatrix(powerMatrix);
             bMatrix = matrixOperation.add(bMatrix, reBtMatrix);
             powerMatrix = matrixOperation.add(powerMatrix, rePowerMatrix);
         }

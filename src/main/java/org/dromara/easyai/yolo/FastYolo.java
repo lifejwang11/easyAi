@@ -32,7 +32,6 @@ public class FastYolo {//yolo
     private final float stepReduce;//训练步长
     private final float iouTh;//交并比阈值
     private final float containIouTh;//判断是否为检测物阈值
-    private final float positionContainIouTh;//位置网络判断是否为检测物
     private final float pth;//概率阈值
     private final float otherPTh;
     private final Map<Integer, Float> pd = new HashMap<>();
@@ -55,7 +54,6 @@ public class FastYolo {//yolo
         resYoloConfig = null;
         resnetManager = null;
         trustTh = yoloConfig.getTrustTh();
-        positionContainIouTh = containIouTh;
         float pdRate = yoloConfig.getBackGroundPD();
         if (pdRate <= 0.9f && pdRate > 0) {
             pd.put(yoloConfig.getTypeNub() + 1, pdRate);
@@ -63,7 +61,7 @@ public class FastYolo {//yolo
         if (stepReduce <= 1 && widthStep > 0 && heightStep > 0) {
             typeNerveManager = new NerveManager(3, yoloConfig.getHiddenNerveNub(), yoloConfig.getTypeNub() + 1,
                     yoloConfig.getHiddenDeep(), new ReLu(), yoloConfig.getStudyRate(), yoloConfig.getRegularModel(), yoloConfig.getRegular()
-                    , yoloConfig.getCoreNumber(), yoloConfig.getGaMa(), yoloConfig.getGMaxTh(), yoloConfig.isAuto());
+                    , yoloConfig.getCoreNumber(), yoloConfig.getLayGMaxTh(), yoloConfig.getGMaxTh(), false);
             typeNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), winHeight, winWidth, true,
                     yoloConfig.isShowLog(), yoloConfig.getStudyRate(), new ReLu(), yoloConfig.getMinFeatureValue(), yoloConfig.getStudyRate()
                     , yoloConfig.isNorm());
@@ -89,7 +87,6 @@ public class FastYolo {//yolo
         typeNerveManager = null;
         yoloConfig = null;
         this.resYoloConfig = resYoloConfig;
-        positionContainIouTh = resYoloConfig.getPositionContainIouTh();
         float pdRate = resYoloConfig.getBackGroundPD();
         if (pdRate <= 0.9f && pdRate > 0) {
             pd.put(resYoloConfig.getTypeNub() + 1, pdRate);
@@ -126,9 +123,9 @@ public class FastYolo {//yolo
         resnetConfig.setChannelNo(resYoloConfig.getChannelNo());
         resnetConfig.setHiddenDeep(resYoloConfig.getHiddenDeep());
         resnetConfig.setMinFeatureSize(resYoloConfig.getMinFeatureValue());
-        resnetConfig.setGaMa(resYoloConfig.getGaMa());
         resnetConfig.setGMaxTh(resYoloConfig.getGMaxTh());
         resnetConfig.setBatchSize(resYoloConfig.getBatchSize());
+        resnetConfig.setLayGMaxTh(resYoloConfig.getLayGMaxTh());
         return resnetConfig;
     }
 
@@ -366,23 +363,17 @@ public class FastYolo {//yolo
         return box;
     }
 
-    private YoloMessage containSample(List<Box> boxes, Box testBox, NMS nms, int i, int j, boolean studyType) {
+    private YoloMessage containSample(List<Box> boxes, Box testBox, NMS nms, int i, int j) {
         float maxIou = 0;
         boolean isBackGround = true;
         Box myBox = null;
         YoloMessage yoloMessage = null;
-        float myIouTh;
-        if (studyType) {
-            myIouTh = containIouTh;
-        } else {
-            myIouTh = positionContainIouTh;
-        }
         for (Box box : boxes) {
             float iou = nms.getSRatio(testBox, box, false);
             if (iou > otherPTh) {
                 isBackGround = false;
             }
-            if (iou > myIouTh && iou > maxIou) {//有相交
+            if (iou > containIouTh && iou > maxIou) {//有相交
                 maxIou = iou;
                 myBox = box;
             }
@@ -498,7 +489,7 @@ public class FastYolo {//yolo
                 testBox.setY(j);
                 testBox.setxSize(winHeight);
                 testBox.setySize(winWidth);
-                YoloMessage yoloMessage = containSample(boxes, testBox, nms, i, j, studyType);
+                YoloMessage yoloMessage = containSample(boxes, testBox, nms, i, j);
                 if (yoloMessage != null) {
                     yoloMessage.setPic(pic.cutChannel(i, j, winHeight, winWidth));
                     yoloMessageList.add(yoloMessage);

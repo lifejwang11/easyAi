@@ -37,7 +37,7 @@ public class NerveManager extends ConvCount {
     private final int rzType;//正则化类型，默认不进行正则化
     private final float lParam;//正则参数
     private final int coreNumber;
-    private final float gaMa;//自适应学习率
+    private final float layGMaxTh;//自适应学习率
     private final float gMaxTh;//梯度裁剪阈值
     private final boolean auto;
 
@@ -215,17 +215,17 @@ public class NerveManager extends ConvCount {
      * @param rzType          正则函数
      * @param lParam          正则系数
      * @param coreNumber      并行计算核心数
-     * @param gaMa            自适应学习率衰减系数
+     * @param layGMaxTh       层梯度裁剪阈值
      * @param gMaxTh          梯度裁剪阈值
      * @param auTo            是否使用自适应学习率
      * @throws Exception 如果参数错误则抛异常
      */
     public NerveManager(int sensoryNerveNub, int hiddenNerveNub, int outNerveNub
             , int hiddenDepth, ActiveFunction activeFunction, float studyPoint, int rzType, float lParam
-            , int coreNumber, float gaMa, float gMaxTh, boolean auTo) throws Exception {
+            , int coreNumber, float layGMaxTh, float gMaxTh, boolean auTo) throws Exception {
         if (sensoryNerveNub > 0 && hiddenNerveNub > 0 && outNerveNub > 0 && hiddenDepth > 0 && activeFunction != null) {
             this.coreNumber = coreNumber;
-            this.gaMa = gaMa;
+            this.layGMaxTh = layGMaxTh;
             this.auto = auTo;
             this.gMaxTh = gMaxTh;
             this.hiddenNerveNub = hiddenNerveNub;
@@ -262,7 +262,7 @@ public class NerveManager extends ConvCount {
             }
             HiddenNerve hiddenNerve = new HiddenNerve(1, i + 1, 1, downNub, studyPoint, initPower, convFunction, true
                     , rzType, lParam, kernLen, 0, 0, isConvFinish, coreNumber, channelNo, oneConvRate, norm,
-                    null, gaMa, gMaxTh, auto);
+                    null, layGMaxTh, gMaxTh, auto);
             depthNerves.add(hiddenNerve);
         }
         for (int i = 0; i < conHiddenDepth - 1; i++) {//遍历深度
@@ -338,7 +338,7 @@ public class NerveManager extends ConvCount {
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
                     activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0
-                    , coreNumber, gaMa, gMaxTh, auto);
+                    , coreNumber, layGMaxTh, gMaxTh, auto);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFather(lastNerveList);
             outNerves.add(outNerve);
@@ -377,7 +377,7 @@ public class NerveManager extends ConvCount {
         for (int i = 1; i < outNerveNub + 1; i++) {
             OutNerve outNerve = new OutNerve(i, hiddenNerveNub, 0, studyPoint, initPower,
                     activeFunction, false, isShowLog, rzType, lParam, isSoftMax, 0
-                    , coreNumber, gaMa, gMaxTh, auto);
+                    , coreNumber, layGMaxTh, gMaxTh, auto);
             //输出层神经元连接最后一层隐层神经元
             outNerve.connectFather(lastNerveList);
             outNerves.add(outNerve);
@@ -440,7 +440,7 @@ public class NerveManager extends ConvCount {
                 }
                 HiddenNerve hiddenNerve = new HiddenNerve(j, i + 1, upNub, downNub, studyPoint, initPower, activeFunction, false
                         , rzType, lParam, kernLen, myMatrixX, myMatrixY, false, coreNumber, 0, oneConvRate, false
-                        , myCustomEncoding, gaMa, gMaxTh, auto);
+                        , myCustomEncoding, layGMaxTh, gMaxTh, auto);
                 hiddenNerveList.add(hiddenNerve);
             }
             depthNerves.add(hiddenNerveList);
