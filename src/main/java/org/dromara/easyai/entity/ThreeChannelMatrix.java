@@ -163,7 +163,7 @@ public class ThreeChannelMatrix {
         return convMatrix;
     }
 
-    public Matrix getLBPMatrix() throws Exception {
+    public Matrix getLBPMatrix(boolean uniform, boolean hist) throws Exception {
         Matrix addMatrix = new Matrix(x, y);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
@@ -171,7 +171,10 @@ public class ThreeChannelMatrix {
                 addMatrix.setNub(i, j, value);
             }
         }
-        return matrixOperation.lbpMatrix(addMatrix);
+        if (hist) {//要直方图
+            return matrixOperation.getLBPHistogram(addMatrix, uniform);
+        }
+        return matrixOperation.lbpMatrix(addMatrix, uniform);
     }
 
     public void standardization() throws Exception {//标准化
