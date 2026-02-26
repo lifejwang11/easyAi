@@ -64,10 +64,24 @@ public class ResnetManager extends ResConvCount {
         batchNerveManager.insertModel(resnetModel.getParameter());
     }
 
+    private int getFeatureSize(int deep, int size) {
+        int x = size;
+        int step = 2;
+        for (int i = 0; i < deep; i++) {
+            x = x + x % step;
+            x = x / step;
+            if (i == 0) {
+                x = x + x % step;
+                x = x / step;
+            }
+        }
+        return x;
+    }
+
     public ResnetManager(ResnetConfig resNetConfig, ActiveFunction activeFunction) throws Exception {
         int deep = getConvDeep(resNetConfig.getSize(), resNetConfig.getMinFeatureSize());//获取深度
         int channelNo = resNetConfig.getChannelNo();//通道数
-        int lastSize = getFeatureSize(deep, resNetConfig.getSize(), true);//最后一层特征大小
+        int lastSize = getFeatureSize(deep, resNetConfig.getSize());//最后一层特征大小
         //全局学习率
         float studyRate = resNetConfig.getStudyRate();
         if (deep < 1) {

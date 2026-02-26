@@ -169,7 +169,28 @@ public class MatrixOperation {
         }
     }
 
-    private int getLBPValue(Matrix matrix) throws Exception {
+    public boolean isUniformLBPValue(int lbpValue) {
+        // 1. 边界校验：确保是8位无符号数
+        if (lbpValue < 0 || lbpValue > 0xFF) { // 0xFF=255，8位最大值
+            throw new IllegalArgumentException("LBP值必须是0~255的整数");
+        }
+        // 2. 核心：计算环形跳变次数（纯位运算）
+        int jumpCount = 0;
+        int prevBit = (lbpValue >> 7) & 1; // 先取最高位（第7位）作为初始前一位（环形的最后一位）
+        // 遍历8位（从第0位到第7位）
+        for (int i = 0; i < 8; i++) {
+            int currBit = (lbpValue >> i) & 1; // 取当前位（第i位）的值（0或1）
+            // 位不同则跳变次数+1
+            if (currBit != prevBit) {
+                jumpCount++;
+            }
+            prevBit = currBit; // 更新前一位为当前位，继续遍历
+        }
+        // 3. 判断是否为均匀模式（跳变次数≤2）
+        return jumpCount <= 2;
+    }
+
+    private int getLBPValue(Matrix matrix, boolean uniform) throws Exception {
         int value = 0;
         float avg = matrix.getAVG();
         for (int i = 0; i < 3; i++) {
@@ -182,19 +203,84 @@ public class MatrixOperation {
                 }
             }
         }
+        if (uniform && !isUniformLBPValue(value)) {
+            value = 200;
+        }
         return value;
     }
 
-    public Matrix lbpMatrix(Matrix addMatrix) throws Exception {
+    public Matrix lbpMatrix(Matrix addMatrix, boolean uniform) throws Exception {
         int x = addMatrix.getX();
         int y = addMatrix.getY();
         Matrix matrix = new Matrix(x / 3, y / 3);
         for (int i = 0; i <= x - 3; i += 3) {
             for (int j = 0; j <= y - 3; j += 3) {
                 Matrix aMatrix = addMatrix.getSonOfMatrix(i, j, 3, 3);
-                int lbp = getLBPValue(aMatrix);
+                int lbp = getLBPValue(aMatrix, uniform);
                 matrix.setNub(i / 3, j / 3, lbp);
             }
+        }
+        return matrix;
+    }
+
+    private int[] getUniformValues() {
+        int[] values = new int[58];
+        int index = 0;
+        for (int i = 0; i < 256; i++) {
+            if (isUniformLBPValue(i)) {
+                values[index] = i;
+                index++;
+            }
+        }
+        return values;
+    }
+
+    private int getUniformHistogramIndex(int value, int[] uniformValues) {
+        int index = 0;
+        for (int i = 0; i < uniformValues.length; i++) {
+            if (uniformValues[i] == value) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
+    public Matrix getLBPHistogram(Matrix addMatrix, boolean allAvg) throws Exception {//获取LBP直方图
+        int x = addMatrix.getX();
+        int y = addMatrix.getY();
+        int[] uniformValues = null;
+        Matrix matrix;
+        if (allAvg) {
+            uniformValues = getUniformValues();
+            matrix = new Matrix(1, 59);
+        } else {
+            matrix = new Matrix(1, 256);
+        }
+        for (int i = 0; i <= x - 3; i += 3) {
+            for (int j = 0; j <= y - 3; j += 3) {
+                Matrix aMatrix = addMatrix.getSonOfMatrix(i, j, 3, 3);
+                int lbp = getLBPValue(aMatrix, allAvg);
+                if (allAvg) {
+                    int index;
+                    if (lbp != 200) {
+                        index = getUniformHistogramIndex(lbp, uniformValues);
+                    } else {
+                        index = 58;
+                    }
+                    float number = matrix.getNumber(0, index) + 1f;
+                    matrix.setNub(0, index, number);
+                } else {
+                    float number = matrix.getNumber(0, lbp) + 1f;
+                    matrix.setNub(0, lbp, number);
+                }
+            }
+        }
+        float sigma = matrix.getSigma();
+        int size = matrix.getY();
+        for (int j = 0; j < size; j++) {//归一化
+            float normValue = matrix.getNumber(0, j) / sigma;
+            matrix.setNub(0, j, normValue);
         }
         return matrix;
     }
