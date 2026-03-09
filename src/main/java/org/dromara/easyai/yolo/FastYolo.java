@@ -251,18 +251,44 @@ public class FastYolo {//yolo
             outBox.setWidth(box.getySize());
             outBox.setTypeID(String.valueOf(box.getTypeID()));
             outBox.setTrust(box.getConfidence());
+            outBox.setSoftmax(box.getSoftMax());
             outBoxes.add(outBox);
         }
         return outBoxes;
     }
 
-    public List<OutBox> look(ThreeChannelMatrix th, long eventID) throws Exception {
+    private Map<Integer, Float> toMappingID(Map<Integer, Float> typePd) {
+        Map<Integer, Float> myTypePd = new HashMap<>();
+        for (Map.Entry<Integer, Float> entry : typePd.entrySet()) {
+            int mappingID = getMappingID(entry.getKey());
+            float value = entry.getValue();
+            myTypePd.put(mappingID, value);
+        }
+        return myTypePd;
+    }
+
+    private int getMappingID(int typeID) {
+        int mapping = 0;
+        for (TypeBody yb : typeBodies) {
+            if (yb.getTypeID() == typeID) {
+                mapping = yb.getMappingID();
+                break;
+            }
+        }
+        return mapping;
+    }
+
+    public List<OutBox> look(ThreeChannelMatrix th, long eventID, Map<Integer, Float> typePd) throws Exception {
         if (ready == 0) {
             throw new Exception("该模型没经过训练");
         } else if (ready == 1) {
             throw new Exception("该模型没经过位置训练 请加载模型后，再通过toStudy方法将其中的布尔参数 改为false 进行再次训练");
         } else if (ready == 2) {
             throw new Exception("该模型没有经过类别训练 请加载模型后，再通过toStudy方法将其中的布尔参数 改为true 进行再次训练");
+        }
+        Map<Integer, Float> myPd = null;
+        if (typePd != null && !typePd.isEmpty()) {
+            myPd = toMappingID(typePd);
         }
         int x = th.getX();
         int y = th.getY();
@@ -274,18 +300,19 @@ public class FastYolo {//yolo
                 PositionBack positionBack = new PositionBack();
                 ThreeChannelMatrix myTh = th.cutChannel(i, j, winHeight, winWidth);
                 if (resnet) {
-                    resnetManager.getRestNetInput().postFeature(myTh, yoloTypeBack, eventID, false);
+                    resnetManager.getRestNetInput().postFeature(myTh, yoloTypeBack, eventID, false, myPd);
                 } else {
-                    study(eventID, typeNerveManager.getConvInput(), myTh, false, null, yoloTypeBack);
+                    study(eventID, typeNerveManager.getConvInput(), myTh, false, null, yoloTypeBack, myPd);
                 }
                 int mappingID = yoloTypeBack.getId();//映射id
                 float out = yoloTypeBack.getOut();
                 if (mappingID != typeBodies.size() + 1 && out > pth) {
                     TypeBody typeBody = getTypeBodyByMappingID(mappingID);
                     SensoryNerve convInput = typeBody.getPositionNerveManager().getConvInput();
-                    study(eventID, convInput, myTh, false, null, positionBack);
+                    study(eventID, convInput, myTh, false, null, positionBack, null);
                     Box box = getBox(i, j, x, y, positionBack, typeBody);
                     if (box != null) {
+                        box.setSoftMax(out);
                         boxes.add(box);
                     }
                 }
@@ -297,18 +324,22 @@ public class FastYolo {//yolo
         return getOutBoxList(nms.start(boxes));
     }
 
-    public List<OutBox> testType(ThreeChannelMatrix th, long eventID) throws Exception {
+    public List<OutBox> testType(ThreeChannelMatrix th, long eventID, Map<Integer, Float> typePd) throws Exception {
         int x = th.getX();
         int y = th.getY();
+        Map<Integer, Float> myPd = null;
+        if (typePd != null && !typePd.isEmpty()) {
+            myPd = toMappingID(typePd);
+        }
         List<Box> boxes = new ArrayList<>();
         for (int i = 0; i <= x - winHeight; i += heightStep) {
             for (int j = 0; j <= y - winWidth; j += widthStep) {
                 YoloTypeBack yoloTypeBack = new YoloTypeBack();
                 ThreeChannelMatrix myTh = th.cutChannel(i, j, winHeight, winWidth);
                 if (resnet) {
-                    resnetManager.getRestNetInput().postFeature(myTh, yoloTypeBack, eventID, false);
+                    resnetManager.getRestNetInput().postFeature(myTh, yoloTypeBack, eventID, false, myPd);
                 } else {
-                    study(eventID, typeNerveManager.getConvInput(), myTh, false, null, yoloTypeBack);
+                    study(eventID, typeNerveManager.getConvInput(), myTh, false, null, yoloTypeBack, myPd);
                 }
                 int mappingID = yoloTypeBack.getId();//映射id
                 float out = yoloTypeBack.getOut();
@@ -553,7 +584,7 @@ public class FastYolo {//yolo
                 Map<Integer, Float> typeE = new HashMap<>();
                 int mappingID = yoloMessage.getMappingID();
                 typeE.put(mappingID, 1f);
-                study(1, typeNerveManager.getConvInput(), small, true, typeE, logOutBack);
+                study(1, typeNerveManager.getConvInput(), small, true, typeE, logOutBack, pd);
             } else {
                 if (!yoloMessage.isBackGround()) {
                     studyPosition(yoloMessage, small, logOutBack);
@@ -571,10 +602,11 @@ public class FastYolo {//yolo
         positionE.put(4, yoloMessage.getHeight());
         positionE.put(5, yoloMessage.getTrust());
         NerveManager position = yoloMessage.getTypeBody().getPositionNerveManager();
-        study(2, position.getConvInput(), small, true, positionE, logOutBack);
+        study(2, position.getConvInput(), small, true, positionE, logOutBack, null);
     }
 
-    private void study(long eventID, SensoryNerve convInput, ThreeChannelMatrix feature, boolean isStudy, Map<Integer, Float> E, OutBack back) throws Exception {
+    private void study(long eventID, SensoryNerve convInput, ThreeChannelMatrix feature, boolean isStudy,
+                       Map<Integer, Float> E, OutBack back, Map<Integer, Float> pd) throws Exception {
         convInput.postThreeChannelMatrix(eventID, feature, isStudy, E, back, false, pd);
     }
 }

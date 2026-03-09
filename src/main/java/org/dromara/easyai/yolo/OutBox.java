@@ -7,6 +7,15 @@ public class OutBox {
     private int height;//高度
     private String typeID;//类别id
     private float trust;
+    private float softmax;//概率
+
+    public float getSoftmax() {
+        return softmax;
+    }
+
+    public void setSoftmax(float softmax) {
+        this.softmax = softmax;
+    }
 
     public float getTrust() {
         return trust;

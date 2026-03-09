@@ -10,6 +10,7 @@ import java.util.Map;
 public class SoftMax extends Nerve {
     private final List<OutNerve> outNerves;
     private final boolean isShowLog;
+    private float sub;
 
     public SoftMax(int upNub, boolean isDynamic, List<OutNerve> outNerves, boolean isShowLog, int coreNumber) throws Exception {
         super(0, upNub, "softMax", 0, 0, false, null, isDynamic
@@ -71,6 +72,9 @@ public class SoftMax extends Nerve {
             } else {//输出
                 destoryParameter(eventId);
                 if (outBack != null) {
+                    if (pd != null && !pd.isEmpty()) {
+                        errorPenalty(mes, pd);
+                    }
                     outBack.getBack(mes.poi, mes.typeID, eventId);
                     outBack.getSoftMaxBack(eventId, mes.softMax);
                 } else {
@@ -78,6 +82,31 @@ public class SoftMax extends Nerve {
                 }
             }
         }
+    }
+
+    private void errorPenalty(Mes mes, Map<Integer, Float> pd) {
+        List<Float> softMax = mes.softMax;
+        int type = mes.typeID;//类别
+        float poi = 0;//概率
+        float sigma = 0;
+        for (int i = 0; i < softMax.size(); i++) {
+            if (pd.containsKey(i + 1)) {//对误差施加惩罚
+                float value = softMax.get(i) * pd.get(i + 1);
+                softMax.set(i, value);
+            }
+            sigma = sigma + softMax.get(i);
+        }
+        for (int i = 0; i < softMax.size(); i++) {
+            float value = softMax.get(i) / sigma;
+            if (value > poi) {
+                poi = value;
+                type = i + 1;
+            }
+            softMax.set(i, value);
+        }
+        mes.typeID = type;
+        mes.poi = poi;
+        mes.softMax = softMax;
     }
 
     private List<Float> error(Mes mes, int key, boolean errorPD, float pdRate) {

@@ -15,10 +15,19 @@ public class Box {
     private int ySize;
     private float confidence;
     private int typeID;//类别id
+    private float softMax;//概率
     private Matrix featureMatrix;//特征矩阵
     //识别参数
     private int realX;//识别X
     private int realY;//识别Y
+
+    public float getSoftMax() {
+        return softMax;
+    }
+
+    public void setSoftMax(float softMax) {
+        this.softMax = softMax;
+    }
 
     public Matrix getFeatureMatrix() {
         return featureMatrix;
