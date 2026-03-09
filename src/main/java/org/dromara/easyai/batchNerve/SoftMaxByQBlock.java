@@ -3,6 +3,7 @@ package org.dromara.easyai.batchNerve;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
+import org.dromara.easyai.nerveEntity.SoftMax;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +72,9 @@ public class SoftMaxByQBlock {
                 errorBodies.add(errors);
             } else {//输出
                 if (outBack != null) {
+                    if (pd != null && !pd.isEmpty()) {
+                        errorPenalty(mes, pd);
+                    }
                     outBack.getBack(mes.poi, mes.typeID, eventId);
                     outBack.getSoftMaxBack(eventId, mes.softMax);
                     break;
@@ -82,6 +86,31 @@ public class SoftMaxByQBlock {
         if (study) {
             fatherBlock.backError(errorBodies);
         }
+    }
+
+    private void errorPenalty(Mes mes, Map<Integer, Float> pd) {
+        List<Float> softMax = mes.softMax;
+        int type = mes.typeID;//类别
+        float poi = 0;//概率
+        float sigma = 0;
+        for (int i = 0; i < softMax.size(); i++) {
+            if (pd.containsKey(i + 1)) {//对误差施加惩罚
+                float value = softMax.get(i) * pd.get(i + 1);
+                softMax.set(i, value);
+            }
+            sigma = sigma + softMax.get(i);
+        }
+        for (int i = 0; i < softMax.size(); i++) {
+            float value = softMax.get(i) / sigma;
+            if (value > poi) {
+                poi = value;
+                type = i + 1;
+            }
+            softMax.set(i, value);
+        }
+        mes.typeID = type;
+        mes.poi = poi;
+        mes.softMax = softMax;
     }
 
     private Matrix error(Mes mes, int key) throws Exception {

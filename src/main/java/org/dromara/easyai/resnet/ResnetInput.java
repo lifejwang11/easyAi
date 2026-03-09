@@ -41,7 +41,7 @@ public class ResnetInput {
         }
     }
 
-    public void postFeature(ThreeChannelMatrix image, OutBack outBack, long eventID, boolean outFeature) throws Exception {
+    public void postFeature(ThreeChannelMatrix image, OutBack outBack, long eventID, boolean outFeature, Map<Integer, Float> pd) throws Exception {
         int x = image.getX();
         int y = image.getY();
         if (x != y || x != imageSize) {
@@ -51,7 +51,7 @@ public class ResnetInput {
         batchBody.insertPicture(image);
         List<BatchBody> batchBodies = new ArrayList<>();
         batchBodies.add(batchBody);
-        fistBlock.sendMatrixList(batchBodies, outBack, false, eventID, outFeature, null);
+        fistBlock.sendMatrixList(batchBodies, outBack, false, eventID, outFeature, pd);
     }
 
 }
