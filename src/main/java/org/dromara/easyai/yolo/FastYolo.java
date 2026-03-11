@@ -275,6 +275,9 @@ public class FastYolo {//yolo
                 break;
             }
         }
+        if (mapping == 0) {
+            mapping = typeBodies.size() + 1;
+        }
         return mapping;
     }
 
