@@ -18,46 +18,52 @@ import java.util.List;
  */
 public class ImageTools {
 
-    public static void writeImage(ThreeChannelMatrix img, String url) {
-        ByteArrayOutputStream b = null;
-        FileOutputStream fileOutputStream = null;
-        try {
-            b = drawImage(img);
-            fileOutputStream = new FileOutputStream(url);
+    private static final int MAX_COLOR_VALUE = 255;
+    private static final int MIN_COLOR_VALUE = 0;
+
+    public static void writeImage(ThreeChannelMatrix img, String url) throws IOException {
+        try (ByteArrayOutputStream b = drawImage(img);
+             FileOutputStream fileOutputStream = new FileOutputStream(url)) {
             b.writeTo(fileOutputStream);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                if (fileOutputStream != null) {
-                    fileOutputStream.close();
-                }
-                if (b != null) {
-                    b.close();
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        } catch (RuntimeException e) {
+            throw new IOException("Failed to write image: " + e.getMessage(), e);
         }
     }
 
     public static void drawBox(String fileURL, List<OutBox> borderFoods, String outFileName, int fontSize) throws Exception {
         File file = new File(fileURL);
         BufferedImage image2 = ImageIO.read(file);
+        
+        if (image2 == null) {
+            throw new IOException("无法读取图像文件：" + fileURL);
+        }
+        
         int width = image2.getWidth();
         int height = image2.getHeight();
-        BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = (Graphics2D) bi.getGraphics();
-        g2.drawImage(image2, 0, 0, width, height, null);
-        g2.setFont(new Font(null, Font.BOLD, fontSize));
-        for (OutBox borderFood : borderFoods) {//输出
-            Rectangle2D rect = new Rectangle2D.Float(borderFood.getX(), borderFood.getY(), borderFood.getWidth(), borderFood.getHeight());//声明并创建矩形对象，矩形的左上角是(20，30)，宽是300，高是40
-            g2.setColor(Color.RED);
-            g2.draw(rect);
-            g2.setColor(Color.BLUE);
-            g2.drawString(borderFood.getTypeID(), borderFood.getX() + 10, borderFood.getY() + 10);
+        
+        try (BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+             Graphics2D g2 = (Graphics2D) bi.getGraphics()) {
+            
+            g2.drawImage(image2, 0, 0, width, height, null);
+            g2.setFont(new Font(Font.SERIF, Font.BOLD, fontSize));
+            
+            for (OutBox borderFood : borderFoods) {
+                Rectangle2D rect = new Rectangle2D.Float(
+                    borderFood.getX(), 
+                    borderFood.getY(), 
+                    borderFood.getWidth(), 
+                    borderFood.getHeight()
+                );
+                g2.setColor(Color.RED);
+                g2.draw(rect);
+                g2.setColor(Color.BLUE);
+                g2.drawString(borderFood.getTypeID(), borderFood.getX() + 10, borderFood.getY() + 10);
+            }
+            
+            try (FileOutputStream fos = new FileOutputStream(outFileName)) {
+                ImageIO.write(bi, "jpg", fos);
+            }
         }
-        ImageIO.write(bi, "jpg", new FileOutputStream(outFileName));
     }
 
     public static ByteArrayOutputStream drawImage(ThreeChannelMatrix img) throws Exception {
@@ -80,34 +86,38 @@ public class ImageTools {
         Matrix matrixB = img.getMatrixB();
         int x = img.getX();
         int y = img.getY();
-        BufferedImage bi = new BufferedImage(img.getY(), img.getX(), BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = (Graphics2D) bi.getGraphics();
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                int r = (int) (matrixR.getNumber(i, j) * 255D);
-                int g = (int) (matrixG.getNumber(i, j) * 255D);
-                int b = (int) (matrixB.getNumber(i, j) * 255D);
-                if (r > 255) {
-                    r = 255;
-                } else if (r < 0) {
-                    r = 0;
+        BufferedImage bi = new BufferedImage(y, x, BufferedImage.TYPE_INT_RGB);
+        
+        try (Graphics2D g2 = (Graphics2D) bi.getGraphics()) {
+            for (int i = 0; i < x; i++) {
+                for (int j = 0; j < y; j++) {
+                    int r = clamp((int) (matrixR.getNumber(i, j) * MAX_COLOR_VALUE), MIN_COLOR_VALUE, MAX_COLOR_VALUE);
+                    int g = clamp((int) (matrixG.getNumber(i, j) * MAX_COLOR_VALUE), MIN_COLOR_VALUE, MAX_COLOR_VALUE);
+                    int b = clamp((int) (matrixB.getNumber(i, j) * MAX_COLOR_VALUE), MIN_COLOR_VALUE, MAX_COLOR_VALUE);
+                    
+                    g2.setColor(new Color(r, g, b));
+                    g2.drawRect(j, i, 1, 1);
                 }
-                if (g > 255) {
-                    g = 255;
-                } else if (g < 0) {
-                    g = 0;
-                }
-                if (b > 255) {
-                    b = 255;
-                } else if (b < 0) {
-                    b = 0;
-                }
-                g2.setColor(new Color(r, g, b));
-                g2.drawRect(j, i, 1, 1);
             }
         }
+        
         return bi;
     }
-
+    
+    /**
+     * 将值限制在指定范围内
+     * @param value 原始值
+     * @param min 最小值
+     * @param max 最大值
+     * @return 限制后的值
+     */
+    private static int clamp(int value, int min, int max) {
+        if (value > max) {
+            return max;
+        } else if (value < min) {
+            return min;
+        }
+        return value;
+    }
 
 }
