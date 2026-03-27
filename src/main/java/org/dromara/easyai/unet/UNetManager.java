@@ -27,6 +27,7 @@ public class UNetManager extends ConvCount {
     private UNetInput input;//输入类
     private final float gMaxTh;
     private final float layGMaxTh;
+    private final boolean cutLayG;
 
     public UNetInput getInput() {
         return input;
@@ -36,6 +37,7 @@ public class UNetManager extends ConvCount {
         int xSize = uNetConfig.getXSize();
         int ySize = uNetConfig.getYSize();
         gMaxTh = uNetConfig.getGMaxTh();
+        cutLayG = uNetConfig.isCutLayG();
         layGMaxTh = uNetConfig.getLayGMaxTh();
         int minFeatureValue = uNetConfig.getMinFeatureValue();
         this.kernLen = uNetConfig.getKerSize();
@@ -171,7 +173,7 @@ public class UNetManager extends ConvCount {
         }
         for (int i = 0; i < deep + 1; i++) {
             UNetDecoder uNetDecoder = new UNetDecoder(kernLen, i + 1, channelNo, new Tanh(),
-                    i == deep, studyRate, myCut, oneStudyRate, gMaxTh, layGMaxTh);
+                    i == deep, studyRate, myCut, oneStudyRate, gMaxTh, layGMaxTh, cutLayG);
             decoderList.add(uNetDecoder);
         }
         for (int i = 0; i < deep; i++) {
@@ -185,7 +187,7 @@ public class UNetManager extends ConvCount {
     private void initEncoder(int xSize, int ySize) throws Exception {
         for (int i = 0; i < deep; i++) {
             UNetEncoder uNetEncoder = new UNetEncoder(kernLen, channelNo, i + 1, new ReLu(), studyRate
-                    , xSize, ySize, oneStudyRate, gMaxTh, layGMaxTh);
+                    , xSize, ySize, oneStudyRate, gMaxTh, layGMaxTh, cutLayG);
             if (i == 0) {
                 input = new UNetInput(uNetEncoder);
             }

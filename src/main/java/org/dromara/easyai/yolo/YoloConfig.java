@@ -22,13 +22,21 @@ public class YoloConfig {
     private int coreNumber = 1;//是否使用多核并行计算进行提速
     private int channelNo = 1;//通道数
     private int minFeatureValue = 3;//输出特征维度大小
-    private boolean norm = true;//是否进行维度调节
+    private boolean cutLayG = false;//是否进行层梯度裁切
     private float GMaxTh = 1f;//梯度裁剪阈值
     private int hiddenDeep = 1;//网络线性层隐层神经元深度
     private float otherPth = 0.1f;//负样本交并比阈值
     private float trustTh = 0.5f;//可信度阈值
     private float backGroundPD = 0.1f;//背景误差惩罚，该数值大于0.9 则相当于不施加惩罚
     private float layGMaxTh = 100000000;//层梯度裁剪阈值
+
+    public boolean isCutLayG() {
+        return cutLayG;
+    }
+
+    public void setCutLayG(boolean cutLayG) {
+        this.cutLayG = cutLayG;
+    }
 
     public float getLayGMaxTh() {
         return layGMaxTh;
@@ -77,15 +85,6 @@ public class YoloConfig {
     public void setGMaxTh(float GMaxTh) {
         this.GMaxTh = GMaxTh;
     }
-
-    public boolean isNorm() {
-        return norm;
-    }
-
-    public void setNorm(boolean norm) {
-        this.norm = norm;
-    }
-
 
     public int getMinFeatureValue() {
         return minFeatureValue;

@@ -16,6 +16,15 @@ public class UNetConfig {
     private boolean cutting = true;//是否要输出裁切图像
     private float GMaxTh = 100f;//梯度阈值
     private float layGMaxTh = 10000;//层梯度裁剪阈值
+    private boolean cutLayG = true;//是否进行层梯度裁切
+
+    public boolean isCutLayG() {
+        return cutLayG;
+    }
+
+    public void setCutLayG(boolean cutLayG) {
+        this.cutLayG = cutLayG;
+    }
 
     public float getLayGMaxTh() {
         return layGMaxTh;

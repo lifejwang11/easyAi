@@ -328,7 +328,8 @@ public abstract class ConvCount {
     }
 
     protected List<Matrix> backAllDownConv(ConvParameter convParameter, List<Matrix> errorMatrixList, float studyPoint
-            , ActiveFunction activeFunction, int channelNo, int kernLen, DymStudy dymStudy, int times) throws Exception {
+            , ActiveFunction activeFunction, int channelNo, int kernLen, DymStudy dymStudy, int times
+            , boolean cutLayG) throws Exception {
         List<Matrix> outMatrixList = convParameter.getOutMatrixList();
         List<Matrix> im2colMatrixList = convParameter.getIm2colMatrixList();
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
@@ -351,9 +352,11 @@ public abstract class ConvCount {
             nerveMatrixList.set(i, convResult.getNervePowerMatrix());//更新权重
             resultMatrixList.add(convResult.getResultMatrix());
         }
-        for (int i = 0; i < resultMatrixList.size(); i++) {//误差裁剪
-            Matrix result = dymStudy.getClipMatrix(resultMatrixList.get(i), true);
-            resultMatrixList.set(i, result);
+        if (cutLayG) {
+            for (int i = 0; i < resultMatrixList.size(); i++) {//误差裁剪
+                Matrix result = dymStudy.getClipMatrix(resultMatrixList.get(i), true);
+                resultMatrixList.set(i, result);
+            }
         }
         return resultMatrixList;
     }
