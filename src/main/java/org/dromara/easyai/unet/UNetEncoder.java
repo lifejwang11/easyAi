@@ -34,10 +34,13 @@ public class UNetEncoder extends ConvCount {
     private final float oneStudyRate;
     private final DymStudy dymStudy;
     private int times = 0;
+    private boolean cutLayG;
 
     public UNetEncoder(int kerSize, int channelNo, int deep, ActiveFunction activeFunction
-            , float studyRate, int xSize, int ySize, float oneStudyRate, float gMaxTh, float layGMaxTh) throws Exception {//核心大小
+            , float studyRate, int xSize, int ySize, float oneStudyRate, float gMaxTh, float layGMaxTh
+            , boolean cutLayG) throws Exception {//核心大小
         Random random = new Random();
+        this.cutLayG = cutLayG;
         this.xSize = xSize;
         dymStudy = new DymStudy(gMaxTh, false, layGMaxTh);
         this.ySize = ySize;
@@ -128,7 +131,7 @@ public class UNetEncoder extends ConvCount {
         List<Matrix> errorList = backDownPoolingByList(errorMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
         List<Matrix> errorMatrixList = matrixOperation.addMatrixList(errorList, decodeErrorMatrix);
         List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize,
-                dymStudy, times);
+                dymStudy, times, cutLayG);
         if (beforeEncoder != null) {
             beforeEncoder.backError(myErrorMatrix);
         } else {//最后一层 调整1v1卷积

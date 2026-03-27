@@ -35,9 +35,12 @@ public class UNetDecoder extends ConvCount {
     private final float oneConvStudyRate;//
     private int times = 0;//迭代次数
     private final DymStudy dymStudy;
+    private final boolean cutLayG;//是否做误差裁剪
 
     public UNetDecoder(int kerSize, int deep, int channelNo, ActiveFunction activeFunction, boolean lastLay,
-                       float studyRate, Cutting cutting, float oneConvStudyRate, float gMaxTh, float layGMaxTh) throws Exception {
+                       float studyRate, Cutting cutting, float oneConvStudyRate, float gMaxTh, float layGMaxTh
+            , boolean cutLayG) throws Exception {
+        this.cutLayG = cutLayG;
         this.cutting = cutting;
         this.kerSize = kerSize;
         this.oneConvStudyRate = oneConvStudyRate;
@@ -194,7 +197,7 @@ public class UNetDecoder extends ConvCount {
 
     private void backLastError(List<Matrix> errorMatrixList) throws Exception {//最后一层的误差反向传播
         times++;
-        List<Matrix> errorList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize, dymStudy, times);
+        List<Matrix> errorList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize, dymStudy, times, cutLayG);
         sendEncoderError(errorList);//给同级解码器发送误差
         beforeDecoder.backErrorMatrix(errorList);
     }
@@ -228,7 +231,7 @@ public class UNetDecoder extends ConvCount {
         //退上池化，退上卷积 退下卷积 并返回编码器误差
         List<Matrix> errorList = backManyUpPooling(myErrorMatrixList);//退上池化
         List<Matrix> errorMatrixList = backManyUpConv(errorList, kerSize, convParameter, studyRate, activeFunction, dymStudy, times);//退上卷积
-        List<Matrix> backList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize, dymStudy, times);//退下卷积
+        List<Matrix> backList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize, dymStudy, times, cutLayG);//退下卷积
         if (myUNetEncoder != null) {
             sendEncoderError(backList);//给同级编码器发送误差
         }

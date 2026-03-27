@@ -51,7 +51,7 @@ public abstract class Nerve extends ConvCount {
     protected final int channelNo;//通道数
     private final ConvParameter convParameter = new ConvParameter();//内存中卷积层模型及临时数据
     protected final float oneConvRate;
-    private final boolean norm;//是否进行1v1卷积升降维
+    private final boolean cutLayG;//是否进行1v1卷积升降维
     private final CustomEncoding customEncoding;//自定义编码模块
     private final DymStudy dymStudy;
     private int times = 0;//迭代次数
@@ -79,7 +79,7 @@ public abstract class Nerve extends ConvCount {
     protected Nerve(int id, int upNub, String name, int downNub,
                     float studyPoint, boolean init, ActiveFunction activeFunction
             , boolean isDynamic, int rzType, float lParam, int kernLen, int depth
-            , int matrixX, int matrixY, int coreNumber, int channelNo, float onConvRate, boolean norm, CustomEncoding customEncoding
+            , int matrixX, int matrixY, int coreNumber, int channelNo, float onConvRate, boolean cutLayG, CustomEncoding customEncoding
             , float layGMaxTh, float gMaxTh, boolean auto) throws Exception {//该神经元在同层神经元中的编号
         if (auto) {
             if (gMaxTh <= 0) {
@@ -90,7 +90,7 @@ public abstract class Nerve extends ConvCount {
         dymStudy = new DymStudy(gMaxTh, auto, layGMaxTh);
         this.matrixX = matrixX;
         this.customEncoding = customEncoding;
-        this.norm = norm;
+        this.cutLayG = cutLayG;
         this.matrixY = matrixY;
         this.channelNo = channelNo;
         this.id = id;
@@ -131,15 +131,7 @@ public abstract class Nerve extends ConvCount {
         if (study) {//训练临时保存
             convParameter.setFeatureMatrixList(matrixList);
         }
-        List<Matrix> feature;
-        if (norm) {
-            feature = manyOneConv(matrixList, convParameter.getOneConvPower());//降维后的特征矩阵
-        } else {
-            if (matrixList.size() != 3) {
-                throw new Exception("不进行维度调节，输入的特征矩阵通道数必须为3");
-            }
-            feature = matrixList;
-        }
+        List<Matrix> feature = manyOneConv(matrixList, convParameter.getOneConvPower());//降维后的特征矩阵
         List<Matrix> convMatrix = conv(feature);
         sendMatrix(eventId, convMatrix, study, E, outBack, needMatrix, pd);
     }
@@ -253,14 +245,12 @@ public abstract class Nerve extends ConvCount {
             backNub = 0;
             List<Matrix> errorMatrix = backDownPoolingByList(sigmaMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
             List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrix, studyPoint, activeFunction, channelNo, kernLen,
-                    dymStudy, times);
+                    dymStudy, times, cutLayG);
             sigmaMatrix = null;
             if (depth == 1) {//1*1 卷积调整
-                if (norm) {
-                    backOneConvByList(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), oneConvRate
-                            , convParameter.getOneDymStudyRateList(), convParameter.getOneDymStudyRate2List(),
-                            dymStudy, times);
-                }
+                backOneConvByList(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), oneConvRate
+                        , convParameter.getOneDymStudyRateList(), convParameter.getOneDymStudyRate2List(),
+                        dymStudy, times);
             } else {
                 //将梯度继续回传
                 backMatrixMessage(myErrorMatrix);

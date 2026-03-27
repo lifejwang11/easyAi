@@ -247,7 +247,7 @@ public class NerveManager extends ConvCount {
         return sensoryNerves;
     }
 
-    private List<Nerve> initConDepthNerve(int kernLen, int conHiddenDepth, ActiveFunction convFunction, int channelNo, boolean norm) throws Exception {//初始化隐层神经元1
+    private List<Nerve> initConDepthNerve(int kernLen, int conHiddenDepth, ActiveFunction convFunction, int channelNo, boolean cutLayG) throws Exception {//初始化隐层神经元1
         List<Nerve> depthNerves = new ArrayList<>();
         for (int i = 0; i < conHiddenDepth; i++) {//遍历深度
             float studyPoint = this.convStudyPoint;
@@ -261,7 +261,7 @@ public class NerveManager extends ConvCount {
                 isConvFinish = true;
             }
             HiddenNerve hiddenNerve = new HiddenNerve(1, i + 1, 1, downNub, studyPoint, initPower, convFunction, true
-                    , rzType, lParam, kernLen, 0, 0, isConvFinish, coreNumber, channelNo, oneConvRate, norm,
+                    , rzType, lParam, kernLen, 0, 0, isConvFinish, coreNumber, channelNo, oneConvRate, cutLayG,
                     null, layGMaxTh, gMaxTh, auto);
             depthNerves.add(hiddenNerve);
         }
@@ -297,12 +297,12 @@ public class NerveManager extends ConvCount {
      * @param isShowLog       是否打印学习参数
      * @param isSoftMax       最后一层是否用softMax激活
      * @param minFeatureValue 卷积层最小特征数量的开方 取值范围 [1,50]
-     * @param norm            是否进行维度调节，true 进行调节， false不进行维度调节
+     * @param cutLayG         进行梯度裁切
      * @param oneConvRate     降维层学习率
      */
     public void initImageNet(int channelNo, int kernLen, int xSize, int ySize, boolean isSoftMax, boolean isShowLog,
                              float convStudyPoint, ActiveFunction convFunction, int minFeatureValue, float oneConvRate
-            , boolean norm) throws Exception {
+            , boolean cutLayG) throws Exception {
         this.initPower = true;
         this.oneConvRate = oneConvRate;
         if (minFeatureValue < 1 || minFeatureValue > 50) {
@@ -311,15 +311,12 @@ public class NerveManager extends ConvCount {
         if (channelNo < 1) {
             throw new Exception("通道数不能小于1");
         }
-        if (!norm) {//如果不进行维度调节，通道数必须为3
-            channelNo = 3;
-        }
         this.convStudyPoint = convStudyPoint;
         int deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue);//卷积层深度
         if (deep < 2) {
             throw new Exception("minFeatureValue 设置过大");
         }
-        List<Nerve> myDepthNerves = initConDepthNerve(kernLen, deep, convFunction, channelNo, norm);//初始化卷积层隐层
+        List<Nerve> myDepthNerves = initConDepthNerve(kernLen, deep, convFunction, channelNo, cutLayG);//初始化卷积层隐层
         Nerve convFirstNerve = myDepthNerves.get(0);//卷积第一层隐层神经元
         Nerve convLastNerve = myDepthNerves.get(myDepthNerves.size() - 1);//卷积最后一层隐层神经元
         convDepthNerves = myDepthNerves;

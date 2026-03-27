@@ -36,6 +36,15 @@ public class ResYoloConfig {
     private int batchSize = 32;//批量训练数量
     private float otherPth = 0.1f;//负样本阈值
     private float backGroundPD = 0.1f;//背景误差惩罚，该数值大于0.9 则相当于不施加惩罚
+    private boolean cutLayG = false;//位置网络是否进行层梯度裁切
+
+    public boolean isCutLayG() {
+        return cutLayG;
+    }
+
+    public void setCutLayG(boolean cutLayG) {
+        this.cutLayG = cutLayG;
+    }
 
     public float getLayGMaxTh() {
         return layGMaxTh;
