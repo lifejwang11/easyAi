@@ -151,6 +151,44 @@ public class Matrix {
         return matrix;
     }
 
+    public Matrix erode(boolean erode) throws Exception {//对矩阵进行腐蚀
+        int tx = x - 2;
+        int ty = y - 2;
+        Matrix erodeMatrix = copy();
+        for (int i = 0; i < tx; i++) {
+            for (int j = 0; j < ty; j++) {
+                boolean here = false;
+                for (int r = i; r < i + 3; r++) {
+                    for (int c = j; c < j + 3; c++) {
+                        float value = getNumber(r, c);
+                        if (erode) {
+                            if (value < 0.5f) {//有黑色出现
+                                here = true;
+                                break;
+                            }
+                        } else {
+                            if (value > 0.5f) {//有白色出现
+                                here = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (here) {
+                        break;
+                    }
+                }
+                if (here) {
+                    if (erode) {
+                        erodeMatrix.setNub(i + 1, j + 1, 0);
+                    } else {
+                        erodeMatrix.setNub(i + 1, j + 1, 1);
+                    }
+                }
+            }
+        }
+        return erodeMatrix;
+    }
+
     /**
      * 计算全矩阵元素平均值
      *
