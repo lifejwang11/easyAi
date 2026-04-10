@@ -44,7 +44,7 @@ public class UNetManager extends ConvCount {
         this.channelNo = uNetConfig.getChannelNo();
         this.studyRate = uNetConfig.getStudyRate();
         this.oneStudyRate = uNetConfig.getStudyRate();
-        this.deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue);//编码器深度深度
+        this.deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue, 1);//编码器深度深度
         if (deep > 1) {
             initEncoder(xSize, ySize);//初始化编码器
             initDecoder(uNetConfig.isCutting(), uNetConfig.getCutTh());

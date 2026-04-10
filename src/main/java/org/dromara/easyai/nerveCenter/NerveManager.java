@@ -277,10 +277,9 @@ public class NerveManager extends ConvCount {
 
     private int getNerveNub(int deep, int size, int kernLen) {
         int x = size;
-        int step = 1;
+        int step = 2;
         for (int i = 0; i < deep; i++) {
             x = (x - (kernLen - step)) / step;
-            x = x / 2 + x % 2;
         }
         return x;
     }
@@ -312,7 +311,7 @@ public class NerveManager extends ConvCount {
             throw new Exception("通道数不能小于1");
         }
         this.convStudyPoint = convStudyPoint;
-        int deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue);//卷积层深度
+        int deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue, 2);//卷积层深度
         if (deep < 2) {
             throw new Exception("minFeatureValue 设置过大");
         }

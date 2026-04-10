@@ -118,7 +118,8 @@ public class UNetEncoder extends ConvCount {
 
     protected void sendFeature(long eventID, OutBack outBack, ThreeChannelMatrix featureE,
                                List<Matrix> myFeatures, boolean study, ThreeChannelMatrix backGround) throws Exception {
-        List<Matrix> convMatrixList = downConvAndPooling(myFeatures, convParameter, channelNo, activeFunction, kerSize, true, eventID);
+        List<Matrix> convMatrixList = downConvAndPooling(myFeatures, convParameter, channelNo, activeFunction, kerSize, true, eventID
+        ,1);
         if (afterEncoder != null) {//后面还有编码器，继续向后传递
             afterEncoder.sendFeature(eventID, outBack, featureE, convMatrixList, study, backGround);
         } else {//向解码器传递
@@ -131,7 +132,7 @@ public class UNetEncoder extends ConvCount {
         List<Matrix> errorList = backDownPoolingByList(errorMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
         List<Matrix> errorMatrixList = matrixOperation.addMatrixList(errorList, decodeErrorMatrix);
         List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize,
-                dymStudy, times, cutLayG);
+                dymStudy, times, cutLayG,1);
         if (beforeEncoder != null) {
             beforeEncoder.backError(myErrorMatrix);
         } else {//最后一层 调整1v1卷积
@@ -143,7 +144,8 @@ public class UNetEncoder extends ConvCount {
     public void sendMatrixList(long eventID, OutBack outBack, ThreeChannelMatrix featureE, List<Matrix> feature,
                                boolean study, ThreeChannelMatrix backGround) throws Exception {
         List<Matrix> myFeatures = manyOneConv(feature, convParameter.getOneConvPower());//矩阵重新调整维度
-        List<Matrix> convMatrixList = downConvAndPooling(myFeatures, convParameter, channelNo, activeFunction, kerSize, true, eventID);
+        List<Matrix> convMatrixList = downConvAndPooling(myFeatures, convParameter, channelNo, activeFunction, kerSize, true,
+                eventID,1);
         if (afterEncoder != null) {//后面还有编码器，继续向后传递
             afterEncoder.sendFeature(eventID, outBack, featureE, convMatrixList, study, backGround);
         } else {//向解码器传递

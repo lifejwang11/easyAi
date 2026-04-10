@@ -14,7 +14,7 @@ public class UNetConfig {
     private int channelNo = 1;//通道数
     private float cutTh = 0.5f;//裁切阈值像素 大于该亮度的进行裁切
     private boolean cutting = true;//是否要输出裁切图像
-    private float GMaxTh = 100f;//梯度阈值
+    private float GMaxTh = 10f;//梯度阈值
     private float layGMaxTh = 10000;//层梯度裁剪阈值
     private boolean cutLayG = true;//是否进行层梯度裁切
 
