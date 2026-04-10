@@ -197,7 +197,8 @@ public class UNetDecoder extends ConvCount {
 
     private void backLastError(List<Matrix> errorMatrixList) throws Exception {//最后一层的误差反向传播
         times++;
-        List<Matrix> errorList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize, dymStudy, times, cutLayG);
+        List<Matrix> errorList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction,
+                channelNo, kerSize, dymStudy, times, cutLayG, 1);
         sendEncoderError(errorList);//给同级解码器发送误差
         beforeDecoder.backErrorMatrix(errorList);
     }
@@ -231,7 +232,7 @@ public class UNetDecoder extends ConvCount {
         //退上池化，退上卷积 退下卷积 并返回编码器误差
         List<Matrix> errorList = backManyUpPooling(myErrorMatrixList);//退上池化
         List<Matrix> errorMatrixList = backManyUpConv(errorList, kerSize, convParameter, studyRate, activeFunction, dymStudy, times);//退上卷积
-        List<Matrix> backList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize, dymStudy, times, cutLayG);//退下卷积
+        List<Matrix> backList = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize, dymStudy, times, cutLayG, 1);//退下卷积
         if (myUNetEncoder != null) {
             sendEncoderError(backList);//给同级编码器发送误差
         }

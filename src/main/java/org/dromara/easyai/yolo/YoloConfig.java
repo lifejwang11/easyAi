@@ -27,8 +27,8 @@ public class YoloConfig {
     private int hiddenDeep = 1;//网络线性层隐层神经元深度
     private float otherPth = 0.1f;//负样本交并比阈值
     private float trustTh = 0.5f;//可信度阈值
-    private float backGroundPD = 0.1f;//背景误差惩罚，该数值大于0.9 则相当于不施加惩罚
-    private float layGMaxTh = 100000000;//层梯度裁剪阈值
+    private float backGroundPD = 1f;//背景误差惩罚，该数值大于0.9 则相当于不施加惩罚
+    private float layGMaxTh = 10000;//层梯度裁剪阈值
 
     public boolean isCutLayG() {
         return cutLayG;

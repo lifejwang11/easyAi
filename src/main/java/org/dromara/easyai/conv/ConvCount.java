@@ -17,19 +17,20 @@ import java.util.List;
 public abstract class ConvCount {
     private final MatrixOperation matrixOperation = new MatrixOperation();
 
-    protected int getConvMyDep(int xSize, int ySize, int kernLen, int minFeatureValue) {
-        int xDeep = getConvDeep(xSize, kernLen, minFeatureValue);
-        int yDeep = getConvDeep(ySize, kernLen, minFeatureValue);
+    protected int getConvMyDep(int xSize, int ySize, int kernLen, int minFeatureValue, int step) {
+        int xDeep = getConvDeep(xSize, kernLen, minFeatureValue, step);
+        int yDeep = getConvDeep(ySize, kernLen, minFeatureValue, step);
         return Math.min(xDeep, yDeep);
     }
 
-    private int getConvDeep(int size, int kernLen, int minFeatureValue) {//获取卷积层深度
+    private int getConvDeep(int size, int kernLen, int minFeatureValue, int step) {//获取卷积层深度
         int x = size;
-        int step = 1;
         int deep = 0;//深度
         do {
             x = (x - (kernLen - step)) / step;
-            x = x / 2 + x % 2;
+            if (step == 1) {
+                x = x / 2 + x % 2;
+            }
             deep++;
         } while (x > minFeatureValue);
         return deep - 1;
@@ -210,7 +211,7 @@ public abstract class ConvCount {
 
     protected List<Matrix> upConvAndPooling(List<Matrix> matrixList, ConvParameter convParameter, int channelNo, ActiveFunction activeFunction
             , int kernLen, boolean pooling) throws Exception {
-        List<Matrix> downConvMatrixList = downConvAndPooling(matrixList, convParameter, channelNo, activeFunction, kernLen, false, -1);
+        List<Matrix> downConvMatrixList = downConvAndPooling(matrixList, convParameter, channelNo, activeFunction, kernLen, false, -1, 1);
         if (pooling) {
             ConvResult result = upConv(downConvMatrixList, kernLen, convParameter.getUpNerveMatrixList(), activeFunction, channelNo);
             convParameter.setUpOutMatrixList(result.getResultMatrixList());
@@ -226,7 +227,7 @@ public abstract class ConvCount {
     }
 
     protected List<Matrix> downConvAndPooling(List<Matrix> matrixList, ConvParameter convParameter, int channelNo, ActiveFunction activeFunction
-            , int kernLen, boolean pooling, long eventID) throws Exception {
+            , int kernLen, boolean pooling, long eventID, int step) throws Exception {
         List<ConvSize> convSizeList = convParameter.getConvSizeList();
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
         List<Matrix> im2colMatrixList = convParameter.getIm2colMatrixList();
@@ -242,7 +243,7 @@ public abstract class ConvCount {
             int yInput = matrix.getY();
             convSize.setXInput(xInput);
             convSize.setYInput(yInput);
-            ConvResult convResult = downConvCount(matrix, activeFunction, kernLen, nerveMatrix);
+            ConvResult convResult = downConvCount(matrix, activeFunction, kernLen, nerveMatrix, step);
             im2colMatrixList.add(convResult.getLeftMatrix());
             Matrix myMatrix = convResult.getResultMatrix();//卷积后的矩阵
             outMatrixList.add(myMatrix);
@@ -253,7 +254,7 @@ public abstract class ConvCount {
         }
         convParameter.setOutX(resultMatrixList.get(0).getX());
         convParameter.setOutY(resultMatrixList.get(0).getY());
-        if (pooling) {
+        if (pooling && step == 1) {
             List<Matrix> poolMatrixList = new ArrayList<>();
             for (Matrix matrix : resultMatrixList) {
                 poolMatrixList.add(downPooling(matrix));
@@ -329,7 +330,7 @@ public abstract class ConvCount {
 
     protected List<Matrix> backAllDownConv(ConvParameter convParameter, List<Matrix> errorMatrixList, float studyPoint
             , ActiveFunction activeFunction, int channelNo, int kernLen, DymStudy dymStudy, int times
-            , boolean cutLayG) throws Exception {
+            , boolean cutLayG, int step) throws Exception {
         List<Matrix> outMatrixList = convParameter.getOutMatrixList();
         List<Matrix> im2colMatrixList = convParameter.getIm2colMatrixList();
         List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();
@@ -348,7 +349,7 @@ public abstract class ConvCount {
             int xInput = convSize.getXInput();
             int yInput = convSize.getYInput();
             ConvResult convResult = backDownConv(errorMatrix, outMatrix, activeFunction, im2col,
-                    nerveMatrix, studyPoint, kernLen, xInput, yInput, sMatrix, s2Matrix, dymStudy, times);
+                    nerveMatrix, studyPoint, kernLen, xInput, yInput, sMatrix, s2Matrix, dymStudy, times, step);
             nerveMatrixList.set(i, convResult.getNervePowerMatrix());//更新权重
             resultMatrixList.add(convResult.getResultMatrix());
         }
@@ -363,7 +364,7 @@ public abstract class ConvCount {
 
     private ConvResult backDownConv(Matrix errorMatrix, Matrix outMatrix, ActiveFunction activeFunction, Matrix im2col, Matrix nerveMatrix,
                                     float studyRate, int kernSize, int xInput, int yInput, Matrix sMatrix, Matrix s2Matrix, DymStudy dymStudy
-            , int times) throws Exception {
+            , int times, int step) throws Exception {
         //下采样卷积误差反向传播
         ConvResult convResult = new ConvResult();
         int x = errorMatrix.getX();
@@ -381,22 +382,22 @@ public abstract class ConvCount {
         Matrix im2colSub = matrixOperation.matrixMulPd(resultError, im2col, nerveMatrix, true);
         wSub = dymStudy.getErrorMatrixByStudy(studyRate, sMatrix, s2Matrix, wSub, times);
         nerveMatrix = matrixOperation.add(nerveMatrix, wSub);//调整卷积核
-        Matrix gNext = matrixOperation.reverseIm2col(im2colSub, kernSize, 1, xInput, yInput);//其余误差
+        Matrix gNext = matrixOperation.reverseIm2col(im2colSub, kernSize, step, xInput, yInput);//其余误差
         convResult.setNervePowerMatrix(nerveMatrix);
         convResult.setResultMatrix(gNext);
         return convResult;
     }
 
     private ConvResult downConvCount(Matrix matrix, ActiveFunction activeFunction, int kerSize
-            , Matrix nervePowerMatrix) throws Exception {//进行下采样卷积运算
+            , Matrix nervePowerMatrix, int step) throws Exception {//进行下采样卷积运算
         ConvResult convResult = new ConvResult();
         int xInput = matrix.getX();
         int yInput = matrix.getY();
-        int sub = kerSize - 1;
-        int x = xInput - sub;//线性变换后矩阵的行数 （图片长度-（核长-步长））/步长
-        int y = yInput - sub;//线性变换后矩阵的列数
+        int sub = kerSize - step;
+        int x = (xInput - sub) / step;//线性变换后矩阵的行数 （图片长度-（核长-步长））/步长
+        int y = (yInput - sub) / step;//线性变换后矩阵的列数
         Matrix myMatrix = new Matrix(x, y);//线性变化后的矩阵
-        Matrix im2col = matrixOperation.im2col(matrix, kerSize, 1);
+        Matrix im2col = matrixOperation.im2col(matrix, kerSize, step);
         convResult.setLeftMatrix(im2col);
         //输出矩阵
         Matrix matrixOut = matrixOperation.mulMatrix(im2col, nervePowerMatrix);

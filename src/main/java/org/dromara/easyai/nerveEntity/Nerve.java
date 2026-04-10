@@ -123,7 +123,7 @@ public abstract class Nerve extends ConvCount {
     }
 
     protected List<Matrix> conv(List<Matrix> matrix) throws Exception {//一次正向卷积，下取样
-        return downConvAndPooling(matrix, convParameter, channelNo, activeFunction, kernLen, true, -1);
+        return downConvAndPooling(matrix, convParameter, channelNo, activeFunction, kernLen, true, -1, 2);
     }
 
     protected void demRedByMatrixList(long eventId, List<Matrix> matrixList, boolean study,
@@ -243,9 +243,9 @@ public abstract class Nerve extends ConvCount {
         if (backNub == downNub) {
             times++;
             backNub = 0;
-            List<Matrix> errorMatrix = backDownPoolingByList(sigmaMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
-            List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrix, studyPoint, activeFunction, channelNo, kernLen,
-                    dymStudy, times, cutLayG);
+            // List<Matrix> errorMatrix = backDownPoolingByList(sigmaMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
+            List<Matrix> myErrorMatrix = backAllDownConv(convParameter, sigmaMatrix, studyPoint, activeFunction, channelNo, kernLen,
+                    dymStudy, times, cutLayG, 2);
             sigmaMatrix = null;
             if (depth == 1) {//1*1 卷积调整
                 backOneConvByList(myErrorMatrix, convParameter.getFeatureMatrixList(), convParameter.getOneConvPower(), oneConvRate
