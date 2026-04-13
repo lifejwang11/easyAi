@@ -114,14 +114,10 @@ public class ThreeChannelMatrix {
         return matrix;
     }
 
-    public ThreeChannelMatrix gaussianVague(float sd, int kerSize, boolean scaleWidth, float scaleSize) throws Exception {//高斯模糊
+    public ThreeChannelMatrix gaussianVague(float sd, int kerSize) throws Exception {//高斯模糊
         if (kerSize % 2 != 1) {
             throw new Exception("高斯核大小必须为奇数");
         }
-        ThreeChannelMatrix threeChannelMatrix = scale(scaleWidth, scaleSize);
-        Matrix matrixR = threeChannelMatrix.getMatrixR();
-        Matrix matrixG = threeChannelMatrix.getMatrixG();
-        Matrix matrixB = threeChannelMatrix.getMatrixB();
         Matrix gaussianMatrix = createGaussianKern(sd, kerSize);
         Matrix gr = conv(matrixR, gaussianMatrix, kerSize);
         Matrix gg = conv(matrixG, gaussianMatrix, kerSize);
