@@ -39,6 +39,19 @@ public class Matrix {
         }
     }
 
+    public double getVar() throws Exception {//求矩阵方差
+        float avg = getAVG();
+        double sigma = 0;
+        double size = x * y;
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                sigma = sigma + Math.pow(getNumber(i, j) - avg, 2);
+            }
+        }
+        sigma = sigma / size;//方差
+        return sigma;//方法
+    }
+
     /**
      * 注入Cuda一维数组(列主序)
      *
