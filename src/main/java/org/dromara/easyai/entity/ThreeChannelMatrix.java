@@ -41,22 +41,46 @@ public class ThreeChannelMatrix {
         }
     }
 
-    public void grayscaleScale(float toR, float toG, float toB) throws Exception {//灰度缩放
-        MatrixOperation matrixOperation = new MatrixOperation();
-        float avgR = matrixR.getAVG();
-        float avgG = matrixG.getAVG();
-        float avgB = matrixB.getAVG();
+    public ThreeChannelMatrix grayscaleScale(float toR, float toG, float toB) throws Exception {//灰度缩放
+        float sigmaR = 0;
+        float sigmaG = 0;
+        float sigmaB = 0;
+        ThreeChannelMatrix threeChannelMatrix = new ThreeChannelMatrix();
+        threeChannelMatrix.setX(x);
+        threeChannelMatrix.setY(y);
+        Matrix myR = new Matrix(x, y);
+        Matrix myG = new Matrix(x, y);
+        Matrix myB = new Matrix(x, y);
+        threeChannelMatrix.setMatrixR(myR);
+        threeChannelMatrix.setMatrixG(myG);
+        threeChannelMatrix.setMatrixB(myB);
+        int s = x * y;
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                sigmaR = sigmaR + matrixR.getNumber(i, j);
+                sigmaG = sigmaG + matrixG.getNumber(i, j);
+                sigmaB = sigmaB + matrixB.getNumber(i, j);
+            }
+        }
+        float avgR = sigmaR / s;
+        float avgG = sigmaG / s;
+        float avgB = sigmaB / s;
         float rk = toR / avgR;
         float gk = toG / avgG;
         float bk = toB / avgB;
-        matrixOperation.mathMul(matrixR, rk);
-        matrixOperation.mathMul(matrixG, gk);
-        matrixOperation.mathMul(matrixB, bk);
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                myR.setNub(i, j, matrixR.getNumber(i, j) * rk);
+                myG.setNub(i, j, matrixG.getNumber(i, j) * gk);
+                myB.setNub(i, j, matrixB.getNumber(i, j) * bk);
+            }
+        }
+        return threeChannelMatrix;
     }
 
     //生成一个高斯核
     private Matrix createGaussianKern(float sd, int kerSize) throws Exception {
-        float a = (float) (1 / (2 * (float) Math.PI * (float) Math.pow(sd, 2)));
+        float a = (float) (1 / (2 * Math.PI * Math.pow(sd, 2)));
         Matrix matrix = new Matrix(kerSize, kerSize);
         int half = kerSize / 2;
         for (int i = 0; i < kerSize; i++) {

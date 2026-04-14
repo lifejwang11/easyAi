@@ -531,6 +531,27 @@ public class MatrixOperation {
         return myMatrix;
     }
 
+    public Matrix getMatrixFiltering(Matrix matrix, Matrix kernel) throws Exception {//矩阵滤波
+        int x = matrix.getX();
+        int y = matrix.getY();
+        int xSize = kernel.getX();
+        int ySize = kernel.getY();
+        int subXSize = xSize - 1;
+        int subYSize = ySize - 1;
+        if (x > subXSize && y > subYSize) {
+            Matrix gMatrix = new Matrix(x - subXSize, y - subYSize);
+            for (int i = 0; i < x - subXSize; i++) {
+                for (int j = 0; j < y - subYSize; j++) {
+                    float g = convolution(matrix, kernel, i, j);
+                    gMatrix.setNub(i, j, g);
+                }
+            }
+            return gMatrix;
+        } else {
+            throw new IllegalArgumentException("矩阵大小必须大于等于算子的大小");
+        }
+    }
+
     public float convolution(Matrix matrix, Matrix kernel, int x, int y) throws Exception {//计算卷积
         float allNub = 0;
         int xr = 0;
