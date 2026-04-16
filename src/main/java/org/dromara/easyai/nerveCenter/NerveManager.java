@@ -275,11 +275,13 @@ public class NerveManager extends ConvCount {
     }
 
 
-    private int getNerveNub(int deep, int size, int kernLen) {
+    private int getNerveNub(int deep, int size, int kernLen, int step) {
         int x = size;
-        int step = 2;
         for (int i = 0; i < deep; i++) {
             x = (x - (kernLen - step)) / step;
+            if (step == 1) {
+                x = x / 2 + x % 2;
+            }
         }
         return x;
     }
@@ -311,7 +313,7 @@ public class NerveManager extends ConvCount {
             throw new Exception("通道数不能小于1");
         }
         this.convStudyPoint = convStudyPoint;
-        int deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue, 2);//卷积层深度
+        int deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue, 1);//卷积层深度
         if (deep < 2) {
             throw new Exception("minFeatureValue 设置过大");
         }
@@ -322,7 +324,7 @@ public class NerveManager extends ConvCount {
         convInput = new SensoryNerve(1, 0, channelNo);//输入神经元
         //感知神经元与卷积第一层隐层神经元进行连接
         convInput.connectSonOnly(convFirstNerve);
-        initDepthNerve(kernLen, getNerveNub(deep, xSize, kernLen), getNerveNub(deep, ySize, kernLen), channelNo, null);//初始化深度隐层神经元 depthNerves
+        initDepthNerve(kernLen, getNerveNub(deep, xSize, kernLen, 1), getNerveNub(deep, ySize, kernLen, 1), channelNo, null);//初始化深度隐层神经元 depthNerves
         List<Nerve> firstNerves = depthNerves.get(0);//线性层第一层隐层神经元
         List<Nerve> lastNerveList = depthNerves.get(depthNerves.size() - 1);//线性层最后一层隐层神经元
         convLastNerve.connect(firstNerves);//卷积最后一层链接线性层第一层
