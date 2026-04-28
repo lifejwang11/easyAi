@@ -39,13 +39,14 @@ public class Matrix {
         }
     }
 
-    public double getVar() throws Exception {//求矩阵方差
+    public double getVar() {//求矩阵方差
         float avg = getAVG();
         double sigma = 0;
         double size = x * y;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                sigma = sigma + Math.pow(getNumber(i, j) - avg, 2);
+                float value = getValue(i, j) - avg;
+                sigma = sigma + value * value;
             }
         }
         sigma = sigma / size;//方差
@@ -129,17 +130,17 @@ public class Matrix {
         }
     }
 
-    public float getSigma() throws Exception {
+    public float getSigma() {
         float sigma = 0;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                sigma = sigma + getNumber(i, j);
+                sigma = sigma + getValue(i, j);
             }
         }
         return sigma;
     }
 
-    public Matrix scale(boolean scaleX, float size) throws Exception {//缩放矩阵
+    public Matrix scale(boolean scaleX, float size) {//缩放矩阵
         float value;
         if (!scaleX) {//将宽度等比缩放至指定尺寸
             value = y / size;
@@ -158,13 +159,14 @@ public class Matrix {
             for (int j = 0; j < narrowY; j++) {
                 int indexX = (int) (i * value);
                 int indexY = (int) (j * value);
-                matrix.setNub(i, j, getNumber(indexX, indexY));
+                float myValue = getValue(indexX, indexY);
+                matrix.setValue(i, j, myValue);
             }
         }
         return matrix;
     }
 
-    public Matrix erode(boolean erode) throws Exception {//对矩阵进行腐蚀
+    public Matrix erode(boolean erode) {//对矩阵进行腐蚀
         int tx = x - 2;
         int ty = y - 2;
         Matrix erodeMatrix = copy();
@@ -173,7 +175,7 @@ public class Matrix {
                 boolean here = false;
                 for (int r = i; r < i + 3; r++) {
                     for (int c = j; c < j + 3; c++) {
-                        float value = getNumber(r, c);
+                        float value = getValue(r, c);
                         if (erode) {
                             if (value < 0.5f) {//有黑色出现
                                 here = true;
@@ -192,9 +194,9 @@ public class Matrix {
                 }
                 if (here) {
                     if (erode) {
-                        erodeMatrix.setNub(i + 1, j + 1, 0);
+                        erodeMatrix.setValue(i + 1, j + 1, 0);
                     } else {
-                        erodeMatrix.setNub(i + 1, j + 1, 1);
+                        erodeMatrix.setValue(i + 1, j + 1, 1);
                     }
                 }
             }
@@ -207,12 +209,12 @@ public class Matrix {
      *
      * @return 返回当前矩阵全部元素的平均值
      */
-    public float getAVG() throws Exception {
+    public float getAVG() {
         float sigma = 0;
         int s = x * y;
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                sigma = sigma + getNumber(i, j);
+                sigma = sigma + getValue(i, j);
             }
         }
         sigma = sigma / s;
@@ -469,26 +471,23 @@ public class Matrix {
      * @return 返回分块后的矩阵
      */
     public Matrix getSonOfMatrix(int x, int y, int xSize, int ySize) {
-        Matrix myMatrix = new Matrix(xSize, ySize);
-        int xr = 0;
-        int yr = 0;
-        try {
+        if (x + xSize - 1 < this.x && y + ySize - 1 < this.y) {
+            Matrix myMatrix = new Matrix(xSize, ySize);
+            int xr;
+            int yr;
             for (int i = 0; i < xSize; i++) {
                 xr = i + x;
                 for (int j = 0; j < ySize; j++) {
                     yr = j + y;
-                    if (this.x > xr && this.y > yr) {
-                        myMatrix.setNub(i, j, getNumber(xr, yr));
-                    } else {
-                        throw new Exception("xr:" + xr + ",yr:" + yr + ",x:" + this.x + ",y:" + this.y + ",xSize:" + xSize + ",ySize:" + ySize + ",x:" + x + ",y:" + y);
-                    }
+                    float value = getValue(xr, yr);
+                    myMatrix.setValue(i, j, value);
                 }
             }
-        } catch (Exception e) {
-            System.out.println("xr:" + xr + ",yr:" + yr);
-            e.printStackTrace();
+            return myMatrix;
+        } else {
+            throw new IllegalArgumentException("x:" + this.x + ",y:" + this.y + ",xSize:" +
+                    xSize + ",ySize:" + ySize + ",x:" + x + ",y:" + y);
         }
-        return myMatrix;
     }
 
     /**
@@ -496,14 +495,19 @@ public class Matrix {
      *
      * @param x 你要指定的行数
      * @return 返回一个一行的矩阵
-     * @throws Exception 超出矩阵范围抛出异常
+     * @throws IllegalArgumentException 超出矩阵范围抛出异常
      */
-    public Matrix getRow(int x) throws Exception {
-        Matrix myMatrix = new Matrix(1, y);
-        for (int i = 0; i < y; i++) {
-            myMatrix.setNub(0, i, getNumber(x, i));
+    public Matrix getRow(int x) {
+        if (x < this.x) {
+            Matrix myMatrix = new Matrix(1, y);
+            for (int i = 0; i < y; i++) {
+                float value = getValue(x, i);
+                myMatrix.setValue(0, i, value);
+            }
+            return myMatrix;
+        } else {
+            throw new IllegalArgumentException("行数越界");
         }
-        return myMatrix;
     }
 
 
@@ -512,14 +516,19 @@ public class Matrix {
      *
      * @param y 要制定的列数
      * @return 返回一个一列的矩阵
-     * @throws Exception 超出矩阵范围抛出异常
+     * @throws IllegalArgumentException 超出矩阵范围抛出异常
      */
-    public Matrix getColumn(int y) throws Exception {//获取列向量
-        Matrix myMatrix = new Matrix(x, 1);
-        for (int i = 0; i < x; i++) {
-            myMatrix.setNub(i, 0, getNumber(i, y));
+    public Matrix getColumn(int y) {//获取列向量
+        if (y < this.y) {
+            Matrix myMatrix = new Matrix(x, 1);
+            for (int i = 0; i < x; i++) {
+                float value = getValue(i, y);
+                myMatrix.setValue(i, 0, value);
+            }
+            return myMatrix;
+        } else {
+            throw new IllegalArgumentException("下标越界");
         }
-        return myMatrix;
     }
 
     /**
@@ -591,11 +600,23 @@ public class Matrix {
         }
     }
 
-    public Matrix copy() throws Exception {//复制一个矩阵
+    /**
+     * 给矩阵设置值(不带下标检查)
+     *
+     * @param x      x坐标
+     * @param y      y坐标
+     * @param number 要设置的值
+     */
+    public final void setValue(int x, int y, float number) {
+        matrix[y * this.x + x] = number;
+    }
+
+    public Matrix copy() {//复制一个矩阵
         Matrix myMatrix = new Matrix(this.x, this.y);
         for (int i = 0; i < this.x; i++) {
             for (int j = 0; j < this.y; j++) {
-                myMatrix.setNub(i, j, getNumber(i, j));
+                float value = getValue(i, j);
+                myMatrix.setValue(i, j, value);
             }
         }
         return myMatrix;
@@ -619,6 +640,17 @@ public class Matrix {
     }
 
     /**
+     * 取矩阵的数值（不带检查下标提升速度）
+     *
+     * @param x x坐标
+     * @param y y坐标
+     * @return 返回指定坐标的数值
+     */
+    public final float getValue(int x, int y) {
+        return matrix[y * this.x + x];
+    }
+
+    /**
      * 计算矩阵中某一行向量或者列向量所有元素的和
      *
      * @param isRow 是否取行向量
@@ -631,11 +663,11 @@ public class Matrix {
         if (index >= 0 && ((isRow && x > index) || (!isRow && y > index))) {
             if (isRow) {//取行向量
                 for (int i = 0; i < y; i++) {
-                    sigma = getNumber(index, i) + sigma;
+                    sigma = getValue(index, i) + sigma;
                 }
             } else {
                 for (int i = 0; i < x; i++) {
-                    sigma = getNumber(i, index) + sigma;
+                    sigma = getValue(i, index) + sigma;
                 }
             }
         } else {

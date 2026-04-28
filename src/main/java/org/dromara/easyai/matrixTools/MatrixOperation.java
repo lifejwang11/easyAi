@@ -748,7 +748,7 @@ public class MatrixOperation {
         return (float) Math.sqrt(var / size + e);
     }
 
-    private Matrix mulMatrixOne(Matrix matrix1, Matrix matrix2) throws Exception {//矩阵相乘单进程
+    private Matrix mulMatrixOne(Matrix matrix1, Matrix matrix2) {//矩阵相乘单进程
         if (matrix1.getY() == matrix2.getX()) {
             Matrix matrix = new Matrix(matrix1.getX(), matrix2.getY());
             for (int i = 0; i < matrix1.getX(); i++) {
@@ -757,21 +757,21 @@ public class MatrixOperation {
                     Matrix matrixColumn = matrix2.getColumn(j);
                     float columnAllNumber = 0;//对每一项的乘积求和
                     for (int h = 0; h < matrixColumn.getX(); h++) {
-                        float columnNumber = matrixColumn.getNumber(h, 0);
-                        float rowNumber = matrixRow.getNumber(0, h);
+                        float columnNumber = matrixColumn.getValue(h, 0);
+                        float rowNumber = matrixRow.getValue(0, h);
                         float nowNumber = columnNumber * rowNumber;
                         columnAllNumber = columnAllNumber + nowNumber;
                     }
                     if (!Float.isNaN(columnAllNumber)) {
-                        matrix.setNub(i, j, columnAllNumber);
+                        matrix.setValue(i, j, columnAllNumber);
                     } else {
-                        throw new Exception("计算时出现数值溢出，梯度爆炸!");
+                        throw new IllegalArgumentException("计算时出现数值溢出，梯度爆炸!");
                     }
                 }
             }
             return matrix;
         } else {
-            throw new Exception("row is not equals column");
+            throw new IllegalArgumentException("row is not equals column");
         }
     }
 
@@ -952,7 +952,8 @@ public class MatrixOperation {
     private void inputVector(Matrix matrix, Matrix feature, int index, int kenLen) throws Exception {
         int y = matrix.getY();
         for (int i = 0; i < y; i++) {
-            matrix.setNub(index, i, feature.getNumber(i / kenLen, i % kenLen));
+            float value = feature.getValue(i / kenLen, i % kenLen);
+            matrix.setValue(index, i, value);
         }
     }
 
