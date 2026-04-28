@@ -297,10 +297,11 @@ public class FastYolo {//yolo
         int y = th.getY();
         List<Box> boxes = new ArrayList<>();
         NMS nms = new NMS(iouTh);
+        YoloTypeBack yoloTypeBack = new YoloTypeBack();
+        PositionBack positionBack = new PositionBack();
         for (int i = 0; i <= x - winHeight; i += heightStep) {
             for (int j = 0; j <= y - winWidth; j += widthStep) {
-                YoloTypeBack yoloTypeBack = new YoloTypeBack();
-                PositionBack positionBack = new PositionBack();
+                yoloTypeBack.clear();
                 ThreeChannelMatrix myTh = th.cutChannel(i, j, winHeight, winWidth);
                 if (resnet) {
                     resnetManager.getRestNetInput().postFeature(myTh, yoloTypeBack, eventID, false, myPd);
