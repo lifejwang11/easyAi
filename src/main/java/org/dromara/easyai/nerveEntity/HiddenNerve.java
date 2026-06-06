@@ -1,5 +1,6 @@
 package org.dromara.easyai.nerveEntity;
 
+import org.dromara.easyai.conv.dcn.DConv;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.CustomEncoding;
 import org.dromara.easyai.matrixTools.Matrix;
@@ -24,10 +25,10 @@ public class HiddenNerve extends Nerve {
     public HiddenNerve(int id, int depth, int upNub, int downNub, float studyPoint,
                        boolean init, ActiveFunction activeFunction, boolean isDynamic, int rzType, float lParam
             , int kernLen, int matrixX, int matrixY, boolean isConvFinish, int coreNumber, int channelNo, float oneConvStudy, boolean norm
-            , CustomEncoding customEncoding, float layGMaxTh, float gMaxTh, boolean auTo) throws Exception {//隐层神经元
+            , CustomEncoding customEncoding, float layGMaxTh, float gMaxTh, boolean auTo, DConv dConv) throws Exception {//隐层神经元
         super(id, upNub, "HiddenNerve", downNub, studyPoint,
                 init, activeFunction, isDynamic, rzType, lParam, kernLen, depth, matrixX, matrixY
-                , coreNumber, channelNo, oneConvStudy, norm, customEncoding, layGMaxTh, gMaxTh, auTo);
+                , coreNumber, channelNo, oneConvStudy, norm, customEncoding, layGMaxTh, gMaxTh, auTo, dConv);
         this.isConvFinish = isConvFinish;
     }
 
@@ -64,7 +65,7 @@ public class HiddenNerve extends Nerve {
     @Override
     protected void inputMatrix(long eventId, List<Matrix> matrix, boolean isStudy
             , Map<Integer, Float> E, OutBack outBack, boolean needMatrix, Map<Integer, Float> pd) throws Exception {
-        List<Matrix> myMatrix = conv(matrix);//处理过的矩阵
+        List<Matrix> myMatrix = conv(matrix, isStudy);//处理过的矩阵
         if (isConvFinish) {
             Matrix ourMatrix;
             if (myMatrix.size() == 1) {

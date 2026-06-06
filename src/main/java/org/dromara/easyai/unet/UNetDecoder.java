@@ -2,6 +2,7 @@ package org.dromara.easyai.unet;
 
 import org.dromara.easyai.conv.ConvCount;
 import org.dromara.easyai.conv.DymStudy;
+import org.dromara.easyai.conv.dcn.DConv;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
@@ -39,7 +40,8 @@ public class UNetDecoder extends ConvCount {
 
     public UNetDecoder(int kerSize, int deep, int channelNo, ActiveFunction activeFunction, boolean lastLay,
                        float studyRate, Cutting cutting, float oneConvStudyRate, float gMaxTh, float layGMaxTh
-            , boolean cutLayG) throws Exception {
+            , boolean cutLayG, DConv dConv) throws Exception {
+        super(dConv);
         this.cutLayG = cutLayG;
         this.cutting = cutting;
         this.kerSize = kerSize;
@@ -249,7 +251,7 @@ public class UNetDecoder extends ConvCount {
             List<Matrix> encoderMatrixList = myUNetEncoder.getAfterConvMatrix(eventID);//编码器特征
             addFeatures(encoderMatrixList, myFeatures, study);
         }
-        List<Matrix> upConvMatrixList = upConvAndPooling(myFeatures, convParameter, channelNo, activeFunction, kerSize, !lastLay);
+        List<Matrix> upConvMatrixList = upConvAndPooling(myFeatures, convParameter, channelNo, activeFunction, kerSize, !lastLay, study);
         if (lastLay) {//最后一层解码器
             toThreeChannelMatrix(upConvMatrixList, featureE, study, outBack, backGround);
         } else {

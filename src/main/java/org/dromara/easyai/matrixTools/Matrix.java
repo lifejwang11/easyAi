@@ -596,7 +596,7 @@ public class Matrix {
         if (this.x > x && this.y > y && x >= 0 && y >= 0) {
             matrix[y * this.x + x] = number;
         } else {
-            throw new Exception("setNub matrix length too little x:" + x + ",y:" + y);
+            throw new Exception("边界溢出 x:" + x + ",y:" + y + ",目前容量，x:" + this.x + ",y:" + this.y);
         }
     }
 

@@ -2,6 +2,7 @@ package org.dromara.easyai.nerveEntity;
 
 import org.dromara.easyai.conv.ConvCount;
 import org.dromara.easyai.conv.DymStudy;
+import org.dromara.easyai.conv.dcn.DConv;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.CustomEncoding;
 import org.dromara.easyai.matrixTools.Matrix;
@@ -80,7 +81,8 @@ public abstract class Nerve extends ConvCount {
                     float studyPoint, boolean init, ActiveFunction activeFunction
             , boolean isDynamic, int rzType, float lParam, int kernLen, int depth
             , int matrixX, int matrixY, int coreNumber, int channelNo, float onConvRate, boolean cutLayG, CustomEncoding customEncoding
-            , float layGMaxTh, float gMaxTh, boolean auto) throws Exception {//该神经元在同层神经元中的编号
+            , float layGMaxTh, float gMaxTh, boolean auto, DConv dConv) throws Exception {
+        super(dConv);//该神经元在同层神经元中的编号
         if (auto) {
             if (gMaxTh <= 0) {
                 throw new IllegalArgumentException("gMaxTh 必须比0大,当前值:" + gMaxTh);
@@ -122,8 +124,9 @@ public abstract class Nerve extends ConvCount {
         }
     }
 
-    protected List<Matrix> conv(List<Matrix> matrix) throws Exception {//一次正向卷积，下取样
-        return downConvAndPooling(matrix, convParameter, channelNo, activeFunction, kernLen, true, -1, 1);
+    protected List<Matrix> conv(List<Matrix> matrix, boolean study) throws Exception {//一次正向卷积，下取样
+        return downConvAndPooling(matrix, convParameter, channelNo, activeFunction, kernLen, true,
+                -1, 1, study);
     }
 
     protected void demRedByMatrixList(long eventId, List<Matrix> matrixList, boolean study,
@@ -132,7 +135,7 @@ public abstract class Nerve extends ConvCount {
             convParameter.setFeatureMatrixList(matrixList);
         }
         List<Matrix> feature = manyOneConv(matrixList, convParameter.getOneConvPower());//降维后的特征矩阵
-        List<Matrix> convMatrix = conv(feature);
+        List<Matrix> convMatrix = conv(feature, study);
         sendMatrix(eventId, convMatrix, study, E, outBack, needMatrix, pd);
     }
 

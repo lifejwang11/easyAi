@@ -15,7 +15,8 @@ public class SoftMax extends Nerve {
     public SoftMax(int upNub, boolean isDynamic, List<OutNerve> outNerves, boolean isShowLog, int coreNumber) throws Exception {
         super(0, upNub, "softMax", 0, 0, false, null, isDynamic
                 , RZ.NOT_RZ, 0, 0, 0, 0, 0, coreNumber, 0
-                , 0, false, null, 0.9f, 0.9f, false);
+                , 0, false, null, 0.9f, 0.9f, false
+                , null);
         this.outNerves = outNerves;
         this.isShowLog = isShowLog;
     }

@@ -14,6 +14,7 @@ import java.util.List;
  */
 public class BatchNerveManager {
     private final List<QBlock> qBlockList = new ArrayList<>();
+    private final QBlock outBlock;//输出神经元
     private BatchInputBlock inputBlock;
 
     public BatchInputBlock getInputBlock() {
@@ -30,6 +31,10 @@ public class BatchNerveManager {
         return batchNerveModel;
     }
 
+    public QBlock getOutBlock() {
+        return outBlock;
+    }
+
     public void insertModel(BatchNerveModel batchNerveModel) {
         List<QBlockModel> blockModelList = batchNerveModel.getBlockModelList();
         for (int i = 0; i < qBlockList.size(); i++) {
@@ -44,24 +49,27 @@ public class BatchNerveManager {
         int hiddenSize = batchNerveConfig.getHiddenSize();//隐层神经元数量
         int outSize = batchNerveConfig.getOutSize();//输出神经元数量
         boolean softMax = batchNerveConfig.isSoftMax();
+        boolean concatenate = batchNerveConfig.isConcatenate();
+        boolean initParameter = batchNerveConfig.isInitParameter();
         DymStudy dymStudy = new DymStudy(batchNerveConfig.getGMaxTh(), batchNerveConfig.isAuto(), 1f);
         for (int i = 0; i < deep; i++) {
             QBlock qBlock;
             if (i == 0) {
                 qBlock = new QBlock(dymStudy, inputSize, hiddenSize, activeFunction, studyRate, customEncoding, batchNerveConfig.isShowLog()
-                        , batchNerveConfig.getRegularModel(), batchNerveConfig.getRegular());
+                        , batchNerveConfig.getRegularModel(), batchNerveConfig.getRegular(), concatenate, initParameter);
             } else {
                 qBlock = new QBlock(dymStudy, hiddenSize, hiddenSize, activeFunction, studyRate, null, batchNerveConfig.isShowLog()
-                        , batchNerveConfig.getRegularModel(), batchNerveConfig.getRegular());
+                        , batchNerveConfig.getRegularModel(), batchNerveConfig.getRegular(), concatenate, initParameter);
             }
             qBlockList.add(qBlock);
         }
         QBlock qBlock = new QBlock(dymStudy, hiddenSize, outSize, activeFunction, studyRate, null, batchNerveConfig.isShowLog(),
-                batchNerveConfig.getRegularModel(), batchNerveConfig.getRegular());
+                batchNerveConfig.getRegularModel(), batchNerveConfig.getRegular(), concatenate, initParameter);
         if (softMax) {
             SoftMaxByQBlock softMaxByQBlock = new SoftMaxByQBlock(qBlock, batchNerveConfig.isShowLog());
             qBlock.setSoftMaxByQBlock(softMaxByQBlock);
         }
+        outBlock = qBlock;
         qBlockList.add(qBlock);
         connection(inputSize);
     }

@@ -57,6 +57,14 @@ public interface OutBack {
     void getBackMatrix(Matrix matrix, int id, long eventId);
 
     /**
+     * 批量特征矩阵回调
+     *
+     * @param matrix  输出矩阵
+     * @param eventId 事件ID
+     */
+    void getBackMatrixList(List<Matrix> matrix, long eventId);
+
+    /**
      * 回调词向量
      *
      * @param id 当前词向量id

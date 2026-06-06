@@ -63,6 +63,11 @@ public class WordMatrix implements OutBack {
     }
 
     @Override
+    public void getBackMatrixList(List<Matrix> matrix, long eventId) {
+
+    }
+
+    @Override
     public void getWordVector(int id, float w) {
         vector[id - 1] = w;
     }

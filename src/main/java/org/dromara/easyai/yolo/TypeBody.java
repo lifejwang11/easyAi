@@ -52,7 +52,7 @@ public class TypeBody {
                 , yoloConfig.getCoreNumber(), yoloConfig.getLayGMaxTh(), yoloConfig.getGMaxTh(), false);
         positionNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), minWinHeight, minWinWidth,
                 false, yoloConfig.isShowLog(), yoloConfig.getStudyRate(), new ReLu(),
-                yoloConfig.getMinFeatureValue(), yoloConfig.getStudyRate(), yoloConfig.isCutLayG());
+                yoloConfig.getMinFeatureValue(), yoloConfig.getStudyRate(), yoloConfig.isCutLayG(), yoloConfig.getDcnDeep());
     }
 
     public TypeBody(ResYoloConfig resYoloConfig, int size) throws Exception {
@@ -64,7 +64,8 @@ public class TypeBody {
                 resYoloConfig.getRegular(), 0, resYoloConfig.getLayGMaxTh(), resYoloConfig.getPositionGMaxTh(), false);
         positionNerveManager.initImageNet(resYoloConfig.getPositionChannelNo(), 3, size, size,
                 false, resYoloConfig.isShowLog(), resYoloConfig.getPositionStudyRate(), new ReLu(),
-                resYoloConfig.getPositionMinFeatureValue(), resYoloConfig.getPositionStudyRate(), resYoloConfig.isCutLayG());
+                resYoloConfig.getPositionMinFeatureValue(), resYoloConfig.getPositionStudyRate(),
+                resYoloConfig.isCutLayG(), resYoloConfig.getPositionDcnDeep());
     }
 
     public float getRealWidth(float width) {

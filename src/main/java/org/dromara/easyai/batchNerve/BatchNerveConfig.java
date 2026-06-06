@@ -18,6 +18,24 @@ public class BatchNerveConfig {
     private boolean showLog = true;
     private int regularModel = RZ.NOT_RZ;//正则模式
     private float regular = 0.001f;//正则系数
+    private boolean concatenate = false;//是否为串联模式
+    private boolean initParameter = true;//进行参数初始化
+
+    public boolean isInitParameter() {
+        return initParameter;
+    }
+
+    public void setInitParameter(boolean initParameter) {
+        this.initParameter = initParameter;
+    }
+
+    public boolean isConcatenate() {
+        return concatenate;
+    }
+
+    public void setConcatenate(boolean concatenate) {
+        this.concatenate = concatenate;
+    }
 
     public int getRegularModel() {
         return regularModel;
