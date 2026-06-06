@@ -188,7 +188,7 @@ public class UNetManager extends ConvCount {
             myCut = new Cutting(cutTh);
         }
         for (int i = 0; i < deep + 1; i++) {
-            DConv dConv = getDconv(i, dcnDeep + 1);
+            DConv dConv = getDconv(i, dcnDeep);
             UNetDecoder uNetDecoder = new UNetDecoder(kernLen, i + 1, channelNo, new Tanh(),
                     i == deep, studyRate, myCut, oneStudyRate, gMaxTh, layGMaxTh, cutLayG, dConv);
             decoderList.add(uNetDecoder);
