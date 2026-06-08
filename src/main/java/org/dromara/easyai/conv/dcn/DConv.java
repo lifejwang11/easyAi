@@ -55,6 +55,14 @@ public class DConv {
         return dcnStudyOut.getFeature();
     }
 
+    public List<Matrix> movePositionByList(List<Matrix> featureList, long eventID) throws Exception {
+        List<Matrix> outMatrixList = new ArrayList<>();
+        for (Matrix matrix : featureList) {
+            outMatrixList.add(movePosition(matrix, eventID));
+        }
+        return outMatrixList;
+    }
+
     public BatchNerveModel getModel() {
         return batchNerveManager.getModel();
     }

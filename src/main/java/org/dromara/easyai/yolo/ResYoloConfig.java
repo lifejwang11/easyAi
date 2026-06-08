@@ -38,6 +38,15 @@ public class ResYoloConfig {
     private float backGroundPD = 0.1f;//背景误差惩罚，该数值大于0.9 则相当于不施加惩罚
     private boolean cutLayG = false;//位置网络是否进行层梯度裁切
     private int positionDcnDeep = 0;//位置网络 使用可变形卷积深度，0为不使用
+    private int typeDcnDeep = 0;//分类网络 使用可变形卷积深度，0为不可用
+
+    public int getTypeDcnDeep() {
+        return typeDcnDeep;
+    }
+
+    public void setTypeDcnDeep(int typeDcnDeep) {
+        this.typeDcnDeep = typeDcnDeep;
+    }
 
     public int getPositionDcnDeep() {
         return positionDcnDeep;

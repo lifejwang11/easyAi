@@ -1,5 +1,7 @@
 package org.dromara.easyai.conv;
 
+import org.dromara.easyai.batchNerve.BatchNerveModel;
+import org.dromara.easyai.conv.dcn.DConv;
 import org.dromara.easyai.function.ReLu;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.matrixTools.Matrix;
@@ -189,10 +191,11 @@ public abstract class ResConvCount {
 
     //不是第一层
     protected void downConvMany2(List<BatchBody> batchBodies, List<Matrix> powerMatrixList, boolean study, List<BackParameter> backParameterList,
-                                 List<MatrixNorm> matrixNormList, List<BatchBody> resBatchBody, List<List<Float>> oneConvPower) throws Exception {//多维度卷积运算
+                                 List<MatrixNorm> matrixNormList, List<BatchBody> resBatchBody, List<List<Float>> oneConvPower, DConv dConv) throws Exception {//多维度卷积运算
         //featureList resFeatureList特征默认进来就是偶数了
         List<Matrix> firstMulMatrixList = new ArrayList<>();
         List<Matrix> secondMulMatrixList = new ArrayList<>();
+        List<Matrix> myFeatureList = new ArrayList<>();
         List<List<ConvResult>> allConvResultList = new ArrayList<>();
         List<List<Matrix>> allOutMatrixList = new ArrayList<>();
         List<List<Matrix>> allResFeatureList = new ArrayList<>();
@@ -247,13 +250,32 @@ public abstract class ResConvCount {
                     matrixSize = featureMatrix.getX();
                     backParameter.setIm2clSize(matrixSize);
                 }
-                Matrix im2col = matrixOperation.im2col(featureMatrix, 3, 1);
-                convResult.setLeftMatrix(im2col);
-                firstMulMatrixList.add(im2col);
                 secondMulMatrixList.add(powerMatrix);
+                if (dConv != null) {
+                    myFeatureList.add(featureMatrix);
+                } else {
+                    Matrix im2col = matrixOperation.im2col(featureMatrix, 3, 1);
+                    convResult.setLeftMatrix(im2col);
+                    firstMulMatrixList.add(im2col);
+                    convResults.add(convResult);
+                }
+            }
+        }
+        if (dConv != null) {
+            if (study) {
+                firstMulMatrixList = dConv.study(myFeatureList, 1);
+            } else {
+                firstMulMatrixList = dConv.movePositionByList(myFeatureList, 1);
+            }
+            int firstSize = firstMulMatrixList.size();
+            for (int i = 0; i < firstSize; i++) {
+                List<ConvResult> convResults = allConvResultList.get(i / size);
+                ConvResult convResult = new ConvResult();
+                convResult.setLeftMatrix(firstMulMatrixList.get(i));
                 convResults.add(convResult);
             }
         }
+
         List<Matrix> resultMatrixList = matrixOperation.mulMatrixList(firstMulMatrixList, secondMulMatrixList);
         for (int m = 0; m < batchBodies.size(); m++) {
             int startIndex = m * size;
@@ -513,7 +535,7 @@ public abstract class ResConvCount {
             , List<Matrix> powerMatrixList, float studyRate, boolean resError, List<List<Float>> oneConvPower
             , List<Matrix> sMatrixList, List<Matrix> s2MatrixList, List<List<Float>> dymStudyRateList,
                                              List<List<Float>> dymStudyRate2List, DymStudy dymStudy,
-                                             int times, boolean rz, float rzRate) throws Exception {
+                                             int times, boolean rz, float rzRate, DConv dConv) throws Exception {
         ReLu reLu = new ReLu();
         Map<Integer, List<Matrix>> reluMatrixMap = new HashMap<>();//所有脱掉Relu 的图片的误差 主键是通道id，值是所有图片该通道的误差矩阵集合
         Map<Integer, List<Matrix>> tpIm2colMatrixMap = new HashMap<>();//所有左乘矩阵 主键是通道id，值是所有图片该通道的左乘矩阵集合
@@ -619,7 +641,7 @@ public abstract class ResConvCount {
             List<Matrix> gErrorMatrixList = gResultMatrixList.subList(startIndex, finishIndex);//特征变化量集合 ture
             List<Matrix> wSubMatrixList = pResultMatrixList.subList(startIndex, finishIndex);//权重变化量集合
             Matrix wSubMatrix = getAvgMatrixByList(wSubMatrixList);
-            List<Matrix> nextErrorMatrixList = reverIm2colByMatrixList(gErrorMatrixList, im2calSize);//下一层的误差
+            List<Matrix> nextErrorMatrixList = reverIm2colByMatrixList(gErrorMatrixList, im2calSize, dConv);//下一层的误差
             Matrix sMatrix = sMatrixList.get(i);
             Matrix s2Matrix = s2MatrixList.get(i);
             Matrix subPower = dymStudy.getErrorMatrixByStudy(studyRate, sMatrix, s2Matrix, wSubMatrix, times);
@@ -676,12 +698,19 @@ public abstract class ResConvCount {
         return avgMatrix;
     }
 
-    private List<Matrix> reverIm2colByMatrixList(List<Matrix> gErrorMatrixList, int im2calSize) throws Exception {
+    private List<Matrix> reverIm2colByMatrixList(List<Matrix> gErrorMatrixList, int im2calSize, DConv dConv) throws Exception {
         List<Matrix> nextErrorMatrixList = new ArrayList<>();
-        for (Matrix gErrorMatrix : gErrorMatrixList) {
-            Matrix nextErrorMatrix = matrixOperation.reverseIm2col(gErrorMatrix, 3, 1,
-                    im2calSize, im2calSize);//其余误差
-            nextErrorMatrixList.add(unPadding(nextErrorMatrix));
+        if (dConv == null) {
+            for (Matrix gErrorMatrix : gErrorMatrixList) {
+                Matrix nextErrorMatrix = matrixOperation.reverseIm2col(gErrorMatrix, 3, 1,
+                        im2calSize, im2calSize);//其余误差
+                nextErrorMatrixList.add(unPadding(nextErrorMatrix));
+            }
+        } else {
+            List<Matrix> grMatrixList = dConv.backError(gErrorMatrixList);
+            for (Matrix grMatrix : grMatrixList) {
+                nextErrorMatrixList.add(unPadding(grMatrix));
+            }
         }
         return nextErrorMatrixList;
     }

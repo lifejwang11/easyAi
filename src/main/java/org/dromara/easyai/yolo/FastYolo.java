@@ -127,6 +127,7 @@ public class FastYolo {//yolo
         resnetConfig.setGMaxTh(resYoloConfig.getGMaxTh());
         resnetConfig.setBatchSize(resYoloConfig.getBatchSize());
         resnetConfig.setLayGMaxTh(resYoloConfig.getLayGMaxTh());
+        resnetConfig.setDcnDeep(resYoloConfig.getTypeDcnDeep());
         return resnetConfig;
     }
 

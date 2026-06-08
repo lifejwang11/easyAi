@@ -1,9 +1,11 @@
 package org.dromara.easyai.resnet;
 
 import org.dromara.easyai.batchNerve.BatchInputBlock;
+import org.dromara.easyai.batchNerve.BatchNerveConfig;
 import org.dromara.easyai.batchNerve.FeatureBody;
 import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.conv.ResConvCount;
+import org.dromara.easyai.conv.dcn.DConv;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixNorm;
@@ -56,7 +58,7 @@ public class ResBlock extends ResConvCount {
     }
 
     public ResBlock(int channelNo, int deep, float studyRate, int imageSize, BatchInputBlock inputBlock, float gMaxTh
-            , boolean auto, int batchSize, boolean rz, float rzRate, float layGMaxTh) throws Exception {
+            , boolean auto, int batchSize, boolean rz, float rzRate, float layGMaxTh, boolean dcn) throws Exception {
         this.rz = rz;
         this.rzRate = rzRate;
         this.imageSize = imageSize;
@@ -70,10 +72,10 @@ public class ResBlock extends ResConvCount {
         Random random = new Random();
         if (deep == 1) {
             initOneConv = false;
-            firstConvPower = initMatrixPower(random, 7, channelNo, true);
+            firstConvPower = initMatrixPower(random, 7, channelNo, true, false);
         }
-        initBlock(firstResConvPower, random, initOneConv);//初始化两个残差块
-        initBlock(secondResConvPower, random, false);//初始化两个残差块
+        initBlock(firstResConvPower, random, initOneConv, dcn);//初始化两个残差块
+        initBlock(secondResConvPower, random, false, dcn);//初始化两个残差块
     }
 
     private void fillZero(List<Matrix> matrixList, boolean fill) throws Exception {
@@ -133,13 +135,13 @@ public class ResBlock extends ResConvCount {
         }
         List<BatchBody> nextBatchBodies = ResBlockError2(batchBodies, secondConv.getBackParameterList(), secondConv.getMatrixNormList(),
                 secondConv.getConvPower(), studyRate, true, oneConvPower, secondConv.getDymStudyRateList(), secondConv.getDymStudyRate2List()
-                , dymStudyRateList, dymStudyRate2List, dymStudy, times, rz, rzRate);
+                , dymStudyRateList, dymStudyRate2List, dymStudy, times, rz, rzRate, secondConv.getDConv());
         List<BatchBody> errorList;
         if (deep == 2) {
             errorList = ResBlockError2(nextBatchBodies, firstConv.getBackParameterList(), firstConv.getMatrixNormList(),
                     firstConv.getConvPower(), studyRate, false, oneConvPower,
                     firstConv.getDymStudyRateList(), firstConv.getDymStudyRate2List(), dymStudyRateList, dymStudyRate2List,
-                    dymStudy, times, rz, rzRate);
+                    dymStudy, times, rz, rzRate, null);
         } else {
             errorList = ResBlockError(nextBatchBodies, firstConv.getBackParameterList(), firstConv.getMatrixNormList(),
                     firstConv.getConvPower(), studyRate, 3, firstConv.getDymStudyRateList(), firstConv.getDymStudyRate2List(),
@@ -208,13 +210,13 @@ public class ResBlock extends ResConvCount {
         List<List<Float>> oneConvPower = resConvPower.getOneConvPower();
         if (one) {//步长为1
             downConvMany2(batchBodies, firstConvLay.getConvPower(), study, firstConvLay.getBackParameterList(),
-                    firstConvLay.getMatrixNormList(), null, null);
+                    firstConvLay.getMatrixNormList(), null, null, null);
         } else {//步长为2
             downConvMany(batchBodies, firstConvLay.getConvPower(), 3, study, firstConvLay.getBackParameterList(),
                     firstConvLay.getMatrixNormList());
         }
         downConvMany2(batchBodies, secondConvLay.getConvPower(), study, secondConvLay.getBackParameterList()
-                , secondConvLay.getMatrixNormList(), copyBatchBody, oneConvPower);
+                , secondConvLay.getMatrixNormList(), copyBatchBody, oneConvPower, secondConvLay.getDConv());
     }
 
     public void sendMatrixList(List<BatchBody> batchBodies, OutBack outBack, boolean study, long eventID,
@@ -253,9 +255,9 @@ public class ResBlock extends ResConvCount {
         return (int) (channelNo * Math.pow(2, deep - 1));//卷积层输出特征大小
     }
 
-    private void initBlock(ResConvPower resConvPower, Random random, boolean initOneConv) throws Exception {
-        resConvPower.setFirstConvPower(initMatrixPower(random, 3, getChannelNo(), false));
-        resConvPower.setSecondConvPower(initMatrixPower(random, 3, getChannelNo(), false));
+    private void initBlock(ResConvPower resConvPower, Random random, boolean initOneConv, boolean dcn) throws Exception {
+        resConvPower.setFirstConvPower(initMatrixPower(random, 3, getChannelNo(), false, false));
+        resConvPower.setSecondConvPower(initMatrixPower(random, 3, getChannelNo(), false, dcn));
         if (deep > 1 && initOneConv) {//初始化11卷积层
             int featureLength = getChannelNo();//卷积层输出特征大小
             List<List<Float>> onePowers = new ArrayList<>();
@@ -281,9 +283,15 @@ public class ResBlock extends ResConvCount {
         }
     }
 
-    private ConvLay initMatrixPower(Random random, int kernLen, int channelNo, boolean seven) throws Exception {
+    private ConvLay initMatrixPower(Random random, int kernLen, int channelNo, boolean seven, boolean dcn) throws Exception {
         int nerveNub = kernLen * kernLen;
         ConvLay convLay = new ConvLay(batchSize);
+        if (dcn) {
+            BatchNerveConfig batchNerveConfig = new BatchNerveConfig();
+            batchNerveConfig.setStudyRate(studyRate);
+            DConv dConv = new DConv(batchNerveConfig, 3);
+            convLay.setDConv(dConv);
+        }
         List<Matrix> nerveMatrixList = new ArrayList<>();//一层当中所有的深度卷积核
         List<Matrix> sumOfSquares = new ArrayList<>();//动态学习率
         List<Matrix> sumOfSquares2 = new ArrayList<>();//二阶动态学习率

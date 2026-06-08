@@ -1,5 +1,7 @@
 package org.dromara.easyai.resnet.entity;
 
+import org.dromara.easyai.batchNerve.BatchNerveModel;
+
 import java.util.List;
 
 /**
@@ -9,6 +11,15 @@ import java.util.List;
 public class ResConvModel {
     private List<NormModel> normModelList;
     private List<Float[]> convPowerModelList;
+    private BatchNerveModel dcnModel;
+
+    public BatchNerveModel getDcnModel() {
+        return dcnModel;
+    }
+
+    public void setDcnModel(BatchNerveModel dcnModel) {
+        this.dcnModel = dcnModel;
+    }
 
     public List<NormModel> getNormModelList() {
         return normModelList;

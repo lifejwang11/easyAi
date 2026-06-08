@@ -21,6 +21,15 @@ public class ResnetConfig {
     private float layGMaxTh = 10000f;//层梯度裁剪阈值
     private boolean auto = true;//是否使用自适应学习率
     private int batchSize = 32;//小批量训练数量
+    private int dcnDeep = 0;//可变动卷积深度
+
+    public int getDcnDeep() {
+        return dcnDeep;
+    }
+
+    public void setDcnDeep(int dcnDeep) {
+        this.dcnDeep = dcnDeep;
+    }
 
     public float getLayGMaxTh() {
         return layGMaxTh;
