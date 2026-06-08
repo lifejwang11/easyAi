@@ -37,6 +37,7 @@ public class FastYolo {//yolo
     private final Map<Integer, Float> pd = new HashMap<>();
     private int ready = 0;
 
+
     public FastYolo(YoloConfig yoloConfig) throws Exception {
         float stepReduce = yoloConfig.getCheckStepReduce();
         this.yoloConfig = yoloConfig;
@@ -64,7 +65,7 @@ public class FastYolo {//yolo
                     , yoloConfig.getCoreNumber(), yoloConfig.getLayGMaxTh(), yoloConfig.getGMaxTh(), false);
             typeNerveManager.initImageNet(yoloConfig.getChannelNo(), yoloConfig.getKernelSize(), winHeight, winWidth, true,
                     yoloConfig.isShowLog(), yoloConfig.getStudyRate(), new ReLu(), yoloConfig.getMinFeatureValue(), yoloConfig.getStudyRate()
-                    , yoloConfig.isCutLayG());
+                    , yoloConfig.isCutLayG(), yoloConfig.getDcnDeep());
         } else {
             throw new Exception("The stepReduce must be (0,1] and widthStep ,heightStep must Greater than 0");
         }
@@ -126,6 +127,7 @@ public class FastYolo {//yolo
         resnetConfig.setGMaxTh(resYoloConfig.getGMaxTh());
         resnetConfig.setBatchSize(resYoloConfig.getBatchSize());
         resnetConfig.setLayGMaxTh(resYoloConfig.getLayGMaxTh());
+        resnetConfig.setDcnDeep(resYoloConfig.getTypeDcnDeep());
         return resnetConfig;
     }
 

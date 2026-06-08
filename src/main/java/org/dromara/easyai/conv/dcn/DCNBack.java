@@ -1,40 +1,25 @@
-package org.dromara.easyai.entity;
+package org.dromara.easyai.conv.dcn;
 
-
-import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.OutBack;
+import org.dromara.easyai.matrixTools.Matrix;
 
 import java.util.List;
 
 /**
- * @param
- * @DATA
- * @Author LiDaPeng
- * @Description
+ * @author lidapeng
+ * @time 2026/6/3 11:44
  */
-public class WordBack implements OutBack {
-    private int id;
-    private float out = -2;
+public class DCNBack implements OutBack {
+    private List<Matrix> matrixList;
 
-    public void clear() {
-        out = -2;
-        id = 0;
-    }
-
-    public float getOut() {
-        return out;
-    }
-
-    public int getId() {
-        return id;
+    public List<Matrix> getMatrixList() {
+        return matrixList;
     }
 
     @Override
     public void getBack(float out, int id, long eventId) {
-        if (out > this.out) {
-            this.out = out;
-            this.id = id;
-        }
+
     }
 
     @Override
@@ -47,12 +32,10 @@ public class WordBack implements OutBack {
 
     }
 
-
     @Override
     public void backWord(String word, long eventId) {
 
     }
-
 
     @Override
     public void getBackMatrix(Matrix matrix, int id, long eventId) {
@@ -60,11 +43,12 @@ public class WordBack implements OutBack {
 
     @Override
     public void getBackMatrixList(List<Matrix> matrix, long eventId) {
-
+        matrixList = matrix;
     }
 
     @Override
     public void getWordVector(int id, float w) {
+
     }
 
     @Override

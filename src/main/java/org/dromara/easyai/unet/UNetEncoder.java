@@ -2,6 +2,7 @@ package org.dromara.easyai.unet;
 
 import org.dromara.easyai.conv.ConvCount;
 import org.dromara.easyai.conv.DymStudy;
+import org.dromara.easyai.conv.dcn.DConv;
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
@@ -34,11 +35,12 @@ public class UNetEncoder extends ConvCount {
     private final float oneStudyRate;
     private final DymStudy dymStudy;
     private int times = 0;
-    private boolean cutLayG;
+    private final boolean cutLayG;
 
     public UNetEncoder(int kerSize, int channelNo, int deep, ActiveFunction activeFunction
             , float studyRate, int xSize, int ySize, float oneStudyRate, float gMaxTh, float layGMaxTh
-            , boolean cutLayG) throws Exception {//核心大小
+            , boolean cutLayG, DConv dConv) throws Exception {
+        super(dConv);//核心大小
         Random random = new Random();
         this.cutLayG = cutLayG;
         this.xSize = xSize;
@@ -119,7 +121,7 @@ public class UNetEncoder extends ConvCount {
     protected void sendFeature(long eventID, OutBack outBack, ThreeChannelMatrix featureE,
                                List<Matrix> myFeatures, boolean study, ThreeChannelMatrix backGround) throws Exception {
         List<Matrix> convMatrixList = downConvAndPooling(myFeatures, convParameter, channelNo, activeFunction, kerSize, true, eventID
-        ,1);
+                , 1, study);
         if (afterEncoder != null) {//后面还有编码器，继续向后传递
             afterEncoder.sendFeature(eventID, outBack, featureE, convMatrixList, study, backGround);
         } else {//向解码器传递
@@ -132,7 +134,7 @@ public class UNetEncoder extends ConvCount {
         List<Matrix> errorList = backDownPoolingByList(errorMatrix, convParameter.getOutX(), convParameter.getOutY());//池化误差返回
         List<Matrix> errorMatrixList = matrixOperation.addMatrixList(errorList, decodeErrorMatrix);
         List<Matrix> myErrorMatrix = backAllDownConv(convParameter, errorMatrixList, studyRate, activeFunction, channelNo, kerSize,
-                dymStudy, times, cutLayG,1);
+                dymStudy, times, cutLayG, 1);
         if (beforeEncoder != null) {
             beforeEncoder.backError(myErrorMatrix);
         } else {//最后一层 调整1v1卷积
@@ -145,7 +147,7 @@ public class UNetEncoder extends ConvCount {
                                boolean study, ThreeChannelMatrix backGround) throws Exception {
         List<Matrix> myFeatures = manyOneConv(feature, convParameter.getOneConvPower());//矩阵重新调整维度
         List<Matrix> convMatrixList = downConvAndPooling(myFeatures, convParameter, channelNo, activeFunction, kerSize, true,
-                eventID,1);
+                eventID, 1, study);
         if (afterEncoder != null) {//后面还有编码器，继续向后传递
             afterEncoder.sendFeature(eventID, outBack, featureE, convMatrixList, study, backGround);
         } else {//向解码器传递

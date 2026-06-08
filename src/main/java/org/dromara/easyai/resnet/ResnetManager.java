@@ -6,6 +6,7 @@ import org.dromara.easyai.batchNerve.BatchNerveManager;
 import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.config.ResnetConfig;
 import org.dromara.easyai.conv.ResConvCount;
+import org.dromara.easyai.conv.dcn.DConv;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.nerveCenter.NerveManager;
 import org.dromara.easyai.nerveEntity.SensoryNerve;
@@ -82,6 +83,7 @@ public class ResnetManager extends ResConvCount {
         int deep = getConvDeep(resNetConfig.getSize(), resNetConfig.getMinFeatureSize());//获取深度
         int channelNo = resNetConfig.getChannelNo();//通道数
         int lastSize = getFeatureSize(deep, resNetConfig.getSize());//最后一层特征大小
+        int dcnDeep = resNetConfig.getDcnDeep();
         //全局学习率
         float studyRate = resNetConfig.getStudyRate();
         if (deep < 1) {
@@ -100,14 +102,19 @@ public class ResnetManager extends ResConvCount {
             if (i == deep - 1) {
                 batchInputBlock = batchNerveManager.getInputBlock();
             }
+            boolean dConv = isDCN(i, dcnDeep);
             ResBlock resBlock = new ResBlock(channelNo, i + 1, studyRate, resNetConfig.getSize(), batchInputBlock
                     , resNetConfig.getGMaxTh(), resNetConfig.isAuto(), resNetConfig.getBatchSize(),
-                    rz, resNetConfig.getRegular(), resNetConfig.getLayGMaxTh());
+                    rz, resNetConfig.getRegular(), resNetConfig.getLayGMaxTh(), dConv);
             resBlockList.add(resBlock);
         }
         restNetInput = new ResnetInput(resBlockList.get(0), resNetConfig.getSize(), resNetConfig.getBatchSize());
         connection();//残差块进行互相连接
         resNetConnectionLine.setLastBlock(resBlockList.get(deep - 1), lastSize);
+    }
+
+    private boolean isDCN(int i, int dcnDeep) {
+        return dcnDeep > 0 && i >= dcnDeep - 1;
     }
 
     private BatchNerveConfig getBatchNerveConfig(ResnetConfig resNetConfig, int featureLength, float studyRate) {

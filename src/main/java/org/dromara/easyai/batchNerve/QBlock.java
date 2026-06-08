@@ -38,12 +38,15 @@ public class QBlock {
     private final boolean showLog;
     private final int regularModel;//正则模式
     private final float regular;//正则系数
+    private final boolean concatenate;//是否为串联模式
     private int times = 0;//训练次数
 
     public QBlock(DymStudy dymStudy, int inputSize, int outputSize, ActiveFunction activeFunction
-            , float studyRate, CustomEncoding customEncoding, boolean showLog, int regularModel, float regular) throws Exception {
+            , float studyRate, CustomEncoding customEncoding, boolean showLog, int regularModel,
+                  float regular, boolean concatenate, boolean initParameter) throws Exception {
         Random random = new Random();
         this.customEncoding = customEncoding;
+        this.concatenate = concatenate;
         this.showLog = showLog;
         this.studyRate = studyRate;
         this.dymStudy = dymStudy;
@@ -56,8 +59,10 @@ public class QBlock {
         this.bMatrix = new Matrix(1, outputSize);
         this.regularModel = regularModel;
         this.regular = regular;
-        initMatrix(powerMatrix, random);
-        initMatrix(bMatrix, random);
+        if (initParameter) {
+            initMatrix(powerMatrix, random);
+            initMatrix(bMatrix, random);
+        }
     }
 
     public void setSoftMaxByQBlock(SoftMaxByQBlock softMaxByQBlock) {
@@ -92,36 +97,57 @@ public class QBlock {
 
     private void errorOperation(List<FeatureBody> featureBodies, boolean study, OutBack outBack, long eventID) throws Exception {
         if (study) {
-            List<Matrix> errorBodies = new ArrayList<>();
-            for (FeatureBody featureBody : featureBodies) {
-                Matrix feature = featureBody.getFeature();
-                Map<Integer, Float> EMap = featureBody.getE();
-                int y = feature.getY();
-                Matrix errors = new Matrix(1, y);
-                for (int j = 0; j < y; j++) {
-                    if (EMap.containsKey(j + 1)) {
-                        float e = EMap.get(j + 1);
-                        float out = feature.getNumber(0, j);
-                        errors.setNub(0, j, e - out);
-                        if (showLog) {
-                            if (outBack != null) {
-                                outBack.getStudyLog(e, out, j + 1);
-                            } else {
-                                System.out.println("E==" + e + ",out==" + out + ",nerveId==" + (j + 1));
-                            }
-                        }
-                    } else {
-                        throw new Exception("有输出神经元ID 没有分配期望值");
+            if (concatenate) {//串联模式需要直接输出特征矩阵
+                if (outBack != null) {
+                    List<Matrix> matrices = new ArrayList<>();
+                    for (FeatureBody featureBody : featureBodies) {
+                        Matrix outMatrix = featureBody.getFeature();
+                        matrices.add(outMatrix);
                     }
+                    outBack.getBackMatrixList(matrices, eventID);
+                } else {
+                    throw new IllegalArgumentException("串联模式下回调输出类不能为空");
                 }
-                errorBodies.add(errors);
+            } else {
+                List<Matrix> errorBodies = new ArrayList<>();
+                for (FeatureBody featureBody : featureBodies) {
+                    Matrix feature = featureBody.getFeature();
+                    Map<Integer, Float> EMap = featureBody.getE();
+                    int y = feature.getY();
+                    Matrix errors = new Matrix(1, y);
+                    for (int j = 0; j < y; j++) {
+                        if (EMap.containsKey(j + 1)) {
+                            float e = EMap.get(j + 1);
+                            float out = feature.getNumber(0, j);
+                            errors.setNub(0, j, e - out);
+                            if (showLog) {
+                                if (outBack != null) {
+                                    outBack.getStudyLog(e, out, j + 1);
+                                } else {
+                                    System.out.println("E==" + e + ",out==" + out + ",nerveId==" + (j + 1));
+                                }
+                            }
+                        } else {
+                            throw new Exception("有输出神经元ID 没有分配期望值");
+                        }
+                    }
+                    errorBodies.add(errors);
+                }
+                backError(errorBodies);
             }
-            backError(errorBodies);
         } else {
             if (outBack != null) {
-                FeatureBody featureBody = featureBodies.get(0);
-                Matrix outMatrix = featureBody.getFeature();
-                outBack.getBackMatrix(outMatrix, 0, eventID);
+                if (featureBodies.size() == 1) {
+                    FeatureBody featureBody = featureBodies.get(0);
+                    Matrix outMatrix = featureBody.getFeature();
+                    outBack.getBackMatrix(outMatrix, 0, eventID);
+                } else {
+                    List<Matrix> outMatrixList = new ArrayList<>();
+                    for (FeatureBody featureBody : featureBodies) {
+                        outMatrixList.add(featureBody.getFeature());
+                    }
+                    outBack.getBackMatrixList(outMatrixList, eventID);
+                }
             } else {
                 throw new Exception("not find outBack");
             }

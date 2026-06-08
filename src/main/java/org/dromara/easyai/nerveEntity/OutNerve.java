@@ -19,7 +19,8 @@ public class OutNerve extends Nerve {
                     int rzType, float lParam, boolean isSoftMax, int kernLen, int coreNumber, float gaMa, float gMaxTh, boolean auTo) throws Exception {
         super(id, upNub, "OutNerve", downNub, studyPoint, init,
                 activeFunction, isDynamic, rzType, lParam, kernLen, 0, 0, 0
-                , coreNumber, 0, 0, false, null, gaMa, gMaxTh, auTo);
+                , coreNumber, 0, 0, false, null,
+                gaMa, gMaxTh, auTo, null);
         this.isShowLog = isShowLog;
         this.isSoftMax = isSoftMax;
     }

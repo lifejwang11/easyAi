@@ -29,6 +29,15 @@ public class YoloConfig {
     private float trustTh = 0.5f;//可信度阈值
     private float backGroundPD = 0.1f;//背景误差惩罚，该数值大于0.9 则相当于不施加惩罚
     private float layGMaxTh = 10000;//层梯度裁剪阈值
+    private int dcnDeep = 0;//使用可变形卷积深度，0为不使用
+
+    public int getDcnDeep() {
+        return dcnDeep;
+    }
+
+    public void setDcnDeep(int dcnDeep) {
+        this.dcnDeep = dcnDeep;
+    }
 
     public boolean isCutLayG() {
         return cutLayG;

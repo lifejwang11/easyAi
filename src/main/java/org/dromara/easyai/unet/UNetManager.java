@@ -1,8 +1,11 @@
 package org.dromara.easyai.unet;
 
 
+import org.dromara.easyai.batchNerve.BatchNerveConfig;
+import org.dromara.easyai.batchNerve.BatchNerveModel;
 import org.dromara.easyai.config.UNetConfig;
 import org.dromara.easyai.conv.ConvCount;
+import org.dromara.easyai.conv.dcn.DConv;
 import org.dromara.easyai.function.ReLu;
 import org.dromara.easyai.function.Tanh;
 import org.dromara.easyai.matrixTools.Matrix;
@@ -29,11 +32,16 @@ public class UNetManager extends ConvCount {
     private final float layGMaxTh;
     private final boolean cutLayG;
 
+    public int getDeep() {
+        return deep;
+    }
+
     public UNetInput getInput() {
         return input;
     }
 
     public UNetManager(UNetConfig uNetConfig) throws Exception {
+        super(null);
         int xSize = uNetConfig.getXSize();
         int ySize = uNetConfig.getYSize();
         gMaxTh = uNetConfig.getGMaxTh();
@@ -46,8 +54,8 @@ public class UNetManager extends ConvCount {
         this.oneStudyRate = uNetConfig.getStudyRate();
         this.deep = getConvMyDep(xSize, ySize, kernLen, minFeatureValue, 1);//编码器深度深度
         if (deep > 1) {
-            initEncoder(xSize, ySize);//初始化编码器
-            initDecoder(uNetConfig.isCutting(), uNetConfig.getCutTh());
+            initEncoder(xSize, ySize, uNetConfig.getDConvDeep());//初始化编码器
+            initDecoder(uNetConfig.isCutting(), uNetConfig.getCutTh(), uNetConfig.getDConvDeep());
             connectionCoder();
         } else {
             throw new Exception("minFeatureValue 设置的值太大了");
@@ -77,9 +85,11 @@ public class UNetManager extends ConvCount {
             throw new Exception("模型深度不匹配");
         }
         for (int i = 0; i < deep; i++) {
-            ConvParameter convParameter = encoderList.get(i).getConvParameter();
+            UNetEncoder uNetEncoder = encoderList.get(i);
+            ConvParameter convParameter = uNetEncoder.getConvParameter();
             List<Matrix> matrixList = convParameter.getNerveMatrixList();
             ConvModel convModel = encoderModel.get(i);
+            uNetEncoder.insertDConvModel(convModel.getBatchNerveModel());
             List<Float[]> downPowers = convModel.getDownNervePower();
             List<List<Float>> oneNervePower = convModel.getOneNervePowerList();
             convParameter.setOneConvPower(oneNervePower);
@@ -90,9 +100,11 @@ public class UNetManager extends ConvCount {
             }
         }
         for (int i = 0; i < deep + 1; i++) {
-            ConvParameter convParameter = decoderList.get(i).getConvParameter();
+            UNetDecoder uNetDecoder = decoderList.get(i);
+            ConvParameter convParameter = uNetDecoder.getConvParameter();
             List<Matrix> matrixList = convParameter.getNerveMatrixList();
             ConvModel convModel = decoderModel.get(i);
+            uNetDecoder.insertDConvModel(convModel.getBatchNerveModel());
             List<Float[]> downPowers = convModel.getDownNervePower();
             List<Float[]> upNervePowerModel = convModel.getUpNervePower();
             convParameter.setUpOneConvPower(convModel.getOneNervePower());
@@ -119,7 +131,9 @@ public class UNetManager extends ConvCount {
         for (int i = 0; i < deep; i++) {//遍历每一层
             ConvModel convModel = new ConvModel();
             encoderModel.add(convModel);
-            ConvParameter convParameter = encoderList.get(i).getConvParameter();
+            UNetEncoder uNetEncoder = encoderList.get(i);
+            convModel.setBatchNerveModel(uNetEncoder.getDConvModel());
+            ConvParameter convParameter = uNetEncoder.getConvParameter();
             List<Float[]> downNervePower = new ArrayList<>();
             convModel.setDownNervePower(downNervePower);
             List<List<Float>> onePowers = convParameter.getOneConvPower();
@@ -135,7 +149,9 @@ public class UNetManager extends ConvCount {
         for (int i = 0; i < deep + 1; i++) {
             ConvModel convModel = new ConvModel();
             decoderModel.add(convModel);
-            ConvParameter convParameter = decoderList.get(i).getConvParameter();
+            UNetDecoder uNetDecoder = decoderList.get(i);
+            convModel.setBatchNerveModel(uNetDecoder.getDConvModel());
+            ConvParameter convParameter = uNetDecoder.getConvParameter();
             convModel.setOneNervePower(convParameter.getUpOneConvPower());
             List<Float[]> downNervePower = new ArrayList<>();
             convModel.setDownNervePower(downNervePower);
@@ -166,14 +182,15 @@ public class UNetManager extends ConvCount {
         }
     }
 
-    private void initDecoder(boolean cutting, float cutTh) throws Exception {
+    private void initDecoder(boolean cutting, float cutTh, int dcnDeep) throws Exception {
         Cutting myCut = null;
         if (cutting) {
             myCut = new Cutting(cutTh);
         }
         for (int i = 0; i < deep + 1; i++) {
+            DConv dConv = getDconv(i, dcnDeep);
             UNetDecoder uNetDecoder = new UNetDecoder(kernLen, i + 1, channelNo, new Tanh(),
-                    i == deep, studyRate, myCut, oneStudyRate, gMaxTh, layGMaxTh, cutLayG);
+                    i == deep, studyRate, myCut, oneStudyRate, gMaxTh, layGMaxTh, cutLayG, dConv);
             decoderList.add(uNetDecoder);
         }
         for (int i = 0; i < deep; i++) {
@@ -184,10 +201,21 @@ public class UNetManager extends ConvCount {
         }
     }
 
-    private void initEncoder(int xSize, int ySize) throws Exception {
+    private DConv getDconv(int i, int dcnDeep) throws Exception {
+        if (dcnDeep > 0 && i >= dcnDeep - 1) {
+            BatchNerveConfig batchNerveConfig = new BatchNerveConfig();
+            batchNerveConfig.setStudyRate(studyRate);
+            return new DConv(batchNerveConfig, kernLen);
+        } else {
+            return null;
+        }
+    }
+
+    private void initEncoder(int xSize, int ySize, int dcnDeep) throws Exception {
         for (int i = 0; i < deep; i++) {
+            DConv dConv = getDconv(i, dcnDeep);
             UNetEncoder uNetEncoder = new UNetEncoder(kernLen, channelNo, i + 1, new ReLu(), studyRate
-                    , xSize, ySize, oneStudyRate, gMaxTh, layGMaxTh, cutLayG);
+                    , xSize, ySize, oneStudyRate, gMaxTh, layGMaxTh, cutLayG, dConv);
             if (i == 0) {
                 input = new UNetInput(uNetEncoder);
             }

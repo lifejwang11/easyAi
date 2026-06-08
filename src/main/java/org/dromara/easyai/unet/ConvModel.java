@@ -1,5 +1,7 @@
 package org.dromara.easyai.unet;
 
+import org.dromara.easyai.batchNerve.BatchNerveModel;
+
 import java.util.List;
 
 /**
@@ -12,6 +14,15 @@ public class ConvModel {
     private List<Float[]> upNervePower;//上卷积权重
     private List<Float> oneNervePower;//1v1conv权重
     private List<List<Float>> oneNervePowerList;
+    private BatchNerveModel batchNerveModel;//dcn模型
+
+    public BatchNerveModel getBatchNerveModel() {
+        return batchNerveModel;
+    }
+
+    public void setBatchNerveModel(BatchNerveModel batchNerveModel) {
+        this.batchNerveModel = batchNerveModel;
+    }
 
     public List<List<Float>> getOneNervePowerList() {
         return oneNervePowerList;

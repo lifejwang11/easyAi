@@ -17,6 +17,15 @@ public class UNetConfig {
     private float GMaxTh = 10f;//梯度阈值
     private float layGMaxTh = 10000;//层梯度裁剪阈值
     private boolean cutLayG = true;//是否进行层梯度裁切
+    private int DConvDeep = 0;//编码器dcn深度，0为不使用dcn
+
+    public int getDConvDeep() {
+        return DConvDeep;
+    }
+
+    public void setDConvDeep(int DConvDeep) {
+        this.DConvDeep = DConvDeep;
+    }
 
     public boolean isCutLayG() {
         return cutLayG;
