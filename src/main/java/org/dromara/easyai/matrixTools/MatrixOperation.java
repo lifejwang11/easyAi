@@ -750,15 +750,16 @@ public class MatrixOperation {
 
     private Matrix mulMatrixOne(Matrix matrix1, Matrix matrix2) {//矩阵相乘单进程
         if (matrix1.getY() == matrix2.getX()) {
-            Matrix matrix = new Matrix(matrix1.getX(), matrix2.getY());
-            for (int i = 0; i < matrix1.getX(); i++) {
-                Matrix matrixRow = matrix1.getRow(i);//行向量
-                for (int j = 0; j < matrix2.getY(); j++) {
-                    Matrix matrixColumn = matrix2.getColumn(j);
+            int size = matrix2.getX();
+            int m1x = matrix1.getX();
+            int m2y = matrix2.getY();
+            Matrix matrix = new Matrix(m1x, m2y);
+            for (int i = 0; i < m1x; i++) {
+                for (int j = 0; j < m2y; j++) {
                     float columnAllNumber = 0;//对每一项的乘积求和
-                    for (int h = 0; h < matrixColumn.getX(); h++) {
-                        float columnNumber = matrixColumn.getValue(h, 0);
-                        float rowNumber = matrixRow.getValue(0, h);
+                    for (int h = 0; h < size; h++) {
+                        float columnNumber = matrix2.getValue(h, j);
+                        float rowNumber = matrix1.getValue(i, h);
                         float nowNumber = columnNumber * rowNumber;
                         columnAllNumber = columnAllNumber + nowNumber;
                     }
