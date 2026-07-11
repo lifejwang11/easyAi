@@ -3,6 +3,7 @@ package org.dromara.easyai.matrixTools;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * 矩阵
@@ -95,6 +96,23 @@ public class Matrix {
         this.x = x;
         this.y = y;
         setState(x, y);
+    }
+
+    /**
+     * 给矩阵随机赋值
+     *
+     * @param norm 归一化因子
+     *
+     */
+    public void randomInit(float norm) {//矩阵进行随机初始化
+        Random random = new Random();
+        double n = Math.sqrt(norm);//归一化因子
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float value = (float) (random.nextFloat() / n);
+                setValue(i, j, value);
+            }
+        }
     }
 
     /**
