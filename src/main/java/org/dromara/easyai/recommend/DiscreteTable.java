@@ -60,9 +60,9 @@ public class DiscreteTable {
         for (GnnNode gnnNode : nodeLists) {
             int id = gnnNode.getId();
             checkID(id);
-            if (connectMatrix.getValue(fatherID, id) < 0.5f) {
-                connectMatrix.setValue(fatherID, id, 1);
-                connectMatrix.setValue(id, fatherID, 1);
+            if (connectMatrix.getValue(fatherID - 1, id - 1) < 0.5f) {
+                connectMatrix.setValue(fatherID - 1, id - 1, 1);
+                connectMatrix.setValue(id - 1, fatherID - 1, 1);
             }
             List<GnnNode> sonNodeList = gnnNode.getNodeList();
             if (sonNodeList != null && !sonNodeList.isEmpty()) {
