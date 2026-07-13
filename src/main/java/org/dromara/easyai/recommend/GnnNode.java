@@ -11,7 +11,6 @@ import java.util.List;
  */
 public class GnnNode {
     private int id;//该节点的离散id
-    private Matrix feature;//该节点的特征矩阵
     private int typeID;//属性类别id
     private boolean discreteFeature = true;//是否为离散特征
     private List<GnnNode> nodeList;//子节点集合
@@ -48,11 +47,4 @@ public class GnnNode {
         this.id = id;
     }
 
-    public Matrix getFeature() {
-        return feature;
-    }
-
-    public void setFeature(Matrix feature) {
-        this.feature = feature;
-    }
 }
