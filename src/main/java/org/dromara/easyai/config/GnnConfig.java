@@ -14,6 +14,15 @@ public class GnnConfig {
     private float layGMaxTh = 10000;//层梯度裁切阈值
     private boolean cutLayGaMaxTh = true;//是否做层梯度裁切
     private int nodeSize = 0;//节点数量
+    private int jumpTimes = 2;//跳跃数
+
+    public int getJumpTimes() {
+        return jumpTimes;
+    }
+
+    public void setJumpTimes(int jumpTimes) {
+        this.jumpTimes = jumpTimes;
+    }
 
     public int getNodeSize() {
         return nodeSize;
