@@ -1,5 +1,6 @@
 package org.dromara.easyai.config;
 
+
 /**
  * @author lidapeng
  * @time 2026/7/11 11:44
@@ -13,8 +14,80 @@ public class GnnConfig {
     private boolean auto = true;//是否使用自适应学习率
     private float layGMaxTh = 10000;//层梯度裁切阈值
     private boolean cutLayGaMaxTh = true;//是否做层梯度裁切
+    private boolean softMax = true;//是否为分类任务
     private int nodeSize = 0;//节点数量
     private int jumpTimes = 2;//跳跃数
+    private int studyMaxJumpNumber = 10;//训练时每一跳最多聚合邻居数量
+    private int studyMinJumpNumber = 4;//训练时每一跳最小聚合邻居数量
+    private int outNumber = 2;//输出位
+    private int deep = 1;//线性层深度
+    private boolean showLog = true;//打印日志
+    private int regularModel = RZ.NOT_RZ;//正则模式
+    private float regular = 0.001f;//正则系数
+
+    public int getRegularModel() {
+        return regularModel;
+    }
+
+    public void setRegularModel(int regularModel) {
+        this.regularModel = regularModel;
+    }
+
+    public float getRegular() {
+        return regular;
+    }
+
+    public void setRegular(float regular) {
+        this.regular = regular;
+    }
+
+    public boolean isShowLog() {
+        return showLog;
+    }
+
+    public void setShowLog(boolean showLog) {
+        this.showLog = showLog;
+    }
+
+    public int getDeep() {
+        return deep;
+    }
+
+    public void setDeep(int deep) {
+        this.deep = deep;
+    }
+
+    public int getOutNumber() {
+        return outNumber;
+    }
+
+    public void setOutNumber(int outNumber) {
+        this.outNumber = outNumber;
+    }
+
+    public boolean isSoftMax() {
+        return softMax;
+    }
+
+    public void setSoftMax(boolean softMax) {
+        this.softMax = softMax;
+    }
+
+    public int getStudyMaxJumpNumber() {
+        return studyMaxJumpNumber;
+    }
+
+    public void setStudyMaxJumpNumber(int studyMaxJumpNumber) {
+        this.studyMaxJumpNumber = studyMaxJumpNumber;
+    }
+
+    public int getStudyMinJumpNumber() {
+        return studyMinJumpNumber;
+    }
+
+    public void setStudyMinJumpNumber(int studyMinJumpNumber) {
+        this.studyMinJumpNumber = studyMinJumpNumber;
+    }
 
     public int getJumpTimes() {
         return jumpTimes;

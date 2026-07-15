@@ -1,5 +1,7 @@
 package org.dromara.easyai.recommend;
 
+import org.dromara.easyai.batchNerve.BatchNerveManager;
+import org.dromara.easyai.batchNerve.FeatureBody;
 import org.dromara.easyai.config.GnnConfig;
 import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.i.ActiveFunction;
@@ -22,16 +24,27 @@ public class GnnLayer {
     private final DymStudy dymStudy;
     private GnnLayer sonLayer;
     private GnnLayer fatherLayer;
-    private int featureLength;//特征维度
+    private final int featureLength;//特征维度
     private final int jumpTimes;//跳跃数
+    private final BatchNerveManager batchNerveManager;
+    private final int studyMaxJumpNumber;//训练时每一跳最多聚合邻居的数量
+    private final int studyMinJumpNumber;//训练时每一跳最小聚合邻居的数量
+    private final Random random = new Random();
 
-    public GnnLayer(GnnConfig gnnConfig, ActiveFunction activeFunction, ConnectionTable connectionTable) {//特征维度 类别数量
+    public GnnLayer(GnnConfig gnnConfig, ActiveFunction activeFunction, ConnectionTable connectionTable
+            , BatchNerveManager batchNerveManager) {//特征维度 类别数量
         dymStudy = new DymStudy(gnnConfig.getgMaxTh(), gnnConfig.isAuto(), gnnConfig.getLayGMaxTh());
         this.activeFunction = activeFunction;
         this.jumpTimes = gnnConfig.getJumpTimes();
         int gnnTypeNumber = gnnConfig.getGnnTypeNumber();
         featureLength = gnnConfig.getFeatureLength();
         this.connectionTable = connectionTable;
+        this.batchNerveManager = batchNerveManager;
+        studyMaxJumpNumber = gnnConfig.getStudyMaxJumpNumber();
+        studyMinJumpNumber = gnnConfig.getStudyMinJumpNumber();
+        if (studyMaxJumpNumber <= 0) {
+            throw new IllegalArgumentException("每一层聚合邻居数量上限必须大于0");
+        }
         if (gnnTypeNumber > 0) {
             for (int i = 0; i < gnnTypeNumber; i++) {
                 GnnPower gnnPower = initGnnPower(featureLength);
@@ -43,7 +56,8 @@ public class GnnLayer {
     }
 
     //开始训练
-    public void study(OutBack outBack, List<NodeStudy> nodeStudies) throws Exception {
+    public void study(OutBack outBack, List<NodeStudy> nodeStudies, boolean study
+            , long eventID, Map<Integer, Float> pd) throws Exception {
         Map<Integer, Matrix> featureMatrixMap = connectionTable.getFeatureMatrixMap();
         Map<Integer, List<Integer>> connectMap = connectionTable.getConnectMap();
         for (NodeStudy nodeStudy : nodeStudies) {
@@ -54,13 +68,15 @@ public class GnnLayer {
             getAgg(connectMap, t, featureMatrixMap, rootMatrix, gnnBodyMap);
         }
         if (sonLayer != null) {//还有下一层
-            sonLayer.nextStudy(outBack, nodeStudies);
+            sonLayer.nextStudy(outBack, nodeStudies, study, eventID, pd);
         } else {//进入线性层
-
+            toBatchNerve(outBack, nodeStudies, study, eventID, pd);
         }
     }
 
-    public void nextStudy(OutBack outBack, List<NodeStudy> nodeStudies) throws Exception {
+
+    public void nextStudy(OutBack outBack, List<NodeStudy> nodeStudies, boolean study
+            , long eventID, Map<Integer, Float> pd) throws Exception {
         Map<Integer, List<Integer>> connectMap = connectionTable.getConnectMap();
         for (NodeStudy nodeStudy : nodeStudies) {
             int t = nodeStudy.getRootId() - 1;
@@ -71,11 +87,72 @@ public class GnnLayer {
             nodeStudy.setGnnBodyMap(gnnBodyMap);
         }
         if (sonLayer != null) {//还有下一层
-            sonLayer.nextStudy(outBack, nodeStudies);
+            sonLayer.nextStudy(outBack, nodeStudies, study, eventID, pd);
         } else {//进入线性层
-
+            toBatchNerve(outBack, nodeStudies, study, eventID, pd);
         }
+    }
 
+    private void toBatchNerve(OutBack outBack, List<NodeStudy> nodeStudies, boolean study
+            , long eventID, Map<Integer, Float> pd) throws Exception {//输入进线性层
+        List<FeatureBody> featureBodies = new ArrayList<>();
+        for (NodeStudy nodeStudy : nodeStudies) {
+            int t = nodeStudy.getRootId() - 1;
+            Map<Integer, Matrix> featureMatrixMap = nodeStudy.getGnnBodyMap();
+            Matrix rootMatrix = featureMatrixMap.get(t);
+            Matrix otherMatrix = avgMatrix(featureMatrixMap, t);
+            Matrix feature = concatMatrix(rootMatrix, otherMatrix);
+            FeatureBody featureBody = new FeatureBody();
+            featureBody.setFeature(feature);
+            featureBody.setE(nodeStudy.getE());
+            featureBodies.add(featureBody);
+        }
+        batchNerveManager.getInputBlock().postMessage(featureBodies, study, outBack, eventID, pd);
+    }
+
+    private Matrix concatMatrix(Matrix rootMatrix, Matrix otherMatrix) {
+        int size = rootMatrix.getY();
+        int allSize = size * 2;
+        Matrix feature = new Matrix(1, allSize);
+        for (int i = 0; i < allSize; i++) {
+            float value;
+            if (otherMatrix != null) {
+                if (i < size) {
+                    value = rootMatrix.getValue(0, i);
+                } else {
+                    value = otherMatrix.getValue(0, i - size);
+                }
+            } else {
+                if (i < size) {
+                    value = rootMatrix.getValue(0, i);
+                } else {
+                    value = rootMatrix.getValue(0, i - size);
+                }
+            }
+            feature.setValue(0, i, value);
+        }
+        return feature;
+    }
+
+    private Matrix avgMatrix(Map<Integer, Matrix> featureMatrixMap, int t) throws Exception {
+        Matrix connectFeature = null;
+        if (featureMatrixMap.size() > 1) {
+            float size = 1f / (featureMatrixMap.size() - 1f);
+            for (Map.Entry<Integer, Matrix> entry : featureMatrixMap.entrySet()) {
+                if (entry.getKey() != t) {
+                    Matrix feature = entry.getValue();
+                    if (connectFeature == null) {
+                        connectFeature = feature;
+                    } else {
+                        connectFeature = matrixOperation.add(connectFeature, feature);
+                    }
+                }
+            }
+            if (connectFeature != null) {
+                matrixOperation.mathMul(connectFeature, size);
+            }
+        }
+        return connectFeature;
     }
 
     private void getAgg(Map<Integer, List<Integer>> connectMap, int t, Map<Integer, Matrix> featureMatrixMap, Matrix rootMatrix, Map<Integer, Matrix> gnnBodyMap) throws Exception {
@@ -87,7 +164,9 @@ public class GnnLayer {
             } else {
                 gnus = jump(gnus, featureMatrixMap, connectMap);
             }
-            gnnBodyMap.putAll(gnus);
+            if (!gnus.isEmpty()) {
+                gnnBodyMap.putAll(gnus);
+            }
         }
     }
 
@@ -97,16 +176,36 @@ public class GnnLayer {
         Map<Integer, Matrix> map = new HashMap<>();
         for (Map.Entry<Integer, Matrix> entry : gnnBodyMap.entrySet()) {
             int t = entry.getKey();
-            List<Integer> connectList = connectMap.get(t);
-            for (int j : connectList) {//遍历所有邻居
-                if (!gnnBodyMap.containsKey(j) && !map.containsKey(j)) {//聚合特征
-                    Matrix otherMatrix = getAggMatrix(j, featureMatrixMap);
-                    map.put(j, otherMatrix);
+            List<Integer> sonList = connectMap.get(t);
+            if (sonList != null && !sonList.isEmpty()) {
+                List<Integer> connectList = getSonOfConnect(sonList);
+                for (int j : connectList) {//遍历所有邻居
+                    if (!gnnBodyMap.containsKey(j) && !map.containsKey(j)) {//聚合特征
+                        Matrix otherMatrix = getAggMatrix(j, featureMatrixMap);
+                        map.put(j, otherMatrix);
+                    }
                 }
             }
         }
         return map;
     }
+
+    private List<Integer> getSonOfConnect(List<Integer> connectList) {
+        List<Integer> sonConnect = new ArrayList<>(connectList);
+        int keepNum = random.nextInt(studyMaxJumpNumber) + 1;
+        if (keepNum < studyMinJumpNumber) {
+            keepNum = studyMinJumpNumber;
+        }
+        // 原始数量少于要保留的数量，直接返回
+        if (sonConnect.size() <= keepNum) {
+            return sonConnect;
+        }
+        // 全局只打乱一次
+        Collections.shuffle(sonConnect, random);
+        // 直接截取，无需循环删除
+        return new ArrayList<>(sonConnect.subList(0, keepNum));
+    }
+
 
     private Matrix getAggMatrix(int i, Map<Integer, Matrix> featureMatrixMap) throws Exception {
         Matrix myFeature = featureMatrixMap.get(i);//节点本身特征

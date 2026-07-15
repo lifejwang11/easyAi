@@ -16,6 +16,7 @@ public class BatchNerveManager {
     private final List<QBlock> qBlockList = new ArrayList<>();
     private final QBlock outBlock;//输出神经元
     private BatchInputBlock inputBlock;
+    private final CustomEncoding customEncoding;//自定义编码模块
 
     public BatchInputBlock getInputBlock() {
         return inputBlock;
@@ -29,6 +30,10 @@ public class BatchNerveManager {
         }
         batchNerveModel.setBlockModelList(blockModelList);
         return batchNerveModel;
+    }
+
+    public CustomEncoding getCustomEncoding() {//返回自定义编码模块
+        return customEncoding;
     }
 
     public QBlock getOutBlock() {
@@ -48,6 +53,7 @@ public class BatchNerveManager {
         int inputSize = batchNerveConfig.getInputSize();//输入参数数量
         int hiddenSize = batchNerveConfig.getHiddenSize();//隐层神经元数量
         int outSize = batchNerveConfig.getOutSize();//输出神经元数量
+        this.customEncoding = customEncoding;
         boolean softMax = batchNerveConfig.isSoftMax();
         boolean concatenate = batchNerveConfig.isConcatenate();
         boolean initParameter = batchNerveConfig.isInitParameter();
