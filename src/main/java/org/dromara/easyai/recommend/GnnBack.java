@@ -11,7 +11,7 @@ import java.util.Map;
  * @time 2026/7/15 16:18
  */
 public class GnnBack implements CustomEncoding {
-    private GnnLayer gnnLayer;
+    private final GnnLayer gnnLayer;
 
     public GnnBack(GnnLayer gnnLayer) {
         this.gnnLayer = gnnLayer;
@@ -23,7 +23,7 @@ public class GnnBack implements CustomEncoding {
     }
 
     @Override
-    public void backErrorList(List<Matrix> nextErrorMatrixList) {
-
+    public void backErrorList(List<Matrix> nextErrorMatrixList) throws Exception {
+        gnnLayer.backError(nextErrorMatrixList);
     }
 }

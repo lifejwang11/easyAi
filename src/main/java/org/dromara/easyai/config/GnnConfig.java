@@ -24,6 +24,15 @@ public class GnnConfig {
     private boolean showLog = true;//打印日志
     private int regularModel = RZ.NOT_RZ;//正则模式
     private float regular = 0.001f;//正则系数
+    private float otherValue = 1.5f;//邻居缩放超参
+
+    public float getOtherValue() {
+        return otherValue;
+    }
+
+    public void setOtherValue(float otherValue) {
+        this.otherValue = otherValue;
+    }
 
     public int getRegularModel() {
         return regularModel;

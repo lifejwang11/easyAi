@@ -29,12 +29,20 @@ public class GnnLayer {
     private final BatchNerveManager batchNerveManager;
     private final int studyMaxJumpNumber;//训练时每一跳最多聚合邻居的数量
     private final int studyMinJumpNumber;//训练时每一跳最小聚合邻居的数量
+    private final List<Map<Integer, Matrix>> insertFeatureList = new ArrayList<>();
+    private final List<Map<Integer, Matrix>> outFeatureList = new ArrayList<>();
+    private final List<Integer> rootIdList = new ArrayList<>();
     private final Random random = new Random();
+    private final int deep;//所处深度
+    private int updateTimes = 0;
+    private final float studyRate;//全局学习率
 
     public GnnLayer(GnnConfig gnnConfig, ActiveFunction activeFunction, ConnectionTable connectionTable
-            , BatchNerveManager batchNerveManager) {//特征维度 类别数量
+            , BatchNerveManager batchNerveManager, int deep) {//特征维度 类别数量
         dymStudy = new DymStudy(gnnConfig.getgMaxTh(), gnnConfig.isAuto(), gnnConfig.getLayGMaxTh());
+        this.studyRate = gnnConfig.getStudy();
         this.activeFunction = activeFunction;
+        this.deep = deep;
         this.jumpTimes = gnnConfig.getJumpTimes();
         int gnnTypeNumber = gnnConfig.getGnnTypeNumber();
         featureLength = gnnConfig.getFeatureLength();
@@ -47,7 +55,7 @@ public class GnnLayer {
         }
         if (gnnTypeNumber > 0) {
             for (int i = 0; i < gnnTypeNumber; i++) {
-                GnnPower gnnPower = initGnnPower(featureLength);
+                GnnPower gnnPower = initGnnPower(featureLength, gnnConfig.getOtherValue());
                 powerMap.put(i + 1, gnnPower);
             }
         } else {
@@ -58,33 +66,62 @@ public class GnnLayer {
     //开始训练
     public void study(OutBack outBack, List<NodeStudy> nodeStudies, boolean study
             , long eventID, Map<Integer, Float> pd) throws Exception {
+        updateTimes++;
         Map<Integer, Matrix> featureMatrixMap = connectionTable.getFeatureMatrixMap();
         Map<Integer, List<Integer>> connectMap = connectionTable.getConnectMap();
+        insertFeatureList.clear();
+        outFeatureList.clear();
+        rootIdList.clear();
         for (NodeStudy nodeStudy : nodeStudies) {
             int t = nodeStudy.getRootId() - 1;
             Matrix rootMatrix = getAggMatrix(t, featureMatrixMap);//root的聚合特征
             Map<Integer, Matrix> gnnBodyMap = new HashMap<>();//特征图
             nodeStudy.setGnnBodyMap(gnnBodyMap);
             getAgg(connectMap, t, featureMatrixMap, rootMatrix, gnnBodyMap);
+            insertFeatureList.add(getIdList(gnnBodyMap, featureMatrixMap));
+            outFeatureList.add(gnnBodyMap);
+            rootIdList.add(t);
         }
         if (sonLayer != null) {//还有下一层
             sonLayer.nextStudy(outBack, nodeStudies, study, eventID, pd);
         } else {//进入线性层
             toBatchNerve(outBack, nodeStudies, study, eventID, pd);
         }
+    }
+
+    private Map<Integer, Matrix> getIdList(Map<Integer, Matrix> gnnBodyMap, Map<Integer, Matrix> featureMatrixMap) {
+        Map<Integer, Matrix> map = new HashMap<>();
+        for (Map.Entry<Integer, Matrix> entry : gnnBodyMap.entrySet()) {
+            int key = entry.getKey();
+            map.put(key, featureMatrixMap.get(key));
+        }
+        return map;
     }
 
 
     public void nextStudy(OutBack outBack, List<NodeStudy> nodeStudies, boolean study
             , long eventID, Map<Integer, Float> pd) throws Exception {
+        updateTimes++;
         Map<Integer, List<Integer>> connectMap = connectionTable.getConnectMap();
+        if (study) {
+            insertFeatureList.clear();
+            outFeatureList.clear();
+            rootIdList.clear();
+        }
         for (NodeStudy nodeStudy : nodeStudies) {
             int t = nodeStudy.getRootId() - 1;
             Map<Integer, Matrix> featureMatrixMap = nodeStudy.getGnnBodyMap();
+            if (study) {
+                insertFeatureList.add(featureMatrixMap);
+                rootIdList.add(t);
+            }
             Matrix rootMatrix = getAggMatrix(t, featureMatrixMap);//root的聚合特征
-            Map<Integer, Matrix> gnnBodyMap = new HashMap<>();//特征图
+            Map<Integer, Matrix> gnnBodyMap = new HashMap<>();//输出特征图
             getAgg(connectMap, t, featureMatrixMap, rootMatrix, gnnBodyMap);
             nodeStudy.setGnnBodyMap(gnnBodyMap);
+            if (study) {
+                outFeatureList.add(gnnBodyMap);
+            }
         }
         if (sonLayer != null) {//还有下一层
             sonLayer.nextStudy(outBack, nodeStudies, study, eventID, pd);
@@ -92,6 +129,90 @@ public class GnnLayer {
             toBatchNerve(outBack, nodeStudies, study, eventID, pd);
         }
     }
+
+    public void backError(List<Matrix> nextErrorMatrixList) throws Exception {//误差从线性层回传
+        int size = nextErrorMatrixList.size();
+        Map<Integer, NodeError> rootErrorMap = new HashMap<>();
+        Map<Integer, NodeError> otherErrorMap = new HashMap<>();
+        Map<Integer, List<Integer>> connectMap = connectionTable.getConnectMap();
+        for (int i = 0; i < size; i++) {
+            Matrix matrix = nextErrorMatrixList.get(i);
+            int x = matrix.getX();
+            int y = matrix.getY();
+            Matrix rootError = matrix.getSonOfMatrix(0, 0, x, y / 2);
+            Matrix otherError = matrix.getSonOfMatrix(0, y / 2, x, y / 2);
+            Map<Integer, Matrix> insertMap = insertFeatureList.get(i);
+            float otherSize = 1f / (insertMap.size() - 1f);
+            matrixOperation.mathMul(otherError, otherSize);
+            Map<Integer, Matrix> outMap = outFeatureList.get(i);//输出矩阵
+            int rootID = rootIdList.get(i);
+            unActiveMatrix(rootError, outMap.get(rootID));//脱激活函数
+            Matrix rootNextError = addNodeError(rootError, rootID, insertMap, rootErrorMap, 0, connectMap);
+            for (Map.Entry<Integer, Matrix> insert : insertMap.entrySet()) {
+                int key = insert.getKey();
+                if (key != rootID) {
+                    Matrix otherNextError = addNodeError(otherError, key, insertMap, otherErrorMap, rootID, connectMap);
+                }
+            }
+        }
+    }
+
+
+    private float getDu(int id1, int id2, Map<Integer, List<Integer>> connectMap) {
+        int size1 = connectMap.get(id1).size();
+        int size2 = connectMap.get(id2).size();
+        double du1 = 1f / Math.sqrt(size1);
+        double du2 = 1f / Math.sqrt(size2);
+        return (float) (du1 * du2);
+    }
+
+    private Matrix addNodeError(Matrix error, int id, Map<Integer, Matrix> insertMap,
+                                Map<Integer, NodeError> errorMap, int rootID,
+                                Map<Integer, List<Integer>> connectMap) throws Exception {
+        Matrix nextError;
+        int nodeType = connectionTable.getNodeType(id);//节点类别
+        GnnPower gnnPower = powerMap.get(nodeType);//该类别权重
+        Matrix rootFeature = insertMap.get(id);//该节点特征
+        Matrix powerMatrix;
+        if (rootID == 0) {
+            powerMatrix = gnnPower.getSelfPower();//根节点
+        } else {
+            powerMatrix = gnnPower.getOtherPower();//邻居节点
+        }
+        Matrix errorPower;
+        if (rootID > 0) {//非主节点
+            float du = getDu(id, rootID, connectMap) * gnnPower.getArf();
+            Matrix feature = matrixOperation.mathMulBySelf(rootFeature, du);
+            errorPower = matrixOperation.matrixMulPd(error, feature, powerMatrix, false);
+            Matrix power = matrixOperation.mathMulBySelf(powerMatrix, du);
+            nextError = matrixOperation.matrixMulPd(error, rootFeature, power, true);
+        } else {
+            errorPower = matrixOperation.matrixMulPd(error, rootFeature, powerMatrix, false);
+            nextError = matrixOperation.matrixMulPd(error, rootFeature, powerMatrix, true);
+        }
+        if (errorMap.containsKey(nodeType)) {
+            NodeError nodeError = errorMap.get(nodeType);
+            Matrix myErrorPower = nodeError.getErrorPower();
+            Matrix addError = matrixOperation.add(myErrorPower, errorPower);
+            nodeError.setErrorPower(addError);
+            if (rootID == 0) {
+                Matrix bais = nodeError.getErrorBais();
+                Matrix addBais = matrixOperation.add(bais, error);
+                nodeError.setErrorBais(addBais);
+            }
+            nodeError.setAddTimes(nodeError.getAddTimes() + 1);
+        } else {
+            NodeError nodeError = new NodeError();
+            nodeError.setAddTimes(1);
+            nodeError.setErrorPower(errorPower);
+            if (rootID == 0) {
+                nodeError.setErrorBais(error.copy());
+            }
+            errorMap.put(nodeType, nodeError);
+        }
+        return nextError;
+    }
+
 
     private void toBatchNerve(OutBack outBack, List<NodeStudy> nodeStudies, boolean study
             , long eventID, Map<Integer, Float> pd) throws Exception {//输入进线性层
@@ -235,7 +356,20 @@ public class GnnLayer {
         }
     }
 
-    private GnnPower initGnnPower(int featureLength) {
+    private void unActiveMatrix(Matrix errorMatrix, Matrix outMatrix) {
+        int x = errorMatrix.getX();
+        int y = errorMatrix.getY();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float error = errorMatrix.getValue(i, j);
+                float out = outMatrix.getValue(i, j);
+                float value = activeFunction.functionG(out) * error;
+                errorMatrix.setValue(i, j, value);
+            }
+        }
+    }
+
+    private GnnPower initGnnPower(int featureLength, float otherValue) {
         GnnPower gnnPower = new GnnPower();
         Matrix selfPower = new Matrix(featureLength, featureLength);
         Matrix otherPower = new Matrix(featureLength, featureLength);
@@ -243,10 +377,16 @@ public class GnnLayer {
         selfPower.randomInit(featureLength);
         otherPower.randomInit(featureLength);
         bais.randomInit(featureLength);
-        gnnPower.setArf(0.5f);
+        gnnPower.setArf(otherValue);
         gnnPower.setSelfPower(selfPower);
+        gnnPower.setDymSelfPower1(new Matrix(featureLength, featureLength));
+        gnnPower.setDymSelfPower2(new Matrix(featureLength, featureLength));
         gnnPower.setOtherPower(otherPower);
+        gnnPower.setDymOtherPower1(new Matrix(featureLength, featureLength));
+        gnnPower.setDymOtherPower2(new Matrix(featureLength, featureLength));
         gnnPower.setBais(bais);
+        gnnPower.setDymBais1(new Matrix(1, featureLength));
+        gnnPower.setDymBais2(new Matrix(1, featureLength));
         return gnnPower;
     }
 

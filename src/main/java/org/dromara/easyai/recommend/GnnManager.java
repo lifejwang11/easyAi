@@ -38,9 +38,9 @@ public class GnnManager {
         for (int i = 0; i < jumpTimes; i++) {
             GnnLayer gnnLayer;
             if (i == jumpTimes - 1) {
-                gnnLayer = new GnnLayer(gnnConfig, new ReLu(), connectionTable, batchNerveManager);
+                gnnLayer = new GnnLayer(gnnConfig, new ReLu(), connectionTable, batchNerveManager, i + 1);
             } else {
-                gnnLayer = new GnnLayer(gnnConfig, new ReLu(), connectionTable, null);
+                gnnLayer = new GnnLayer(gnnConfig, new ReLu(), connectionTable, null, i + 1);
             }
             gnnLayerList.add(gnnLayer);
         }
