@@ -60,7 +60,7 @@ public class GnnLayer {
         for (NodeStudy nodeStudy : nodeStudies) {
             int t = nodeStudy.getRootId() - 1;
             List<GnnNode> gnnFeatures = connectionTable.getRandomSonNodes(t, jumpTimes);
-            aggNode(gnnFeatures, sonLayer == null);//聚合本层节点
+            aggNode(gnnFeatures);//聚合本层节点
             nodeStudy.setGnnFeatures(gnnFeatures);
         }
         this.studyNodeStudies = nodeStudies;
@@ -77,7 +77,7 @@ public class GnnLayer {
         updateTimes++;
         for (NodeStudy nodeStudy : nodeStudies) {
             List<GnnNode> gnnFeatures = nodeStudy.getGnnFeatures();
-            aggNode(gnnFeatures, sonLayer == null);//聚合本层节点
+            aggNode(gnnFeatures);//聚合本层节点
         }
         this.studyNodeStudies = nodeStudies;
         if (sonLayer != null) {//还有下一层
@@ -109,7 +109,9 @@ public class GnnLayer {
         }
     }
 
+    private void backError2() {
 
+    }
 
 
     private void updatePower(Map<Integer, NodeError> errorMap, boolean root) throws Exception {
@@ -235,15 +237,15 @@ public class GnnLayer {
     }
 
 
-    private void aggNode(List<GnnNode> rootGnnNodes, boolean lastLayer) throws Exception {
+    private void aggNode(List<GnnNode> rootGnnNodes) throws Exception {
+        int aggScope = jumpTimes - deep;
         for (GnnNode gnnNode : rootGnnNodes) {
             List<GnnNode> sonList = gnnNode.getNodeList();
-            if (sonList != null) {
+            int jump = gnnNode.getJumpTimes();
+            if (sonList != null && jump < aggScope) {
                 Matrix feature = getAggMatrix(gnnNode, sonList);
                 gnnNode.getFeatureList().add(feature);
-                if (!lastLayer) {
-                    aggNode(sonList, false);
-                }
+                aggNode(sonList);
             }
         }
     }
