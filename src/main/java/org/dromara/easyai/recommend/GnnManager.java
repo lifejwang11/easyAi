@@ -25,7 +25,8 @@ public class GnnManager {
         int jumpTimes = gnnConfig.getJumpTimes();
         initGnnLayer(gnnConfig);
         GnnBack gnnBack = new GnnBack(gnnLayerList.get(jumpTimes - 1));
-        connectionTable = new ConnectionTable(nodeSize, featureLength);
+        connectionTable = new ConnectionTable(nodeSize, featureLength, gnnConfig.getStudyMaxJumpNumber()
+                , gnnConfig.getStudyMinJumpNumber());
         batchNerveManager = new BatchNerveManager(getBathNerveConfig(gnnConfig), activeFunction, gnnBack);
     }
 
@@ -38,9 +39,9 @@ public class GnnManager {
         for (int i = 0; i < jumpTimes; i++) {
             GnnLayer gnnLayer;
             if (i == jumpTimes - 1) {
-                gnnLayer = new GnnLayer(gnnConfig, new ReLu(), connectionTable, batchNerveManager, i + 1);
+                gnnLayer = new GnnLayer(gnnConfig, new ReLu(), connectionTable, batchNerveManager, i);
             } else {
-                gnnLayer = new GnnLayer(gnnConfig, new ReLu(), connectionTable, null, i + 1);
+                gnnLayer = new GnnLayer(gnnConfig, new ReLu(), connectionTable, null, i);
             }
             gnnLayerList.add(gnnLayer);
         }
@@ -54,8 +55,8 @@ public class GnnManager {
 
     private BatchNerveConfig getBathNerveConfig(GnnConfig gnnConfig) {
         BatchNerveConfig batchNerveConfig = new BatchNerveConfig();
-        batchNerveConfig.setInputSize(gnnConfig.getFeatureLength() * 2);
-        batchNerveConfig.setHiddenSize(gnnConfig.getFeatureLength());
+        batchNerveConfig.setInputSize(gnnConfig.getFeatureLength());
+        batchNerveConfig.setHiddenSize(gnnConfig.getFeatureLength() / 2);
         batchNerveConfig.setOutSize(gnnConfig.getOutNumber());
         batchNerveConfig.setSoftMax(gnnConfig.isSoftMax());
         batchNerveConfig.setStudyRate(gnnConfig.getStudy());
