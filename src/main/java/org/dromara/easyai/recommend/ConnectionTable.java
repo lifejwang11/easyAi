@@ -1,5 +1,6 @@
 package org.dromara.easyai.recommend;
 
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 
@@ -14,6 +15,8 @@ public class ConnectionTable {
     private final MatrixOperation matrixOperation = new MatrixOperation();
     private final Map<Integer, List<Integer>> connectMap = new HashMap<>();
     private final Map<Integer, Matrix> featureMatrixMap = new HashMap<>();//离散特征表
+    private final Map<Integer, Matrix> dymStudyMap1 = new HashMap<>();
+    private final Map<Integer, Matrix> dymStudyMap2 = new HashMap<>();
     private final int nodeSize;//总节点数量
     private final int[] typeArray;//类别数组
     private final Random random = new Random();
@@ -31,12 +34,25 @@ public class ConnectionTable {
             }
             for (int i = 0; i < nodeSize; i++) {
                 Matrix featureMatrix = new Matrix(1, featureLength);
+                Matrix dymMatrix1 = new Matrix(1, featureLength);
+                Matrix dymMatrix2 = new Matrix(1, featureLength);
                 featureMatrix.randomInit(featureLength);
                 featureMatrixMap.put(i, featureMatrix);
+                dymStudyMap1.put(i, dymMatrix1);
+                dymStudyMap2.put(i, dymMatrix2);
             }
         } else {
             throw new IllegalArgumentException("GNN节点数量必须大于1");
         }
+    }
+
+    public void updateFeatureMap(int id, Matrix error, DymStudy dymStudy, float studyRate, int times) throws Exception {
+        Matrix s1 = dymStudyMap1.get(id);
+        Matrix s2 = dymStudyMap2.get(id);
+        Matrix table = featureMatrixMap.get(id);
+        Matrix subTable = dymStudy.getErrorMatrixByStudy(studyRate, s1, s2, error, times);
+        Matrix nextTable = matrixOperation.add(table, subTable);
+        featureMatrixMap.put(id, nextTable);
     }
 
     public Map<Integer, Matrix> getFeatureMatrixMap() {
@@ -113,6 +129,9 @@ public class ConnectionTable {
     }
 
     public int getNodeType(int index) {
+        if (index >= typeArray.length) {
+            throw new IllegalArgumentException("出现没有在构建图中出现的节点id:" + (index + 1));
+        }
         return typeArray[index];
     }
 
@@ -130,6 +149,50 @@ public class ConnectionTable {
         Collections.shuffle(sonConnect, random);
         // 直接截取，无需循环删除
         return new ArrayList<>(sonConnect.subList(0, keepNum));
+    }
+
+    public List<GnnNode> getFeatureList(GnnNode gnnNode) {
+        List<Matrix> featureList = new ArrayList<>();
+        int id = gnnNode.getId() - 1;
+        Matrix feature = featureMatrixMap.get(id);
+        if (feature == null) {
+            throw new IllegalArgumentException("根节点的id模型中不存在:" + gnnNode.getId());
+        }
+        featureList.add(feature);
+        gnnNode.setJumpTimes(0);
+        gnnNode.setId(id);
+        gnnNode.setFeatureList(featureList);
+        List<GnnNode> gnnNodeList = new ArrayList<>();
+        gnnNodeList.add(gnnNode);
+        insertFeature(gnnNodeList);
+        return gnnNodeList;
+    }
+
+    private void insertFeature(List<GnnNode> gnnNodeList) {
+        for (GnnNode gnnNode : gnnNodeList) {
+            List<GnnNode> sonList = gnnNode.getNodeList();
+            if (sonList != null && !sonList.isEmpty()) {
+                insertTableFeature(gnnNode);
+                insertFeature(sonList);
+            }
+        }
+    }
+
+    private void insertTableFeature(GnnNode gnnNode) {
+        List<GnnNode> nodeList = gnnNode.getNodeList();
+        int jump = gnnNode.getJumpTimes();
+        for (GnnNode sonNode : nodeList) {
+            List<Matrix> featureList = new ArrayList<>();
+            int id = sonNode.getId() - 1;
+            Matrix feature = featureMatrixMap.get(id);
+            if (feature == null) {
+                throw new IllegalArgumentException("出现模型中不存在的节点ID:" + sonNode.getId());
+            }
+            featureList.add(feature);
+            sonNode.setJumpTimes(jump + 1);
+            sonNode.setId(id);
+            sonNode.setFeatureList(featureList);
+        }
     }
 
     public List<GnnNode> getRandomSonNodes(int id, int jumpTimes) {
@@ -181,6 +244,9 @@ public class ConnectionTable {
 
     public Matrix getConnectOut(int index, Map<Integer, GnnPower> powerMap, List<GnnNode> sonList, int deep) throws Exception {//获取连通矩阵
         List<Integer> connectionList = connectMap.get(index);
+        if (connectionList == null) {
+            throw new IllegalArgumentException("出现不在图构建中的节点id:" + (index + 1));
+        }
         int connectionSize = connectionList.size();
         double myDu = 1 / Math.sqrt(connectionSize);
         Matrix sigMa = null;
@@ -190,7 +256,11 @@ public class ConnectionTable {
             int type = getNodeType(j);
             if (powerMap.containsKey(type)) {
                 GnnPower gnnPower = powerMap.get(type);
-                double du = (1 / Math.sqrt(connectMap.get(j).size())) * myDu;
+                List<Integer> connection = connectMap.get(j);
+                if (connection == null) {
+                    throw new IllegalArgumentException("出现不在图构建中的节点id:" + (j + 1));
+                }
+                double du = (1 / Math.sqrt(connection.size())) * myDu;
                 float arf = (float) (gnnPower.getArf() * du);
                 Matrix otherPower = gnnPower.getOtherPower();
                 Matrix wf = matrixOperation.mulMatrix(feature, otherPower);

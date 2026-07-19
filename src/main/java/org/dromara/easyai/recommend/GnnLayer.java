@@ -53,9 +53,27 @@ public class GnnLayer {
         }
     }
 
+    public void infer(GnnNode gnnNode, OutBack outBack, long eventID, Map<Integer, Float> pd) throws Exception {//进行推理
+        List<GnnNode> gnnNodes = connectionTable.getFeatureList(gnnNode);
+        aggNode(gnnNodes);//聚合本层节点
+        if (sonLayer != null) {//还有下一层
+            sonLayer.nextInfer(outBack, gnnNodes, eventID, pd);
+        } else {//进入线性层
+            toBatchNerve(outBack, gnnNodes, eventID, pd);
+        }
+    }
+
+    public void nextInfer(OutBack outBack, List<GnnNode> gnnNodes, long eventID, Map<Integer, Float> pd) throws Exception {
+        aggNode(gnnNodes);//聚合本层节点
+        if (sonLayer != null) {//还有下一层
+            sonLayer.nextInfer(outBack, gnnNodes, eventID, pd);
+        } else {//进入线性层
+            toBatchNerve(outBack, gnnNodes, eventID, pd);
+        }
+    }
+
     //开始训练
-    public void study(OutBack outBack, List<NodeStudy> nodeStudies, boolean study
-            , long eventID, Map<Integer, Float> pd) throws Exception {
+    public void study(OutBack outBack, List<NodeStudy> nodeStudies, long eventID, Map<Integer, Float> pd) throws Exception {
         updateTimes++;
         for (NodeStudy nodeStudy : nodeStudies) {
             int t = nodeStudy.getRootId() - 1;
@@ -65,15 +83,14 @@ public class GnnLayer {
         }
         this.studyNodeStudies = nodeStudies;
         if (sonLayer != null) {//还有下一层
-            sonLayer.nextStudy(outBack, nodeStudies, study, eventID, pd);
+            sonLayer.nextStudy(outBack, nodeStudies, eventID, pd);
         } else {//进入线性层
-            toBatchNerve(outBack, nodeStudies, study, eventID, pd);
+            toStudyBatchNerve(outBack, nodeStudies, eventID, pd);
         }
     }
 
 
-    public void nextStudy(OutBack outBack, List<NodeStudy> nodeStudies, boolean study
-            , long eventID, Map<Integer, Float> pd) throws Exception {
+    public void nextStudy(OutBack outBack, List<NodeStudy> nodeStudies, long eventID, Map<Integer, Float> pd) throws Exception {
         updateTimes++;
         for (NodeStudy nodeStudy : nodeStudies) {
             List<GnnNode> gnnFeatures = nodeStudy.getGnnFeatures();
@@ -81,9 +98,9 @@ public class GnnLayer {
         }
         this.studyNodeStudies = nodeStudies;
         if (sonLayer != null) {//还有下一层
-            sonLayer.nextStudy(outBack, nodeStudies, study, eventID, pd);
+            sonLayer.nextStudy(outBack, nodeStudies, eventID, pd);
         } else {//进入线性层
-            toBatchNerve(outBack, nodeStudies, study, eventID, pd);
+            toStudyBatchNerve(outBack, nodeStudies, eventID, pd);
         }
     }
 
@@ -107,7 +124,7 @@ public class GnnLayer {
         if (fatherLayer != null) {//继续将误差向浅层传递
             fatherLayer.backError2(studyNodeStudies);
         } else {//已经在第一层了，直接更新离散特征表
-
+            updateTable(studyNodeStudies);
         }
     }
 
@@ -129,16 +146,38 @@ public class GnnLayer {
         if (fatherLayer != null) {//继续将误差向浅层传递
             fatherLayer.backError2(studyNodeStudies);
         } else {//已经在第一层了，直接更新离散特征表
-
+            updateTable(studyNodeStudies);
         }
     }
 
-    private void updateTable(List<NodeStudy> studyNodeStudies) {//更新离散特征表
-        int size = studyNodeStudies.size();
-        Map<Integer, Matrix> featureMatrixMap = connectionTable.getFeatureMatrixMap();
+    private void updateTable(List<NodeStudy> studyNodeStudies) throws Exception {//更新离散特征表
+        Map<Integer, Matrix> tableMap = new HashMap<>();
         for (NodeStudy studyNodeStudy : studyNodeStudies) {
             List<GnnNode> gnnNodes = studyNodeStudy.getGnnFeatures();
+            insertTableError(gnnNodes, tableMap);
+        }
+        for (Map.Entry<Integer, Matrix> entry : tableMap.entrySet()) {
+            int key = entry.getKey();
+            Matrix error = entry.getValue();
+            connectionTable.updateFeatureMap(key, error, dymStudy, studyRate, updateTimes);
+        }
+    }
 
+    private void insertTableError(List<GnnNode> gnnNodes, Map<Integer, Matrix> tableMap) throws Exception {
+        for (GnnNode gnnNode : gnnNodes) {
+            int id = gnnNode.getId();
+            Matrix error = gnnNode.getError();
+            if (tableMap.containsKey(id)) {
+                Matrix myError = tableMap.get(id);
+                Matrix nextError = matrixOperation.add(myError, error);
+                tableMap.put(id, nextError);
+            } else {
+                tableMap.put(id, error);
+            }
+            List<GnnNode> sonList = gnnNode.getNodeList();
+            if (sonList != null) {
+                insertTableError(sonList, tableMap);
+            }
         }
 
     }
@@ -284,9 +323,17 @@ public class GnnLayer {
         }
     }
 
+    private void toBatchNerve(OutBack outBack, List<GnnNode> nodeList, long eventID, Map<Integer, Float> pd) throws Exception {//输入进线性层
+        List<FeatureBody> featureBodies = new ArrayList<>();
+        GnnNode gnnNode = nodeList.get(0);
+        Matrix feature = gnnNode.getFeatureList().get(deep + 1);
+        FeatureBody featureBody = new FeatureBody();
+        featureBody.setFeature(feature);
+        featureBodies.add(featureBody);
+        batchNerveManager.getInputBlock().postMessage(featureBodies, false, outBack, eventID, pd);
+    }
 
-    private void toBatchNerve(OutBack outBack, List<NodeStudy> nodeStudies, boolean study
-            , long eventID, Map<Integer, Float> pd) throws Exception {//输入进线性层
+    private void toStudyBatchNerve(OutBack outBack, List<NodeStudy> nodeStudies, long eventID, Map<Integer, Float> pd) throws Exception {//输入进线性层
         List<FeatureBody> featureBodies = new ArrayList<>();
         for (NodeStudy nodeStudy : nodeStudies) {
             GnnNode gnnNode = nodeStudy.getGnnFeatures().get(0);
@@ -296,7 +343,7 @@ public class GnnLayer {
             featureBody.setE(nodeStudy.getE());
             featureBodies.add(featureBody);
         }
-        batchNerveManager.getInputBlock().postMessage(featureBodies, study, outBack, eventID, pd);
+        batchNerveManager.getInputBlock().postMessage(featureBodies, true, outBack, eventID, pd);
     }
 
 

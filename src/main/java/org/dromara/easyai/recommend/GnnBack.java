@@ -11,9 +11,9 @@ import java.util.Map;
  * @time 2026/7/15 16:18
  */
 public class GnnBack implements CustomEncoding {
-    private final GnnLayer gnnLayer;
+    private GnnLayer gnnLayer;
 
-    public GnnBack(GnnLayer gnnLayer) {
+    public void setGnnLayer(GnnLayer gnnLayer) {
         this.gnnLayer = gnnLayer;
     }
 

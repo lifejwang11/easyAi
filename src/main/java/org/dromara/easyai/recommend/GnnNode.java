@@ -2,7 +2,6 @@ package org.dromara.easyai.recommend;
 
 import org.dromara.easyai.matrixTools.Matrix;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,7 +12,6 @@ import java.util.List;
 public class GnnNode {
     private int id;//该节点的离散id
     private int typeID;//属性类别id
-    private boolean discreteFeature = true;//是否为离散特征
     private List<GnnNode> nodeList;//子节点集合
     private List<Matrix> featureList;//每一层的特征集合
     private Matrix error;//该节点误差
@@ -49,14 +47,6 @@ public class GnnNode {
 
     public void setNodeList(List<GnnNode> nodeList) {
         this.nodeList = nodeList;
-    }
-
-    public boolean isDiscreteFeature() {
-        return discreteFeature;
-    }
-
-    public void setDiscreteFeature(boolean discreteFeature) {
-        this.discreteFeature = discreteFeature;
     }
 
     public int getTypeID() {

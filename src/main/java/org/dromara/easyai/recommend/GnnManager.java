@@ -23,11 +23,12 @@ public class GnnManager {
         int nodeSize = gnnConfig.getNodeSize();//节点数量
         int featureLength = gnnConfig.getFeatureLength();//特征维度
         int jumpTimes = gnnConfig.getJumpTimes();
-        initGnnLayer(gnnConfig);
-        GnnBack gnnBack = new GnnBack(gnnLayerList.get(jumpTimes - 1));
+        GnnBack gnnBack = new GnnBack();
         connectionTable = new ConnectionTable(nodeSize, featureLength, gnnConfig.getStudyMaxJumpNumber()
                 , gnnConfig.getStudyMinJumpNumber());
         batchNerveManager = new BatchNerveManager(getBathNerveConfig(gnnConfig), activeFunction, gnnBack);
+        initGnnLayer(gnnConfig);
+        gnnBack.setGnnLayer(gnnLayerList.get(jumpTimes - 1));
     }
 
     public ConnectionTable getConnectionTable() {
