@@ -9,15 +9,6 @@ import org.dromara.easyai.matrixTools.Matrix;
 public class NodeError {
     private Matrix errorPower;//权重误差
     private Matrix errorBais;//偏置项误差
-    private int addTimes;//次数
-
-    public int getAddTimes() {
-        return addTimes;
-    }
-
-    public void setAddTimes(int addTimes) {
-        this.addTimes = addTimes;
-    }
 
     public Matrix getErrorPower() {
         return errorPower;

@@ -24,7 +24,6 @@ public class GnnLayer {
     private final DymStudy dymStudy;
     private GnnLayer sonLayer;
     private GnnLayer fatherLayer;
-    private final int featureLength;//特征维度
     private final int jumpTimes;//跳跃数
     private final BatchNerveManager batchNerveManager;
     private final int deep;//所处深度
@@ -40,7 +39,8 @@ public class GnnLayer {
         this.deep = deep;
         this.jumpTimes = gnnConfig.getJumpTimes();
         int gnnTypeNumber = gnnConfig.getGnnTypeNumber();
-        featureLength = gnnConfig.getFeatureLength();
+        //特征维度
+        int featureLength = gnnConfig.getFeatureLength();
         this.connectionTable = connectionTable;
         this.batchNerveManager = batchNerveManager;
         if (gnnTypeNumber > 0) {
@@ -89,38 +89,105 @@ public class GnnLayer {
 
     public void backError(List<Matrix> nextErrorMatrixList) throws Exception {//误差从线性层回传
         int size = nextErrorMatrixList.size();
-        Map<Integer, NodeError> rootErrorMap = new HashMap<>();
-        Map<Integer, NodeError> otherErrorMap = new HashMap<>();
         Map<Integer, List<Integer>> connectMap = connectionTable.getConnectMap();
+        List<Map<Integer, NodeError>> rootErrorList = new ArrayList<>();
+        List<Map<Integer, NodeError>> otherErrorList = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            GnnNode gnnNode = studyNodeStudies.get(i).getGnnFeatures().get(0);
-            Matrix outMatrix = gnnNode.getFeatureList().get(deep + 1);
-            Matrix rootError = nextErrorMatrixList.get(i);
-            Matrix error = unActiveMatrix(rootError, outMatrix);//脱激活函数
-            addRootError(error, rootErrorMap, gnnNode);//下一层主节点误差
-            addOtherError(error, otherErrorMap, gnnNode, connectMap);
+            Map<Integer, NodeError> rootErrorMap = new HashMap<>();
+            Map<Integer, NodeError> otherErrorMap = new HashMap<>();
+            List<GnnNode> gnnNodes = studyNodeStudies.get(i).getGnnFeatures();
+            Matrix error = nextErrorMatrixList.get(i);
+            gnnNodes.get(0).setError(error);
+            addError(gnnNodes, connectMap, rootErrorMap, otherErrorMap);
+            rootErrorList.add(rootErrorMap);
+            otherErrorList.add(otherErrorMap);
         }
-        updatePower(rootErrorMap, true);
-        updatePower(otherErrorMap, false);
+        updatePower(rootErrorList, true, size);
+        updatePower(otherErrorList, false, size);
         if (fatherLayer != null) {//继续将误差向浅层传递
-
+            fatherLayer.backError2(studyNodeStudies);
         } else {//已经在第一层了，直接更新离散特征表
 
         }
     }
 
-    private void backError2() {
+    private void backError2(List<NodeStudy> studyNodeStudies) throws Exception {
+        int size = studyNodeStudies.size();
+        Map<Integer, List<Integer>> connectMap = connectionTable.getConnectMap();
+        List<Map<Integer, NodeError>> rootErrorList = new ArrayList<>();
+        List<Map<Integer, NodeError>> otherErrorList = new ArrayList<>();
+        for (NodeStudy studyNodeStudy : studyNodeStudies) {
+            Map<Integer, NodeError> rootErrorMap = new HashMap<>();
+            Map<Integer, NodeError> otherErrorMap = new HashMap<>();
+            List<GnnNode> gnnNodes = studyNodeStudy.getGnnFeatures();
+            addError(gnnNodes, connectMap, rootErrorMap, otherErrorMap);
+            rootErrorList.add(rootErrorMap);
+            otherErrorList.add(otherErrorMap);
+        }
+        updatePower(rootErrorList, true, size);
+        updatePower(otherErrorList, false, size);
+        if (fatherLayer != null) {//继续将误差向浅层传递
+            fatherLayer.backError2(studyNodeStudies);
+        } else {//已经在第一层了，直接更新离散特征表
+
+        }
+    }
+
+    private void updateTable(List<NodeStudy> studyNodeStudies) {//更新离散特征表
+        int size = studyNodeStudies.size();
+        Map<Integer, Matrix> featureMatrixMap = connectionTable.getFeatureMatrixMap();
+        for (NodeStudy studyNodeStudy : studyNodeStudies) {
+            List<GnnNode> gnnNodes = studyNodeStudy.getGnnFeatures();
+
+        }
 
     }
 
+    private void addError(List<GnnNode> gnnNodes, Map<Integer, List<Integer>> connectMap, Map<Integer, NodeError> rootErrorMap
+            , Map<Integer, NodeError> otherErrorMap) throws Exception {
+        int aggScope = jumpTimes - deep;// 2-0=2
+        for (GnnNode gnnNode : gnnNodes) {
+            int jump = gnnNode.getJumpTimes();
+            if (jump < aggScope) {
+                Matrix myError = gnnNode.getError();
+                Matrix outMatrix = gnnNode.getFeatureList().get(deep + 1);
+                Matrix error = unActiveMatrix(myError, outMatrix);
+                addRootError(error, rootErrorMap, gnnNode);//下一层主节点误差
+                addOtherError(error, otherErrorMap, gnnNode, connectMap);
+                List<GnnNode> sonNodes = gnnNode.getNodeList();
+                if (sonNodes != null) {
+                    addError(sonNodes, connectMap, rootErrorMap, otherErrorMap);
+                }
+            }
+        }
+    }
 
-    private void updatePower(Map<Integer, NodeError> errorMap, boolean root) throws Exception {
+
+    private void updatePower(List<Map<Integer, NodeError>> errorList, boolean root, int size) throws Exception {
+        Map<Integer, NodeError> errorMap = new HashMap<>();
+        float times = 1f / size;
+        for (Map<Integer, NodeError> errorNodeMap : errorList) {
+            for (Map.Entry<Integer, NodeError> entry : errorNodeMap.entrySet()) {
+                int key = entry.getKey();
+                NodeError nodeError = entry.getValue();
+                if (errorMap.containsKey(key)) {
+                    NodeError allNodeError = errorMap.get(key);
+                    Matrix sigmaErrorPower = matrixOperation.add(allNodeError.getErrorPower(), nodeError.getErrorPower());
+                    allNodeError.setErrorPower(sigmaErrorPower);
+                    if (root) {
+                        Matrix sigmaErrorBais = matrixOperation.add(allNodeError.getErrorBais(), nodeError.getErrorBais());
+                        allNodeError.setErrorBais(sigmaErrorBais);
+                    }
+                } else {
+                    errorMap.put(key, nodeError);
+                }
+            }
+        }
         for (Map.Entry<Integer, NodeError> entry : errorMap.entrySet()) {
             int key = entry.getKey();
             NodeError nodeError = entry.getValue();
             GnnPower gnnPower = powerMap.get(key);
             Matrix errorPower = nodeError.getErrorPower();
-            float times = 1f / nodeError.getAddTimes();
             matrixOperation.mathMul(errorPower, times);
             if (root) {
                 Matrix errorBais = nodeError.getErrorBais();
@@ -167,10 +234,8 @@ public class GnnLayer {
             Matrix bais = nodeError.getErrorBais();
             Matrix addBais = matrixOperation.add(bais, error);
             nodeError.setErrorBais(addBais);
-            nodeError.setAddTimes(nodeError.getAddTimes() + 1);
         } else {
             NodeError nodeError = new NodeError();
-            nodeError.setAddTimes(1);
             nodeError.setErrorPower(errorPower);
             nodeError.setErrorBais(error.copy());
             rootMap.put(nodeType, nodeError);
@@ -211,10 +276,8 @@ public class GnnLayer {
                 Matrix myErrorPower = nodeError.getErrorPower();
                 Matrix addError = matrixOperation.add(myErrorPower, errorPower);
                 nodeError.setErrorPower(addError);
-                nodeError.setAddTimes(nodeError.getAddTimes() + 1);
             } else {
                 NodeError nodeError = new NodeError();
-                nodeError.setAddTimes(1);
                 nodeError.setErrorPower(errorPower);
                 errorMap.put(nodeType, nodeError);
             }
