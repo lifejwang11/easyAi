@@ -13,6 +13,7 @@ public class GnnConfig {
     private float gMaxTh = 1;//权重梯度裁切阈值
     private boolean auto = true;//是否使用自适应学习率
     private float layGMaxTh = 10000;//层梯度裁切阈值
+    private boolean layerGCut = false;//是否需要层梯度裁剪
     private boolean cutLayGaMaxTh = true;//是否做层梯度裁切
     private boolean softMax = true;//是否为分类任务
     private int nodeSize = 0;//节点数量
@@ -25,6 +26,14 @@ public class GnnConfig {
     private int regularModel = RZ.NOT_RZ;//正则模式
     private float regular = 0.001f;//正则系数
     private float otherValue = 1.5f;//邻居缩放超参
+
+    public boolean isLayerGCut() {
+        return layerGCut;
+    }
+
+    public void setLayerGCut(boolean layerGCut) {
+        this.layerGCut = layerGCut;
+    }
 
     public float getOtherValue() {
         return otherValue;

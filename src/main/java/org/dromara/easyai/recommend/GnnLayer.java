@@ -30,6 +30,7 @@ public class GnnLayer {
     private int updateTimes = 0;
     private final float studyRate;//全局学习率
     private List<NodeStudy> studyNodeStudies;
+    private final boolean layerGCut;//是否需要层梯度裁剪
 
     public GnnLayer(GnnConfig gnnConfig, ActiveFunction activeFunction, ConnectionTable connectionTable
             , BatchNerveManager batchNerveManager, int deep) {//特征维度 类别数量
@@ -37,6 +38,7 @@ public class GnnLayer {
         this.studyRate = gnnConfig.getStudy();
         this.activeFunction = activeFunction;
         this.deep = deep;
+        layerGCut = gnnConfig.isLayerGCut();
         this.jumpTimes = gnnConfig.getJumpTimes();
         int gnnTypeNumber = gnnConfig.getGnnTypeNumber();
         //特征维度
@@ -53,7 +55,7 @@ public class GnnLayer {
         }
     }
 
-    public void infer(GnnNode gnnNode, OutBack outBack, long eventID, Map<Integer, Float> pd) throws Exception {//进行推理
+    void infer(GnnNode gnnNode, OutBack outBack, long eventID, Map<Integer, Float> pd) throws Exception {//进行推理
         List<GnnNode> gnnNodes = connectionTable.getFeatureList(gnnNode);
         aggNode(gnnNodes);//聚合本层节点
         if (sonLayer != null) {//还有下一层
@@ -63,7 +65,7 @@ public class GnnLayer {
         }
     }
 
-    public void nextInfer(OutBack outBack, List<GnnNode> gnnNodes, long eventID, Map<Integer, Float> pd) throws Exception {
+    void nextInfer(OutBack outBack, List<GnnNode> gnnNodes, long eventID, Map<Integer, Float> pd) throws Exception {
         aggNode(gnnNodes);//聚合本层节点
         if (sonLayer != null) {//还有下一层
             sonLayer.nextInfer(outBack, gnnNodes, eventID, pd);
@@ -73,7 +75,7 @@ public class GnnLayer {
     }
 
     //开始训练
-    public void study(OutBack outBack, List<NodeStudy> nodeStudies, long eventID, Map<Integer, Float> pd) throws Exception {
+    void study(OutBack outBack, List<NodeStudy> nodeStudies, long eventID, Map<Integer, Float> pd) throws Exception {
         updateTimes++;
         for (NodeStudy nodeStudy : nodeStudies) {
             int t = nodeStudy.getRootId() - 1;
@@ -90,7 +92,7 @@ public class GnnLayer {
     }
 
 
-    public void nextStudy(OutBack outBack, List<NodeStudy> nodeStudies, long eventID, Map<Integer, Float> pd) throws Exception {
+    void nextStudy(OutBack outBack, List<NodeStudy> nodeStudies, long eventID, Map<Integer, Float> pd) throws Exception {
         updateTimes++;
         for (NodeStudy nodeStudy : nodeStudies) {
             List<GnnNode> gnnFeatures = nodeStudy.getGnnFeatures();
@@ -104,7 +106,7 @@ public class GnnLayer {
         }
     }
 
-    public void backError(List<Matrix> nextErrorMatrixList) throws Exception {//误差从线性层回传
+    void backError(List<Matrix> nextErrorMatrixList) throws Exception {//误差从线性层回传
         int size = nextErrorMatrixList.size();
         Map<Integer, List<Integer>> connectMap = connectionTable.getConnectMap();
         List<Map<Integer, NodeError>> rootErrorList = new ArrayList<>();
@@ -279,6 +281,9 @@ public class GnnLayer {
             nodeError.setErrorBais(error.copy());
             rootMap.put(nodeType, nodeError);
         }
+        if (layerGCut) {
+            nextError = dymStudy.getClipMatrix(nextError, true);
+        }
         gnnNode.setError(nextError);
     }
 
@@ -297,6 +302,9 @@ public class GnnLayer {
             Matrix errorPower = matrixOperation.matrixMulPd(error, feature, powerMatrix, false);
             Matrix power = matrixOperation.mathMulBySelf(powerMatrix, du);
             Matrix nextError = matrixOperation.matrixMulPd(error, rootFeature, power, true);
+            if (layerGCut) {
+                nextError = dymStudy.getClipMatrix(nextError, true);
+            }
             sonNode.setError(nextError);
             if (typeError.containsKey(nodeType)) {
                 Matrix myError = typeError.get(nodeType);
@@ -427,11 +435,11 @@ public class GnnLayer {
     }
 
 
-    public void connectSonLayer(GnnLayer sonLayer) {
+    void connectSonLayer(GnnLayer sonLayer) {
         this.sonLayer = sonLayer;
     }
 
-    public void connectFatherLayer(GnnLayer fatherLayer) {
+    void connectFatherLayer(GnnLayer fatherLayer) {
         this.fatherLayer = fatherLayer;
     }
 }

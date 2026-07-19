@@ -18,6 +18,7 @@ public class GnnManager {
     private final ConnectionTable connectionTable;//特征离散表及聚合关系
     private final BatchNerveManager batchNerveManager;
     private final List<GnnLayer> gnnLayerList = new ArrayList<>();
+    private final GnnInput gnnInput;
 
     public GnnManager(GnnConfig gnnConfig, ActiveFunction activeFunction) throws Exception {
         int nodeSize = gnnConfig.getNodeSize();//节点数量
@@ -29,10 +30,11 @@ public class GnnManager {
         batchNerveManager = new BatchNerveManager(getBathNerveConfig(gnnConfig), activeFunction, gnnBack);
         initGnnLayer(gnnConfig);
         gnnBack.setGnnLayer(gnnLayerList.get(jumpTimes - 1));
+        gnnInput = new GnnInput(connectionTable, gnnLayerList.get(0));
     }
 
-    public ConnectionTable getConnectionTable() {
-        return connectionTable;
+    public GnnInput getGnnInput() {
+        return gnnInput;
     }
 
     private void initGnnLayer(GnnConfig gnnConfig) {

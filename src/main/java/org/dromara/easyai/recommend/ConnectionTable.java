@@ -46,7 +46,7 @@ public class ConnectionTable {
         }
     }
 
-    public void updateFeatureMap(int id, Matrix error, DymStudy dymStudy, float studyRate, int times) throws Exception {
+    void updateFeatureMap(int id, Matrix error, DymStudy dymStudy, float studyRate, int times) throws Exception {
         Matrix s1 = dymStudyMap1.get(id);
         Matrix s2 = dymStudyMap2.get(id);
         Matrix table = featureMatrixMap.get(id);
@@ -128,7 +128,7 @@ public class ConnectionTable {
         }
     }
 
-    public int getNodeType(int index) {
+    int getNodeType(int index) {
         if (index >= typeArray.length) {
             throw new IllegalArgumentException("出现没有在构建图中出现的节点id:" + (index + 1));
         }
@@ -151,7 +151,7 @@ public class ConnectionTable {
         return new ArrayList<>(sonConnect.subList(0, keepNum));
     }
 
-    public List<GnnNode> getFeatureList(GnnNode gnnNode) {
+    List<GnnNode> getFeatureList(GnnNode gnnNode) {
         List<Matrix> featureList = new ArrayList<>();
         int id = gnnNode.getId() - 1;
         Matrix feature = featureMatrixMap.get(id);
@@ -195,7 +195,7 @@ public class ConnectionTable {
         }
     }
 
-    public List<GnnNode> getRandomSonNodes(int id, int jumpTimes) {
+    List<GnnNode> getRandomSonNodes(int id, int jumpTimes) {
         List<Matrix> featureList = new ArrayList<>();
         featureList.add(featureMatrixMap.get(id));
         GnnNode rootGnnNode = new GnnNode();
@@ -242,7 +242,7 @@ public class ConnectionTable {
     }
 
 
-    public Matrix getConnectOut(int index, Map<Integer, GnnPower> powerMap, List<GnnNode> sonList, int deep) throws Exception {//获取连通矩阵
+    Matrix getConnectOut(int index, Map<Integer, GnnPower> powerMap, List<GnnNode> sonList, int deep) throws Exception {//获取连通矩阵
         List<Integer> connectionList = connectMap.get(index);
         if (connectionList == null) {
             throw new IllegalArgumentException("出现不在图构建中的节点id:" + (index + 1));
