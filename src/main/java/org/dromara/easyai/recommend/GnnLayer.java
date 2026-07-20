@@ -124,10 +124,15 @@ public class GnnLayer {
     void study(OutBack outBack, List<NodeStudy> nodeStudies, long eventID, Map<Integer, Float> pd) throws Exception {
         updateTimes++;
         for (NodeStudy nodeStudy : nodeStudies) {
-            int t = nodeStudy.getRootId() - 1;
-            List<GnnNode> gnnFeatures = connectionTable.getRandomSonNodes(t, jumpTimes);
-            aggNode(gnnFeatures);//聚合本层节点
-            nodeStudy.setGnnFeatures(gnnFeatures);
+            GnnNode rootGnn = nodeStudy.getRootGnnNode();
+            if (rootGnn != null) {
+                int t = rootGnn.getId() - 1;
+                List<GnnNode> gnnFeatures = connectionTable.getRandomSonNodes(t, jumpTimes);
+                aggNode(gnnFeatures);//聚合本层节点
+                nodeStudy.setGnnFeatures(gnnFeatures);
+            } else {
+                throw new IllegalArgumentException("训练时有根节点为空");
+            }
         }
         this.studyNodeStudies = nodeStudies;
         if (sonLayer != null) {//还有下一层

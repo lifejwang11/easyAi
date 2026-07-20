@@ -18,8 +18,13 @@ public class GnnInput {
         this.gnnLayer = gnnLayer;
     }
 
-    public void createGraph(GnnNode gnnNode) {//构建图
-        connectionTable.createGraph(gnnNode);
+    public void createGraph(NodeStudy nodeStudy) {//构建图
+        GnnNode gnnNode = nodeStudy.getRootGnnNode();
+        if (gnnNode != null) {
+            connectionTable.createGraph(gnnNode);
+        } else {
+            throw new IllegalArgumentException("构建图根节点为空");
+        }
     }
 
     public void study(OutBack outBack, List<NodeStudy> nodeStudies, long eventID, Map<Integer, Float> pd) throws Exception {//训练

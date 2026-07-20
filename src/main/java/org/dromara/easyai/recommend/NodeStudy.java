@@ -10,9 +10,17 @@ import java.util.Map;
  * @time 2026/7/13 16:29
  */
 public class NodeStudy {
-    private int rootId;//起始id
     private Map<Integer, Float> e;//期望
+    private GnnNode rootGnnNode;//根节点
     private List<GnnNode> gnnFeatures;//临时图与特征
+
+    public GnnNode getRootGnnNode() {
+        return rootGnnNode;
+    }
+
+    public void setRootGnnNode(GnnNode rootGnnNode) {
+        this.rootGnnNode = rootGnnNode;
+    }
 
     public List<GnnNode> getGnnFeatures() {
         return gnnFeatures;
@@ -22,13 +30,6 @@ public class NodeStudy {
         this.gnnFeatures = gnnFeatures;
     }
 
-    public int getRootId() {
-        return rootId;
-    }
-
-    public void setRootId(int rootId) {
-        this.rootId = rootId;
-    }
 
     public Map<Integer, Float> getE() {
         return e;
