@@ -3,6 +3,9 @@ package org.dromara.easyai.recommend;
 import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
+import org.dromara.easyai.recommend.model.ConnectModel;
+import org.dromara.easyai.recommend.model.ConnectionModel;
+import org.dromara.easyai.recommend.model.FeatureModel;
 
 import java.util.*;
 
@@ -13,12 +16,12 @@ import java.util.*;
  */
 public class ConnectionTable {
     private final MatrixOperation matrixOperation = new MatrixOperation();
-    private final Map<Integer, List<Integer>> connectMap = new HashMap<>();
-    private final Map<Integer, Matrix> featureMatrixMap = new HashMap<>();//离散特征表
+    private final Map<Integer, List<Integer>> connectMap = new HashMap<>();//需保存模型
+    private final Map<Integer, Matrix> featureMatrixMap = new HashMap<>();//离散特征表 需保存模型
     private final Map<Integer, Matrix> dymStudyMap1 = new HashMap<>();
     private final Map<Integer, Matrix> dymStudyMap2 = new HashMap<>();
     private final int nodeSize;//总节点数量
-    private final int[] typeArray;//类别数组
+    private final int[] typeArray;//类别数组 需要保存模型
     private final Random random = new Random();
     private final int studyMaxJumpNumber;//训练时每一跳最多聚合邻居的数量
     private final int studyMinJumpNumber;//训练时每一跳最小聚合邻居的数量
@@ -46,6 +49,77 @@ public class ConnectionTable {
         }
     }
 
+    ConnectionModel getModel() {
+        ConnectionModel connectionModel = new ConnectionModel();
+        List<ConnectModel> connectModels = new ArrayList<>();
+        List<FeatureModel> featureModels = new ArrayList<>();
+        for (Map.Entry<Integer, List<Integer>> entry : connectMap.entrySet()) {
+            ConnectModel connectModel = new ConnectModel();
+            int key = entry.getKey();
+            List<Integer> sonList = entry.getValue();
+            connectModel.setId(key);
+            connectModel.setSonList(sonList);
+            connectModels.add(connectModel);
+        }
+        for (Map.Entry<Integer, Matrix> entry : featureMatrixMap.entrySet()) {
+            FeatureModel featureModel = new FeatureModel();
+            featureModel.setId(entry.getKey());
+            featureModel.setMatrixModel(entry.getValue().getMatrixModel());
+            featureModels.add(featureModel);
+        }
+        connectionModel.setConnectModels(connectModels);
+        connectionModel.setFeatureModels(featureModels);
+        connectionModel.setTypeArray(typeArray);
+        return connectionModel;
+    }
+
+    void insertModel(ConnectionModel connectionModel) {
+        List<ConnectModel> connectModels = connectionModel.getConnectModels();
+        List<FeatureModel> featureModels = connectionModel.getFeatureModels();
+        int[] typesId = connectionModel.getTypeArray();
+        for (ConnectModel connectModel : connectModels) {
+            int id = connectModel.getId();
+            List<Integer> sonList = new ArrayList<>(connectModel.getSonList());
+            if (!connectMap.containsKey(id)) {
+                connectMap.put(id, sonList);
+            } else {
+                throw new IllegalArgumentException("连通图出现重复节点id：" + (id + 1));
+            }
+        }
+        if (typesId.length == nodeSize) {
+            for (int i = 0; i < nodeSize; i++) {
+                int typeId = typesId[i];
+                if (typeId != 0) {
+                    typeArray[i] = typeId;
+                } else {
+                    throw new IllegalArgumentException("模型节点类别数组元素值不可以有0，请检查模型文件是否损坏。");
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("模型节点类别数组元素数量与初始化节点数量不匹配");
+        }
+        for (Map.Entry<Integer, Matrix> entry : featureMatrixMap.entrySet()) {
+            int key = entry.getKey();
+            FeatureModel featureModel = getFeatureById(featureModels, key);
+            if (featureModel != null) {
+                entry.getValue().insertMatrixModel(featureModel.getMatrixModel());
+            } else {
+                throw new IllegalArgumentException("模型中缺少离散id:" + (key + 1) + ",的特征值");
+            }
+        }
+    }
+
+    private FeatureModel getFeatureById(List<FeatureModel> featureModels, int id) {
+        FeatureModel myFeatureModel = null;
+        for (FeatureModel featureModel : featureModels) {
+            if (featureModel.getId() == id) {
+                myFeatureModel = featureModel;
+                break;
+            }
+        }
+        return myFeatureModel;
+    }
+
     void updateFeatureMap(int id, Matrix error, DymStudy dymStudy, float studyRate, int times) throws Exception {
         Matrix s1 = dymStudyMap1.get(id);
         Matrix s2 = dymStudyMap2.get(id);
@@ -55,9 +129,6 @@ public class ConnectionTable {
         featureMatrixMap.put(id, nextTable);
     }
 
-    public Map<Integer, Matrix> getFeatureMatrixMap() {
-        return featureMatrixMap;
-    }
 
     private void writeNode(int nodeID, int sonID) {
         int index = nodeID - 1;

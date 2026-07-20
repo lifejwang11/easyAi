@@ -5,6 +5,8 @@ import org.dromara.easyai.batchNerve.BatchNerveManager;
 import org.dromara.easyai.config.GnnConfig;
 import org.dromara.easyai.function.ReLu;
 import org.dromara.easyai.i.ActiveFunction;
+import org.dromara.easyai.recommend.model.GnnLayerModel;
+import org.dromara.easyai.recommend.model.GnnModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +33,34 @@ public class GnnManager {
         initGnnLayer(gnnConfig);
         gnnBack.setGnnLayer(gnnLayerList.get(jumpTimes - 1));
         gnnInput = new GnnInput(connectionTable, gnnLayerList.get(0));
+    }
+
+    public GnnModel getModel() {
+        GnnModel gnnModel = new GnnModel();
+        List<GnnLayerModel> gnnLayerModelList = new ArrayList<>();
+        for (GnnLayer gnnLayer : gnnLayerList) {
+            GnnLayerModel gnnLayerModel = gnnLayer.getModel();
+            gnnLayerModelList.add(gnnLayerModel);
+        }
+        gnnModel.setConnectionModel(connectionTable.getModel());
+        gnnModel.setBatchNerveModel(batchNerveManager.getModel());
+        gnnModel.setGnnLayerModelList(gnnLayerModelList);
+        return gnnModel;
+    }
+
+    public void insertModel(GnnModel gnnModel) {
+        List<GnnLayerModel> gnnLayerModelList = gnnModel.getGnnLayerModelList();
+        for (int i = 0; i < gnnLayerList.size(); i++) {
+            GnnLayer gnnLayer = gnnLayerList.get(i);
+            GnnLayerModel gnnLayerModel = gnnLayerModelList.get(i);
+            if (gnnLayerModel != null) {
+                gnnLayer.insertModel(gnnLayerModel);
+            } else {
+                System.out.println("警告！模型缺失聚合层:" + (i + 1) + ",的数据，请自行斟酌。");
+            }
+        }
+        connectionTable.insertModel(gnnModel.getConnectionModel());
+        batchNerveManager.insertModel(gnnModel.getBatchNerveModel());
     }
 
     public GnnInput getGnnInput() {

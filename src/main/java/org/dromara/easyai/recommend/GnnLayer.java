@@ -8,6 +8,8 @@ import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
+import org.dromara.easyai.recommend.model.GnnLayerModel;
+import org.dromara.easyai.recommend.model.NodeModel;
 
 import java.util.*;
 
@@ -17,7 +19,7 @@ import java.util.*;
  * @des gnn层
  */
 public class GnnLayer {
-    private final Map<Integer, GnnPower> powerMap = new HashMap<>();//权重矩阵
+    private final Map<Integer, GnnPower> powerMap = new HashMap<>();//权重矩阵 需保存模型
     private final MatrixOperation matrixOperation = new MatrixOperation();
     private final ConnectionTable connectionTable;
     private final ActiveFunction activeFunction;
@@ -25,7 +27,7 @@ public class GnnLayer {
     private GnnLayer sonLayer;
     private GnnLayer fatherLayer;
     private final int jumpTimes;//跳跃数
-    private final BatchNerveManager batchNerveManager;
+    private final BatchNerveManager batchNerveManager;//需保存模型
     private final int deep;//所处深度
     private int updateTimes = 0;
     private final float studyRate;//全局学习率
@@ -53,6 +55,50 @@ public class GnnLayer {
         } else {
             throw new IllegalArgumentException("节点类别数必须大于0");
         }
+    }
+
+    GnnLayerModel getModel() {
+        GnnLayerModel gnnLayerModel = new GnnLayerModel();
+        List<NodeModel> nodeModels = new ArrayList<>();
+        for (Map.Entry<Integer, GnnPower> entry : powerMap.entrySet()) {
+            GnnPower gnnPower = entry.getValue();
+            NodeModel nodeModel = new NodeModel();
+            nodeModel.setTypeId(entry.getKey());
+            nodeModel.setArf(gnnPower.getArf());
+            nodeModel.setSelfPower(gnnPower.getSelfPower().getMatrixModel());
+            nodeModel.setOtherPower(gnnPower.getOtherPower().getMatrixModel());
+            nodeModel.setBais(gnnPower.getBais().getMatrixModel());
+            nodeModels.add(nodeModel);
+        }
+        gnnLayerModel.setPowerModelList(nodeModels);
+        return gnnLayerModel;
+    }
+
+    void insertModel(GnnLayerModel gnnLayerModel) {
+        List<NodeModel> nodeModels = gnnLayerModel.getPowerModelList();
+        for (Map.Entry<Integer, GnnPower> entry : powerMap.entrySet()) {
+            NodeModel nodeModel = getNodeModelById(nodeModels, entry.getKey());
+            if (nodeModel != null) {
+                GnnPower gnnPower = entry.getValue();
+                gnnPower.getSelfPower().insertMatrixModel(nodeModel.getSelfPower());
+                gnnPower.getOtherPower().insertMatrixModel(nodeModel.getOtherPower());
+                gnnPower.getBais().insertMatrixModel(nodeModel.getBais());
+                gnnPower.setArf(nodeModel.getArf());
+            } else {
+                throw new IllegalArgumentException("类型ID缺失，请检查模型是否损坏：" + entry.getKey());
+            }
+        }
+    }
+
+    private NodeModel getNodeModelById(List<NodeModel> nodeModels, int id) {
+        NodeModel nodeModel = null;
+        for (NodeModel myNodeModel : nodeModels) {
+            if (myNodeModel.getTypeId() == id) {
+                nodeModel = myNodeModel;
+                break;
+            }
+        }
+        return nodeModel;
     }
 
     void infer(GnnNode gnnNode, OutBack outBack, long eventID, Map<Integer, Float> pd) throws Exception {//进行推理
