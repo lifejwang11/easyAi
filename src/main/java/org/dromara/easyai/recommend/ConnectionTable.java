@@ -22,19 +22,11 @@ public class ConnectionTable {
     private final Map<Integer, Matrix> dymStudyMap2 = new HashMap<>();
     private final int nodeSize;//总节点数量
     private final int[] typeArray;//类别数组 需要保存模型
-    private final Random random = new Random();
-    private final int studyMaxJumpNumber;//训练时每一跳最多聚合邻居的数量
-    private final int studyMinJumpNumber;//训练时每一跳最小聚合邻居的数量
 
-    public ConnectionTable(int nodeSize, int featureLength, int studyMaxJumpNumber, int studyMinJumpNumber) {//特征维度，节点数
+    public ConnectionTable(int nodeSize, int featureLength) {//特征维度，节点数
         if (nodeSize > 1) {
             this.nodeSize = nodeSize;
             typeArray = new int[nodeSize];
-            this.studyMaxJumpNumber = studyMaxJumpNumber;
-            this.studyMinJumpNumber = studyMinJumpNumber;
-            if (studyMaxJumpNumber <= 0) {
-                throw new IllegalArgumentException("每一层聚合邻居数量上限必须大于0");
-            }
             for (int i = 0; i < nodeSize; i++) {
                 Matrix featureMatrix = new Matrix(1, featureLength);
                 Matrix dymMatrix1 = new Matrix(1, featureLength);
@@ -204,22 +196,6 @@ public class ConnectionTable {
         return typeArray[index];
     }
 
-    private List<Integer> getSonOfConnect(List<Integer> connectList) {
-        List<Integer> sonConnect = new ArrayList<>(connectList);
-        int keepNum = random.nextInt(studyMaxJumpNumber) + 1;
-        if (keepNum < studyMinJumpNumber) {
-            keepNum = studyMinJumpNumber;
-        }
-        // 原始数量少于要保留的数量，直接返回
-        if (sonConnect.size() <= keepNum) {
-            return sonConnect;
-        }
-        // 全局只打乱一次
-        Collections.shuffle(sonConnect, random);
-        // 直接截取，无需循环删除
-        return new ArrayList<>(sonConnect.subList(0, keepNum));
-    }
-
     List<GnnNode> getFeatureList(GnnNode gnnNode, int jumpsTimes) {
         List<Matrix> featureList = new ArrayList<>();
         int id = gnnNode.getId();
@@ -239,9 +215,9 @@ public class ConnectionTable {
     private void insertFeature(List<GnnNode> gnnNodeList, int jumpsTimes) {
         for (GnnNode gnnNode : gnnNodeList) {
             int jump = gnnNode.getJumpTimes();
-            List<GnnNode> sonList = gnnNode.getNodeList();
-            if (jump <= jumpsTimes) {
+            if (jump < jumpsTimes) {
                 insertTableFeature(gnnNode);
+                List<GnnNode> sonList = gnnNode.getNodeList();
                 insertFeature(sonList, jumpsTimes);
             }
         }

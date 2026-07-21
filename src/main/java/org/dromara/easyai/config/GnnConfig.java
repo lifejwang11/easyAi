@@ -18,8 +18,6 @@ public class GnnConfig {
     private boolean softMax = true;//是否为分类任务
     private int nodeSize = 0;//节点数量
     private int jumpTimes = 2;//跳跃数
-    private int studyMaxJumpNumber = 10;//训练时每一跳最多聚合邻居数量
-    private int studyMinJumpNumber = 4;//训练时每一跳最小聚合邻居数量
     private int outNumber = 2;//输出位
     private int deep = 1;//线性层深度
     private boolean showLog = true;//打印日志
@@ -89,22 +87,6 @@ public class GnnConfig {
 
     public void setSoftMax(boolean softMax) {
         this.softMax = softMax;
-    }
-
-    public int getStudyMaxJumpNumber() {
-        return studyMaxJumpNumber;
-    }
-
-    public void setStudyMaxJumpNumber(int studyMaxJumpNumber) {
-        this.studyMaxJumpNumber = studyMaxJumpNumber;
-    }
-
-    public int getStudyMinJumpNumber() {
-        return studyMinJumpNumber;
-    }
-
-    public void setStudyMinJumpNumber(int studyMinJumpNumber) {
-        this.studyMinJumpNumber = studyMinJumpNumber;
     }
 
     public int getJumpTimes() {
