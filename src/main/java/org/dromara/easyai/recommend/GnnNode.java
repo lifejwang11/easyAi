@@ -14,8 +14,17 @@ public class GnnNode {
     private int typeID;//属性类别id
     private List<GnnNode> nodeList;//子节点集合
     private List<Matrix> featureList;//每一层的特征集合
-    private Matrix error;//该节点误差
+    private Matrix error;//该节点本层误差
+    private Matrix deepError;//该节点来自深层的误差
     private int jumpTimes;
+
+    public Matrix getDeepError() {
+        return deepError;
+    }
+
+    public void setDeepError(Matrix deepError) {
+        this.deepError = deepError;
+    }
 
     public Matrix getError() {
         return error;

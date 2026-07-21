@@ -102,7 +102,7 @@ public class GnnLayer {
     }
 
     void infer(GnnNode gnnNode, OutBack outBack, long eventID, Map<Integer, Float> pd) throws Exception {//进行推理
-        List<GnnNode> gnnNodes = connectionTable.getFeatureList(gnnNode);
+        List<GnnNode> gnnNodes = connectionTable.getFeatureList(gnnNode, jumpTimes);
         aggNode(gnnNodes);//聚合本层节点
         if (sonLayer != null) {//还有下一层
             sonLayer.nextInfer(outBack, gnnNodes, eventID, pd);
@@ -126,8 +126,7 @@ public class GnnLayer {
         for (NodeStudy nodeStudy : nodeStudies) {
             GnnNode rootGnn = nodeStudy.getRootGnnNode();
             if (rootGnn != null) {
-                int t = rootGnn.getId() - 1;
-                List<GnnNode> gnnFeatures = connectionTable.getRandomSonNodes(t, jumpTimes);
+                List<GnnNode> gnnFeatures = connectionTable.getRandomSonNodes(rootGnn, jumpTimes);//构建子图
                 aggNode(gnnFeatures);//聚合本层节点
                 nodeStudy.setGnnFeatures(gnnFeatures);
             } else {
@@ -157,7 +156,7 @@ public class GnnLayer {
         }
     }
 
-    void backError(List<Matrix> nextErrorMatrixList) throws Exception {//误差从线性层回传
+    void backError(List<Matrix> nextErrorMatrixList) throws Exception {
         int size = nextErrorMatrixList.size();
         Map<Integer, List<Integer>> connectMap = connectionTable.getConnectMap();
         List<Map<Integer, NodeError>> rootErrorList = new ArrayList<>();
@@ -167,16 +166,16 @@ public class GnnLayer {
             Map<Integer, NodeError> otherErrorMap = new HashMap<>();
             List<GnnNode> gnnNodes = studyNodeStudies.get(i).getGnnFeatures();
             Matrix error = nextErrorMatrixList.get(i);
-            gnnNodes.get(0).setError(error);
+            gnnNodes.get(0).setDeepError(error);
             addError(gnnNodes, connectMap, rootErrorMap, otherErrorMap);
             rootErrorList.add(rootErrorMap);
             otherErrorList.add(otherErrorMap);
         }
         updatePower(rootErrorList, true, size);
         updatePower(otherErrorList, false, size);
-        if (fatherLayer != null) {//继续将误差向浅层传递
+        if (fatherLayer != null) {
             fatherLayer.backError2(studyNodeStudies);
-        } else {//已经在第一层了，直接更新离散特征表
+        } else {
             updateTable(studyNodeStudies);
         }
     }
@@ -196,9 +195,9 @@ public class GnnLayer {
         }
         updatePower(rootErrorList, true, size);
         updatePower(otherErrorList, false, size);
-        if (fatherLayer != null) {//继续将误差向浅层传递
+        if (fatherLayer != null) {
             fatherLayer.backError2(studyNodeStudies);
-        } else {//已经在第一层了，直接更新离散特征表
+        } else {
             updateTable(studyNodeStudies);
         }
     }
@@ -219,7 +218,7 @@ public class GnnLayer {
     private void insertTableError(List<GnnNode> gnnNodes, Map<Integer, Matrix> tableMap) throws Exception {
         for (GnnNode gnnNode : gnnNodes) {
             int id = gnnNode.getId();
-            Matrix error = gnnNode.getError();
+            Matrix error = gnnNode.getDeepError();
             if (tableMap.containsKey(id)) {
                 Matrix myError = tableMap.get(id);
                 Matrix nextError = matrixOperation.add(myError, error);
@@ -237,19 +236,39 @@ public class GnnLayer {
 
     private void addError(List<GnnNode> gnnNodes, Map<Integer, List<Integer>> connectMap, Map<Integer, NodeError> rootErrorMap
             , Map<Integer, NodeError> otherErrorMap) throws Exception {
-        int aggScope = jumpTimes - deep;// 2-0=2
         for (GnnNode gnnNode : gnnNodes) {
             int jump = gnnNode.getJumpTimes();
-            if (jump < aggScope) {
-                Matrix myError = gnnNode.getError();
-                Matrix outMatrix = gnnNode.getFeatureList().get(deep + 1);
-                Matrix error = unActiveMatrix(myError, outMatrix);
-                addRootError(error, rootErrorMap, gnnNode);//下一层主节点误差
+            int aggScope = jumpTimes - deep;//2-1
+            if (jump >= aggScope) {
+                continue;
+            }
+            Matrix myError = gnnNode.getError();//来自本层误差
+            Matrix deepError = gnnNode.getDeepError();//来自深层误差
+            if (myError == null) {
+                myError = deepError;
+            } else {
+                myError = matrixOperation.add(myError, deepError);
+            }
+            List<Matrix> featList = gnnNode.getFeatureList();
+            int outFeatIdx = deep + 1;
+            // 底层强校验：本层输出必须存在deep+1，缺失直接抛逻辑异常
+            if (featList.size() <= outFeatIdx) {
+                throw new RuntimeException(String.format(
+                        "节点id=%d 反向梯度失败：缺失本层输出特征，deep=%d 目标下标=%d，特征列表长度=%d",
+                        gnnNode.getId(), deep, outFeatIdx, featList.size()
+                ));
+            }
+            Matrix outMatrix = featList.get(outFeatIdx);
+            // 激活函数求导
+            Matrix error = unActiveMatrix(myError, outMatrix);
+            // 1. 计算selfPower、bias梯度，分发自身输入梯度
+            addRootError(error, rootErrorMap, gnnNode);
+            // 2. 计算otherPower梯度，分发邻居子节点梯度
+            List<GnnNode> sonNodes = gnnNode.getNodeList();
+            if (sonNodes != null && !sonNodes.isEmpty()) {
                 addOtherError(error, otherErrorMap, gnnNode, connectMap);
-                List<GnnNode> sonNodes = gnnNode.getNodeList();
-                if (sonNodes != null) {
-                    addError(sonNodes, connectMap, rootErrorMap, otherErrorMap);
-                }
+                // 递归向下传递梯度给子节点
+                addError(sonNodes, connectMap, rootErrorMap, otherErrorMap);
             }
         }
     }
@@ -258,6 +277,7 @@ public class GnnLayer {
     private void updatePower(List<Map<Integer, NodeError>> errorList, boolean root, int size) throws Exception {
         Map<Integer, NodeError> errorMap = new HashMap<>();
         float times = 1f / size;
+        // 累加批次内所有样本梯度
         for (Map<Integer, NodeError> errorNodeMap : errorList) {
             for (Map.Entry<Integer, NodeError> entry : errorNodeMap.entrySet()) {
                 int key = entry.getKey();
@@ -266,15 +286,23 @@ public class GnnLayer {
                     NodeError allNodeError = errorMap.get(key);
                     Matrix sigmaErrorPower = matrixOperation.add(allNodeError.getErrorPower(), nodeError.getErrorPower());
                     allNodeError.setErrorPower(sigmaErrorPower);
+                    // self分支才累加偏置梯度
                     if (root) {
                         Matrix sigmaErrorBais = matrixOperation.add(allNodeError.getErrorBais(), nodeError.getErrorBais());
                         allNodeError.setErrorBais(sigmaErrorBais);
                     }
                 } else {
-                    errorMap.put(key, nodeError);
+                    // 深拷贝避免引用污染多批次数据
+                    NodeError copy = new NodeError();
+                    copy.setErrorPower(nodeError.getErrorPower().copy());
+                    if (root) {
+                        copy.setErrorBais(nodeError.getErrorBais().copy());
+                    }
+                    errorMap.put(key, copy);
                 }
             }
         }
+        // AdamW梯度更新
         for (Map.Entry<Integer, NodeError> entry : errorMap.entrySet()) {
             int key = entry.getKey();
             NodeError nodeError = entry.getValue();
@@ -295,10 +323,9 @@ public class GnnLayer {
             } else {
                 Matrix subOtherPower = dymStudy.getErrorMatrixByStudy(studyRate, gnnPower.getDymOtherPower1(),
                         gnnPower.getDymOtherPower2(), errorPower, updateTimes);
-                Matrix otherPower = matrixOperation.add(subOtherPower, gnnPower.getOtherPower());
-                gnnPower.setOtherPower(otherPower);
+                Matrix newOther = matrixOperation.add(subOtherPower, gnnPower.getOtherPower());
+                gnnPower.setOtherPower(newOther);
             }
-
         }
     }
 
@@ -312,12 +339,24 @@ public class GnnLayer {
 
     private void addRootError(Matrix error, Map<Integer, NodeError> rootMap, GnnNode gnnNode) throws Exception {
         int id = gnnNode.getId();
-        int nodeType = connectionTable.getNodeType(id);//节点类别
-        GnnPower gnnPower = powerMap.get(nodeType);//该类别权重
-        Matrix rootFeature = gnnNode.getFeatureList().get(deep);//该节点输入特征
+        int nodeType = connectionTable.getNodeType(id);
+        GnnPower gnnPower = powerMap.get(nodeType);
+        List<Matrix> featList = gnnNode.getFeatureList();
+        int selfFeatIdx = deep;
+        // 底层下标强校验
+        if (featList.size() <= selfFeatIdx) {
+            throw new RuntimeException(String.format(
+                    "节点id=%d 自身梯度计算失败：缺失输入特征deep=%d，列表长度=%d",
+                    id, selfFeatIdx, featList.size()
+            ));
+        }
+        Matrix rootFeature = featList.get(selfFeatIdx);
         Matrix powerMatrix = gnnPower.getSelfPower();
+        // dLoss/dW_self = feat^T · dLoss/dZ
         Matrix errorPower = matrixOperation.matrixMulPd(error, rootFeature, powerMatrix, false);
+        // 向下传递给输入特征的梯度 dLoss/dX = dLoss/dZ · W_self^T
         Matrix nextError = matrixOperation.matrixMulPd(error, rootFeature, powerMatrix, true);
+        // 累加当前类型权重、偏置梯度
         if (rootMap.containsKey(nodeType)) {
             NodeError nodeError = rootMap.get(nodeType);
             Matrix myErrorPower = nodeError.getErrorPower();
@@ -332,11 +371,12 @@ public class GnnLayer {
             nodeError.setErrorBais(error.copy());
             rootMap.put(nodeType, nodeError);
         }
+        // 梯度裁剪只作用于向下传递的特征梯度，不影响权重更新梯度
         if (layerGCut) {
             nextError = dymStudy.getClipMatrix(nextError, true);
         }
-        gnnNode.setError(nextError);
-    }
+        gnnNode.setDeepError(nextError);
+    }//主节点误差=下层深度误差
 
     private void addOtherError(Matrix error, Map<Integer, NodeError> errorMap, GnnNode gnnNode, Map<Integer, List<Integer>> connectMap) throws Exception {
         int rootID = gnnNode.getId();
@@ -344,19 +384,34 @@ public class GnnLayer {
         Map<Integer, Matrix> typeError = new HashMap<>();
         for (GnnNode sonNode : gnnNodes) {
             int id = sonNode.getId();
-            int nodeType = connectionTable.getNodeType(id);//节点类别
-            GnnPower gnnPower = powerMap.get(nodeType);//该类别权重
-            Matrix rootFeature = sonNode.getFeatureList().get(deep);//该节点输入特征
-            Matrix powerMatrix = gnnPower.getOtherPower();//邻居节点;
-            float du = getDu(id, rootID, connectMap) * gnnPower.getArf();
+            int nodeType = connectionTable.getNodeType(id);
+            GnnPower gnnPower = powerMap.get(nodeType);
+            List<Matrix> sonFeatList = sonNode.getFeatureList();
+            int selfFeatIdx = deep;
+            // 底层下标强校验
+            if (sonFeatList.size() <= selfFeatIdx) {
+                throw new RuntimeException(String.format(
+                        "邻居节点id=%d 邻域梯度失败：缺失输入deep=%d，列表长度=%d",
+                        id, selfFeatIdx, sonFeatList.size()
+                ));
+            }
+            Matrix rootFeature = sonFeatList.get(selfFeatIdx);
+            Matrix powerMatrix = gnnPower.getOtherPower();
+            // 正向反向du完全对齐，提取统一计算
+            float duRaw = getDu(id, rootID, connectMap);
+            float du = duRaw * gnnPower.getArf();
             Matrix feature = matrixOperation.mathMulBySelf(rootFeature, du);
             Matrix errorPower = matrixOperation.matrixMulPd(error, feature, powerMatrix, false);
             Matrix power = matrixOperation.mathMulBySelf(powerMatrix, du);
+            // 向下传递给邻居节点的梯度
             Matrix nextError = matrixOperation.matrixMulPd(error, rootFeature, power, true);
             if (layerGCut) {
                 nextError = dymStudy.getClipMatrix(nextError, true);
             }
+            // 累加子节点梯度（多父节点共享子节点时自动叠加）
             sonNode.setError(nextError);
+            sonNode.setDeepError(nextError.copy());
+            // 按节点类型累加other权重梯度
             if (typeError.containsKey(nodeType)) {
                 Matrix myError = typeError.get(nodeType);
                 Matrix sigma = matrixOperation.add(myError, errorPower);
@@ -365,7 +420,7 @@ public class GnnLayer {
                 typeError.put(nodeType, errorPower);
             }
         }
-
+        // 批量写入全局批次梯度map
         for (Map.Entry<Integer, Matrix> myError : typeError.entrySet()) {
             int nodeType = myError.getKey();
             Matrix errorPower = myError.getValue();
@@ -406,25 +461,37 @@ public class GnnLayer {
     }
 
 
+    /**
+     * 自底向上冒泡聚合：先递归所有子节点完成本层聚合，再聚合自身
+     *
+     * @param rootGnnNodes 当前待处理节点集合
+     * @throws Exception 矩阵运算异常
+     */
     private void aggNode(List<GnnNode> rootGnnNodes) throws Exception {
+        int neighborFeatIdx = deep + 1;
         int aggScope = jumpTimes - deep;
         for (GnnNode gnnNode : rootGnnNodes) {
             List<GnnNode> sonList = gnnNode.getNodeList();
             int jump = gnnNode.getJumpTimes();
-            if (sonList != null && jump < aggScope) {
-                Matrix feature = getAggMatrix(gnnNode, sonList);
-                gnnNode.getFeatureList().add(feature);
+            if (sonList != null && !sonList.isEmpty() && jump < aggScope) {
                 aggNode(sonList);
+                Matrix aggFeature = getAggMatrix(gnnNode, sonList, deep, neighborFeatIdx);
+                gnnNode.getFeatureList().add(aggFeature);
             }
         }
     }
 
 
-    private Matrix getAggMatrix(GnnNode rootNode, List<GnnNode> sonList) throws Exception {
+    private Matrix getAggMatrix(GnnNode rootNode, List<GnnNode> sonList, int selfFeatIdx, int neighborFeatIdx) throws Exception {
         int id = rootNode.getId();
-        Matrix myFeature = rootNode.getFeatureList().get(deep);//节点本身特征
+        List<Matrix> selfFeatList = rootNode.getFeatureList();
+        // 防护：防止输入特征下标越界
+        if (selfFeatList.size() <= selfFeatIdx) {
+            throw new RuntimeException("节点id=" + id + " 缺失输入特征，目标下标：" + selfFeatIdx);
+        }
+        Matrix myFeature = selfFeatList.get(selfFeatIdx);
         int nodeType = connectionTable.getNodeType(id);
-        Matrix connectionFeature = connectionTable.getConnectOut(id, powerMap, sonList, deep);
+        Matrix connectionFeature = connectionTable.getConnectOut(id, powerMap, sonList, neighborFeatIdx);
         if (powerMap.containsKey(nodeType)) {
             GnnPower gnnPower = powerMap.get(nodeType);
             Matrix selfPower = gnnPower.getSelfPower();

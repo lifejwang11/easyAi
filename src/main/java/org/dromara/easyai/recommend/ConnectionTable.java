@@ -131,17 +131,15 @@ public class ConnectionTable {
 
 
     private void writeNode(int nodeID, int sonID) {
-        int index = nodeID - 1;
-        int sonIndex = sonID - 1;
-        if (connectMap.containsKey(index)) {
-            List<Integer> nodeList = connectMap.get(index);
-            if (!nodeList.contains(sonIndex)) {
-                nodeList.add(sonIndex);
+        if (connectMap.containsKey(nodeID)) {
+            List<Integer> nodeList = connectMap.get(nodeID);
+            if (!nodeList.contains(sonID)) {
+                nodeList.add(sonID);
             }
         } else {
             List<Integer> nodeList = new ArrayList<>();
-            nodeList.add(sonIndex);
-            connectMap.put(index, nodeList);
+            nodeList.add(sonID);
+            connectMap.put(nodeID, nodeList);
         }
     }
 
@@ -163,9 +161,9 @@ public class ConnectionTable {
 
     private void insertType(int id, int nodeType) {
         if (nodeType != 0) {
-            int type = typeArray[id - 1];
+            int type = typeArray[id];
             if (type == 0) {
-                typeArray[id - 1] = nodeType;
+                typeArray[id] = nodeType;
             } else if (type != nodeType) {
                 throw new IllegalArgumentException("相同的节点ID不可以存在两个不同的节点类别");
             }
@@ -189,10 +187,10 @@ public class ConnectionTable {
     }
 
     private void checkID(int id, int fatherID) {
-        if (id > nodeSize) {
+        if (id >= nodeSize) {
             throw new IllegalArgumentException("注入样本离散id与初始化离散id数量不匹配");
-        } else if (id < 1) {
-            throw new IllegalArgumentException("离散id值不可小于1");
+        } else if (id < 0) {
+            throw new IllegalArgumentException("离散id值不可小于0");
         }
         if (fatherID == id) {
             throw new IllegalArgumentException("父级节点不可以与子节点使用同一个ID");
@@ -222,29 +220,29 @@ public class ConnectionTable {
         return new ArrayList<>(sonConnect.subList(0, keepNum));
     }
 
-    List<GnnNode> getFeatureList(GnnNode gnnNode) {
+    List<GnnNode> getFeatureList(GnnNode gnnNode, int jumpsTimes) {
         List<Matrix> featureList = new ArrayList<>();
-        int id = gnnNode.getId() - 1;
-        Matrix feature = featureMatrixMap.get(id);
+        int id = gnnNode.getId();
+        Matrix feature = featureMatrixMap.get(id).copy();
         if (feature == null) {
             throw new IllegalArgumentException("根节点的id模型中不存在:" + gnnNode.getId());
         }
         featureList.add(feature);
         gnnNode.setJumpTimes(0);
-        gnnNode.setId(id);
         gnnNode.setFeatureList(featureList);
         List<GnnNode> gnnNodeList = new ArrayList<>();
         gnnNodeList.add(gnnNode);
-        insertFeature(gnnNodeList);
+        insertFeature(gnnNodeList, jumpsTimes);
         return gnnNodeList;
     }
 
-    private void insertFeature(List<GnnNode> gnnNodeList) {
+    private void insertFeature(List<GnnNode> gnnNodeList, int jumpsTimes) {
         for (GnnNode gnnNode : gnnNodeList) {
+            int jump = gnnNode.getJumpTimes();
             List<GnnNode> sonList = gnnNode.getNodeList();
-            if (sonList != null && !sonList.isEmpty()) {
+            if (jump <= jumpsTimes) {
                 insertTableFeature(gnnNode);
-                insertFeature(sonList);
+                insertFeature(sonList, jumpsTimes);
             }
         }
     }
@@ -252,32 +250,45 @@ public class ConnectionTable {
     private void insertTableFeature(GnnNode gnnNode) {
         List<GnnNode> nodeList = gnnNode.getNodeList();
         int jump = gnnNode.getJumpTimes();
-        for (GnnNode sonNode : nodeList) {
-            List<Matrix> featureList = new ArrayList<>();
-            int id = sonNode.getId() - 1;
-            Matrix feature = featureMatrixMap.get(id);
-            if (feature == null) {
-                throw new IllegalArgumentException("出现模型中不存在的节点ID:" + sonNode.getId());
+        int fatherId = gnnNode.getId();
+        if (nodeList != null && !nodeList.isEmpty()) {
+            for (GnnNode sonNode : nodeList) {
+                List<Matrix> featureList = new ArrayList<>();
+                int id = sonNode.getId();
+                Matrix feature = featureMatrixMap.get(id).copy();
+                if (feature == null) {
+                    throw new IllegalArgumentException("出现模型中不存在的节点ID:" + sonNode.getId());
+                }
+                featureList.add(feature);
+                sonNode.setJumpTimes(jump + 1);
+                sonNode.setFeatureList(featureList);
             }
+        } else {
+            nodeList = new ArrayList<>();
+            List<Matrix> featureList = new ArrayList<>();
+            GnnNode sonNode = new GnnNode();
+            Matrix feature = gnnNode.getFeatureList().get(0).copy();
             featureList.add(feature);
             sonNode.setJumpTimes(jump + 1);
-            sonNode.setId(id);
+            sonNode.setId(fatherId);
             sonNode.setFeatureList(featureList);
+            nodeList.add(sonNode);
+            gnnNode.setNodeList(nodeList);
         }
     }
 
-    List<GnnNode> getRandomSonNodes(int id, int jumpTimes) {
+    List<GnnNode> getRandomSonNodes(GnnNode rootGnn, int jumpTimes) {
+        int id = rootGnn.getId();
         List<Matrix> featureList = new ArrayList<>();
-        featureList.add(featureMatrixMap.get(id));
-        GnnNode rootGnnNode = new GnnNode();
-        rootGnnNode.setId(id);
-        rootGnnNode.setJumpTimes(0);
-        rootGnnNode.setFeatureList(featureList);
+        featureList.add(featureMatrixMap.get(id).copy());
+        rootGnn.setJumpTimes(0);
+        rootGnn.setFeatureList(featureList);
         List<GnnNode> gnnNodes = new ArrayList<>();
-        gnnNodes.add(rootGnnNode);
+        gnnNodes.add(rootGnn);
         insertNodes(jumpTimes, gnnNodes);
         return gnnNodes;
     }
+
 
     private void insertNodes(int jumpTimes, List<GnnNode> gnnNodes) {
         for (GnnNode gnnNode : gnnNodes) {
@@ -291,29 +302,32 @@ public class ConnectionTable {
 
     private int insertSonNodes(GnnNode node) {
         int id = node.getId();
-        List<Integer> connectionList = connectMap.get(id);
-        if (connectionList != null) {
-            List<Integer> sonList = getSonOfConnect(connectionList);
-            List<GnnNode> sons = new ArrayList<>();
-            int times = node.getJumpTimes() + 1;
-            for (int i : sonList) {
+        List<GnnNode> nodeList = node.getNodeList();
+        int times = node.getJumpTimes() + 1;
+        if (nodeList != null && !nodeList.isEmpty()) {
+            for (GnnNode gnnNode : nodeList) {
+                int i = gnnNode.getId();
                 List<Matrix> featureList = new ArrayList<>();
-                featureList.add(featureMatrixMap.get(i));
-                GnnNode gnnNode = new GnnNode();
-                gnnNode.setId(i);
+                featureList.add(featureMatrixMap.get(i).copy());
                 gnnNode.setFeatureList(featureList);
                 gnnNode.setJumpTimes(times);
-                sons.add(gnnNode);
             }
-            node.setNodeList(sons);
-            return times;
-        } else {
-            throw new IllegalArgumentException("训练时不可以出现单根的情况");
+        } else {//连接自身
+            nodeList = new ArrayList<>();
+            List<Matrix> featureList = new ArrayList<>();
+            featureList.add(node.getFeatureList().get(0).copy());
+            GnnNode nextNode = new GnnNode();
+            nextNode.setId(id);
+            nextNode.setFeatureList(featureList);
+            nextNode.setJumpTimes(times);
+            nodeList.add(nextNode);
+            node.setNodeList(nodeList);
         }
+        return times;
     }
 
 
-    Matrix getConnectOut(int index, Map<Integer, GnnPower> powerMap, List<GnnNode> sonList, int deep) throws Exception {//获取连通矩阵
+    Matrix getConnectOut(int index, Map<Integer, GnnPower> powerMap, List<GnnNode> sonList, int featIndex) throws Exception {
         List<Integer> connectionList = connectMap.get(index);
         if (connectionList == null) {
             throw new IllegalArgumentException("出现不在图构建中的节点id:" + (index + 1));
@@ -323,7 +337,7 @@ public class ConnectionTable {
         Matrix sigMa = null;
         for (GnnNode gnnNode : sonList) {
             int j = gnnNode.getId();
-            Matrix feature = gnnNode.getFeatureList().get(deep);//邻居的特征
+            Matrix feature = getMatrixFeature(featIndex, gnnNode);
             int type = getNodeType(j);
             if (powerMap.containsKey(type)) {
                 GnnPower gnnPower = powerMap.get(type);
@@ -345,6 +359,25 @@ public class ConnectionTable {
                 throw new IllegalArgumentException("出现不在配置参数列表里的节点类别");
             }
         }
+        // 无邻居聚合结果，返回同维度零矩阵，避免上层空指针
+        if (sigMa == null) {
+            throw new IllegalArgumentException("节点无邻居异常");
+        }
         return sigMa;
+    }
+
+    private Matrix getMatrixFeature(int featIndex, GnnNode gnnNode) {
+        List<Matrix> featList = gnnNode.getFeatureList();
+        Matrix feature;
+        if (featList.size() > featIndex) {
+            feature = featList.get(featIndex);
+        } else {
+            int fallbackIdx = featIndex - 1;
+            if (fallbackIdx < 0) {
+                throw new RuntimeException("特征读取下标异常：fallbackIdx=" + fallbackIdx + "，featIndex=" + featIndex + "，子节点不存在可用特征");
+            }
+            feature = featList.get(fallbackIdx);
+        }
+        return feature;
     }
 }
