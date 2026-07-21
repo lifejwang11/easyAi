@@ -292,13 +292,7 @@ public class GnnLayer {
                         allNodeError.setErrorBais(sigmaErrorBais);
                     }
                 } else {
-                    // 深拷贝避免引用污染多批次数据
-                    NodeError copy = new NodeError();
-                    copy.setErrorPower(nodeError.getErrorPower().copy());
-                    if (root) {
-                        copy.setErrorBais(nodeError.getErrorBais().copy());
-                    }
-                    errorMap.put(key, copy);
+                    errorMap.put(key, nodeError);
                 }
             }
         }
@@ -308,21 +302,21 @@ public class GnnLayer {
             NodeError nodeError = entry.getValue();
             GnnPower gnnPower = powerMap.get(key);
             Matrix errorPower = nodeError.getErrorPower();
-            matrixOperation.mathMul(errorPower, times);
+            Matrix avgErrorPoser = matrixOperation.mathMulBySelf(errorPower, times);
             if (root) {
                 Matrix errorBais = nodeError.getErrorBais();
-                matrixOperation.mathMul(errorBais, times);
+                Matrix avgErrorBais = matrixOperation.mathMulBySelf(errorBais, times);
                 Matrix subBais = dymStudy.getErrorMatrixByStudy(studyRate, gnnPower.getDymBais1(), gnnPower.getDymBais2()
-                        , errorBais, updateTimes);
+                        , avgErrorBais, updateTimes);
                 Matrix subSelfPower = dymStudy.getErrorMatrixByStudy(studyRate, gnnPower.getDymSelfPower1(),
-                        gnnPower.getDymSelfPower2(), errorPower, updateTimes);
+                        gnnPower.getDymSelfPower2(), avgErrorPoser, updateTimes);
                 Matrix bais = matrixOperation.add(subBais, gnnPower.getBais());
                 Matrix selfPower = matrixOperation.add(subSelfPower, gnnPower.getSelfPower());
                 gnnPower.setBais(bais);
                 gnnPower.setSelfPower(selfPower);
             } else {
                 Matrix subOtherPower = dymStudy.getErrorMatrixByStudy(studyRate, gnnPower.getDymOtherPower1(),
-                        gnnPower.getDymOtherPower2(), errorPower, updateTimes);
+                        gnnPower.getDymOtherPower2(), avgErrorPoser, updateTimes);
                 Matrix newOther = matrixOperation.add(subOtherPower, gnnPower.getOtherPower());
                 gnnPower.setOtherPower(newOther);
             }
