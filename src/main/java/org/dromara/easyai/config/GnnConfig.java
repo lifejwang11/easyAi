@@ -14,7 +14,6 @@ public class GnnConfig {
     private boolean auto = true;//是否使用自适应学习率
     private float layGMaxTh = 10000;//层梯度裁切阈值
     private boolean layerGCut = false;//是否需要层梯度裁剪
-    private boolean cutLayGaMaxTh = true;//是否做层梯度裁切
     private boolean softMax = true;//是否为分类任务
     private int nodeSize = 0;//节点数量
     private int jumpTimes = 2;//跳跃数
@@ -153,11 +152,4 @@ public class GnnConfig {
         this.layGMaxTh = layGMaxTh;
     }
 
-    public boolean isCutLayGaMaxTh() {
-        return cutLayGaMaxTh;
-    }
-
-    public void setCutLayGaMaxTh(boolean cutLayGaMaxTh) {
-        this.cutLayGaMaxTh = cutLayGaMaxTh;
-    }
 }
