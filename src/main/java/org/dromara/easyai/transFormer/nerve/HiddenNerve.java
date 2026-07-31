@@ -1,6 +1,7 @@
 package org.dromara.easyai.transFormer.nerve;
 
 
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.i.OutBack;
@@ -17,9 +18,9 @@ public class HiddenNerve extends Nerve {
 
     public HiddenNerve(int id, int depth, float studyPoint, ActiveFunction activeFunction, int sensoryNerveNub,
                        int outNerveNub, LineBlock lineBlock, int regularModel, float regular
-            , int coreNumber) throws Exception {//隐层神经元
+            , int coreNumber, DymStudy dymStudy) throws Exception {//隐层神经元
         super(id, "HiddenNerve", studyPoint, activeFunction, sensoryNerveNub, 0,
-                outNerveNub, lineBlock, regularModel, regular, coreNumber);
+                outNerveNub, lineBlock, regularModel, regular, coreNumber, dymStudy);
         this.depth = depth;
     }
 

@@ -1,5 +1,6 @@
 package org.dromara.easyai.transFormer;
 
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.function.ReLu;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
@@ -23,7 +24,8 @@ public class CodecBlock {
     private final List<HiddenNerve> secondHiddenNerves = new ArrayList<>();//线性层第二层
     private final LayNorm lineLayNorm;//线性层残差归一化
     private final TransWordVector transWordVector;//内置词向量
-    ////////////////////////////////////
+    private final DymStudy dymStudy;
+    /// /////////////////////////////////
     private CodecBlock afterEncoderBlock;//后编码模块
     private CodecBlock beforeEncoderBlock;//前编码模块
     private CodecBlock lastEncoderBlock;//最后一层编码器
@@ -83,15 +85,19 @@ public class CodecBlock {
     }
 
     public CodecBlock(int multiNumber, int featureDimension, float studyPoint, int depth,
-                      boolean encoder, int regularModel, float regular, int coreNumber, TransWordVector transWordVector) throws Exception {//进行初始化
+                      boolean encoder, int regularModel, float regular, int coreNumber,
+                      TransWordVector transWordVector, DymStudy dymStudy) throws Exception {//进行初始化
         matrixOperation = new MatrixOperation(coreNumber);
         this.encoder = encoder;
+        this.dymStudy = dymStudy;
         this.transWordVector = transWordVector;
         this.coreNumber = coreNumber;
-        attentionLayNorm = new LayNorm(1, featureDimension, this, null, studyPoint, coreNumber, encoder, depth);
-        lineLayNorm = new LayNorm(2, featureDimension, this, null, studyPoint, coreNumber, encoder, depth);
+        attentionLayNorm = new LayNorm(1, featureDimension, this, null, studyPoint, coreNumber, encoder, depth
+                , dymStudy);
+        lineLayNorm = new LayNorm(2, featureDimension, this, null, studyPoint, coreNumber, encoder,
+                depth, dymStudy);
         multiSelfAttention = new MultiSelfAttention(multiNumber, studyPoint, depth, featureDimension, encoder, this, coreNumber,
-                null);
+                null, dymStudy);
         multiSelfAttention.setLayNorm(attentionLayNorm);
         attentionLayNorm.setMultiSelfAttention(multiSelfAttention);
         initLine(featureDimension, studyPoint, regularModel, regular);
@@ -157,14 +163,14 @@ public class CodecBlock {
         List<Nerve> secondNerves = new ArrayList<>();
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve1 = new HiddenNerve(i + 1, 1, studyPoint, new ReLu(), featureDimension,
-                    featureDimension, null, regularModel, regular, coreNumber);
+                    featureDimension, null, regularModel, regular, coreNumber, dymStudy);
             fistHiddenNerves.add(hiddenNerve1);
             hiddenNerve1.setAfterLayNorm(attentionLayNorm);
             firstNerves.add(hiddenNerve1);
         }
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve2 = new HiddenNerve(i + 1, 2, studyPoint, null,
-                    featureDimension, 1, null, regularModel, regular, coreNumber);
+                    featureDimension, 1, null, regularModel, regular, coreNumber, dymStudy);
             hiddenNerve2.setBeforeLayNorm(lineLayNorm);
             secondHiddenNerves.add(hiddenNerve2);
             secondNerves.add(hiddenNerve2);

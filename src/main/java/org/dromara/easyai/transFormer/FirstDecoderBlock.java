@@ -1,5 +1,6 @@
 package org.dromara.easyai.transFormer;
 
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.transFormer.model.FirstDecoderModel;
@@ -12,7 +13,7 @@ import java.util.List;
 public class FirstDecoderBlock {//解码器模块
     private final MultiSelfAttention multiSelfAttention;
     private final LayNorm attentionLayNorm;
-    //////////////////
+    /// ///////////////
     private final CodecBlock codecBlock;//前方的解码层
     private CodecBlock lastEncoderBlock;//最后一层编码器
 
@@ -21,12 +22,12 @@ public class FirstDecoderBlock {//解码器模块
     }
 
     public FirstDecoderBlock(int multiNumber, int featureDimension, float studyPoint, CodecBlock codecBlock, int coreNumber,
-                             TransWordVector transWordVector) throws Exception {//进行初始化
+                             TransWordVector transWordVector, DymStudy dymStudy) throws Exception {//进行初始化
         //注意力层残差归一化
         attentionLayNorm = new LayNorm(1, featureDimension, null, this, studyPoint, coreNumber, false
-                , 1);
+                , 1, dymStudy);
         multiSelfAttention = new MultiSelfAttention(multiNumber, studyPoint, 1, featureDimension, false, null,
-                coreNumber, transWordVector);
+                coreNumber, transWordVector, dymStudy);
         multiSelfAttention.setLayNorm(attentionLayNorm);
         attentionLayNorm.setMultiSelfAttention(multiSelfAttention);
         this.codecBlock = codecBlock;

@@ -2,6 +2,7 @@ package org.dromara.easyai.matrixTools;
 
 import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.resnet.entity.NormModel;
+import org.dromara.easyai.transFormer.seflAttention.NormErrorBody;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +22,7 @@ public class MatrixNorm {
     private final DymStudy dymStudy;
     private final float studyRate;//全局学习率
     private final MatrixOperation matrixOperation = new MatrixOperation();
-    private final Map<Integer, Matrix> normMap = new ConcurrentHashMap<>();
+    private final Map<Integer, NormErrorBody> normMap = new ConcurrentHashMap<>();
     private int times = 0;//迭代次数
 
     public NormModel getModel() {
@@ -65,37 +66,45 @@ public class MatrixNorm {
         List<Matrix> nextErrorMatrixList = new ArrayList<>();
         for (int m = 0; m < size; m++) {//遍历没每张图片的误差
             Matrix errorMatrix = errorMatrixList.get(m);
-            Matrix myData = normMap.get(m);
+            NormErrorBody normErrorBody = normMap.get(m);
+            Matrix myData = normErrorBody.getOutMatrix();
+            Matrix insertMatrix = normErrorBody.getInsertMatrix();//归一化前输入矩阵
+            float avg = normErrorBody.getAvg();//平均值
+            float sd = normErrorBody.getSd() + 0.0000001f;//标准差
             Matrix subPower = matrixOperation.matrixMulPd(errorMatrix, myData, power, false);
             if (allSubPower == null) {
                 allSubPower = subPower;
             } else {
                 allSubPower = matrixOperation.add(allSubPower, subPower);
             }
+            //输出梯度
             Matrix sub = matrixOperation.matrixMulPd(errorMatrix, myData, power, true);
             int x = sub.getX();
             int y = sub.getY();
-            float n = (float) Math.sqrt(x * y);
-            float nt = -n / (n - 1);
+            float n = x * y;
+            float var = sd * sd * n;
+            float sigmaG = sub.getSigma() / (n * sd);//所有分量梯度的和 / n *标准差
+            float allZk = 0;
+            for (int k = 0; k < x; k++) {
+                for (int l = 0; l < y; l++) {
+                    float zk = sub.getValue(k, l) * myData.getValue(k, l);
+                    allZk = allZk + zk;
+                }
+            }
+
             Matrix subMatrix = new Matrix(x, y);
             nextErrorMatrixList.add(subMatrix);
             for (int i = 0; i < x; i++) {
                 for (int j = 0; j < y; j++) {
-                    float subValue = sub.getNumber(i, j);
-                    float value = subValue * n + subMatrix.getNumber(i, j);
-                    subMatrix.setNub(i, j, value);
-                    for (int k = 0; k < x; k++) {
-                        for (int l = 0; l < y; l++) {
-                            if (k != i || l != j) {
-                                float otherValue = subValue * nt + subMatrix.getNumber(k, l);
-                                subMatrix.setNub(k, l, otherValue);
-                            }
-                        }
-                    }
+                    float subValue = sub.getValue(i, j) / sd;
+                    float t = (insertMatrix.getValue(i, j) - avg) / var;
+                    float error = subValue - sigmaG - t * allZk;
+                    subMatrix.setValue(i, j, error);
                 }
             }
         }
-        matrixOperation.mathDiv(allSubPower, size);
+        float mySize = 1f / size;
+        matrixOperation.mathMul(allSubPower, mySize);
         Matrix errorPower = dymStudy.getErrorMatrixByStudy(studyRate, powerDymStudyRate, powerDymStudyRate2, allSubPower, times);
         power = matrixOperation.add(errorPower, power);
         return nextErrorMatrixList;
@@ -112,13 +121,14 @@ public class MatrixNorm {
                 avgError = matrixOperation.add(errorMatrix, avgError);
             }
         }
-        matrixOperation.mathDiv(avgError, size);
+        float mySize = 1f / size;
+        matrixOperation.mathMul(avgError, mySize);
         Matrix error = dymStudy.getErrorMatrixByStudy(studyRate, bTaDymStudyRate, bTaDymStudyRate2, avgError, times);
         bTa = matrixOperation.add(error, bTa);//更新bTa
         return back(errorMatrixList);
     }
 
-    public Matrix norm(Matrix matrix, int m) throws Exception {
+    public Matrix norm(Matrix matrix, int m, boolean isStudy) throws Exception {
         int x = matrix.getX();
         int y = matrix.getY();
         if (x != y) {
@@ -129,11 +139,18 @@ public class MatrixNorm {
         float sd = matrixOperation.getSdByMatrix(matrix, avg, 0.0000001f);//标准差
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                float value = (matrix.getNumber(i, j) - avg) / sd;
-                result.setNub(i, j, value);
+                float value = (matrix.getValue(i, j) - avg) / sd;
+                result.setValue(i, j, value);
             }
         }
-        normMap.put(m, result);
+        if (isStudy) {
+            NormErrorBody normErrorBody = new NormErrorBody();
+            normErrorBody.setInsertMatrix(matrix);
+            normErrorBody.setSd(sd);
+            normErrorBody.setAvg(avg);
+            normErrorBody.setOutMatrix(result);
+            normMap.put(m, normErrorBody);
+        }
         return matrixOperation.add(matrixOperation.mulMatrix(result, power), bTa);
     }
 }

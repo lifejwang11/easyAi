@@ -1,5 +1,6 @@
 package org.dromara.easyai.transFormer.seflAttention;
 
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixList;
@@ -9,6 +10,7 @@ import org.dromara.easyai.transFormer.FirstDecoderBlock;
 import org.dromara.easyai.transFormer.model.LayNormModel;
 import org.dromara.easyai.transFormer.nerve.HiddenNerve;
 
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +27,17 @@ public class LayNorm {//残差与归一化
     private final FirstDecoderBlock firstDecoderBlock;
     private Matrix bTa;//模型需要保存
     private Matrix power;//模型需要保存
-    private Matrix myNormData;//第一步归一化后的数据
+    private final Map<Integer, NormErrorBody> normErrorBodyMap = new HashMap<>();
     private final float study;//学习率
     private Matrix myFinalError;//从FNN传来的总误差
     private int number;//记录fnn传来的误差次数
     private final MatrixOperation matrixOperation;
+    private final DymStudy dymStudy;
+    private int updateTimes = 0;
+    private final Matrix ps1;
+    private final Matrix ps2;
+    private final Matrix bs1;
+    private final Matrix bs2;
     private final boolean encoder;
     private final int depth;
 
@@ -54,8 +62,9 @@ public class LayNorm {//残差与归一化
     }
 
     public LayNorm(int type, int featureDimension, CodecBlock myEncoderBlock, FirstDecoderBlock firstDecoderBlock
-            , float study, int coreNumber, boolean encoder, int depth) throws Exception {
+            , float study, int coreNumber, boolean encoder, int depth, DymStudy dymStudy) throws Exception {
         this.study = study;
+        this.dymStudy = dymStudy;
         this.myEncoderBlock = myEncoderBlock;
         this.encoder = encoder;
         this.depth = depth;
@@ -64,7 +73,11 @@ public class LayNorm {//残差与归一化
         this.firstDecoderBlock = firstDecoderBlock;
         matrixOperation = new MatrixOperation(coreNumber);
         bTa = new Matrix(1, featureDimension);
+        bs1 = new Matrix(1, featureDimension);
+        bs2 = new Matrix(1, featureDimension);
         power = new Matrix(featureDimension, featureDimension);
+        ps1 = new Matrix(featureDimension, featureDimension);
+        ps2 = new Matrix(featureDimension, featureDimension);
         Random random = new Random();
         float sh = 1;
         if (!encoder && depth == 1) {
@@ -82,23 +95,31 @@ public class LayNorm {//残差与归一化
         }
     }
 
-    private Matrix back(Matrix errorMatrix, Matrix myData) throws Exception {
+    private Matrix back(Matrix errorMatrix, int index) throws Exception {
+        NormErrorBody normErrorBody = normErrorBodyMap.get(index);
+        Matrix myData = normErrorBody.getOutMatrix();//归一化后输出矩阵
+        Matrix insertMatrix = normErrorBody.getInsertMatrix();//归一化前输入矩阵
+        float avg = normErrorBody.getAvg();//平均值
+        float sd = normErrorBody.getSd() + 0.0000001f;//标准差
         Matrix subPower = matrixOperation.matrixMulPd(errorMatrix, myData, power, false);
+        //做一下层梯度裁剪
         Matrix sub = matrixOperation.matrixMulPd(errorMatrix, myData, power, true);
+        int n = sub.getY();
+        subPower = dymStudy.getErrorMatrixByStudy(study, ps1, ps2, subPower, updateTimes);
         power = matrixOperation.add(subPower, power);
-        float n = (float) Math.sqrt(sub.getY());
-        float nt = -n / (n - 1);
-        Matrix subMatrix = new Matrix(1, sub.getY());
-        for (int i = 0; i < sub.getY(); i++) {
-            float subValue = sub.getNumber(0, i) * study;
-            float value = subValue * n + subMatrix.getNumber(0, i);
-            subMatrix.setNub(0, i, value);
-            for (int j = 0; j < sub.getY(); j++) {
-                if (i != j) {
-                    float otherValue = subValue * nt + subMatrix.getNumber(0, j);
-                    subMatrix.setNub(0, j, otherValue);
-                }
-            }
+        float var = sd * sd * n;
+        float sigmaG = sub.getSigma() / (n * sd);//所有分量梯度的和 / n *标准差
+        float allZk = 0;
+        for (int j = 0; j < n; j++) {
+            float zk = sub.getValue(0, j) * myData.getValue(0, j);
+            allZk = allZk + zk;
+        }
+        Matrix subMatrix = new Matrix(1, n);
+        for (int i = 0; i < n; i++) {
+            float subValue = sub.getValue(0, i) / sd;
+            float t = (insertMatrix.getValue(0, i) - avg) / var;
+            float error = subValue - sigmaG - t * allZk;
+            subMatrix.setValue(0, i, error);
         }
         return subMatrix;
     }
@@ -134,14 +155,15 @@ public class LayNorm {//残差与归一化
     }
 
     public void backErrorFromLine(Matrix errorMatrix, long eventID) throws Exception {//从线性层后传，类别为2
-        matrixOperation.mathMul(errorMatrix, study);
+        updateTimes++;
+        errorMatrix = dymStudy.getClipMatrix(errorMatrix, true);
         int x = errorMatrix.getX();
         MatrixList errorMatrixList = null;
         for (int i = 0; i < x; i++) {
             Matrix error = errorMatrix.getRow(i);
-            Matrix myData = myNormData.getRow(i);
-            bTa = matrixOperation.add(error, bTa);//更新bTa
-            Matrix myRowError = back(error, myData);
+            Matrix btError = dymStudy.getErrorMatrixByStudy(study, bs1, bs2, error, updateTimes);
+            bTa = matrixOperation.add(btError, bTa);//更新bTa
+            Matrix myRowError = back(error, i);
             if (i == 0) {
                 errorMatrixList = new MatrixList(myRowError, true);
             } else {
@@ -165,10 +187,6 @@ public class LayNorm {//残差与归一化
             , OutBack outBack, List<Integer> E, Matrix encoderFeature, boolean outAllPro) throws Exception {//残差及归一化
         Matrix myMatrix = matrixOperation.add(feature, outMatrix);//残差相加
         Matrix out = layNorm(myMatrix, isStudy);
-//        if (!encoder && depth > 1 && type == 1) {
-//            System.out.println(feature);
-//            System.out.println(outMatrix);
-//        }
         if (type == 1) {
             if (myEncoderBlock != null) {
                 sendHiddenParameter(out, eventID, isStudy, outBack, E, encoderFeature, outAllPro);//发送线性第一层
@@ -203,39 +221,39 @@ public class LayNorm {//残差与归一化
         }
     }
 
-    private Matrix norm(Matrix row) throws Exception {
+    private Matrix norm(Matrix row, boolean isStudy, int index) throws Exception {
         Matrix result = new Matrix(1, row.getY());
         float avg = row.getAVG();//平均值
         float sd = matrixOperation.getSdByMatrix(row, avg, 0.0000001f);//标准差
         for (int i = 0; i < row.getY(); i++) {
-            float value = (row.getNumber(0, i) - avg) / sd;
-            result.setNub(0, i, value);
+            float value = (row.getValue(0, i) - avg) / sd;
+            result.setValue(0, i, value);
+        }
+        if (isStudy) {
+            NormErrorBody normErrorBody = new NormErrorBody();
+            normErrorBody.setInsertMatrix(row);
+            normErrorBody.setAvg(avg);
+            normErrorBody.setSd(sd);
+            normErrorBody.setOutMatrix(result);
+            normErrorBodyMap.put(index, normErrorBody);
         }
         return result;
     }
 
     private Matrix layNorm(Matrix feature, boolean isStudy) throws Exception {//进行归一化
         int x = feature.getX();
-        MatrixList normMatrixList = null;
         MatrixList outMatrixList = null;
+        if (isStudy) {
+            normErrorBodyMap.clear();
+        }
         for (int i = 0; i < x; i++) {
-            Matrix normData = norm(feature.getRow(i));//back时候需要
-            if (isStudy) {
-                if (i == 0) {
-                    normMatrixList = new MatrixList(normData, true);
-                } else {
-                    normMatrixList.add(normData);
-                }
-            }
+            Matrix normData = norm(feature.getRow(i), isStudy, i);//back时候需要
             Matrix want = matrixOperation.add(matrixOperation.mulMatrix(normData, power), bTa);
             if (i == 0) {
                 outMatrixList = new MatrixList(want, true);
             } else {
                 outMatrixList.add(want);
             }
-        }
-        if (isStudy) {
-            myNormData = normMatrixList.getMatrix();
         }
         return outMatrixList.getMatrix();
     }

@@ -1,6 +1,7 @@
 package org.dromara.easyai.transFormer;
 
 import org.dromara.easyai.config.TfConfig;
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixList;
 import org.dromara.easyai.matrixTools.MatrixOperation;
@@ -16,7 +17,11 @@ import java.util.*;
 public class TransWordVector {
     private final List<String> wordList = new ArrayList<>();//词离散id
     private final List<Matrix> wordVectorList = new ArrayList<>();//词向量
+    private final List<Matrix> wordVectorS1List = new ArrayList<>();
+    private final List<Matrix> wordVectorS2List = new ArrayList<>();
     private final Matrix positionCodeMatrix;//位置编码矩阵
+    private final Matrix positionS1Matrix;
+    private final Matrix positionS2Matrix;
     private final WordIds wordIds = new WordIds();
     private final String splitWord;
     private final int featureDimension;//词向量维度
@@ -26,6 +31,8 @@ public class TransWordVector {
     private final MatrixOperation matrixOperation = new MatrixOperation();
     private final float studyRate;
     private final int maxLength;//最大长度
+    private int updateTimes = 0;
+    private final DymStudy dymStudy;
 
     public int getEndID() {//返回结束离散id，约定为2
         return 2;
@@ -39,10 +46,13 @@ public class TransWordVector {
         this.splitWord = tfConfig.getSplitWord();
         this.studyRate = tfConfig.getStudyRate();
         this.featureDimension = tfConfig.getFeatureDimension();
+        dymStudy = new DymStudy(tfConfig.getGMaxTh(), tfConfig.isAuto(), tfConfig.getLayCutTh());
         startWord = tfConfig.getStartWord();
         endWord = tfConfig.getEndWord();
         maxLength = tfConfig.getMaxLength() + 2;
         positionCodeMatrix = new Matrix(maxLength, featureDimension);
+        positionS1Matrix = new Matrix(maxLength, featureDimension);
+        positionS2Matrix = new Matrix(maxLength, featureDimension);
         wordList.add(startWord);
         wordList.add(endWord);
         initWordVector();
@@ -108,9 +118,11 @@ public class TransWordVector {
     private void updatePositionCode(Matrix error) throws Exception {
         int x = error.getX();
         int y = error.getY();
+        Matrix myError = dymStudy.getErrorMatrixByStudy(studyRate, positionS1Matrix, positionS2Matrix,
+                error, updateTimes);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                float value = positionCodeMatrix.getNumber(i, j) + error.getNumber(i, j);
+                float value = positionCodeMatrix.getNumber(i, j) + myError.getNumber(i, j);
                 positionCodeMatrix.setNub(i, j, value);
             }
         }
@@ -118,18 +130,21 @@ public class TransWordVector {
 
     private void updateWordVector(List<Integer> ids, Matrix error) throws Exception {
         int size = ids.size();
-        matrixOperation.mathMul(error, studyRate);
         updatePositionCode(error);
         for (int i = 0; i < size; i++) {
             int index = ids.get(i);
             Matrix wordError = error.getRow(i);
             Matrix wordVector = wordVectorList.get(index);
+            Matrix s1 = wordVectorS1List.get(index);
+            Matrix s2 = wordVectorS2List.get(index);
+            wordError = dymStudy.getErrorMatrixByStudy(studyRate, s1, s2, wordError, updateTimes);
             wordVector = matrixOperation.add(wordVector, wordError);
             wordVectorList.set(index, wordVector);
         }
     }
 
     public void backDecoderError(Matrix errorMatrix, Matrix allFeature) throws Exception {
+        updateTimes++;
         Matrix error = matrixOperation.add(errorMatrix, allFeature);
         List<Integer> ids = wordIds.getDecoder();
         int size = ids.size();
@@ -255,9 +270,13 @@ public class TransWordVector {
 
     private void initWordVector() throws Exception {
         Matrix matrix = new Matrix(1, featureDimension);
+        Matrix s1 = new Matrix(1, featureDimension);
+        Matrix s2 = new Matrix(1, featureDimension);
         for (int j = 0; j < featureDimension; j++) {
             matrix.setNub(0, j, random.nextFloat());
         }
+        wordVectorS1List.add(s1);
+        wordVectorS2List.add(s2);
         wordVectorList.add(matrix);
     }
 

@@ -18,6 +18,33 @@ public class TfConfig {
     private boolean norm = true;//生成模式，当为false的时候 使用自定义模式 typeNumber会生效
     public String startWord = "<start>";//开始符
     public String endWord = "<end>";//结束符
+    private float GMaxTh = 10;//权重梯度裁剪系数
+    private float layCutTh = 10000;//层梯度裁剪系数
+    private boolean auto = false;//是否用自适应学习率
+
+    public float getGMaxTh() {
+        return GMaxTh;
+    }
+
+    public void setGMaxTh(float GMaxTh) {
+        this.GMaxTh = GMaxTh;
+    }
+
+    public float getLayCutTh() {
+        return layCutTh;
+    }
+
+    public void setLayCutTh(float layCutTh) {
+        this.layCutTh = layCutTh;
+    }
+
+    public boolean isAuto() {
+        return auto;
+    }
+
+    public void setAuto(boolean auto) {
+        this.auto = auto;
+    }
 
     public boolean isNorm() {
         return norm;
