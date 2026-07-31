@@ -1,6 +1,7 @@
 package org.dromara.easyai.transFormer;
 
 import org.dromara.easyai.config.TfConfig;
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.transFormer.model.CodecBlockModel;
 import org.dromara.easyai.transFormer.model.TransFormerModel;
@@ -17,6 +18,7 @@ public class TransFormerManager {
     private FirstDecoderBlock firstDecoderBlock;//第一个解码器模块
     private LineBlock lineBlock;//线性分类层
     private TransWordVector transWordVector;//内置词向量
+    private DymStudy dymStudy;
 
     public TransWordVector getTransWordVector() {
         return transWordVector;
@@ -74,6 +76,7 @@ public class TransFormerManager {
      */
     private void init(TfConfig tfConfig, List<String> sentenceList, TransWordVectorModel transWordVectorModel) throws Exception {
         transWordVector = new TransWordVector(tfConfig);
+        dymStudy = new DymStudy(tfConfig.getGMaxTh(), tfConfig.isAuto(), tfConfig.getLayCutTh());
         int typeNumber = tfConfig.getTypeNumber();
         if (transWordVectorModel == null) {
             transWordVector.init(sentenceList);
@@ -96,13 +99,15 @@ public class TransFormerManager {
         if (multiNumber > 1 && featureDimension > 0 && allDepth > 0 && typeNumber > 1) {
             for (int i = 0; i < allDepth; i++) {
                 CodecBlock encoderBlock = new CodecBlock(multiNumber, featureDimension, studyPoint,
-                        i + 1, true, regularModel, regular, tfConfig.getCoreNumber(), transWordVector);
+                        i + 1, true, regularModel, regular, tfConfig.getCoreNumber(),
+                        transWordVector, dymStudy);
                 encoderBlocks.add(encoderBlock);
             }
             CodecBlock lastEnCoderBlock = encoderBlocks.get(encoderBlocks.size() - 1);//最后一层编码器
             for (int i = 0; i < allDepth; i++) {
                 CodecBlock decoderBlock = new CodecBlock(multiNumber, featureDimension, studyPoint,
-                        i + 2, false, regularModel, regular, tfConfig.getCoreNumber(), transWordVector);
+                        i + 2, false, regularModel, regular, tfConfig.getCoreNumber(),
+                        transWordVector, dymStudy);
                 decoderBlock.setLastEncoderBlock(lastEnCoderBlock);//放入最优一层编码器
                 decoderBlocks.add(decoderBlock);
             }
@@ -110,10 +115,10 @@ public class TransFormerManager {
             connectCodecBlock(encoderBlocks);
             connectCodecBlock(decoderBlocks);
             lineBlock = new LineBlock(typeNumber, featureDimension, studyPoint, lastDecoderBlock, showLog, regularModel
-                    , regular, tfConfig.getCoreNumber(), tfConfig.getTimePunValue());
+                    , regular, tfConfig.getCoreNumber(), tfConfig.getTimePunValue(), dymStudy);
             lastDecoderBlock.setLineBlock(lineBlock);
             firstDecoderBlock = new FirstDecoderBlock(multiNumber, featureDimension, studyPoint, decoderBlocks.get(0),
-                    tfConfig.getCoreNumber(), transWordVector);
+                    tfConfig.getCoreNumber(), transWordVector, dymStudy);
             firstDecoderBlock.setLastEncoderBlock(lastEnCoderBlock);
             decoderBlocks.get(0).setFirstDecoderBlock(firstDecoderBlock);
             sensoryNerve = new SensoryNerve(encoderBlocks.get(0), firstDecoderBlock, transWordVector);

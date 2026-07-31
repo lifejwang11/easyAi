@@ -1,5 +1,6 @@
 package org.dromara.easyai.transFormer;
 
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.function.ReLu;
 import org.dromara.easyai.function.Tanh;
 import org.dromara.easyai.i.OutBack;
@@ -50,7 +51,8 @@ public class LineBlock {//线性层模块
     }
 
     public LineBlock(int typeNumber, int featureDimension, float studyPoint, CodecBlock lastCodecBlock,
-                     boolean showLog, int regularModel, float regular, int coreNumber, float timePunValue) throws Exception {
+                     boolean showLog, int regularModel, float regular, int coreNumber, float timePunValue
+            , DymStudy dymStudy) throws Exception {
         this.featureDimension = featureDimension;
         this.lastCodecBlock = lastCodecBlock;
         matrixOperation = new MatrixOperation(coreNumber);
@@ -59,7 +61,7 @@ public class LineBlock {//线性层模块
         List<Nerve> hiddenNerves = new ArrayList<>();
         for (int i = 0; i < featureDimension; i++) {
             HiddenNerve hiddenNerve = new HiddenNerve(i + 1, 1, studyPoint, new ReLu(), featureDimension,
-                    typeNumber, this, regularModel, regular, coreNumber);
+                    typeNumber, this, regularModel, regular, coreNumber, dymStudy);
             hiddenNerves.add(hiddenNerve);
             hiddenNerveList.add(hiddenNerve);
         }
@@ -67,7 +69,7 @@ public class LineBlock {//线性层模块
         List<Nerve> outNerves = new ArrayList<>();
         for (int i = 0; i < typeNumber; i++) {
             OutNerve outNerve = new OutNerve(i + 1, studyPoint, featureDimension, featureDimension, typeNumber, softMax
-                    , regularModel, regular, coreNumber);
+                    , regularModel, regular, coreNumber, dymStudy);
             outNerve.connectFather(hiddenNerves);
             outNerves.add(outNerve);
             outNerveList.add(outNerve);

@@ -118,20 +118,18 @@ public class DymStudy {
         if (!auto) {
             return matrixOperation.mathMulBySelf(gcMatrix, studyRate);
         }
-        int x = s1Matrix.getX();
-        int y = s1Matrix.getY();
+        int x = gcMatrix.getX();
+        int y = gcMatrix.getY();
         Matrix errorMatrix = new Matrix(x, y);
-        if (x == gcMatrix.getX() && y == gcMatrix.getY()) {
-            for (int i = 0; i < x; i++) {
-                for (int j = 0; j < y; j++) {
-                    float s1 = s1Matrix.getNumber(i, j);//一阶矩
-                    float s2 = s2Matrix.getNumber(i, j);//二阶矩
-                    float g = gcMatrix.getNumber(i, j);//梯度
-                    float[] result = getAdamW(s1, s2, g, times, studyRate);
-                    s1Matrix.setNub(i, j, result[0]);
-                    s2Matrix.setNub(i, j, result[1]);
-                    errorMatrix.setNub(i, j, result[2]);
-                }
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float s1 = s1Matrix.getValue(i, j);//一阶矩
+                float s2 = s2Matrix.getValue(i, j);//二阶矩
+                float g = gcMatrix.getValue(i, j);//梯度
+                float[] result = getAdamW(s1, s2, g, times, studyRate);
+                s1Matrix.setValue(i, j, result[0]);
+                s2Matrix.setValue(i, j, result[1]);
+                errorMatrix.setValue(i, j, result[2]);
             }
         }
         return errorMatrix;

@@ -17,7 +17,7 @@ public class SoftMax extends Nerve {
     public SoftMax(List<OutNerve> outNerves, boolean isShowLog
             , int sensoryNerveNub, int hiddenNerveNub, int outNerveNub, float timePunValue) throws Exception {
         super(0, "softMax", 0, null, sensoryNerveNub, hiddenNerveNub, outNerveNub,
-                null, 0, 0, 1);
+                null, 0, 0, 1, null);
         this.timePunValue = timePunValue;
         this.outNerves = outNerves;
         this.isShowLog = isShowLog;

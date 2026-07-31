@@ -1,6 +1,7 @@
 package org.dromara.easyai.transFormer.nerve;
 
 
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.i.OutBack;
 
@@ -15,9 +16,9 @@ public class OutNerve extends Nerve {
     private final SoftMax softMax;
 
     public OutNerve(int id, float studyPoint, int sensoryNerveNub, int hiddenNerveNub, int outNerveNub,
-                    SoftMax softMax, int regularModel, float regular, int coreNumber) throws Exception {
+                    SoftMax softMax, int regularModel, float regular, int coreNumber, DymStudy dymStudy) throws Exception {
         super(id, "OutNerve", studyPoint, null, sensoryNerveNub,
-                hiddenNerveNub, outNerveNub, null, regularModel, regular, coreNumber);
+                hiddenNerveNub, outNerveNub, null, regularModel, regular, coreNumber, dymStudy);
         this.softMax = softMax;
     }
 

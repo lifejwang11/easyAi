@@ -298,7 +298,7 @@ public abstract class ResConvCount {
                 //位置重新摆正
                 Matrix outMatrixRe = rePosition(outMatrix, mySize);
                 //批量归一化 处理
-                Matrix normMatrix = matrixNorm.norm(outMatrixRe, m);
+                Matrix normMatrix = matrixNorm.norm(outMatrixRe, m, study);
                 // 这个地方要决定是否有跳层
                 if (resFeatureList != null) {//与残差相加
                     Matrix resFeatureMatrix = resFeatureList.get(i);
@@ -388,7 +388,7 @@ public abstract class ResConvCount {
                 //位置重新摆正
                 addMatrix = rePosition(addMatrix, mySize);
                 //批量归一化 处理
-                Matrix normMatrix = matrixNorm.norm(addMatrix, m);
+                Matrix normMatrix = matrixNorm.norm(addMatrix, m, study);
                 // ReLu
                 Matrix outMatrix = reluMatrix(normMatrix, reLu);
                 outMatrixList.add(outMatrix);

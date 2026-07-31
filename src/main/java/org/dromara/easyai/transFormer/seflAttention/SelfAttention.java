@@ -1,5 +1,6 @@
 package org.dromara.easyai.transFormer.seflAttention;
 
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.transFormer.model.QKVModel;
@@ -13,25 +14,40 @@ public class SelfAttention {//自注意力层
     private Matrix powerQ;//q权重矩阵
     private Matrix powerK;//k权重矩阵
     private Matrix powerV;//v权重矩阵
+    private final Matrix qs1;
+    private final Matrix qs2;
+    private final Matrix ks1;
+    private final Matrix ks2;
+    private final Matrix vs1;
+    private final Matrix vs2;
     private final int wordVectorDimension;//特征矩阵维度
     private final int depth;//深度
     private final float studyPoint;//学习率
     private final int selfID;
     private final boolean encoder;//是否为编码器模块
     private final MatrixOperation matrixOperation;
+    private final DymStudy dymStudy;
+    private int updateTimes = 0;//迭代次数
 
     public int getSelfID() {
         return selfID;
     }
 
     public SelfAttention(float studyPoint, int depth, int wordVectorDimension, int selfID, boolean encoder
-            , int coreNumber) throws Exception {
+            , int coreNumber, DymStudy dymStudy) throws Exception {
         matrixOperation = new MatrixOperation(coreNumber);
+        this.dymStudy = dymStudy;
         this.studyPoint = studyPoint;
         this.depth = depth;
         this.encoder = encoder;
         this.wordVectorDimension = wordVectorDimension;
         this.selfID = selfID;
+        qs1 = new Matrix(wordVectorDimension, wordVectorDimension);
+        qs2 = new Matrix(wordVectorDimension, wordVectorDimension);
+        ks1 = new Matrix(wordVectorDimension, wordVectorDimension);
+        ks2 = new Matrix(wordVectorDimension, wordVectorDimension);
+        vs1 = new Matrix(wordVectorDimension, wordVectorDimension);
+        vs2 = new Matrix(wordVectorDimension, wordVectorDimension);
         powerQ = initPowerMatrix(wordVectorDimension);
         powerK = initPowerMatrix(wordVectorDimension);
         powerV = initPowerMatrix(wordVectorDimension);
@@ -62,13 +78,14 @@ public class SelfAttention {//自注意力层
 
 
     public AttentionError backError(Matrix feature, long eventID) throws Exception {//返回误差
-        Matrix myError = matrixOperation.mathMulBySelf(feature, studyPoint);
+        feature = dymStudy.getClipMatrix(feature, true);
+        updateTimes++;
         MyFeature featureBody = this.featureMatrix.get(eventID);
         Matrix q = featureBody.q;
         Matrix kt = featureBody.kt;
         Matrix v = featureBody.v;
         Matrix qkt = featureBody.qkt;
-        Matrix errorV = matrixOperation.matrixMulPd(myError, qkt, v, false);//先求V的偏导
+        Matrix errorV = matrixOperation.matrixMulPd(feature, qkt, v, false);//先求V的偏导
         Matrix subQktMax = matrixOperation.matrixMulPd(feature, qkt, v, true);
         Matrix grMatrix = matrixOperation.matrixSoftMaxPd(qkt, subQktMax, wordVectorDimension);//对softMax做误差求导
         if (depth == 1 && !encoder) {
@@ -77,13 +94,13 @@ public class SelfAttention {//自注意力层
         Matrix errorKt = matrixOperation.matrixMulPd(grMatrix, q, kt, false);
         Matrix errorQ = matrixOperation.matrixMulPd(grMatrix, q, kt, true);
         Matrix errorK = matrixOperation.transPosition(errorKt);
-        ErrorFeature QPower = updateError(errorQ, featureBody.allFeature, powerQ);
+        ErrorFeature QPower = updateError(errorQ, featureBody.allFeature, powerQ, qs1, qs2);
         Matrix leftMatrix = featureBody.allFeature;
         if (!encoder && depth > 1) {//大于一层的解码器
             leftMatrix = featureBody.encoderFeature;
         }
-        ErrorFeature KPower = updateError(errorK, leftMatrix, powerK);
-        ErrorFeature VPower = updateError(errorV, leftMatrix, powerV);
+        ErrorFeature KPower = updateError(errorK, leftMatrix, powerK, ks1, ks2);
+        ErrorFeature VPower = updateError(errorV, leftMatrix, powerV, vs1, vs2);
         powerQ = QPower.powerMatrix;//更新权重
         powerK = KPower.powerMatrix;
         powerV = VPower.powerMatrix;
@@ -103,9 +120,11 @@ public class SelfAttention {//自注意力层
         return attentionError;
     }
 
-    private ErrorFeature updateError(Matrix errorMatrix, Matrix feature, Matrix powerMatrix) throws Exception {//调整误差
+    private ErrorFeature updateError(Matrix errorMatrix, Matrix feature, Matrix powerMatrix
+            , Matrix s1, Matrix s2) throws Exception {//调整误差
         Matrix errorPower = matrixOperation.matrixMulPd(errorMatrix, feature, powerMatrix, false);
         Matrix featureError = matrixOperation.matrixMulPd(errorMatrix, feature, powerMatrix, true);
+        errorPower = dymStudy.getErrorMatrixByStudy(studyPoint, s1, s2, errorPower, updateTimes);
         Matrix nextPowerMatrix = matrixOperation.add(powerMatrix, errorPower);
         ErrorFeature errorFeature = new ErrorFeature();
         errorFeature.errorFeatureMatrix = featureError;
@@ -148,7 +167,8 @@ public class SelfAttention {//自注意力层
         Matrix v = matrixOperation.mulMatrix(kvFeature, powerV);
         Matrix kt = matrixOperation.transPosition(k);//k转置
         Matrix qkt = matrixOperation.mulMatrix(q, kt);
-        matrixOperation.mathDiv(qkt, (float) Math.sqrt(wordVectorDimension));
+        float norm = (float) (1f / Math.sqrt(wordVectorDimension));
+        matrixOperation.mathMul(qkt, norm);
         //做蒙版
         if (depth == 1 && !encoder) {//第一层解码器 需要先做蒙版操作
             mask(qkt);

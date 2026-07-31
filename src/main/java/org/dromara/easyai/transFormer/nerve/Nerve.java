@@ -1,5 +1,6 @@
 package org.dromara.easyai.transFormer.nerve;
 
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.i.ActiveFunction;
@@ -20,28 +21,31 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class Nerve {
     private final List<Nerve> son = new ArrayList<>();//轴突下一层的连接神经元
     private final List<Nerve> father = new ArrayList<>();//树突上一层的连接神经元
-    protected LayNorm beforeLayNorm;//多头自注意力层
-    protected LayNorm afterLayNorm;//多头自注意力层
-    protected Matrix powerMatrix;//权重矩阵 作为模型取出
+    LayNorm beforeLayNorm;//多头自注意力层
+    LayNorm afterLayNorm;//多头自注意力层
+    Matrix powerMatrix;//权重矩阵 作为模型取出
     private final int id;//同级神经元编号,注意在同层编号中ID应有唯一性
     private final int hiddenNerveNub;//隐层神经元个数
     private final int sensoryNerveNub;//输入神经元个数
     private final int outNerveNub;//输出神经元个数
-    protected Map<Long, MatrixList> reMatrixFeatures = new ConcurrentHashMap<>();
-    protected String name;//该神经元所属类型
-    protected Matrix featureMatrix;
-    protected float E;//模板期望值
-    protected float studyPoint;
-    protected LineBlock lineBlock;//是否为最后线性层
-    protected Matrix sigmaW;//对上一层权重与上一层梯度的积进行求和
+    Map<Long, MatrixList> reMatrixFeatures = new ConcurrentHashMap<>();
+    String name;//该神经元所属类型
+    Matrix featureMatrix;
+    float studyPoint;
+    LineBlock lineBlock;//是否为最后线性层
+    Matrix sigmaW;//对上一层权重与上一层梯度的积进行求和
     private int backNub = 0;//当前节点被反向传播的次数
-    protected ActiveFunction activeFunction;
-    protected Matrix outMatrix;
-    protected int myUpNumber;//统计参数数量
-    protected int depth;//所处深度
+    ActiveFunction activeFunction;
+    Matrix outMatrix;
+    int myUpNumber;//统计参数数量
+    int depth;//所处深度
     private final int regularModel;//正则模式
     private final float regular;//正则系数
     private final MatrixOperation matrixOperation;
+    private int updateTimes = 0;
+    private final DymStudy dymStudy;
+    private Matrix ps1;
+    private Matrix ps2;
 
     public int getDepth() {
         return depth;
@@ -57,8 +61,9 @@ public abstract class Nerve {
 
     protected Nerve(int id, String name, float studyPoint, ActiveFunction activeFunction, int sensoryNerveNub,
                     int hiddenNerveNub, int outNerveNub, LineBlock lineBlock, int regularModel,
-                    float regular, int coreNumber) throws Exception {//该神经元在同层神经元中的编号
+                    float regular, int coreNumber, DymStudy dymStudy) throws Exception {//该神经元在同层神经元中的编号
         this.id = id;
+        this.dymStudy = dymStudy;
         matrixOperation = new MatrixOperation(coreNumber);
         this.regular = regular;
         this.regularModel = regularModel;
@@ -149,8 +154,9 @@ public abstract class Nerve {
 
 
     protected void updatePower(long eventId, Matrix errorMatrix, Matrix allError) throws Exception {//修改阈值
-        Matrix myError = matrixOperation.mathMulBySelf(errorMatrix, studyPoint);
-        Matrix error = updateW(myError, errorMatrix);//更新本神经元参数与返回下层误差
+        errorMatrix = dymStudy.getClipMatrix(errorMatrix, true);
+        updateTimes++;
+        Matrix error = updateW(errorMatrix);//更新本神经元参数与返回下层误差
         sigmaW = null;//求和结果归零
         backSendMessage(eventId, error, allError);
     }
@@ -161,12 +167,12 @@ public abstract class Nerve {
         for (int i = 0; i < size; i++) {
             float value = powerMatrix.getNumber(i, 0);
             if (regularModel == RZ.L1) {//l1正则化
-                sigma = sigma + (float) Math.abs(value);
+                sigma = sigma + Math.abs(value);
             } else {
-                sigma = sigma + (float) Math.pow(value, 2);
+                sigma = sigma + value * value;
             }
         }
-        float param = (float) sigma * regular * studyPoint;
+        float param = sigma * regular * studyPoint;
         Matrix rzMatrix = new Matrix(powerMatrix.getX(), powerMatrix.getY());
         for (int i = 0; i < size; i++) {
             float value = powerMatrix.getNumber(i, 0);
@@ -185,13 +191,14 @@ public abstract class Nerve {
         return rzMatrix;
     }
 
-    private Matrix updateW(Matrix errorMatrix, Matrix error) throws Exception {//
+    private Matrix updateW(Matrix error) throws Exception {//
         Matrix rzMatrix = null;
         if (regularModel != RZ.NOT_RZ) {
             rzMatrix = getRegularizationMatrix();
         }
         Matrix subFeature = matrixOperation.matrixMulPd(error, featureMatrix, powerMatrix, true);
-        Matrix subPower = matrixOperation.matrixMulPd(errorMatrix, featureMatrix, powerMatrix, false);
+        Matrix subPower = matrixOperation.matrixMulPd(error, featureMatrix, powerMatrix, false);
+        subPower = dymStudy.getErrorMatrixByStudy(studyPoint, ps1, ps2, subPower, updateTimes);
         if (regularModel != RZ.NOT_RZ) {
             powerMatrix = matrixOperation.add(powerMatrix, rzMatrix);//正则化抑制权重
         }
@@ -250,9 +257,11 @@ public abstract class Nerve {
         }
         if (myUpNumber > 0) {//输入个数
             powerMatrix = new Matrix(myUpNumber + 1, 1);
+            ps1 = new Matrix(myUpNumber + 1, 1);
+            ps2 = new Matrix(myUpNumber + 1, 1);
             float sh = (float) Math.sqrt(myUpNumber);
             for (int i = 0; i < myUpNumber; i++) {
-                float nub = (float) (random.nextFloat() / sh);
+                float nub = random.nextFloat() / sh;
                 powerMatrix.setNub(i, 0, nub);
             }
             //生成随机阈值

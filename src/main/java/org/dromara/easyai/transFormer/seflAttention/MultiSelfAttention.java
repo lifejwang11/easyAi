@@ -1,5 +1,6 @@
 package org.dromara.easyai.transFormer.seflAttention;
 
+import org.dromara.easyai.conv.DymStudy;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.i.OutBack;
@@ -16,6 +17,10 @@ public class MultiSelfAttention {//多头自注意力层
     private LayNorm layNorm;
     private final float studyPoint;
     private Matrix powerMatrix;//权重矩阵
+    private final Matrix ps1;
+    private final Matrix ps2;
+    private int updateTimes = 0;
+    private final DymStudy dymStudy;
     private final int multiNumber;//头数
     private final int wordVectorDimension;//维度
     private Matrix featureMatrix;//接受到的特征矩阵
@@ -97,10 +102,12 @@ public class MultiSelfAttention {//多头自注意力层
     }
 
     public void backError(Matrix allErrorMatrix, long eventID) throws Exception {
-        Matrix error = matrixOperation.mathMulBySelf(allErrorMatrix, studyPoint);
+        updateTimes++;
+        allErrorMatrix = dymStudy.getClipMatrix(allErrorMatrix, true);
         //求多头自注意力层权重矩阵的偏导矩阵
-        Matrix subPower = matrixOperation.matrixMulPd(error, featureMatrix, powerMatrix, false);
+        Matrix subPower = matrixOperation.matrixMulPd(allErrorMatrix, featureMatrix, powerMatrix, false);
         Matrix subFeature = matrixOperation.matrixMulPd(allErrorMatrix, featureMatrix, powerMatrix, true);
+        subPower = dymStudy.getErrorMatrixByStudy(studyPoint, ps1, ps2, subPower, updateTimes);
         powerMatrix = matrixOperation.add(powerMatrix, subPower);//更新权重矩阵
         List<Matrix> matrixList = splitMatrix(subFeature);//拆分矩阵
         Matrix allNextFeatureError = null;
@@ -187,7 +194,8 @@ public class MultiSelfAttention {//多头自注意力层
 
 
     public MultiSelfAttention(int multiNumber, float studyPoint, int depth, int wordVectorDimension, boolean encoder,
-                              CodecBlock codecBlock, int coreNumber, TransWordVector transWordVector) throws Exception {
+                              CodecBlock codecBlock, int coreNumber, TransWordVector transWordVector
+            , DymStudy dymStudy) throws Exception {
         Random random = new Random();
         matrixOperation = new MatrixOperation(coreNumber);
         this.transWordVector = transWordVector;
@@ -198,11 +206,15 @@ public class MultiSelfAttention {//多头自注意力层
         this.wordVectorDimension = wordVectorDimension;
         this.multiNumber = multiNumber;
         this.depth = depth;
+        this.dymStudy = dymStudy;
         for (int k = 0; k < multiNumber; k++) {
-            SelfAttention selfAttention = new SelfAttention(studyPoint, depth, wordVectorDimension, k, encoder, coreNumber);
+            SelfAttention selfAttention = new SelfAttention(studyPoint, depth, wordVectorDimension, k,
+                    encoder, coreNumber, dymStudy);
             selfAttentions.add(selfAttention);
         }
         powerMatrix = new Matrix(yiZhi, wordVectorDimension);
+        ps1 = new Matrix(yiZhi, wordVectorDimension);
+        ps2 = new Matrix(yiZhi, wordVectorDimension);
         int x = powerMatrix.getX();
         int y = powerMatrix.getY();
         for (int i = 0; i < x; i++) {
