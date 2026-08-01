@@ -18,7 +18,6 @@ public class TransFormerManager {
     private FirstDecoderBlock firstDecoderBlock;//第一个解码器模块
     private LineBlock lineBlock;//线性分类层
     private TransWordVector transWordVector;//内置词向量
-    private DymStudy dymStudy;
 
     public TransWordVector getTransWordVector() {
         return transWordVector;
@@ -76,7 +75,7 @@ public class TransFormerManager {
      */
     private void init(TfConfig tfConfig, List<String> sentenceList, TransWordVectorModel transWordVectorModel) throws Exception {
         transWordVector = new TransWordVector(tfConfig);
-        dymStudy = new DymStudy(tfConfig.getGMaxTh(), tfConfig.isAuto(), tfConfig.getLayCutTh());
+        DymStudy dymStudy = new DymStudy(tfConfig.getGMaxTh(), tfConfig.isAuto(), tfConfig.getLayCutTh());
         int typeNumber = tfConfig.getTypeNumber();
         if (transWordVectorModel == null) {
             transWordVector.init(sentenceList);
