@@ -71,6 +71,12 @@ public class NMS {
         return iouMessage;
     }
 
+    public float getIOU(Box box1, Box box2) {//获取两个检测框的交并比
+        IouMessage iouMessage = getMyIou(box1, box2);
+        float mergeS = iouMessage.s1 + iouMessage.s2 - iouMessage.intersectS;
+        return iouMessage.intersectS / mergeS;
+    }
+
     private boolean isOne(Box box1, Box box2, float iouTh) {
         boolean isOne = false;
         IouMessage iouMessage = getMyIou(box1, box2);

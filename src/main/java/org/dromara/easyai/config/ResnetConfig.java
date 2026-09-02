@@ -7,7 +7,7 @@ package org.dromara.easyai.config;
  */
 public class ResnetConfig {
     private int size;//图像尺寸 图像必须为正方形
-    private float studyRate = 0.0025f;//全局学习率
+    private float studyRate = 0.0005f;//全局学习率
     private int regularModel = RZ.NOT_RZ;//正则模式
     private float regular = 0;//正则系数
     private int hiddenNerveNumber = 16;//线性层隐层神经元数量
@@ -22,6 +22,15 @@ public class ResnetConfig {
     private boolean auto = true;//是否使用自适应学习率
     private int batchSize = 32;//小批量训练数量
     private int dcnDeep = 0;//可变动卷积深度
+    private boolean fpn = false;//是否对接fpn
+
+    public boolean isFpn() {
+        return fpn;
+    }
+
+    public void setFpn(boolean fpn) {
+        this.fpn = fpn;
+    }
 
     public int getDcnDeep() {
         return dcnDeep;

@@ -45,6 +45,11 @@ public class YoloTypeBack implements OutBack {
     }
 
     @Override
+    public void outBackBox(List<OutBox> myOutBox, long eventId, int deep) {
+
+    }
+
+    @Override
     public void getStudyLog(float e, float out, int nerveId) {
 
     }

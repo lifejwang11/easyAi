@@ -3,6 +3,7 @@ package org.dromara.easyai.resnet;
 import org.dromara.easyai.batchNerve.BatchInputBlock;
 import org.dromara.easyai.batchNerve.BatchNerveConfig;
 import org.dromara.easyai.batchNerve.BatchNerveManager;
+import org.dromara.easyai.config.FpnConfig;
 import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.config.ResnetConfig;
 import org.dromara.easyai.conv.ResConvCount;
@@ -12,6 +13,7 @@ import org.dromara.easyai.nerveCenter.NerveManager;
 import org.dromara.easyai.nerveEntity.SensoryNerve;
 import org.dromara.easyai.resnet.entity.ResBlockModel;
 import org.dromara.easyai.resnet.entity.ResnetModel;
+import org.dromara.easyai.resnet.fpn.FpnManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +24,13 @@ import java.util.List;
  * @des resnet管理器
  */
 public class ResnetManager extends ResConvCount {
-    private final BatchNerveManager batchNerveManager;
+    private BatchNerveManager batchNerveManager;
     private final List<ResBlock> resBlockList = new ArrayList<>();//残差集合
-    private final ResnetInput restNetInput;
-    private final int deep;//深度
-    private final int featureLength;//最后一层通道数
-    private final int lastSize;//最后一层卷积层大小
+    private ResnetInput restNetInput;
+    private int deep;//深度
+    private int featureLength;//最后一层通道数
+    private int lastSize;//最后一层卷积层大小
+    private FpnManager fpnManager;
 
     public int getDeep() {
         return deep;
@@ -47,6 +50,9 @@ public class ResnetManager extends ResConvCount {
 
     public ResnetModel getModel() throws Exception {
         ResnetModel resnetModel = new ResnetModel();
+        if (fpnManager != null) {
+            resnetModel.setFpnBlockModels(fpnManager.getModel());
+        }
         List<ResBlockModel> resBlockModelList = new ArrayList<>();
         resnetModel.setResBlockModelList(resBlockModelList);
         for (ResBlock resBlock : resBlockList) {
@@ -57,6 +63,9 @@ public class ResnetManager extends ResConvCount {
     }
 
     public void insertModel(ResnetModel resnetModel) {
+        if (fpnManager != null) {
+            fpnManager.insertModel(resnetModel.getFpnBlockModels());
+        }
         List<ResBlockModel> resBlockModelList = resnetModel.getResBlockModelList();
         int size = resBlockList.size();
         for (int i = 0; i < size; i++) {
@@ -79,7 +88,69 @@ public class ResnetManager extends ResConvCount {
         return x;
     }
 
+    /**
+     * 计算每个stage输出特征图尺寸，用于FPN尺寸对齐
+     * 规则：
+     * 1. 7*7卷积固定开启：7*7(stride2) + maxPool(stride2)，产出stage0输出
+     * 2. 3*3 stride=1，padding补两排0，尺寸不变，不参与尺寸运算
+     * 3. stageCount：全部stage总个数（包含stage0），外部传入，输入图像可变，下采样层数不固定
+     * 4. 每一次stride=2下采样，actionDeep递增，传给fill，不再传固定全局值
+     *
+     * @param inputSize  原始正方形输入图像尺寸
+     * @param stageCount 全部stage总个数（含stage0），必须 >=1
+     * @return List<Integer> 每个stage输出尺寸，list.size == stageCount
+     */
+    public List<Integer> calcStageOutputSizes(int inputSize, int stageCount) {
+        List<Integer> outputSizes = new ArrayList<>();
+        int current = inputSize;
+        final int step = 2;
+        int actionDeep = 0; // 记录这是第几次stride‑2下采样动作
+
+        // stage0：7*7(stride2) 第1次下采样动作
+        actionDeep++;
+        boolean needPad7x7 = fill(actionDeep, current, true);
+        current = needPad7x7 ? (current + step - 1) / step : current / step;
+
+        // maxPool(stride2) 第2次下采样动作，完成stage0
+        boolean needPadPool = fill(actionDeep, current, false);
+        current = needPadPool ? (current + step - 1) / step : current / step;
+        outputSizes.add(current);
+
+        // 剩下 stageCount‑1 个残差下采样stage，每一轮一次stride‑2
+        if (stageCount > 1) {
+            for (int s = 1; s < stageCount; s++) {
+                actionDeep++;
+                boolean needPad = fill(actionDeep, current, false);
+                current = needPad ? (current + step - 1) / step : current / step;
+                outputSizes.add(current);
+            }
+        }
+        return outputSizes;
+    }
+
+
     public ResnetManager(ResnetConfig resNetConfig, ActiveFunction activeFunction) throws Exception {
+        init(resNetConfig, activeFunction);
+    }
+
+    public ResnetManager(ResnetConfig resNetConfig, FpnConfig fpnConfig, ActiveFunction activeFunction) throws Exception {
+        init(resNetConfig, activeFunction);
+        fpnConfig.setTypeNumber(resNetConfig.getTypeNumber());
+        if (deep < fpnConfig.getStartDeep()) {
+            throw new IllegalAccessException("fpn起始层不可以大于resnet总层数");
+        }
+        fpnConfig.setAllDeep(deep);
+        fpnConfig.setStudyRate(resNetConfig.getStudyRate());
+        fpnConfig.setgMaxTh(resNetConfig.getGMaxTh());
+        fpnConfig.setLayerCutTh(resNetConfig.getLayGMaxTh());
+        fpnConfig.setDeep(resNetConfig.getHiddenDeep());
+        fpnConfig.setShowLog(resNetConfig.isShowLog());
+        fpnConfig.setChannelNo(resNetConfig.getChannelNo());
+        fpnConfig.setSize(resNetConfig.getSize());
+        fpnManager = new FpnManager(fpnConfig, resBlockList);
+    }
+
+    private void init(ResnetConfig resNetConfig, ActiveFunction activeFunction) throws Exception {
         int deep = getConvDeep(resNetConfig.getSize(), resNetConfig.getMinFeatureSize());//获取深度
         int channelNo = resNetConfig.getChannelNo();//通道数
         int lastSize = getFeatureSize(deep, resNetConfig.getSize());//最后一层特征大小
@@ -105,7 +176,7 @@ public class ResnetManager extends ResConvCount {
             boolean dConv = isDCN(i, dcnDeep);
             ResBlock resBlock = new ResBlock(channelNo, i + 1, studyRate, resNetConfig.getSize(), batchInputBlock
                     , resNetConfig.getGMaxTh(), resNetConfig.isAuto(), resNetConfig.getBatchSize(),
-                    rz, resNetConfig.getRegular(), resNetConfig.getLayGMaxTh(), dConv);
+                    rz, resNetConfig.getRegular(), resNetConfig.getLayGMaxTh(), dConv, resNetConfig.isFpn());
             resBlockList.add(resBlock);
         }
         restNetInput = new ResnetInput(resBlockList.get(0), resNetConfig.getSize(), resNetConfig.getBatchSize());

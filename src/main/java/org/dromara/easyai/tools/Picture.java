@@ -170,10 +170,10 @@ public class Picture {
                 int r = (pixel & 0xff0000) >> 16;
                 int g = (pixel & 0xff00) >> 8;
                 int b = (pixel & 0xff);
-                matrixR.setNub(i, j, r / 255f);
-                matrixG.setNub(i, j, g / 255f);
-                matrixB.setNub(i, j, b / 255f);
-                matrixH.setNub(i, j, ((r * 38 + g * 75 + b * 15) >> 7) / 255f);
+                matrixR.setValue(i, j, r / 255f);
+                matrixG.setValue(i, j, g / 255f);
+                matrixB.setValue(i, j, b / 255f);
+                matrixH.setValue(i, j, ((r * 38 + g * 75 + b * 15) >> 7) / 255f);
             }
         }
         return threeChannelMatrix;

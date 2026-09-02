@@ -13,7 +13,7 @@ public class YoloConfig {
     private boolean showLog = false;//是否打印学习过程中的log
     private int enhance = 1;//数据增强
     private float iouTh = 0.05f;//合并框交并比阈值
-    private float containIouTh = 0.15f;//是否包含样本交并比阈值
+    private float containIouTh = 0.25f;//是否包含样本交并比阈值
     private float pth = 0.4f;//可信概率阈值
     private float stepReduce = 0.25f;//训练步长收缩系数
     private float checkStepReduce = 0.5f;//检测步长收缩系数

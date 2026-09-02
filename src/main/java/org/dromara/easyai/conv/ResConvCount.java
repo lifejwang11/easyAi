@@ -1,6 +1,5 @@
 package org.dromara.easyai.conv;
 
-import org.dromara.easyai.batchNerve.BatchNerveModel;
 import org.dromara.easyai.conv.dcn.DConv;
 import org.dromara.easyai.function.ReLu;
 import org.dromara.easyai.i.ActiveFunction;
@@ -124,7 +123,7 @@ public abstract class ResConvCount {
         Matrix myMatrix = new Matrix(x * 2, y * 2);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                float value = matrix.getNumber(i, j) / 4;
+                float value = matrix.getValue(i, j) / 4;
                 insertMatrixValue(i * 2, j * 2, value, myMatrix);
             }
         }
@@ -136,7 +135,7 @@ public abstract class ResConvCount {
         int ySize = y + 2;
         for (int i = x; i < xSize; i++) {
             for (int j = y; j < ySize; j++) {
-                matrix.setNub(i, j, value);
+                matrix.setValue(i, j, value);
             }
         }
     }
@@ -729,8 +728,8 @@ public abstract class ResConvCount {
         Matrix resultError = new Matrix(x * y, 1);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                float error = errorMatrix.getNumber(i, j);
-                resultError.setNub(y * i + j, 0, error);
+                float error = errorMatrix.getValue(i, j);
+                resultError.setValue(y * i + j, 0, error);
             }
         }
         return resultError;
@@ -743,24 +742,24 @@ public abstract class ResConvCount {
         Matrix resultError = new Matrix(x, y);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                float error = errorMatrix.getNumber(i, j);
-                float out = outMatrix.getNumber(i, j);
+                float error = errorMatrix.getValue(i, j);
+                float out = outMatrix.getValue(i, j);
                 error = error * activeFunction.functionG(out);
-                resultError.setNub(i, j, error);
+                resultError.setValue(i, j, error);
             }
         }
         return resultError;
     }
 
-    protected Matrix downPooling(Matrix matrix) throws Exception {//下池化
+    protected Matrix downPooling(Matrix matrix) {//下池化
         int x = matrix.getX();
         int y = matrix.getY();
         Matrix myMatrix = new Matrix(x / 2, y / 2);
         for (int i = 0; i < x - 1; i += 2) {
             for (int j = 0; j < y - 1; j += 2) {
-                float sigma = (matrix.getNumber(i, j) + matrix.getNumber(i, j + 1) +
-                        matrix.getNumber(i + 1, j) + matrix.getNumber(i + 1, j + 1)) / 4f;
-                myMatrix.setNub(i / 2, j / 2, sigma);
+                float sigma = (matrix.getValue(i, j) + matrix.getValue(i, j + 1) +
+                        matrix.getValue(i + 1, j) + matrix.getValue(i + 1, j + 1)) / 4f;
+                myMatrix.setValue(i / 2, j / 2, sigma);
             }
         }
         return myMatrix;
@@ -772,7 +771,7 @@ public abstract class ResConvCount {
         return matrix.getSonOfMatrix(0, 0, x, y);
     }
 
-    protected Matrix padding2(Matrix matrix, int paddingSize) throws Exception {
+    protected Matrix padding2(Matrix matrix, int paddingSize) {
         int xSize = matrix.getX();
         int ySize = matrix.getY();
         int x = xSize + paddingSize;
@@ -780,7 +779,7 @@ public abstract class ResConvCount {
         Matrix outMatrix = new Matrix(x, y);
         for (int i = 0; i < xSize; i++) {
             for (int j = 0; j < ySize; j++) {
-                outMatrix.setNub(i, j, matrix.getNumber(i, j));
+                outMatrix.setValue(i, j, matrix.getValue(i, j));
             }
         }
         return outMatrix;
@@ -792,37 +791,37 @@ public abstract class ResConvCount {
         return matrix.getSonOfMatrix(1, 1, x - 2, y - 2);
     }
 
-    private Matrix padding(Matrix matrix) throws Exception {//padding
+    private Matrix padding(Matrix matrix) {//padding
         int x = matrix.getX() + 2;
         int y = matrix.getY() + 2;
         Matrix outMatrix = new Matrix(x, y);
         for (int i = 1; i < x - 1; i++) {
             for (int j = 1; j < y - 1; j++) {
-                outMatrix.setNub(i, j, matrix.getNumber(i - 1, j - 1));
+                outMatrix.setValue(i, j, matrix.getValue(i - 1, j - 1));
             }
         }
         return outMatrix;
     }
 
-    private Matrix rePosition(Matrix matrixOut, int mySize) throws Exception {//重新摆正位置
+    private Matrix rePosition(Matrix matrixOut, int mySize) {//重新摆正位置
         Matrix myMatrix = new Matrix(mySize, mySize);//线性变化后的矩阵
         for (int i = 0; i < mySize; i++) {
             for (int j = 0; j < mySize; j++) {
-                float nub = matrixOut.getNumber(i * mySize + j, 0);
-                myMatrix.setNub(i, j, nub);
+                float nub = matrixOut.getValue(i * mySize + j, 0);
+                myMatrix.setValue(i, j, nub);
             }
         }
         return myMatrix;
     }
 
-    private Matrix reluMatrix(Matrix matrixOut, ActiveFunction activeFunction) throws Exception {
+    private Matrix reluMatrix(Matrix matrixOut, ActiveFunction activeFunction){
         int x = matrixOut.getX();
         int y = matrixOut.getY();
         Matrix myMatrix = new Matrix(x, y);
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                float nub = activeFunction.function(matrixOut.getNumber(i, j));
-                myMatrix.setNub(i, j, nub);
+                float nub = activeFunction.function(matrixOut.getValue(i, j));
+                myMatrix.setValue(i, j, nub);
             }
         }
         return myMatrix;

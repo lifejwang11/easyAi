@@ -33,12 +33,15 @@ public class ConvParameter {
     private List<Matrix> upFeatureMatrixList;//上采样输入特征
     private List<Matrix> upOutMatrixList;//上卷积输出矩阵集合
     private final Map<Long, List<Matrix>> featureMap = new ConcurrentHashMap<>();
+    private final List<List<Matrix>> upChannelFeatureList = new ArrayList<>();//fpn保存1x1卷积降维前 每个通道池化后的特征图
     private int outX;
     private int outY;
-    private int encoderX;
-    private int encoderY;
     private float studyRateTh = 0;//记录一阶非线性模型动态偏移值学习率
     private float studyRateTh2 = 0;//记录二阶非线性模型动态偏移值学习率
+
+    public List<List<Matrix>> getUpChannelFeatureList() {
+        return upChannelFeatureList;
+    }
 
     public List<Matrix> getUpDymStudyRate2List() {
         return upDymStudyRate2List;
@@ -126,23 +129,6 @@ public class ConvParameter {
 
     public void setUpOneConvPower(List<Float> upOneConvPower) {
         this.upOneConvPower = upOneConvPower;
-    }
-
-
-    public int getEncoderX() {
-        return encoderX;
-    }
-
-    public void setEncoderX(int encoderX) {
-        this.encoderX = encoderX;
-    }
-
-    public int getEncoderY() {
-        return encoderY;
-    }
-
-    public void setEncoderY(int encoderY) {
-        this.encoderY = encoderY;
     }
 
     public Map<Long, List<Matrix>> getFeatureMap() {

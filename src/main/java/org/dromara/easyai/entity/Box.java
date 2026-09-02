@@ -16,10 +16,28 @@ public class Box {
     private float confidence;
     private int typeID;//类别id
     private float softMax;//概率
+    private int deep;//所处深度
+    private float maxIOU;//当前最大iou
     private Matrix featureMatrix;//特征矩阵
     //识别参数
     private int realX;//识别X
     private int realY;//识别Y
+
+    public int getDeep() {
+        return deep;
+    }
+
+    public void setDeep(int deep) {
+        this.deep = deep;
+    }
+
+    public float getMaxIOU() {
+        return maxIOU;
+    }
+
+    public void setMaxIOU(float maxIOU) {
+        this.maxIOU = maxIOU;
+    }
 
     public float getSoftMax() {
         return softMax;

@@ -9,13 +9,16 @@ import org.dromara.easyai.conv.dcn.DConv;
 import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.matrixTools.MatrixNorm;
+import org.dromara.easyai.matrixTools.MatrixOperation;
 import org.dromara.easyai.resnet.entity.BatchBody;
 import org.dromara.easyai.resnet.entity.ResBlockModel;
+import org.dromara.easyai.resnet.fpn.FpnBlock;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author lidapeng
@@ -38,6 +41,16 @@ public class ResBlock extends ResConvCount {
     private final boolean rz;//是否正则
     private final float rzRate;//正则系数
     private final DymStudy dymStudy;
+    private final boolean fpn;//是否对接fpn
+    private final Map<Long, List<BatchBody>> fpnFeatures = new ConcurrentHashMap<>();
+    private FpnBlock firstFpn;//第一层fpn
+    private List<Matrix> fpnErrorList;
+    private final MatrixOperation matrixOperation = new MatrixOperation();
+
+
+    public void setFirstFpn(FpnBlock firstFpn) {
+        this.firstFpn = firstFpn;
+    }
 
     public ResBlockModel getModel() {
         ResBlockModel model = new ResBlockModel();
@@ -58,13 +71,15 @@ public class ResBlock extends ResConvCount {
     }
 
     public ResBlock(int channelNo, int deep, float studyRate, int imageSize, BatchInputBlock inputBlock, float gMaxTh
-            , boolean auto, int batchSize, boolean rz, float rzRate, float layGMaxTh, boolean dcn) throws Exception {
+            , boolean auto, int batchSize, boolean rz, float rzRate, float layGMaxTh, boolean dcn
+            , boolean fpn) throws Exception {
         this.rz = rz;
         this.rzRate = rzRate;
         this.imageSize = imageSize;
         this.batchSize = batchSize;
         this.inputBlock = inputBlock;
         this.channelNo = channelNo;
+        this.fpn = fpn;
         this.deep = deep;
         this.studyRate = studyRate;
         boolean initOneConv = true;
@@ -78,7 +93,7 @@ public class ResBlock extends ResConvCount {
         initBlock(secondResConvPower, random, false, dcn);//初始化两个残差块
     }
 
-    private void fillZero(List<Matrix> matrixList, boolean fill) throws Exception {
+    private void fillZero(List<Matrix> matrixList, boolean fill) {
         int size = matrixList.size();
         for (int i = 0; i < size; i++) {
             Matrix matrix = matrixList.get(i);
@@ -90,7 +105,23 @@ public class ResBlock extends ResConvCount {
         }
     }
 
+    private void addFpnFeature(List<BatchBody> batchBodies) throws Exception {
+        int size = batchBodies.size();
+        int channelNo = getChannelNo();
+        for (int i = 0; i < size; i++) {
+            int startIndex = i * channelNo;
+            int endIndex = startIndex + channelNo;
+            List<Matrix> fpnError = fpnErrorList.subList(startIndex, endIndex);
+            BatchBody batchBody = batchBodies.get(i);
+            List<Matrix> error = matrixOperation.addMatrixList(batchBody.getFeatureList(), fpnError);
+            batchBody.setFeatureList(error);
+        }
+    }
+
     public void backError(List<BatchBody> batchBodies) throws Exception {//返回误差
+        if (fpn && fpnErrorList != null) {
+            addFpnFeature(batchBodies);
+        }
         times++;
         List<BatchBody> errorList = backOneConvMatrix(batchBodies, secondResConvPower, 2);
         if (deep > 1) {
@@ -122,6 +153,24 @@ public class ResBlock extends ResConvCount {
         fatherResBlock.backError(errobatchList);
     }
 
+    public void backErrorFormFpn(List<Matrix> gNextList) throws Exception {
+        int channel = getChannelNo();//当前深度通道数
+        List<Matrix> gList = new ArrayList<>();
+        for (Matrix matrix : gNextList) {
+            gList.add(matrix.copy());
+        }
+        List<BatchBody> batchBodies = new ArrayList<>();
+        for (int i = 0; i < batchSize; i++) {
+            int startIndex = i * channel;
+            int endIndex = startIndex + channel;
+            BatchBody batchBody = new BatchBody();
+            List<Matrix> error = gList.subList(startIndex, endIndex);
+            batchBody.setFeatureList(error);
+            batchBodies.add(batchBody);
+        }
+        backError(batchBodies);
+    }
+
     private List<BatchBody> backOneConvMatrix(List<BatchBody> batchBodies, ResConvPower resConvPower, int deep) throws Exception {
         ConvLay firstConv = resConvPower.getFirstConvPower();
         ConvLay secondConv = resConvPower.getSecondConvPower();
@@ -150,13 +199,31 @@ public class ResBlock extends ResConvCount {
         return errorList;
     }
 
+    public List<BatchBody> getResBlockFeature(long eventID) {
+        return fpnFeatures.get(eventID);
+    }
+
+    public void removeResFeature(long eventID) {
+        fpnFeatures.remove(eventID);
+    }
+
+    public void backErrorFpn(List<Matrix> fpnErrorList) {//临时保存当前层fpn传来的误差
+        this.fpnErrorList = fpnErrorList;
+    }
+
     private void convMatrix(List<BatchBody> batchBodies, int step, boolean study, OutBack outBack,
                             long eventID, boolean outFeature, Map<Integer, Float> pd) throws Exception {// feature 准备跳层用
         boolean one = step == 1;
         oneConvMatrix(batchBodies, firstResConvPower, study, one);
         oneConvMatrix(batchBodies, secondResConvPower, study, true);
+        if (fpn && firstFpn == null) {//如果对接fpn则保存要发给fpn的数据
+            List<BatchBody> copyBatchBody = copyFeature(batchBodies);
+            fpnFeatures.put(eventID, copyBatchBody);
+        }
         if (sonResBlock != null) {
             sonResBlock.sendMatrixList(batchBodies, outBack, study, eventID, outFeature, pd);
+        } else if (firstFpn != null) {
+            firstFpn.sendMatrixList(batchBodies, study, eventID, outBack, false, pd, dymStudy, outFeature);
         } else {//最后卷积层了，求平均值
             List<FeatureBody> featureBodies = new ArrayList<>();
             for (BatchBody batchBody : batchBodies) {
@@ -175,20 +242,20 @@ public class ResBlock extends ResConvCount {
         }
     }
 
-    private FeatureBody getFeatureBody(BatchBody batchBody) throws Exception {
+    private FeatureBody getFeatureBody(BatchBody batchBody) {
         List<Matrix> lastFeatureList = batchBody.getFeatureList();
         FeatureBody featureBody = new FeatureBody();
         Matrix featureMatrix = new Matrix(1, lastFeatureList.size());
         for (int j = 0; j < lastFeatureList.size(); j++) {
             Matrix matrix = lastFeatureList.get(j);
-            featureMatrix.setNub(0, j, matrix.getAVG());
+            featureMatrix.setValue(0, j, matrix.getAVG());
         }
         featureBody.setFeature(featureMatrix);
         featureBody.setE(batchBody.getE());
         return featureBody;
     }
 
-    private List<BatchBody> copyFeature(List<BatchBody> batchBodies) throws Exception {
+    private List<BatchBody> copyFeature(List<BatchBody> batchBodies) {
         List<BatchBody> copyBatchBodies = new ArrayList<>();
         for (BatchBody batchBody : batchBodies) {
             List<Matrix> features = batchBody.getFeatureList();
