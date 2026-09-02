@@ -56,21 +56,57 @@ public class Yolo {
         }
     }
 
+    private int getRealTypeID(int mapID) {
+        int k = -1;
+        for (Map.Entry<Integer, Integer> entry : mappingID.entrySet()) {
+            int key = entry.getKey();
+            if (entry.getValue() == mapID) {
+                k = key;
+                break;
+            }
+        }
+        return k;
+    }
+
     public Map<Integer, List<OutBox>> look(ThreeChannelMatrix pic, long eventID) throws Exception {
         if (pic.getX() == pic.getY() && pic.getX() == imageSize) {
             FpnOut fpnOut = new FpnOut();
             resnetManager.getRestNetInput().postFeature(pic, fpnOut, eventID, false, null);
+            Map<Integer, List<OutBox>> outMap = fpnOut.getOutMap();
+            for (Map.Entry<Integer, List<OutBox>> entry : outMap.entrySet()) {
+                List<OutBox> outBoxes = entry.getValue();
+                for (OutBox outBox : outBoxes) {
+                    int type = Integer.parseInt(outBox.getTypeID());
+                    int realID = getRealTypeID(type);
+                    outBox.setTypeID(String.valueOf(realID));
+                }
+            }
             return fpnOut.getOutMap();
         } else {
             throw new IllegalAccessException("使用本类，图像必须为正方形（可以通过填充短边处理），且大小必须为配置的指定尺寸：" + imageSize);
         }
     }
 
-    public void insertModel(ResnetModel resnetModel) {
-        resnetManager.insertModel(resnetModel);
+    private List<MappingIDBody> getMappingModel() {
+        List<MappingIDBody> mappingIDBodies = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : mappingID.entrySet()) {
+            MappingIDBody mappingIDBody = new MappingIDBody();
+            mappingIDBody.setId(entry.getKey());
+            mappingIDBody.setMappingID(entry.getValue());
+            mappingIDBodies.add(mappingIDBody);
+        }
+        return mappingIDBodies;
     }
 
-    public ResnetModel study(List<YoloSample> yoloSamples, OutBack logOutBack, int studyTimes) throws Exception {
+    public void insertModel(MyYoloModel myYoloModel) {
+        List<MappingIDBody> mappingIDBodyList = myYoloModel.getMappingIDBodyList();
+        for (MappingIDBody mappingIDBody : mappingIDBodyList) {
+            mappingID.put(mappingIDBody.getId(), mappingIDBody.getMappingID());
+        }
+        resnetManager.insertModel(myYoloModel.getResnetModel());
+    }
+
+    public MyYoloModel study(List<YoloSample> yoloSamples, OutBack logOutBack, int studyTimes) throws Exception {
         List<Integer> sizeList = resnetManager.calcStageOutputSizes(imageSize, allDeep).subList(startDeep - 1, allDeep);
         int size = yoloSamples.size();
         int times = size / batchSize;//训练批次
@@ -91,7 +127,10 @@ public class Yolo {
                 resnetManager.getRestNetInput().studyFeature(batchBodies, logOutBack, 1, pd);
             }
         }
-        return resnetManager.getModel();
+        MyYoloModel myYoloModel = new MyYoloModel();
+        myYoloModel.setMappingIDBodyList(getMappingModel());
+        myYoloModel.setResnetModel(resnetManager.getModel());
+        return myYoloModel;
     }
 
     private Map<Integer, FpnTag> assignScale(YoloSample yoloSample, List<Integer> sizeList, ThreeChannelMatrix temp) throws Exception {//分配尺度

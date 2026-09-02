@@ -111,7 +111,7 @@ public class FpnBlock extends ConvCount {
     }
 
     public void sendMatrixList(List<BatchBody> batchBodies, boolean study, long eventID, OutBack outBack, boolean formFpn
-            , Map<Integer, Float> pd, DymStudy dymStudy, boolean needFeature) throws Exception {
+            , Map<Integer, Float> pd, DymStudy dymStudy) throws Exception {
         this.dymStudy = dymStudy;
         times++;
         List<Matrix> allFeatures = new ArrayList<>();
@@ -161,16 +161,16 @@ public class FpnBlock extends ConvCount {
                 tag = fpnTag;
                 insertFpnTag(channelMatrixList, fpnTag, eventID, outBack, pd);
             } else {
-                insertFpnFeature(channelMatrixList, eventID, outBack, needFeature);
+                insertFpnFeature(channelMatrixList, eventID, outBack);
             }
         }
         //特征继续向上传
         if (sonBlock != null) {
-            sonBlock.sendMatrixList(batchBodies, study, eventID, outBack, true, pd, dymStudy, needFeature);
+            sonBlock.sendMatrixList(batchBodies, study, eventID, outBack, true, pd, dymStudy);
         }
     }
 
-    private void insertFpnFeature(List<Matrix> channelMatrix, long eventID, OutBack outBack, boolean needFeature) throws Exception {
+    private void insertFpnFeature(List<Matrix> channelMatrix, long eventID, OutBack outBack) throws Exception {
         int x = channelMatrix.get(0).getX();
         int y = channelMatrix.get(0).getY();
         YoloTypeBack yoloTypeBack = new YoloTypeBack();
@@ -183,7 +183,8 @@ public class FpnBlock extends ConvCount {
                 yoloTypeBack.clear();
                 List<FeatureBody> features = new ArrayList<>();
                 FeatureBody featureBody = new FeatureBody();
-                featureBody.setFeature(getFeature(channelMatrix, i, j));
+                Matrix feature = getFeature(channelMatrix, i, j);
+                featureBody.setFeature(feature);
                 features.add(featureBody);
                 //推理发送给线性层
                 typeManager.getInputBlock().postMessage(features, false, yoloTypeBack, eventID, null);
@@ -193,6 +194,7 @@ public class FpnBlock extends ConvCount {
                     positionManager.getInputBlock().postMessage(features, false, positionBack, eventID, null);
                     Box box = getBox(i * step, j * step, imageSize, positionBack, step, id);
                     if (box != null) {
+                        box.setFeatureMatrix(feature);
                         boxes.add(box);
                     }
                 }
@@ -215,7 +217,7 @@ public class FpnBlock extends ConvCount {
             outBox.setWidth(box.getySize());
             outBox.setTypeID(String.valueOf(box.getTypeID()));
             outBox.setTrust(box.getConfidence());
-            outBox.setSoftmax(box.getSoftMax());
+            outBox.setFeature(box.getFeatureMatrix());
             outBoxes.add(outBox);
         }
         return outBoxes;

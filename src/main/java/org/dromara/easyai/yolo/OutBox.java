@@ -1,5 +1,7 @@
 package org.dromara.easyai.yolo;
 
+import org.dromara.easyai.matrixTools.Matrix;
+
 public class OutBox {
     private int x;//横坐标
     private int y;//纵坐标
@@ -8,6 +10,15 @@ public class OutBox {
     private String typeID;//类别id
     private float trust;
     private float softmax;//概率
+    private Matrix feature;//特征向量
+
+    public Matrix getFeature() {
+        return feature;
+    }
+
+    public void setFeature(Matrix feature) {
+        this.feature = feature;
+    }
 
     public float getSoftmax() {
         return softmax;
