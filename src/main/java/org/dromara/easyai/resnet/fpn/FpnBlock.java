@@ -60,7 +60,9 @@ public class FpnBlock extends ConvCount {
     private final float iouTh;
     private final boolean showLog;
     private boolean fill;
-
+    private boolean noPosition;
+    private int positionSize;
+    private int positionIndex = 0;
 
     public FpnBlock(int channelNo, ResBlock resBlock, int deep, BatchNerveManager typeManager
             , BatchNerveManager positionManager, FpnConfig fpnConfig, boolean first) throws Exception {
@@ -262,12 +264,15 @@ public class FpnBlock extends ConvCount {
         return box;
     }
 
-    protected void backByTypeLine(List<Matrix> nextErrorMatrixList) {
+    protected void backByTypeLine(List<Matrix> nextErrorMatrixList) throws Exception {
         Matrix typMatrix = tag.getTypeMatrix();
         int maxX = typMatrix.getX();
         for (Matrix error : nextErrorMatrixList) {
             insertError(error, maxX);
-            updateIndex(maxX);
+            boolean finish = updateIndex(maxX);
+            if (noPosition && finish) {
+                backDownConv();
+            }
         }
     }
 
@@ -275,19 +280,25 @@ public class FpnBlock extends ConvCount {
         Matrix typMatrix = tag.getTypeMatrix();
         int maxX = typMatrix.getX();
         boolean finish = false;
+        boolean last = false;
+        positionIndex = positionIndex + nextErrorMatrixList.size();
+        if (positionIndex == positionSize) {
+            positionIndex = 0;
+            last = true;
+        }
         for (Matrix error : nextErrorMatrixList) {
-            boolean last = updatePositionIndex();
+            updatePositionIndex();
             insertError(error, maxX);
-            if (last) {
-                startX = 0;
-                startY = 0;
-                firstPosition = true;
-                pictureIndex++;
-                if (pictureIndex == pictureSize) {
-                    pictureIndex = 0;
-                    //接收线性层误差完毕
-                    finish = true;
-                }
+        }
+        if (last) {
+            startX = 0;
+            startY = 0;
+            firstPosition = true;
+            pictureIndex++;
+            if (pictureIndex == pictureSize) {
+                pictureIndex = 0;
+                //接收线性层误差完毕
+                finish = true;
             }
         }
         if (finish) {
@@ -343,13 +354,12 @@ public class FpnBlock extends ConvCount {
         }
     }
 
-    private boolean updatePositionIndex() {
+    private void updatePositionIndex() {
         Matrix typMatrix = tag.getTypeMatrix();
         int x = typMatrix.getX();
         int y = typMatrix.getY();
         boolean first = true;
         boolean here = false;
-        boolean last = false;
         for (int i = startX; i < x; i++) {
             for (int j = startY; j < y; j++) {
                 if (typMatrix.getValue(i, j) > 0.5) {//有类别
@@ -366,9 +376,7 @@ public class FpnBlock extends ConvCount {
                         here = true;
                     }
                 }
-                if (i == x - 1 && j == y - 1) {//一张图处理结束
-                    last = true;
-                } else if (here) {
+                if (here) {
                     break;
                 }
             }
@@ -376,10 +384,10 @@ public class FpnBlock extends ConvCount {
                 break;
             }
         }
-        return last;
     }
 
-    private void updateIndex(int maX) {
+    private boolean updateIndex(int maX) {
+        boolean finish = false;
         startY++;
         if (startY == maX) {
             startY = 0;
@@ -391,8 +399,10 @@ public class FpnBlock extends ConvCount {
             pictureIndex++;
             if (pictureIndex == pictureSize) {
                 pictureIndex = 0;
+                finish = true;
             }
         }
+        return finish;
     }
 
     private void insertFpnTag(List<Matrix> channelMatrix, FpnTag fpnTag, long eventID, OutBack outBack
@@ -428,7 +438,13 @@ public class FpnBlock extends ConvCount {
             }
         }
         sendLineStudy(typeFeatures, outBack, eventID, pd, typeManager);
-        sendLineStudy(positionFeatures, outBack, eventID, pd, positionManager);
+        if (!positionFeatures.isEmpty()) {
+            noPosition = false;
+            positionSize = positionFeatures.size();
+            sendLineStudy(positionFeatures, outBack, eventID, pd, positionManager);
+        } else {
+            noPosition = true;
+        }
     }
 
     private void sendLineStudy(List<FeatureBody> features, OutBack outBack, long eventID, Map<Integer, Float> pd, BatchNerveManager manager) throws Exception {
