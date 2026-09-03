@@ -15,6 +15,42 @@ public class YoloFpnConfig {
     private float backGroundPD = 0.1f;
     private int typeNumber = 2;
     private float containIouTh = 0.25f;//是否包含样本交并比阈值
+    private float studyRate = 0.0005f;//全局学习率
+    private boolean showLog = true;
+    private int channelNo = 4;//通道数
+    private int pictureSize = 20;//小批量训练数量
+
+    public int getPictureSize() {
+        return pictureSize;
+    }
+
+    public void setPictureSize(int pictureSize) {
+        this.pictureSize = pictureSize;
+    }
+
+    public int getChannelNo() {
+        return channelNo;
+    }
+
+    public void setChannelNo(int channelNo) {
+        this.channelNo = channelNo;
+    }
+
+    public boolean isShowLog() {
+        return showLog;
+    }
+
+    public void setShowLog(boolean showLog) {
+        this.showLog = showLog;
+    }
+
+    public float getStudyRate() {
+        return studyRate;
+    }
+
+    public void setStudyRate(float studyRate) {
+        this.studyRate = studyRate;
+    }
 
     public float getContainIouTh() {
         return containIouTh;

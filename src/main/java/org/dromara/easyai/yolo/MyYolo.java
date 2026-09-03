@@ -24,7 +24,7 @@ import java.util.Map;
  * @time 2026/9/1 17:07
  * @des 传统yolo目标检测
  */
-public class Yolo {
+public class MyYolo {
     private final ResnetManager resnetManager;
     private final int startDeep;
     private final int allDeep;
@@ -34,7 +34,7 @@ public class Yolo {
     private final Map<Integer, Integer> mappingID = new HashMap<>();
     private final Map<Integer, Float> pd = new HashMap<>();
 
-    public Yolo(YoloFpnConfig yoloFpnConfig, ResnetConfig resnetConfig) throws Exception {
+    public MyYolo(YoloFpnConfig yoloFpnConfig, ResnetConfig resnetConfig) throws Exception {
         FpnConfig fpnConfig = new FpnConfig();
         fpnConfig.setPth(yoloFpnConfig.getPth());
         fpnConfig.setTrustTh(yoloFpnConfig.getTrustTh());
@@ -44,6 +44,10 @@ public class Yolo {
         resnetConfig.setSize(yoloFpnConfig.getSize());
         resnetConfig.setFpn(true);
         resnetConfig.setTypeNumber(yoloFpnConfig.getTypeNumber());
+        resnetConfig.setStudyRate(yoloFpnConfig.getStudyRate());
+        resnetConfig.setShowLog(yoloFpnConfig.isShowLog());
+        resnetConfig.setChannelNo(yoloFpnConfig.getChannelNo());
+        resnetConfig.setBatchSize(yoloFpnConfig.getPictureSize());
         containIouTh = yoloFpnConfig.getContainIouTh();
         resnetManager = new ResnetManager(resnetConfig, fpnConfig, new ReLu());
         startDeep = yoloFpnConfig.getStartDeep();
@@ -54,6 +58,10 @@ public class Yolo {
         if (myPd < 0.9 && myPd > 0) {
             pd.put(yoloFpnConfig.getTypeNumber() + 1, myPd);
         }
+    }
+
+    public ResnetManager getResnetManager() {
+        return resnetManager;
     }
 
     private int getRealTypeID(int mapID) {
@@ -106,6 +114,13 @@ public class Yolo {
         resnetManager.insertModel(myYoloModel.getResnetModel());
     }
 
+    public void test() {
+        List<Integer> sizeList = resnetManager.calcStageOutputSizes(imageSize, allDeep);
+        List<Integer> sizeList2 = sizeList.subList(startDeep - 1, allDeep);
+        System.out.println(sizeList);
+        System.out.println(sizeList2);
+    }
+
     public MyYoloModel study(List<YoloSample> yoloSamples, OutBack logOutBack, int studyTimes) throws Exception {
         List<Integer> sizeList = resnetManager.calcStageOutputSizes(imageSize, allDeep).subList(startDeep - 1, allDeep);
         int size = yoloSamples.size();
@@ -153,14 +168,13 @@ public class Yolo {
     }
 
     private FpnTag initFpn(int size) {
-        int step = imageSize / size;
         FpnTag fpnTag = new FpnTag();
-        fpnTag.setTypeMatrix(new Matrix(step, step));
-        fpnTag.setDistXMatrix(new Matrix(step, step));
-        fpnTag.setDistYMatrix(new Matrix(step, step));
-        fpnTag.setWidthMatrix(new Matrix(step, step));
-        fpnTag.setHeightMatrix(new Matrix(step, step));
-        fpnTag.setTrustMatrix(new Matrix(step, step));
+        fpnTag.setTypeMatrix(new Matrix(size, size));
+        fpnTag.setDistXMatrix(new Matrix(size, size));
+        fpnTag.setDistYMatrix(new Matrix(size, size));
+        fpnTag.setWidthMatrix(new Matrix(size, size));
+        fpnTag.setHeightMatrix(new Matrix(size, size));
+        fpnTag.setTrustMatrix(new Matrix(size, size));
         return fpnTag;
     }
 
@@ -208,12 +222,14 @@ public class Yolo {
             if (centerX >= x && centerX <= (x + step) && centerY >= y && centerY <= (y + step)) {
                 trust = 1;
             }
-            fpnTag.getTypeMatrix().setNub(x, y, type);
-            fpnTag.getWidthMatrix().setNub(x, y, width);
-            fpnTag.getHeightMatrix().setNub(x, y, height);
-            fpnTag.getDistXMatrix().setNub(x, y, distX);
-            fpnTag.getDistYMatrix().setNub(x, y, distY);
-            fpnTag.getTrustMatrix().setNub(x, y, trust);
+            int realX = x / step;
+            int realY = y / step;
+            fpnTag.getTypeMatrix().setNub(realX, realY, type);
+            fpnTag.getWidthMatrix().setNub(realX, realY, width);
+            fpnTag.getHeightMatrix().setNub(realX, realY, height);
+            fpnTag.getDistXMatrix().setNub(realX, realY, distX);
+            fpnTag.getDistYMatrix().setNub(realX, realY, distY);
+            fpnTag.getTrustMatrix().setNub(realX, realY, trust);
         }
     }
 

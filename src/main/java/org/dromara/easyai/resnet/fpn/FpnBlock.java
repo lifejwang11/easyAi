@@ -59,6 +59,7 @@ public class FpnBlock extends ConvCount {
     private final int imageSize;
     private final float iouTh;
     private final boolean showLog;
+    private boolean fill;
 
 
     public FpnBlock(int channelNo, ResBlock resBlock, int deep, BatchNerveManager typeManager
@@ -77,10 +78,6 @@ public class FpnBlock extends ConvCount {
         this.resBlock = resBlock;
         this.deep = deep;
         Random random = new Random();
-        List<Matrix> upNeverMatrixList = convParameter.getUpNerveMatrixList();//上卷积采样权重
-        convParameter.getUpDymStudyRateList().add(new Matrix(1, 9));
-        convParameter.getUpDymStudyRate2List().add(new Matrix(1, 9));
-        upNeverMatrixList.add(initUpNervePowerMatrix(random));
         initOnePower(channelNo, random);
         initMatrixPower(random);
         this.typeManager = typeManager;
@@ -127,17 +124,25 @@ public class FpnBlock extends ConvCount {
                 BatchBody batchBodyDown = resBody.get(i);
                 List<Matrix> upFeatures = batchBodyUp.getFeatureList();
                 List<Matrix> downFeatures = batchBodyDown.getFeatureList();
+                if (upFeatures.get(0).getX() != downFeatures.get(0).getX()) {
+                    fill = true;
+                    upFeatures = unPadding2Many(upFeatures);
+                    batchBodyUp.setFeatureList(upFeatures);
+                } else {
+                    fill = false;
+                }
                 List<Matrix> addMatrixList = matrixOperation.addMatrixList(upFeatures, downFeatures);
-                xInput = addMatrixList.get(0).getX();
-                yInput = addMatrixList.get(0).getY();
-                allFeatures.addAll(addMatrixList);
+                xInput = addMatrixList.get(0).getX() + 2;
+                yInput = addMatrixList.get(0).getY() + 2;
+                List<Matrix> myMatrixList = paddingMany(addMatrixList);
+                allFeatures.addAll(myMatrixList);
             }
         } else {
             for (int i = 0; i < size; i++) {
                 List<Matrix> features = batchBodies.get(i).getFeatureList();
-                xInput = features.get(0).getX();
-                yInput = features.get(0).getY();
-                allFeatures.addAll(features);
+                xInput = features.get(0).getX() + 2;
+                yInput = features.get(0).getY() + 2;
+                allFeatures.addAll(paddingMany(features));
             }
         }
         ConvResult convResult = downConvCountMany(allFeatures, reLu, 3,
@@ -322,8 +327,10 @@ public class FpnBlock extends ConvCount {
     }
 
     List<Matrix> backUpAndPool(List<Matrix> gNextList) throws Exception {
-        List<Matrix> errorList = getBackOneConvPool(gNextList, studyRate, dymStudy, times, convParameter, channelNo);
-        return backUpConvMany(errorList, 3, convParameter, studyRate, reLu, dymStudy, times);
+        if (fill) {//需要先补一层0
+            gNextList = padding2Many(gNextList);
+        }
+        return getBackOneConvPool(gNextList, studyRate, dymStudy, times, convParameter, channelNo);
     }
 
     void backErrorFromSon(List<Matrix> gList) throws Exception {//接收上层传过来的误差
@@ -394,7 +401,7 @@ public class FpnBlock extends ConvCount {
         int y = channelMatrix.get(0).getY();
         Matrix typMatrix = fpnTag.getTypeMatrix();
         if (x != y || typMatrix.getX() != x) {
-            throw new IllegalAccessException("fpn训练异常x:" + x + ",y:" + y);
+            throw new IllegalAccessException("fpn训练异常x:" + x + ",预测大小:" + typMatrix.getX());
         }
         List<FeatureBody> positionFeatures = new ArrayList<>();
         List<FeatureBody> typeFeatures = new ArrayList<>();
@@ -534,15 +541,6 @@ public class FpnBlock extends ConvCount {
         dymStudyRate2List.add(new Matrix(9, 1));
     }
 
-    private Matrix initUpNervePowerMatrix(Random random) throws Exception {
-        int convSize = 9;
-        Matrix nervePowerMatrix = new Matrix(1, convSize);
-        for (int j = 0; j < convSize; j++) {
-            float power = random.nextFloat() / 3;
-            nervePowerMatrix.setNub(0, j, power);
-        }
-        return nervePowerMatrix;
-    }
 
     public void setSonBlock(FpnBlock sonBlock) {
         this.sonBlock = sonBlock;

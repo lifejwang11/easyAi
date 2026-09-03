@@ -94,7 +94,7 @@ public class FpnManager {
 
 
     private BatchNerveConfig getTypeConfig(int myDeep) {
-        int featureLength = (int) (channelNo * Math.pow(2, myDeep - 1)) - 2;//当前深度通道数
+        int featureLength = (int) (channelNo * Math.pow(2, myDeep - 1));//当前深度通道数
         BatchNerveConfig typeConfig = new BatchNerveConfig();
         typeConfig.setInputSize(featureLength);
         typeConfig.setHiddenSize(featureLength / 2);
@@ -110,7 +110,7 @@ public class FpnManager {
     }
 
     private BatchNerveConfig getPositionConfig(int myDeep) {
-        int featureLength = (int) (channelNo * Math.pow(2, myDeep - 1)) - 2;//当前深度通道数
+        int featureLength = (int) (channelNo * Math.pow(2, myDeep - 1));//当前深度通道数
         BatchNerveConfig typeConfig = new BatchNerveConfig();
         typeConfig.setInputSize(featureLength);
         typeConfig.setHiddenSize(featureLength / 2);

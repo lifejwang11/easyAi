@@ -104,23 +104,20 @@ public class ResnetManager extends ResConvCount {
         List<Integer> outputSizes = new ArrayList<>();
         int current = inputSize;
         final int step = 2;
-        int actionDeep = 0; // 记录这是第几次stride‑2下采样动作
 
         // stage0：7*7(stride2) 第1次下采样动作
-        actionDeep++;
-        boolean needPad7x7 = fill(actionDeep, current, true);
+        boolean needPad7x7 = current % 2 > 0;
         current = needPad7x7 ? (current + step - 1) / step : current / step;
 
         // maxPool(stride2) 第2次下采样动作，完成stage0
-        boolean needPadPool = fill(actionDeep, current, false);
+        boolean needPadPool = current % 2 > 0;
         current = needPadPool ? (current + step - 1) / step : current / step;
         outputSizes.add(current);
 
         // 剩下 stageCount‑1 个残差下采样stage，每一轮一次stride‑2
         if (stageCount > 1) {
             for (int s = 1; s < stageCount; s++) {
-                actionDeep++;
-                boolean needPad = fill(actionDeep, current, false);
+                boolean needPad = current % 2 > 0;
                 current = needPad ? (current + step - 1) / step : current / step;
                 outputSizes.add(current);
             }

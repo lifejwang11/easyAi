@@ -89,7 +89,7 @@ public class MatrixOperation {
             }
             return matrix;
         } else {
-            throw new Exception("两个相加的矩阵并不相等");
+            throw new Exception("两个相加的矩阵并不相等:x:" + matrix1.getX() + ",x:" + matrix2.getX());
         }
     }
 
