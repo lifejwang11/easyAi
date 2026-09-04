@@ -222,6 +222,10 @@ public class QBlock {
             bMatrix = matrixOperation.add(bMatrix, reBtMatrix);
             powerMatrix = matrixOperation.add(powerMatrix, rePowerMatrix);
         }
+        for (int i = 0; i < nextErrorMatrixList.size(); i++) {
+            Matrix nextErrorMatrix = dymStudy.getClipMatrix(nextErrorMatrixList.get(i), true);
+            nextErrorMatrixList.set(i, nextErrorMatrix);
+        }
         if (fatherBlock != null) {
             fatherBlock.backError(nextErrorMatrixList);
         } else if (customEncoding != null) {//误差回传

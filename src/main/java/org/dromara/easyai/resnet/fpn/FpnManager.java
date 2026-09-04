@@ -3,7 +3,9 @@ package org.dromara.easyai.resnet.fpn;
 import org.dromara.easyai.batchNerve.BatchNerveConfig;
 import org.dromara.easyai.batchNerve.BatchNerveManager;
 import org.dromara.easyai.config.FpnConfig;
+import org.dromara.easyai.function.NoActivation;
 import org.dromara.easyai.function.ReLu;
+import org.dromara.easyai.function.Tanh;
 import org.dromara.easyai.resnet.ResBlock;
 
 import java.util.ArrayList;
@@ -24,9 +26,11 @@ public class FpnManager {
     private final int channelNo;
     private final List<ResBlock> resBlockList;
     private final FpnConfig fpnConfig;
+    private final float layGMaxTh;
 
     public FpnManager(FpnConfig fpnConfig, List<ResBlock> resBlockList) throws Exception {
         typeNumber = fpnConfig.getTypeNumber();
+        layGMaxTh = fpnConfig.getLayerCutTh();
         studyRate = fpnConfig.getStudyRate();
         gMaxTh = fpnConfig.getgMaxTh();
         deep = fpnConfig.getDeep();
@@ -89,7 +93,7 @@ public class FpnManager {
     }
 
     private BatchNerveManager getPositionManager(int myDeep, FpnBack position) throws Exception {
-        return new BatchNerveManager(getPositionConfig(myDeep), new ReLu(), position);
+        return new BatchNerveManager(getPositionConfig(myDeep), new NoActivation(), position);
     }
 
 
@@ -106,6 +110,7 @@ public class FpnManager {
         typeConfig.setDeep(deep);
         typeConfig.setShowLog(showLog);
         typeConfig.setRegular(0);
+        typeConfig.setLayGMaxTh(layGMaxTh);
         return typeConfig;
     }
 
@@ -122,6 +127,7 @@ public class FpnManager {
         typeConfig.setDeep(deep);
         typeConfig.setShowLog(showLog);
         typeConfig.setRegular(0);
+        typeConfig.setLayGMaxTh(layGMaxTh);
         return typeConfig;
     }
 

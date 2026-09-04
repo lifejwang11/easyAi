@@ -87,9 +87,7 @@ public class FpnBlock extends ConvCount {
     }
 
     public void insertModel(FpnBlockModel fpnBlockModel) {
-        Matrix upNeverMatrix = convParameter.getUpNerveMatrixList().get(0);//上卷积采样权重
         Matrix downNerveMatrix = convParameter.getNerveMatrixList().get(0);//下卷积采样权重
-        upNeverMatrix.insertMatrixModel(fpnBlockModel.getUpConvPowerList());
         downNerveMatrix.insertMatrixModel(fpnBlockModel.getDownConvPowerList());
         convParameter.setOneConvPower(fpnBlockModel.getOneConvListModel());
         typeManager.insertModel(fpnBlockModel.getTypeBatchNerveModel());
@@ -98,10 +96,8 @@ public class FpnBlock extends ConvCount {
 
     public FpnBlockModel getModel() {
         FpnBlockModel fpnBlockModel = new FpnBlockModel();
-        Matrix upNeverMatrix = convParameter.getUpNerveMatrixList().get(0);//上卷积采样权重
         Matrix downNerveMatrix = convParameter.getNerveMatrixList().get(0);//下卷积采样权重
         List<List<Float>> oneConvPower = convParameter.getOneConvPower();
-        fpnBlockModel.setUpConvPowerList(upNeverMatrix.getMatrixModel());
         fpnBlockModel.setDownConvPowerList(downNerveMatrix.getMatrixModel());
         fpnBlockModel.setOneConvListModel(oneConvPower);
         fpnBlockModel.setTypeBatchNerveModel(typeManager.getModel());

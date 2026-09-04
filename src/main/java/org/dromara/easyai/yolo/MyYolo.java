@@ -114,12 +114,6 @@ public class MyYolo {
         resnetManager.insertModel(myYoloModel.getResnetModel());
     }
 
-    public void test() {
-        List<Integer> sizeList = resnetManager.calcStageOutputSizes(imageSize, allDeep);
-        List<Integer> sizeList2 = sizeList.subList(startDeep - 1, allDeep);
-        System.out.println(sizeList);
-        System.out.println(sizeList2);
-    }
 
     public MyYoloModel study(List<YoloSample> yoloSamples, OutBack logOutBack, int studyTimes) throws Exception {
         List<Integer> sizeList = resnetManager.calcStageOutputSizes(imageSize, allDeep).subList(startDeep - 1, allDeep);
