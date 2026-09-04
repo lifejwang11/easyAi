@@ -54,7 +54,7 @@ public class SoftMaxByQBlock {
                 }
                 boolean errorPD = false;//误差惩罚
                 float pdRate = 1;
-                if (pd != null && pd.containsKey(key) && key != mes.typeID) {
+                if (pd != null && pd.containsKey(key)) {
                     pdRate = pd.get(key);
                     errorPD = true;
                 }
