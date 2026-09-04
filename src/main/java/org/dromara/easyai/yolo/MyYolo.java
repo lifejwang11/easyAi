@@ -9,7 +9,6 @@ import org.dromara.easyai.i.OutBack;
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.resnet.ResnetManager;
 import org.dromara.easyai.resnet.entity.BatchBody;
-import org.dromara.easyai.resnet.entity.ResnetModel;
 import org.dromara.easyai.resnet.fpn.FpnTag;
 import org.dromara.easyai.tools.NMS;
 import org.dromara.easyai.tools.Picture;
@@ -32,7 +31,6 @@ public class MyYolo {
     private final int batchSize;
     private final float containIouTh;//是否包含样本交并比阈值
     private final Map<Integer, Integer> mappingID = new HashMap<>();
-    private final Map<Integer, Float> pd = new HashMap<>();
 
     public MyYolo(YoloFpnConfig yoloFpnConfig, ResnetConfig resnetConfig) throws Exception {
         FpnConfig fpnConfig = new FpnConfig();
@@ -54,10 +52,6 @@ public class MyYolo {
         allDeep = resnetManager.getDeep();
         imageSize = yoloFpnConfig.getSize();
         batchSize = resnetConfig.getBatchSize();
-        float myPd = yoloFpnConfig.getBackGroundPD();
-        if (myPd < 0.9 && myPd > 0) {
-            pd.put(yoloFpnConfig.getTypeNumber() + 1, myPd);
-        }
     }
 
     public ResnetManager getResnetManager() {
@@ -133,7 +127,7 @@ public class MyYolo {
                     batchBody.setFpnTagMap(fpnTagMap);
                     batchBodies.add(batchBody);
                 }
-                resnetManager.getRestNetInput().studyFeature(batchBodies, logOutBack, 1, pd);
+                resnetManager.getRestNetInput().studyFeature(batchBodies, logOutBack, 1, null);
             }
         }
         MyYoloModel myYoloModel = new MyYoloModel();

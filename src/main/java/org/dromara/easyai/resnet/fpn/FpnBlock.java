@@ -105,8 +105,7 @@ public class FpnBlock extends ConvCount {
         return fpnBlockModel;
     }
 
-    public void sendMatrixList(List<BatchBody> batchBodies, boolean study, long eventID, OutBack outBack, boolean formFpn
-            , Map<Integer, Float> pd, DymStudy dymStudy) throws Exception {
+    public void sendMatrixList(List<BatchBody> batchBodies, boolean study, long eventID, OutBack outBack, boolean formFpn, DymStudy dymStudy) throws Exception {
         this.dymStudy = dymStudy;
         times++;
         List<Matrix> allFeatures = new ArrayList<>();
@@ -162,14 +161,14 @@ public class FpnBlock extends ConvCount {
             if (study) {
                 FpnTag fpnTag = batchBody.getFpnTagMap().get(deep);//标注
                 tag = fpnTag;
-                insertFpnTag(channelMatrixList, fpnTag, eventID, outBack, pd);
+                insertFpnTag(channelMatrixList, fpnTag, eventID, outBack);
             } else {
                 insertFpnFeature(channelMatrixList, eventID, outBack);
             }
         }
         //特征继续向上传
         if (sonBlock != null) {
-            sonBlock.sendMatrixList(batchBodies, study, eventID, outBack, true, pd, dymStudy);
+            sonBlock.sendMatrixList(batchBodies, study, eventID, outBack, true, dymStudy);
         }
     }
 
@@ -401,8 +400,7 @@ public class FpnBlock extends ConvCount {
         return finish;
     }
 
-    private void insertFpnTag(List<Matrix> channelMatrix, FpnTag fpnTag, long eventID, OutBack outBack
-            , Map<Integer, Float> pd) throws Exception {
+    private void insertFpnTag(List<Matrix> channelMatrix, FpnTag fpnTag, long eventID, OutBack outBack) throws Exception {
         int x = channelMatrix.get(0).getX();
         int y = channelMatrix.get(0).getY();
         Matrix typMatrix = fpnTag.getTypeMatrix();
@@ -433,17 +431,31 @@ public class FpnBlock extends ConvCount {
                 typeFeatures.add(typeFeature);
             }
         }
-        sendLineStudy(typeFeatures, outBack, eventID, pd, typeManager);
+        sendLineStudy(typeFeatures, outBack, eventID, typeManager, true);
         if (!positionFeatures.isEmpty()) {
             noPosition = false;
             positionSize = positionFeatures.size();
-            sendLineStudy(positionFeatures, outBack, eventID, pd, positionManager);
+            sendLineStudy(positionFeatures, outBack, eventID, positionManager, false);
         } else {
             noPosition = true;
         }
     }
 
-    private void sendLineStudy(List<FeatureBody> features, OutBack outBack, long eventID, Map<Integer, Float> pd, BatchNerveManager manager) throws Exception {
+    private float getErrorScale(List<FeatureBody> features) {
+        int size = features.size();//该批次总数
+        int otherNumber = 0;
+        for (FeatureBody featureBody : features) {
+            if (featureBody.getE().containsKey(otherType)) {//噪音
+                otherNumber++;
+            }
+        }
+        if (otherNumber == 0) {
+            return 1;
+        }
+        return ((float) size - (float) otherNumber) / (float) otherNumber;
+    }
+
+    private void sendLineStudy(List<FeatureBody> features, OutBack outBack, long eventID, BatchNerveManager manager, boolean type) throws Exception {
         if (showLog) {
             System.out.println("deep:" + deep + "训练：");
         }
@@ -453,15 +465,35 @@ public class FpnBlock extends ConvCount {
             for (int i = 0; i < typeTimes; i++) {
                 int startIndex = i * batchSize;
                 int endIndex = startIndex + batchSize;
-                manager.getInputBlock().postMessage(features.subList(startIndex, endIndex), true, outBack, eventID, pd);
+                Map<Integer, Float> pd = null;
+                List<FeatureBody> batchFeatures = features.subList(startIndex, endIndex);
+                if (type) {
+                    pd = new HashMap<>();
+                    float p = getErrorScale(batchFeatures);
+                    pd.put(otherType, p);
+                }
+                manager.getInputBlock().postMessage(batchFeatures, true, outBack, eventID, pd);
             }
             int sub = typeSize % batchSize;
             if (sub > 0) {
                 int startIndex = typeTimes * batchSize;
                 int endIndex = features.size();
-                manager.getInputBlock().postMessage(features.subList(startIndex, endIndex), true, outBack, eventID, pd);
+                List<FeatureBody> batchFeatures = features.subList(startIndex, endIndex);
+                Map<Integer, Float> pd = null;
+                if (type) {
+                    pd = new HashMap<>();
+                    float p = getErrorScale(batchFeatures);
+                    pd.put(otherType, p);
+                }
+                manager.getInputBlock().postMessage(batchFeatures, true, outBack, eventID, pd);
             }
         } else if (typeSize > 0) {//一次性全部发送
+            Map<Integer, Float> pd = null;
+            if (type) {
+                pd = new HashMap<>();
+                float p = getErrorScale(features);
+                pd.put(otherType, p);
+            }
             //发送线性层
             manager.getInputBlock().postMessage(features, true, outBack, eventID, pd);
         }

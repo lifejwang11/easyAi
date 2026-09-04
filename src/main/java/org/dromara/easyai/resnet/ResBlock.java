@@ -223,7 +223,7 @@ public class ResBlock extends ResConvCount {
         if (sonResBlock != null) {
             sonResBlock.sendMatrixList(batchBodies, outBack, study, eventID, outFeature, pd);
         } else if (firstFpn != null) {
-            firstFpn.sendMatrixList(batchBodies, study, eventID, outBack, false, pd, dymStudy);
+            firstFpn.sendMatrixList(batchBodies, study, eventID, outBack, false, dymStudy);
         } else {//最后卷积层了，求平均值
             List<FeatureBody> featureBodies = new ArrayList<>();
             for (BatchBody batchBody : batchBodies) {

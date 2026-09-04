@@ -125,7 +125,7 @@ public class FpnManager {
         typeConfig.setAuto(true);
         typeConfig.setGMaxTh(gMaxTh);
         typeConfig.setDeep(deep);
-        typeConfig.setShowLog(showLog);
+        typeConfig.setShowLog(false);
         typeConfig.setRegular(0);
         typeConfig.setLayGMaxTh(layGMaxTh);
         return typeConfig;

@@ -12,7 +12,6 @@ public class YoloFpnConfig {
     private int fpnBatchSize = 32;//线性层批量数值
     private int startDeep = 2;//fpn开始部署层数 此处以上需要单独配置 包括此处
     private int size = 100;
-    private float backGroundPD = 0.01f;
     private int typeNumber = 2;
     private float containIouTh = 0.25f;//是否包含样本交并比阈值
     private float studyRate = 0.0005f;//全局学习率
@@ -66,14 +65,6 @@ public class YoloFpnConfig {
 
     public void setTypeNumber(int typeNumber) {
         this.typeNumber = typeNumber;
-    }
-
-    public float getBackGroundPD() {
-        return backGroundPD;
-    }
-
-    public void setBackGroundPD(float backGroundPD) {
-        this.backGroundPD = backGroundPD;
     }
 
     public int getSize() {
