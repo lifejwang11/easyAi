@@ -17,7 +17,6 @@ import org.dromara.easyai.resnet.ResBlock;
 import org.dromara.easyai.resnet.entity.BatchBody;
 import org.dromara.easyai.tools.NMS;
 import org.dromara.easyai.yolo.OutBox;
-import org.dromara.easyai.yolo.PositionBack;
 import org.dromara.easyai.yolo.YoloTypeBack;
 
 import java.util.*;
@@ -154,7 +153,6 @@ public class FpnBlock extends ConvCount {
             myOutMatrixList.addAll(outMatrixList);
             im2colMatrixList.addAll(convResult.getLeftMatrixList());
         }
-        System.out.println("准备接收误差==========" + deep);
         for (int i = 0; i < size; i++) {//做特征拼接 准备送入检测头
             BatchBody batchBody = batchBodies.get(i);
             int startIndex = i * channelNo;
@@ -178,24 +176,21 @@ public class FpnBlock extends ConvCount {
         int x = channelMatrix.get(0).getX();
         int y = channelMatrix.get(0).getY();
         YoloTypeBack yoloTypeBack = new YoloTypeBack();
-        PositionBack positionBack = new PositionBack();
+        FpnPositionBack positionBack = new FpnPositionBack();
         int step = imageSize / x;
         NMS nms = new NMS(iouTh);
         List<Box> boxes = new ArrayList<>();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 yoloTypeBack.clear();
-                List<FeatureBody> features = new ArrayList<>();
-                FeatureBody featureBody = new FeatureBody();
                 Matrix feature = getFeature(channelMatrix, i, j);
-                featureBody.setFeature(feature);
-                features.add(featureBody);
                 //推理发送给线性层
-                typeManager.getInputBlock().postMessage(features, false, yoloTypeBack, eventID, null);
+                typeManager.getInputBlock().postMessage(getFeature(feature, true), false, yoloTypeBack, eventID, null);
                 int id = yoloTypeBack.getId();
                 float out = yoloTypeBack.getOut();
+                // System.out.println("id:" + id + ",out:" + out + ",deep:" + deep);
                 if (id < otherType && out > pth) {
-                    positionManager.getInputBlock().postMessage(features, false, positionBack, eventID, null);
+                    positionManager.getInputBlock().postMessage(getFeature(feature, true), false, positionBack, eventID, null);
                     Box box = getBox(i * step, j * step, imageSize, positionBack, step, id);
                     if (box != null) {
                         box.setFeatureMatrix(feature);
@@ -210,6 +205,19 @@ public class FpnBlock extends ConvCount {
             outBack.outBackBox(myOutBox, eventID, deep);
         }
     }
+
+    private List<FeatureBody> getFeature(Matrix feature, boolean copy) {
+        List<FeatureBody> features = new ArrayList<>();
+        FeatureBody featureBody = new FeatureBody();
+        if (copy) {
+            featureBody.setFeature(feature.copy());
+        } else {
+            featureBody.setFeature(feature);
+        }
+        features.add(featureBody);
+        return features;
+    }
+
 
     private List<OutBox> getOutBoxList(List<Box> boxes) {
         List<OutBox> outBoxes = new ArrayList<>();
@@ -227,7 +235,7 @@ public class FpnBlock extends ConvCount {
         return outBoxes;
     }
 
-    private Box getBox(int i, int j, int max, PositionBack positionBack, int step, int type) {
+    private Box getBox(int i, int j, int max, FpnPositionBack positionBack, int step, int type) {
         float maxSize = step * 2;
         Box box = null;
         float centerX = i - positionBack.getDistX() * maxSize;
@@ -265,7 +273,7 @@ public class FpnBlock extends ConvCount {
         Matrix typMatrix = tag.getTypeMatrix();
         int maxX = typMatrix.getX();
         for (Matrix error : nextErrorMatrixList) {
-            insertError(error, maxX, typePictureIndex, startX, startY, 1);
+            insertError(error, maxX, typePictureIndex, startX, startY);
             boolean finish = updateIndex(maxX);
             if (noPosition && finish) {
                 backDownConv();
@@ -284,7 +292,7 @@ public class FpnBlock extends ConvCount {
             Matrix error = nextErrorMatrixList.get(i);
             int index = positionIndex - size + i;
             int[] p = postionList.get(index);
-            insertError(error, maxX, positionPictureIndex, p[0], p[1], 2);
+            insertError(error, maxX, positionPictureIndex, p[0], p[1]);
         }
         if (positionIndex == postionList.size()) {
             positionIndex = 0;
@@ -493,12 +501,7 @@ public class FpnBlock extends ConvCount {
         return feature;
     }
 
-    private void insertError(Matrix error, int maxSize, int pictureIndex, int x, int y, int type) {
-//        if (type == 1) {
-//            System.out.println("分类size:" + allErrorList.size() + ",pictureIndex:" + pictureIndex);
-//        } else {
-//            System.out.println("位置size:" + allErrorList.size() + ",pictureIndex:" + pictureIndex);
-//        }
+    private void insertError(Matrix error, int maxSize, int pictureIndex, int x, int y) {
         List<Matrix> channelErrors;
         if (allErrorList.size() == pictureIndex) {//集合里面是空的
             channelErrors = new ArrayList<>();
