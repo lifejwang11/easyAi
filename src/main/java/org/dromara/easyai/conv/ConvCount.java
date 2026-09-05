@@ -613,7 +613,7 @@ public abstract class ConvCount {
 
     protected ConvResult backDownConvMany(List<Matrix> errorMatrixList, List<Matrix> outMatrixList, ActiveFunction activeFunction,
                                           List<Matrix> im2colList, Matrix nerveMatrix, float studyRate, int kernSize, int xInput, int yInput, Matrix sMatrix, Matrix s2Matrix, DymStudy dymStudy
-            , int times, int step) throws Exception {
+            , int times, int step, int pictureSize) throws Exception {
         //下采样卷积误差反向传播
         ConvResult convResult = new ConvResult();
         int size = errorMatrixList.size();
@@ -647,7 +647,7 @@ public abstract class ConvCount {
                 wSub = matrixOperation.add(wSub, sub);
             }
         }
-        matrixOperation.mathMul(wSub, 1f / size);
+        matrixOperation.mathMul(wSub, 1f / pictureSize);
         wSub = dymStudy.getErrorMatrixByStudy(studyRate, sMatrix, s2Matrix, wSub, times);
         nerveMatrix = matrixOperation.add(nerveMatrix, wSub);//调整卷积核
         List<Matrix> gNextList = new ArrayList<>();

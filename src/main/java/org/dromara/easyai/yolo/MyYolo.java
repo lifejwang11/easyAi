@@ -83,7 +83,7 @@ public class MyYolo {
                     outBox.setTypeID(String.valueOf(realID));
                 }
             }
-            return fpnOut.getOutMap();
+            return outMap;
         } else {
             throw new IllegalAccessException("使用本类，图像必须为正方形（可以通过填充短边处理），且大小必须为配置的指定尺寸：" + imageSize);
         }

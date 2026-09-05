@@ -45,10 +45,10 @@ public class FpnBlock extends ConvCount {
     private final int batchSize;
     private int startX = 0;
     private int startY = 0;
-    private int pictureIndex = 0;
+    private int typePictureIndex = 0;
+    private int positionPictureIndex = 0;
     private final List<List<Matrix>> allErrorList = new ArrayList<>();
     private int pictureSize;
-    private boolean firstPosition = true;
     private final float studyRate;
     private int xInput;
     private int yInput;
@@ -61,8 +61,8 @@ public class FpnBlock extends ConvCount {
     private final boolean showLog;
     private boolean fill;
     private boolean noPosition;
-    private int positionSize;
     private int positionIndex = 0;
+    private final List<int[]> postionList = new ArrayList<>();
 
     public FpnBlock(int channelNo, ResBlock resBlock, int deep, BatchNerveManager typeManager
             , BatchNerveManager positionManager, FpnConfig fpnConfig, boolean first) throws Exception {
@@ -105,6 +105,7 @@ public class FpnBlock extends ConvCount {
         return fpnBlockModel;
     }
 
+    //接收resnet最后一层 或者 更深层fpn传过来的数据
     public void sendMatrixList(List<BatchBody> batchBodies, boolean study, long eventID, OutBack outBack, boolean formFpn, DymStudy dymStudy) throws Exception {
         this.dymStudy = dymStudy;
         times++;
@@ -153,6 +154,7 @@ public class FpnBlock extends ConvCount {
             myOutMatrixList.addAll(outMatrixList);
             im2colMatrixList.addAll(convResult.getLeftMatrixList());
         }
+        System.out.println("准备接收误差==========" + deep);
         for (int i = 0; i < size; i++) {//做特征拼接 准备送入检测头
             BatchBody batchBody = batchBodies.get(i);
             int startIndex = i * channelNo;
@@ -263,7 +265,7 @@ public class FpnBlock extends ConvCount {
         Matrix typMatrix = tag.getTypeMatrix();
         int maxX = typMatrix.getX();
         for (Matrix error : nextErrorMatrixList) {
-            insertError(error, maxX);
+            insertError(error, maxX, typePictureIndex, startX, startY, 1);
             boolean finish = updateIndex(maxX);
             if (noPosition && finish) {
                 backDownConv();
@@ -276,22 +278,22 @@ public class FpnBlock extends ConvCount {
         int maxX = typMatrix.getX();
         boolean finish = false;
         boolean last = false;
-        positionIndex = positionIndex + nextErrorMatrixList.size();
-        if (positionIndex == positionSize) {
+        int size = nextErrorMatrixList.size();
+        positionIndex = positionIndex + size;
+        for (int i = 0; i < nextErrorMatrixList.size(); i++) {
+            Matrix error = nextErrorMatrixList.get(i);
+            int index = positionIndex - size + i;
+            int[] p = postionList.get(index);
+            insertError(error, maxX, positionPictureIndex, p[0], p[1], 2);
+        }
+        if (positionIndex == postionList.size()) {
             positionIndex = 0;
             last = true;
         }
-        for (Matrix error : nextErrorMatrixList) {
-            updatePositionIndex();
-            insertError(error, maxX);
-        }
         if (last) {
-            startX = 0;
-            startY = 0;
-            firstPosition = true;
-            pictureIndex++;
-            if (pictureIndex == pictureSize) {
-                pictureIndex = 0;
+            positionPictureIndex++;
+            if (positionPictureIndex == pictureSize) {
+                positionPictureIndex = 0;
                 //接收线性层误差完毕
                 finish = true;
             }
@@ -306,16 +308,19 @@ public class FpnBlock extends ConvCount {
         List<Matrix> dymStudyRateList = convParameter.getDymStudyRateList();
         List<Matrix> dymStudyRate2List = convParameter.getDymStudyRate2List();
         List<Matrix> allError = new ArrayList<>();
+        int pictureSize = allErrorList.size();
         for (List<Matrix> matrixList : allErrorList) {
             allError.addAll(matrixList);
         }
         List<Matrix> im2colMatrixList = convParameter.getIm2colMatrixList();
         List<Matrix> myOutMatrixList = convParameter.getOutMatrixList();
         ConvResult convResult = backDownConvMany(allError, myOutMatrixList, reLu, im2colMatrixList, convParameter.getNerveMatrixList().get(0)
-                , studyRate, 3, xInput, yInput, dymStudyRateList.get(0), dymStudyRate2List.get(0), dymStudy, times, 1);
+                , studyRate, 3, xInput, yInput, dymStudyRateList.get(0), dymStudyRate2List.get(0), dymStudy, times, 1
+                , pictureSize);
         Matrix powerMatrix = convResult.getNervePowerMatrix();
         List<Matrix> gNextList = convResult.getResultMatrixList();
         convParameter.getNerveMatrixList().set(0, powerMatrix);
+        allErrorList.clear();
         if (fatherBlock != null) {
             resBlock.backErrorFpn(gNextList);
         }
@@ -333,10 +338,13 @@ public class FpnBlock extends ConvCount {
     }
 
     List<Matrix> backUpAndPool(List<Matrix> gNextList) throws Exception {
+        List<Matrix> gList;
         if (fill) {//需要先补一层0
-            gNextList = padding2Many(gNextList);
+            gList = padding2Many(gNextList);
+        } else {
+            gList = gNextList;
         }
-        return getBackOneConvPool(gNextList, studyRate, dymStudy, times, convParameter, channelNo);
+        return getBackOneConvPool(gList, studyRate, dymStudy, times, convParameter, channelNo);
     }
 
     void backErrorFromSon(List<Matrix> gList) throws Exception {//接收上层传过来的误差
@@ -346,38 +354,6 @@ public class FpnBlock extends ConvCount {
             fatherBlock.backErrorFromSon(gNextList);
         } else {//走到最深层了 发送给resnet
             resBlock.backErrorFormFpn(gMatrixList);
-        }
-    }
-
-    private void updatePositionIndex() {
-        Matrix typMatrix = tag.getTypeMatrix();
-        int x = typMatrix.getX();
-        int y = typMatrix.getY();
-        boolean first = true;
-        boolean here = false;
-        for (int i = startX; i < x; i++) {
-            for (int j = startY; j < y; j++) {
-                if (typMatrix.getValue(i, j) > 0.5) {//有类别
-                    if (firstPosition) {
-                        startX = i;
-                        startY = j;
-                        firstPosition = false;
-                        here = true;
-                    } else if (first) {
-                        first = false;
-                    } else {
-                        startX = i;
-                        startY = j;
-                        here = true;
-                    }
-                }
-                if (here) {
-                    break;
-                }
-            }
-            if (here) {
-                break;
-            }
         }
     }
 
@@ -391,9 +367,15 @@ public class FpnBlock extends ConvCount {
         if (startX == maX) {
             startX = 0;
             startY = 0;
-            pictureIndex++;
-            if (pictureIndex == pictureSize) {
-                pictureIndex = 0;
+            if (noPosition) {
+                positionPictureIndex++;
+            }
+            typePictureIndex++;
+            if (typePictureIndex == pictureSize) {
+                typePictureIndex = 0;
+                if (noPosition) {
+                    positionPictureIndex = 0;
+                }
                 finish = true;
             }
         }
@@ -403,6 +385,7 @@ public class FpnBlock extends ConvCount {
     private void insertFpnTag(List<Matrix> channelMatrix, FpnTag fpnTag, long eventID, OutBack outBack) throws Exception {
         int x = channelMatrix.get(0).getX();
         int y = channelMatrix.get(0).getY();
+        postionList.clear();
         Matrix typMatrix = fpnTag.getTypeMatrix();
         if (x != y || typMatrix.getX() != x) {
             throw new IllegalAccessException("fpn训练异常x:" + x + ",预测大小:" + typMatrix.getX());
@@ -417,6 +400,8 @@ public class FpnBlock extends ConvCount {
                 Map<Integer, Float> positionE;
                 Matrix feature = getFeature(channelMatrix, i, j);
                 if (type > 0.5) {//是属于该层的类别id
+                    int[] p = new int[]{i, j};
+                    postionList.add(p);
                     FeatureBody positionFeature = new FeatureBody();
                     typeE.put((int) type, 1f);
                     positionE = getPositionE(i, j, fpnTag);
@@ -434,7 +419,6 @@ public class FpnBlock extends ConvCount {
         sendLineStudy(typeFeatures, outBack, eventID, typeManager, true);
         if (!positionFeatures.isEmpty()) {
             noPosition = false;
-            positionSize = positionFeatures.size();
             sendLineStudy(positionFeatures, outBack, eventID, positionManager, false);
         } else {
             noPosition = true;
@@ -509,7 +493,12 @@ public class FpnBlock extends ConvCount {
         return feature;
     }
 
-    private void insertError(Matrix error, int maxSize) {
+    private void insertError(Matrix error, int maxSize, int pictureIndex, int x, int y, int type) {
+//        if (type == 1) {
+//            System.out.println("分类size:" + allErrorList.size() + ",pictureIndex:" + pictureIndex);
+//        } else {
+//            System.out.println("位置size:" + allErrorList.size() + ",pictureIndex:" + pictureIndex);
+//        }
         List<Matrix> channelErrors;
         if (allErrorList.size() == pictureIndex) {//集合里面是空的
             channelErrors = new ArrayList<>();
@@ -525,8 +514,8 @@ public class FpnBlock extends ConvCount {
         for (int i = 0; i < size; i++) {
             Matrix myError = channelErrors.get(i);
             float value = error.getValue(0, i);
-            float v = myError.getValue(startX, startY);
-            myError.setValue(startX, startY, value + v);
+            float v = myError.getValue(x, y);
+            myError.setValue(x, y, value + v);
         }
     }
 
@@ -550,7 +539,7 @@ public class FpnBlock extends ConvCount {
         List<List<Float>> oneDymStudy1 = new ArrayList<>();
         List<List<Float>> oneDymStudy2 = new ArrayList<>();
         int downNo = channelNo * 2;
-        float sh = (float) Math.sqrt(downNo);
+        float sh = (float) Math.sqrt(channelNo);
         for (int i = 0; i < channelNo; i++) {
             List<Float> power = new ArrayList<>();
             List<Float> study1 = new ArrayList<>();
