@@ -37,7 +37,6 @@ public class MyYolo {
     public MyYolo(YoloFpnConfig yoloFpnConfig, ResnetConfig resnetConfig) throws Exception {
         FpnConfig fpnConfig = new FpnConfig();
         fpnConfig.setPth(yoloFpnConfig.getPth());
-        fpnConfig.setTrustTh(yoloFpnConfig.getTrustTh());
         fpnConfig.setIouTh(yoloFpnConfig.getIouTh());
         fpnConfig.setBatchSize(yoloFpnConfig.getFpnBatchSize());
         fpnConfig.setStartDeep(yoloFpnConfig.getStartDeep());

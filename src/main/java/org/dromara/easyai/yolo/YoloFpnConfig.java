@@ -7,7 +7,6 @@ package org.dromara.easyai.yolo;
  */
 public class YoloFpnConfig {
     private float pth = 0.7f;//概率阈值
-    private float trustTh = 0.5f;//可信度阈值
     private float iouTh = 0.05f;//交并比阈值
     private int fpnBatchSize = 32;//线性层批量数值
     private int startDeep = 3;//fpn开始部署层数 此处以上需要单独配置 包括此处
@@ -90,14 +89,6 @@ public class YoloFpnConfig {
 
     public void setPth(float pth) {
         this.pth = pth;
-    }
-
-    public float getTrustTh() {
-        return trustTh;
-    }
-
-    public void setTrustTh(float trustTh) {
-        this.trustTh = trustTh;
     }
 
     public float getIouTh() {
