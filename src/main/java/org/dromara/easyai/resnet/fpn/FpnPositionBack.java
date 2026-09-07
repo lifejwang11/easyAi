@@ -16,7 +16,6 @@ public class FpnPositionBack implements OutBack {
     private float distY;
     private float width;
     private float height;
-    private float trust;
 
     public float getDistX() {
         return distX;
@@ -34,9 +33,6 @@ public class FpnPositionBack implements OutBack {
         return height;
     }
 
-    public float getTrust() {
-        return trust;
-    }
 
     @Override
     public void getBack(float out, int id, long eventId) {
@@ -69,7 +65,6 @@ public class FpnPositionBack implements OutBack {
         distY = matrix.getValue(0, 1);
         width = matrix.getValue(0, 2);
         height = matrix.getValue(0, 3);
-        trust = matrix.getValue(0, 4);
     }
 
     @Override

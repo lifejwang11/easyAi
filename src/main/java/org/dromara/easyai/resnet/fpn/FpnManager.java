@@ -119,13 +119,13 @@ public class FpnManager {
         BatchNerveConfig typeConfig = new BatchNerveConfig();
         typeConfig.setInputSize(featureLength);
         typeConfig.setHiddenSize(featureLength / 2);
-        typeConfig.setOutSize(5);
+        typeConfig.setOutSize(4);
         typeConfig.setSoftMax(false);
-        typeConfig.setStudyRate(studyRate);
+        typeConfig.setStudyRate(studyRate);//studyRate
         typeConfig.setAuto(true);
         typeConfig.setGMaxTh(gMaxTh);
         typeConfig.setDeep(deep);
-        typeConfig.setShowLog(false);
+        typeConfig.setShowLog(showLog);
         typeConfig.setRegular(0);
         typeConfig.setLayGMaxTh(layGMaxTh);
         return typeConfig;

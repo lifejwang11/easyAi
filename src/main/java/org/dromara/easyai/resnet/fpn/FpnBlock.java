@@ -18,6 +18,7 @@ import org.dromara.easyai.resnet.entity.BatchBody;
 import org.dromara.easyai.tools.NMS;
 import org.dromara.easyai.yolo.OutBox;
 import org.dromara.easyai.yolo.YoloTypeBack;
+import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 
 import java.util.*;
 
@@ -40,10 +41,7 @@ public class FpnBlock extends ConvCount {
     private final int otherType;
     private FpnTag tag;
     private final float pth;//概率阈值
-    private final float trustTh;//可信度阈值
     private final int batchSize;
-    private int startX = 0;
-    private int startY = 0;
     private int typePictureIndex = 0;
     private int positionPictureIndex = 0;
     private final List<List<Matrix>> allErrorList = new ArrayList<>();
@@ -59,9 +57,10 @@ public class FpnBlock extends ConvCount {
     private final float iouTh;
     private final boolean showLog;
     private boolean fill;
-    private boolean noPosition;
     private int positionIndex = 0;
+    private int typeIndex = 0;
     private final List<int[]> postionList = new ArrayList<>();
+    private final List<int[]> typeList = new ArrayList<>();
 
     public FpnBlock(int channelNo, ResBlock resBlock, int deep, BatchNerveManager typeManager
             , BatchNerveManager positionManager, FpnConfig fpnConfig, boolean first) throws Exception {
@@ -73,7 +72,6 @@ public class FpnBlock extends ConvCount {
         this.batchSize = fpnConfig.getBatchSize();
         imageSize = fpnConfig.getSize();
         pth = fpnConfig.getPth();
-        trustTh = fpnConfig.getTrustTh();
         otherType = fpnConfig.getTypeNumber() + 1;
         studyRate = fpnConfig.getStudyRate();
         this.resBlock = resBlock;
@@ -188,14 +186,11 @@ public class FpnBlock extends ConvCount {
                 typeManager.getInputBlock().postMessage(getFeature(feature, true), false, yoloTypeBack, eventID, null);
                 int id = yoloTypeBack.getId();
                 float out = yoloTypeBack.getOut();
-                // System.out.println("id:" + id + ",out:" + out + ",deep:" + deep);
                 if (id < otherType && out > pth) {
                     positionManager.getInputBlock().postMessage(getFeature(feature, true), false, positionBack, eventID, null);
-                    Box box = getBox(i * step, j * step, imageSize, positionBack, step, id);
-                    if (box != null) {
-                        box.setFeatureMatrix(feature);
-                        boxes.add(box);
-                    }
+                    Box box = getBox(i * step, j * step, imageSize, positionBack, step, id, out);
+                    box.setFeatureMatrix(feature);
+                    boxes.add(box);
                 }
             }
         }
@@ -235,13 +230,12 @@ public class FpnBlock extends ConvCount {
         return outBoxes;
     }
 
-    private Box getBox(int i, int j, int max, FpnPositionBack positionBack, int step, int type) {
-        float maxSize = step * 2;
-        Box box = null;
-        float centerX = i - positionBack.getDistX() * maxSize;
-        float centerY = j - positionBack.getDistY() * maxSize;
-        int width = (int) (positionBack.getWidth() * maxSize);
-        int height = (int) (positionBack.getHeight() * maxSize);
+    private Box getBox(int i, int j, int max, FpnPositionBack positionBack, int step, int type, float trust) {
+        Box box;
+        float centerX = i - positionBack.getDistX() * (float) step;
+        float centerY = j - positionBack.getDistY() * (float) step;
+        int width = (int) (positionBack.getWidth() * (float) step);
+        int height = (int) (positionBack.getHeight() * (float) step);
         int realX = (int) (centerX - height / 2f);
         int realY = (int) (centerY - width / 2f);
         if (realX < 0) {
@@ -256,29 +250,43 @@ public class FpnBlock extends ConvCount {
         if (realY + width > max) {
             realY = max - width;
         }
-        float trust = positionBack.getTrust();
-        if (trust > trustTh) {
-            box = new Box();
-            box.setX(realX);
-            box.setY(realY);
-            box.setxSize(height);
-            box.setySize(width);
-            box.setConfidence(trust);
-            box.setTypeID(type);
-        }
+        box = new Box();
+        box.setX(realX);
+        box.setY(realY);
+        box.setxSize(height);
+        box.setySize(width);
+        box.setConfidence(trust);
+        box.setTypeID(type);
         return box;
     }
 
     protected void backByTypeLine(List<Matrix> nextErrorMatrixList) throws Exception {
         Matrix typMatrix = tag.getTypeMatrix();
         int maxX = typMatrix.getX();
-        for (Matrix error : nextErrorMatrixList) {
-            insertError(error, maxX, typePictureIndex, startX, startY);
-            boolean finish = updateIndex(maxX);
-            if (noPosition && finish) {
-                backDownConv();
+        int size = nextErrorMatrixList.size();
+        typeIndex = typeIndex + size;
+        for (int i = 0; i < nextErrorMatrixList.size(); i++) {
+            Matrix error = nextErrorMatrixList.get(i);
+            int index = typeIndex - size + i;
+            int[] p = typeList.get(index);
+            insertError(error, maxX, typePictureIndex, p[0], p[1]);
+        }
+        if (typeIndex == typeList.size()) {//一张图结束了
+            typeIndex = 0;
+            typePictureIndex++;
+            if (postionList.isEmpty()) {
+                positionPictureIndex++;
+            }
+            if (typePictureIndex == pictureSize) {
+                typePictureIndex = 0;
+                if (postionList.isEmpty()) {
+                    positionPictureIndex = 0;
+                    backDownConv();
+                }
+                //接收线性层误差完毕
             }
         }
+
     }
 
     protected void backByPositionLine(List<Matrix> nextErrorMatrixList) throws Exception {
@@ -365,35 +373,11 @@ public class FpnBlock extends ConvCount {
         }
     }
 
-    private boolean updateIndex(int maX) {
-        boolean finish = false;
-        startY++;
-        if (startY == maX) {
-            startY = 0;
-            startX++;
-        }
-        if (startX == maX) {
-            startX = 0;
-            startY = 0;
-            if (noPosition) {
-                positionPictureIndex++;
-            }
-            typePictureIndex++;
-            if (typePictureIndex == pictureSize) {
-                typePictureIndex = 0;
-                if (noPosition) {
-                    positionPictureIndex = 0;
-                }
-                finish = true;
-            }
-        }
-        return finish;
-    }
-
     private void insertFpnTag(List<Matrix> channelMatrix, FpnTag fpnTag, long eventID, OutBack outBack) throws Exception {
         int x = channelMatrix.get(0).getX();
         int y = channelMatrix.get(0).getY();
         postionList.clear();
+        typeList.clear();
         Matrix typMatrix = fpnTag.getTypeMatrix();
         if (x != y || typMatrix.getX() != x) {
             throw new IllegalAccessException("fpn训练异常x:" + x + ",预测大小:" + typMatrix.getX());
@@ -405,31 +389,28 @@ public class FpnBlock extends ConvCount {
                 float type = typMatrix.getValue(i, j);
                 FeatureBody typeFeature = new FeatureBody();
                 Map<Integer, Float> typeE = new HashMap<>();
-                Map<Integer, Float> positionE;
                 Matrix feature = getFeature(channelMatrix, i, j);
                 if (type > 0.5) {//是属于该层的类别id
                     int[] p = new int[]{i, j};
-                    postionList.add(p);
-                    FeatureBody positionFeature = new FeatureBody();
                     typeE.put((int) type, 1f);
-                    positionE = getPositionE(i, j, fpnTag);
-                    positionFeature.setE(positionE);
-                    positionFeature.setFeature(feature);
-                    positionFeatures.add(positionFeature);
-                } else {//噪音
-                    typeE.put(otherType, 1f);
+                    typeList.add(p);
+                    typeFeature.setE(typeE);
+                    typeFeature.setFeature(feature);
+                    typeFeatures.add(typeFeature);
+                    if (type < otherType - 0.2) {
+                        FeatureBody positionFeature = new FeatureBody();
+                        postionList.add(p);
+                        Map<Integer, Float> positionE = getPositionE(i, j, fpnTag);
+                        positionFeature.setE(positionE);
+                        positionFeature.setFeature(feature.copy());
+                        positionFeatures.add(positionFeature);
+                    }
                 }
-                typeFeature.setE(typeE);
-                typeFeature.setFeature(feature);
-                typeFeatures.add(typeFeature);
             }
         }
         sendLineStudy(typeFeatures, outBack, eventID, typeManager, true);
         if (!positionFeatures.isEmpty()) {
-            noPosition = false;
             sendLineStudy(positionFeatures, outBack, eventID, positionManager, false);
-        } else {
-            noPosition = true;
         }
     }
 
@@ -528,12 +509,10 @@ public class FpnBlock extends ConvCount {
         float height = fpnTag.getHeightMatrix().getValue(i, j);
         float distX = fpnTag.getDistXMatrix().getValue(i, j);
         float distY = fpnTag.getDistYMatrix().getValue(i, j);
-        float trust = fpnTag.getTrustMatrix().getValue(i, j);
         e.put(1, distX);
         e.put(2, distY);
         e.put(3, width);
         e.put(4, height);
-        e.put(5, trust);
         return e;
     }
 

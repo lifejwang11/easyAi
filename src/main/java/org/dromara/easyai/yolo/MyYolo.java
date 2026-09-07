@@ -30,6 +30,8 @@ public class MyYolo {
     private final int imageSize;
     private final int batchSize;
     private final float containIouTh;//是否包含样本交并比阈值
+    private final float otherIouTh;
+    private final int otherType;
     private final Map<Integer, Integer> mappingID = new HashMap<>();
 
     public MyYolo(YoloFpnConfig yoloFpnConfig, ResnetConfig resnetConfig) throws Exception {
@@ -46,12 +48,14 @@ public class MyYolo {
         resnetConfig.setShowLog(yoloFpnConfig.isShowLog());
         resnetConfig.setChannelNo(yoloFpnConfig.getChannelNo());
         resnetConfig.setBatchSize(yoloFpnConfig.getPictureSize());
+        otherIouTh = yoloFpnConfig.getOtherIouTh();
         containIouTh = yoloFpnConfig.getContainIouTh();
         resnetManager = new ResnetManager(resnetConfig, fpnConfig, new ReLu());
         startDeep = yoloFpnConfig.getStartDeep();
         allDeep = resnetManager.getDeep();
         imageSize = yoloFpnConfig.getSize();
         batchSize = resnetConfig.getBatchSize();
+        otherType = yoloFpnConfig.getTypeNumber() + 1;
     }
 
     public ResnetManager getResnetManager() {
@@ -108,6 +112,10 @@ public class MyYolo {
         resnetManager.insertModel(myYoloModel.getResnetModel());
     }
 
+    public void outMultiScale() {
+        List<Integer> sizeList = resnetManager.calcStageOutputSizes(imageSize, allDeep);
+        System.out.println(sizeList);
+    }
 
     public MyYoloModel study(List<YoloSample> yoloSamples, OutBack logOutBack, int studyTimes) throws Exception {
         List<Integer> sizeList = resnetManager.calcStageOutputSizes(imageSize, allDeep).subList(startDeep - 1, allDeep);
@@ -144,8 +152,8 @@ public class MyYolo {
             Map<Integer, FpnTag> fpnTagMap = new HashMap<>();
             for (int i = 0; i < size; i++) {
                 fpnTagMap.put(i + startDeep, initFpn(sizeList.get(i)));
-                scale(boxes, sizeList.get(i), i + startDeep);
             }
+            scale(boxes, sizeList);
             for (int i = 0; i < size; i++) {
                 multiScale(boxes, sizeList.get(i), fpnTagMap.get(i + startDeep), i + startDeep);
             }
@@ -162,7 +170,6 @@ public class MyYolo {
         fpnTag.setDistYMatrix(new Matrix(size, size));
         fpnTag.setWidthMatrix(new Matrix(size, size));
         fpnTag.setHeightMatrix(new Matrix(size, size));
-        fpnTag.setTrustMatrix(new Matrix(size, size));
         return fpnTag;
     }
 
@@ -186,7 +193,8 @@ public class MyYolo {
         float maxIOU = -1;
         Box rightBox = null;
         int step = box.getxSize();
-        float maxSize = step * 2;
+        float myIou = 0;
+        boolean other = false;
         for (Box testBox : boxes) {
             if (testBox.getDeep() == deep) {
                 float iou = nms.getSRatio(box, testBox, false);
@@ -194,22 +202,24 @@ public class MyYolo {
                     maxIOU = iou;
                     rightBox = testBox;
                 }
+                if (iou > myIou) {
+                    myIou = iou;
+                }
             }
+        }
+        if (myIou < otherIouTh) {
+            other = true;
         }
         int x = box.getX();
         int y = box.getY();
         if (rightBox != null) {//有命中
             int type = rightBox.getTypeID();//类别id
-            float width = rightBox.getySize() / maxSize;
-            float height = rightBox.getxSize() / maxSize;
+            float width = rightBox.getySize() / (float) step;
+            float height = rightBox.getxSize() / (float) step;
             int centerX = rightBox.getX() + rightBox.getxSize() / 2;
             int centerY = rightBox.getY() + rightBox.getySize() / 2;
-            float distX = (x - centerX) / maxSize;
-            float distY = (y - centerY) / maxSize;
-            float trust = 0;
-            if (centerX >= x && centerX <= (x + step) && centerY >= y && centerY <= (y + step)) {
-                trust = 1;
-            }
+            float distX = (x - centerX) / (float) step;
+            float distY = (y - centerY) / (float) step;
             int realX = x / step;
             int realY = y / step;
             fpnTag.getTypeMatrix().setNub(realX, realY, type);
@@ -217,7 +227,10 @@ public class MyYolo {
             fpnTag.getHeightMatrix().setNub(realX, realY, height);
             fpnTag.getDistXMatrix().setNub(realX, realY, distX);
             fpnTag.getDistYMatrix().setNub(realX, realY, distY);
-            fpnTag.getTrustMatrix().setNub(realX, realY, trust);
+        } else if (other) {
+            int realX = x / step;
+            int realY = y / step;
+            fpnTag.getTypeMatrix().setNub(realX, realY, otherType);
         }
     }
 
@@ -238,42 +251,26 @@ public class MyYolo {
             box.setxSize(yoloBody.getHeight());
             box.setySize(yoloBody.getWidth());
             box.setTypeID(mapID);
-            box.setMaxIOU(0);
             boxes.add(box);
         }
         return boxes;
     }
 
-    private void scale(List<Box> boxes, int size, int deep) {
-        List<Box> testBoxes = new ArrayList<>();
-        int step = imageSize / size;
-        int checkSize = imageSize - step;
-        NMS nms = new NMS(0.01f);
-        for (int i = 0; i <= checkSize; i += step) {
-            for (int j = 0; j <= checkSize; j += step) {
-                Box box = new Box();
-                box.setX(i);
-                box.setY(j);
-                box.setxSize(step);
-                box.setySize(step);
-                testBoxes.add(box);
-            }
-        }
+    private void scale(List<Box> boxes, List<Integer> sizeList) {
         for (Box box : boxes) {
-            float maxIOU = box.getMaxIOU();
-            float n = -1;
-            for (Box testBox : testBoxes) {
-                float iou = nms.getIOU(box, testBox);
-                if (iou > maxIOU && iou > n) {
-                    n = iou;
+            double s = Math.sqrt(box.getxSize() * box.getySize());//等效边长
+            double minDist = 999999999;
+            int deep = 0;
+            for (int i = 0; i < sizeList.size(); i++) {
+                int step = imageSize / sizeList.get(i);
+                double dist = Math.abs(s - step);
+                if (dist < minDist) {
+                    minDist = dist;
+                    deep = startDeep + i;
                 }
             }
-            if (n > maxIOU) {
-                box.setMaxIOU(n);
-                box.setDeep(deep);
-            }
+            box.setDeep(deep);
         }
     }
-
 
 }

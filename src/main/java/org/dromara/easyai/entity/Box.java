@@ -17,7 +17,7 @@ public class Box {
     private int typeID;//类别id
     private float softMax;//概率
     private int deep;//所处深度
-    private float maxIOU;//当前最大iou
+    private float minLength;//当前最小等效边长差
     private Matrix featureMatrix;//特征矩阵
     //识别参数
     private int realX;//识别X
@@ -31,12 +31,12 @@ public class Box {
         this.deep = deep;
     }
 
-    public float getMaxIOU() {
-        return maxIOU;
+    public float getMinLength() {
+        return minLength;
     }
 
-    public void setMaxIOU(float maxIOU) {
-        this.maxIOU = maxIOU;
+    public void setMinLength(float minLength) {
+        this.minLength = minLength;
     }
 
     public float getSoftMax() {

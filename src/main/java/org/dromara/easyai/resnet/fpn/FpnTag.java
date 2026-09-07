@@ -13,7 +13,6 @@ public class FpnTag {
     private Matrix heightMatrix;
     private Matrix distXMatrix;
     private Matrix distYMatrix;
-    private Matrix trustMatrix;
 
     public Matrix getTypeMatrix() {
         return typeMatrix;
@@ -53,13 +52,5 @@ public class FpnTag {
 
     public void setDistYMatrix(Matrix distYMatrix) {
         this.distYMatrix = distYMatrix;
-    }
-
-    public Matrix getTrustMatrix() {
-        return trustMatrix;
-    }
-
-    public void setTrustMatrix(Matrix trustMatrix) {
-        this.trustMatrix = trustMatrix;
     }
 }
