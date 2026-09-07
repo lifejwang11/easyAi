@@ -2,6 +2,8 @@ package org.dromara.easyai.resnet.entity;
 
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.resnet.fpn.FpnBlock;
+import org.dromara.easyai.resnet.fpn.FpnTag;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +17,15 @@ public class BatchBody {
     private List<Matrix> featureList = new ArrayList<>();
     private Map<Integer, Float> E;
     private ResnetError resnetError;//残差
+    private Map<Integer, FpnTag> fpnTagMap;//fpn标注
+
+    public Map<Integer, FpnTag> getFpnTagMap() {
+        return fpnTagMap;
+    }
+
+    public void setFpnTagMap(Map<Integer, FpnTag> fpnTagMap) {
+        this.fpnTagMap = fpnTagMap;
+    }
 
     public ResnetError getResnetError() {
         return resnetError;

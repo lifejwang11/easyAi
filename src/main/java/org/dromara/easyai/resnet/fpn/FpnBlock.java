@@ -1,0 +1,567 @@
+package org.dromara.easyai.resnet.fpn;
+
+import org.dromara.easyai.batchNerve.BatchNerveManager;
+import org.dromara.easyai.batchNerve.FeatureBody;
+import org.dromara.easyai.config.FpnConfig;
+import org.dromara.easyai.conv.ConvCount;
+import org.dromara.easyai.conv.ConvResult;
+import org.dromara.easyai.conv.DymStudy;
+import org.dromara.easyai.entity.Box;
+import org.dromara.easyai.function.ReLu;
+import org.dromara.easyai.i.OutBack;
+import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.matrixTools.MatrixOperation;
+import org.dromara.easyai.nerveEntity.ConvParameter;
+import org.dromara.easyai.nerveEntity.ConvSize;
+import org.dromara.easyai.resnet.ResBlock;
+import org.dromara.easyai.resnet.entity.BatchBody;
+import org.dromara.easyai.tools.NMS;
+import org.dromara.easyai.yolo.OutBox;
+import org.dromara.easyai.yolo.YoloTypeBack;
+import org.omg.Messaging.SYNC_WITH_TRANSPORT;
+
+import java.util.*;
+
+/**
+ * @author lidapeng
+ * @time 2026/8/26 08:35
+ * @des fpn
+ */
+public class FpnBlock extends ConvCount {
+    private final ConvParameter convParameter = new ConvParameter();//内存中卷积层模型及临时数据
+    private final MatrixOperation matrixOperation = new MatrixOperation();
+    private final BatchNerveManager typeManager;
+    private final BatchNerveManager positionManager;
+    private FpnBlock sonBlock;
+    private FpnBlock fatherBlock;
+    private final ReLu reLu = new ReLu();
+    private final ResBlock resBlock;
+    private final int channelNo;
+    private final int deep;//深度
+    private final int otherType;
+    private FpnTag tag;
+    private final float pth;//概率阈值
+    private final int batchSize;
+    private int typePictureIndex = 0;
+    private int positionPictureIndex = 0;
+    private final List<List<Matrix>> allErrorList = new ArrayList<>();
+    private int pictureSize;
+    private final float studyRate;
+    private int xInput;
+    private int yInput;
+    private int times = 0;
+    private DymStudy dymStudy;
+    private final boolean first;
+    private List<Matrix> gNextList;
+    private final int imageSize;
+    private final float iouTh;
+    private final boolean showLog;
+    private boolean fill;
+    private int positionIndex = 0;
+    private int typeIndex = 0;
+    private final List<int[]> postionList = new ArrayList<>();
+    private final List<int[]> typeList = new ArrayList<>();
+
+    public FpnBlock(int channelNo, ResBlock resBlock, int deep, BatchNerveManager typeManager
+            , BatchNerveManager positionManager, FpnConfig fpnConfig, boolean first) throws Exception {
+        super(null);
+        this.first = first;
+        showLog = fpnConfig.isShowLog();
+        iouTh = fpnConfig.getIouTh();
+        this.channelNo = channelNo;
+        this.batchSize = fpnConfig.getBatchSize();
+        imageSize = fpnConfig.getSize();
+        pth = fpnConfig.getPth();
+        otherType = fpnConfig.getTypeNumber() + 1;
+        studyRate = fpnConfig.getStudyRate();
+        this.resBlock = resBlock;
+        this.deep = deep;
+        Random random = new Random();
+        initOnePower(channelNo, random);
+        initMatrixPower(random);
+        this.typeManager = typeManager;
+        this.positionManager = positionManager;
+    }
+
+    public void insertModel(FpnBlockModel fpnBlockModel) {
+        Matrix downNerveMatrix = convParameter.getNerveMatrixList().get(0);//下卷积采样权重
+        downNerveMatrix.insertMatrixModel(fpnBlockModel.getDownConvPowerList());
+        convParameter.setOneConvPower(fpnBlockModel.getOneConvListModel());
+        typeManager.insertModel(fpnBlockModel.getTypeBatchNerveModel());
+        positionManager.insertModel(fpnBlockModel.getPositionBatchNerveModel());
+    }
+
+    public FpnBlockModel getModel() {
+        FpnBlockModel fpnBlockModel = new FpnBlockModel();
+        Matrix downNerveMatrix = convParameter.getNerveMatrixList().get(0);//下卷积采样权重
+        List<List<Float>> oneConvPower = convParameter.getOneConvPower();
+        fpnBlockModel.setDownConvPowerList(downNerveMatrix.getMatrixModel());
+        fpnBlockModel.setOneConvListModel(oneConvPower);
+        fpnBlockModel.setTypeBatchNerveModel(typeManager.getModel());
+        fpnBlockModel.setPositionBatchNerveModel(positionManager.getModel());
+        return fpnBlockModel;
+    }
+
+    //接收resnet最后一层 或者 更深层fpn传过来的数据
+    public void sendMatrixList(List<BatchBody> batchBodies, boolean study, long eventID, OutBack outBack, boolean formFpn, DymStudy dymStudy) throws Exception {
+        this.dymStudy = dymStudy;
+        times++;
+        List<Matrix> allFeatures = new ArrayList<>();
+        int size = batchBodies.size();
+        pictureSize = size;
+        if (formFpn) {
+            upConvAndPoolingMany(batchBodies, convParameter, reLu, study);//完成一次上采样
+            List<BatchBody> resBody = resBlock.getResBlockFeature(eventID);
+            resBlock.removeResFeature(eventID);
+            size = batchBodies.size();
+            for (int i = 0; i < size; i++) {
+                BatchBody batchBodyUp = batchBodies.get(i);
+                BatchBody batchBodyDown = resBody.get(i);
+                List<Matrix> upFeatures = batchBodyUp.getFeatureList();
+                List<Matrix> downFeatures = batchBodyDown.getFeatureList();
+                if (upFeatures.get(0).getX() != downFeatures.get(0).getX()) {
+                    fill = true;
+                    upFeatures = unPadding2Many(upFeatures);
+                    batchBodyUp.setFeatureList(upFeatures);
+                } else {
+                    fill = false;
+                }
+                List<Matrix> addMatrixList = matrixOperation.addMatrixList(upFeatures, downFeatures);
+                xInput = addMatrixList.get(0).getX() + 2;
+                yInput = addMatrixList.get(0).getY() + 2;
+                List<Matrix> myMatrixList = paddingMany(addMatrixList);
+                allFeatures.addAll(myMatrixList);
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
+                List<Matrix> features = batchBodies.get(i).getFeatureList();
+                xInput = features.get(0).getX() + 2;
+                yInput = features.get(0).getY() + 2;
+                allFeatures.addAll(paddingMany(features));
+            }
+        }
+        ConvResult convResult = downConvCountMany(allFeatures, reLu, 3,
+                convParameter.getNerveMatrixList().get(0), 1);
+        List<Matrix> outMatrixList = convResult.getResultMatrixList();
+        if (study) {
+            List<Matrix> im2colMatrixList = convParameter.getIm2colMatrixList();
+            List<Matrix> myOutMatrixList = convParameter.getOutMatrixList();
+            im2colMatrixList.clear();
+            myOutMatrixList.clear();
+            myOutMatrixList.addAll(outMatrixList);
+            im2colMatrixList.addAll(convResult.getLeftMatrixList());
+        }
+        for (int i = 0; i < size; i++) {//做特征拼接 准备送入检测头
+            BatchBody batchBody = batchBodies.get(i);
+            int startIndex = i * channelNo;
+            int endIndex = startIndex + channelNo;
+            List<Matrix> channelMatrixList = outMatrixList.subList(startIndex, endIndex);
+            if (study) {
+                FpnTag fpnTag = batchBody.getFpnTagMap().get(deep);//标注
+                tag = fpnTag;
+                insertFpnTag(channelMatrixList, fpnTag, eventID, outBack);
+            } else {
+                insertFpnFeature(channelMatrixList, eventID, outBack);
+            }
+        }
+        //特征继续向上传
+        if (sonBlock != null) {
+            sonBlock.sendMatrixList(batchBodies, study, eventID, outBack, true, dymStudy);
+        }
+    }
+
+    private void insertFpnFeature(List<Matrix> channelMatrix, long eventID, OutBack outBack) throws Exception {
+        int x = channelMatrix.get(0).getX();
+        int y = channelMatrix.get(0).getY();
+        YoloTypeBack yoloTypeBack = new YoloTypeBack();
+        FpnPositionBack positionBack = new FpnPositionBack();
+        int step = imageSize / x;
+        NMS nms = new NMS(iouTh);
+        List<Box> boxes = new ArrayList<>();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                yoloTypeBack.clear();
+                Matrix feature = getFeature(channelMatrix, i, j);
+                //推理发送给线性层
+                typeManager.getInputBlock().postMessage(getFeature(feature, true), false, yoloTypeBack, eventID, null);
+                int id = yoloTypeBack.getId();
+                float out = yoloTypeBack.getOut();
+                if (id < otherType && out > pth) {
+                    positionManager.getInputBlock().postMessage(getFeature(feature, true), false, positionBack, eventID, null);
+                    Box box = getBox(i * step, j * step, imageSize, positionBack, step, id, out);
+                    box.setFeatureMatrix(feature);
+                    boxes.add(box);
+                }
+            }
+        }
+        if (!boxes.isEmpty()) {
+            List<Box> outBoxList = nms.start(boxes);
+            List<OutBox> myOutBox = getOutBoxList(outBoxList);
+            outBack.outBackBox(myOutBox, eventID, deep);
+        }
+    }
+
+    private List<FeatureBody> getFeature(Matrix feature, boolean copy) {
+        List<FeatureBody> features = new ArrayList<>();
+        FeatureBody featureBody = new FeatureBody();
+        if (copy) {
+            featureBody.setFeature(feature.copy());
+        } else {
+            featureBody.setFeature(feature);
+        }
+        features.add(featureBody);
+        return features;
+    }
+
+
+    private List<OutBox> getOutBoxList(List<Box> boxes) {
+        List<OutBox> outBoxes = new ArrayList<>();
+        for (Box box : boxes) {
+            OutBox outBox = new OutBox();
+            outBox.setX(box.getY());
+            outBox.setY(box.getX());
+            outBox.setHeight(box.getxSize());
+            outBox.setWidth(box.getySize());
+            outBox.setTypeID(String.valueOf(box.getTypeID()));
+            outBox.setTrust(box.getConfidence());
+            outBox.setFeature(box.getFeatureMatrix());
+            outBoxes.add(outBox);
+        }
+        return outBoxes;
+    }
+
+    private Box getBox(int i, int j, int max, FpnPositionBack positionBack, int step, int type, float trust) {
+        Box box;
+        float centerX = i - positionBack.getDistX() * (float) step;
+        float centerY = j - positionBack.getDistY() * (float) step;
+        int width = (int) (positionBack.getWidth() * (float) step);
+        int height = (int) (positionBack.getHeight() * (float) step);
+        int realX = (int) (centerX - height / 2f);
+        int realY = (int) (centerY - width / 2f);
+        if (realX < 0) {
+            realX = 0;
+        }
+        if (realY < 0) {
+            realY = 0;
+        }
+        if (realX + height > max) {
+            realX = max - height;
+        }
+        if (realY + width > max) {
+            realY = max - width;
+        }
+        box = new Box();
+        box.setX(realX);
+        box.setY(realY);
+        box.setxSize(height);
+        box.setySize(width);
+        box.setConfidence(trust);
+        box.setTypeID(type);
+        return box;
+    }
+
+    protected void backByTypeLine(List<Matrix> nextErrorMatrixList) throws Exception {
+        Matrix typMatrix = tag.getTypeMatrix();
+        int maxX = typMatrix.getX();
+        int size = nextErrorMatrixList.size();
+        typeIndex = typeIndex + size;
+        for (int i = 0; i < nextErrorMatrixList.size(); i++) {
+            Matrix error = nextErrorMatrixList.get(i);
+            int index = typeIndex - size + i;
+            int[] p = typeList.get(index);
+            insertError(error, maxX, typePictureIndex, p[0], p[1]);
+        }
+        if (typeIndex == typeList.size()) {//一张图结束了
+            typeIndex = 0;
+            typePictureIndex++;
+            if (postionList.isEmpty()) {
+                positionPictureIndex++;
+            }
+            if (typePictureIndex == pictureSize) {
+                typePictureIndex = 0;
+                if (postionList.isEmpty()) {
+                    positionPictureIndex = 0;
+                    backDownConv();
+                }
+                //接收线性层误差完毕
+            }
+        }
+
+    }
+
+    protected void backByPositionLine(List<Matrix> nextErrorMatrixList) throws Exception {
+        Matrix typMatrix = tag.getTypeMatrix();
+        int maxX = typMatrix.getX();
+        boolean finish = false;
+        boolean last = false;
+        int size = nextErrorMatrixList.size();
+        positionIndex = positionIndex + size;
+        for (int i = 0; i < nextErrorMatrixList.size(); i++) {
+            Matrix error = nextErrorMatrixList.get(i);
+            int index = positionIndex - size + i;
+            int[] p = postionList.get(index);
+            insertError(error, maxX, positionPictureIndex, p[0], p[1]);
+        }
+        if (positionIndex == postionList.size()) {
+            positionIndex = 0;
+            last = true;
+        }
+        if (last) {
+            positionPictureIndex++;
+            if (positionPictureIndex == pictureSize) {
+                positionPictureIndex = 0;
+                //接收线性层误差完毕
+                finish = true;
+            }
+        }
+        if (finish) {
+            backDownConv();
+        }
+
+    }
+
+    private void backDownConv() throws Exception {
+        List<Matrix> dymStudyRateList = convParameter.getDymStudyRateList();
+        List<Matrix> dymStudyRate2List = convParameter.getDymStudyRate2List();
+        List<Matrix> allError = new ArrayList<>();
+        int pictureSize = allErrorList.size();
+        for (List<Matrix> matrixList : allErrorList) {
+            allError.addAll(matrixList);
+        }
+        List<Matrix> im2colMatrixList = convParameter.getIm2colMatrixList();
+        List<Matrix> myOutMatrixList = convParameter.getOutMatrixList();
+        ConvResult convResult = backDownConvMany(allError, myOutMatrixList, reLu, im2colMatrixList, convParameter.getNerveMatrixList().get(0)
+                , studyRate, 3, xInput, yInput, dymStudyRateList.get(0), dymStudyRate2List.get(0), dymStudy, times, 1
+                , pictureSize);
+        Matrix powerMatrix = convResult.getNervePowerMatrix();
+        List<Matrix> gNextList = convResult.getResultMatrixList();
+        convParameter.getNerveMatrixList().set(0, powerMatrix);
+        allErrorList.clear();
+        if (fatherBlock != null) {
+            resBlock.backErrorFpn(gNextList);
+        }
+        if (first) {//无需等待直接向下层返回误差
+            if (fatherBlock != null) {
+                List<Matrix> errorMatrixList = backUpAndPool(gNextList);
+                fatherBlock.backErrorFromSon(errorMatrixList);
+            } else {
+                resBlock.backErrorFormFpn(gNextList);
+            }
+        } else {//需要先等待上层传回的误差
+            this.gNextList = gNextList;
+        }
+
+    }
+
+    List<Matrix> backUpAndPool(List<Matrix> gNextList) throws Exception {
+        List<Matrix> gList;
+        if (fill) {//需要先补一层0
+            gList = padding2Many(gNextList);
+        } else {
+            gList = gNextList;
+        }
+        return getBackOneConvPool(gList, studyRate, dymStudy, times, convParameter, channelNo);
+    }
+
+    void backErrorFromSon(List<Matrix> gList) throws Exception {//接收上层传过来的误差
+        List<Matrix> gMatrixList = matrixOperation.addMatrixList(gList, this.gNextList);
+        if (fatherBlock != null) {
+            List<Matrix> gNextList = backUpAndPool(gMatrixList);
+            fatherBlock.backErrorFromSon(gNextList);
+        } else {//走到最深层了 发送给resnet
+            resBlock.backErrorFormFpn(gMatrixList);
+        }
+    }
+
+    private void insertFpnTag(List<Matrix> channelMatrix, FpnTag fpnTag, long eventID, OutBack outBack) throws Exception {
+        int x = channelMatrix.get(0).getX();
+        int y = channelMatrix.get(0).getY();
+        postionList.clear();
+        typeList.clear();
+        Matrix typMatrix = fpnTag.getTypeMatrix();
+        if (x != y || typMatrix.getX() != x) {
+            throw new IllegalAccessException("fpn训练异常x:" + x + ",预测大小:" + typMatrix.getX());
+        }
+        List<FeatureBody> positionFeatures = new ArrayList<>();
+        List<FeatureBody> typeFeatures = new ArrayList<>();
+        for (int i = 0; i < x; i++) {
+            for (int j = 0; j < y; j++) {
+                float type = typMatrix.getValue(i, j);
+                FeatureBody typeFeature = new FeatureBody();
+                Map<Integer, Float> typeE = new HashMap<>();
+                Matrix feature = getFeature(channelMatrix, i, j);
+                if (type > 0.5) {//是属于该层的类别id
+                    int[] p = new int[]{i, j};
+                    typeE.put((int) type, 1f);
+                    typeList.add(p);
+                    typeFeature.setE(typeE);
+                    typeFeature.setFeature(feature);
+                    typeFeatures.add(typeFeature);
+                    if (type < otherType - 0.2) {
+                        FeatureBody positionFeature = new FeatureBody();
+                        postionList.add(p);
+                        Map<Integer, Float> positionE = getPositionE(i, j, fpnTag);
+                        positionFeature.setE(positionE);
+                        positionFeature.setFeature(feature.copy());
+                        positionFeatures.add(positionFeature);
+                    }
+                }
+            }
+        }
+        sendLineStudy(typeFeatures, outBack, eventID, typeManager, true);
+        if (!positionFeatures.isEmpty()) {
+            sendLineStudy(positionFeatures, outBack, eventID, positionManager, false);
+        }
+    }
+
+    private float getErrorScale(List<FeatureBody> features) {
+        int size = features.size();//该批次总数
+        int otherNumber = 0;
+        for (FeatureBody featureBody : features) {
+            if (featureBody.getE().containsKey(otherType)) {//噪音
+                otherNumber++;
+            }
+        }
+        if (otherNumber == 0) {
+            return 1;
+        }
+        return ((float) size - (float) otherNumber) / (float) otherNumber;
+    }
+
+    private void sendLineStudy(List<FeatureBody> features, OutBack outBack, long eventID, BatchNerveManager manager, boolean type) throws Exception {
+        if (showLog) {
+            System.out.println("deep:" + deep + "训练：");
+        }
+        int typeSize = features.size();
+        int typeTimes = typeSize / batchSize;
+        if (typeTimes > 0) {
+            for (int i = 0; i < typeTimes; i++) {
+                int startIndex = i * batchSize;
+                int endIndex = startIndex + batchSize;
+                Map<Integer, Float> pd = null;
+                List<FeatureBody> batchFeatures = features.subList(startIndex, endIndex);
+                if (type) {
+                    pd = new HashMap<>();
+                    float p = getErrorScale(batchFeatures);
+                    pd.put(otherType, p);
+                }
+                manager.getInputBlock().postMessage(batchFeatures, true, outBack, eventID, pd);
+            }
+            int sub = typeSize % batchSize;
+            if (sub > 0) {
+                int startIndex = typeTimes * batchSize;
+                int endIndex = features.size();
+                List<FeatureBody> batchFeatures = features.subList(startIndex, endIndex);
+                Map<Integer, Float> pd = null;
+                if (type) {
+                    pd = new HashMap<>();
+                    float p = getErrorScale(batchFeatures);
+                    pd.put(otherType, p);
+                }
+                manager.getInputBlock().postMessage(batchFeatures, true, outBack, eventID, pd);
+            }
+        } else if (typeSize > 0) {//一次性全部发送
+            Map<Integer, Float> pd = null;
+            if (type) {
+                pd = new HashMap<>();
+                float p = getErrorScale(features);
+                pd.put(otherType, p);
+            }
+            //发送线性层
+            manager.getInputBlock().postMessage(features, true, outBack, eventID, pd);
+        }
+    }
+
+    private Matrix getFeature(List<Matrix> channelMatrixList, int x, int y) {
+        int size = channelMatrixList.size();
+        Matrix feature = new Matrix(1, size);
+        for (int i = 0; i < size; i++) {
+            float value = channelMatrixList.get(i).getValue(x, y);
+            feature.setValue(0, i, value);
+        }
+        return feature;
+    }
+
+    private void insertError(Matrix error, int maxSize, int pictureIndex, int x, int y) {
+        List<Matrix> channelErrors;
+        if (allErrorList.size() == pictureIndex) {//集合里面是空的
+            channelErrors = new ArrayList<>();
+            for (int i = 0; i < channelNo; i++) {
+                Matrix matrix = new Matrix(maxSize, maxSize);
+                channelErrors.add(matrix);
+            }
+            allErrorList.add(channelErrors);
+        } else {
+            channelErrors = allErrorList.get(pictureIndex);
+        }
+        int size = error.getY();
+        for (int i = 0; i < size; i++) {
+            Matrix myError = channelErrors.get(i);
+            float value = error.getValue(0, i);
+            float v = myError.getValue(x, y);
+            myError.setValue(x, y, value + v);
+        }
+    }
+
+    private Map<Integer, Float> getPositionE(int i, int j, FpnTag fpnTag) {
+        Map<Integer, Float> e = new HashMap<>();
+        float width = fpnTag.getWidthMatrix().getValue(i, j);
+        float height = fpnTag.getHeightMatrix().getValue(i, j);
+        float distX = fpnTag.getDistXMatrix().getValue(i, j);
+        float distY = fpnTag.getDistYMatrix().getValue(i, j);
+        e.put(1, distX);
+        e.put(2, distY);
+        e.put(3, width);
+        e.put(4, height);
+        return e;
+    }
+
+    private void initOnePower(int channelNo, Random random) {
+        List<List<Float>> oneConvPower = new ArrayList<>();
+        List<List<Float>> oneDymStudy1 = new ArrayList<>();
+        List<List<Float>> oneDymStudy2 = new ArrayList<>();
+        int downNo = channelNo * 2;
+        float sh = (float) Math.sqrt(channelNo);
+        for (int i = 0; i < channelNo; i++) {
+            List<Float> power = new ArrayList<>();
+            List<Float> study1 = new ArrayList<>();
+            List<Float> study2 = new ArrayList<>();
+            for (int j = 0; j < downNo; j++) {
+                power.add(random.nextFloat() / sh);
+                study1.add(0f);
+                study2.add(0f);
+            }
+            oneConvPower.add(power);
+            oneDymStudy1.add(study1);
+            oneDymStudy2.add(study2);
+        }
+        convParameter.setOneConvPower(oneConvPower);
+        convParameter.setOneDymStudyRateList(oneDymStudy1);
+        convParameter.setOneDymStudyRate2List(oneDymStudy2);
+    }
+
+    private void initMatrixPower(Random random) throws Exception {
+        List<Matrix> nerveMatrixList = convParameter.getNerveMatrixList();//一层当中所有的深度卷积核
+        List<Matrix> dymStudyRateList = convParameter.getDymStudyRateList();
+        List<Matrix> dymStudyRate2List = convParameter.getDymStudyRate2List();
+        List<ConvSize> convSizeList = convParameter.getConvSizeList();
+        Matrix nerveMatrix = new Matrix(9, 1);//一组通道创建一组卷积核
+        convSizeList.add(new ConvSize());
+        for (int i = 0; i < nerveMatrix.getX(); i++) {//初始化深度卷积核权重
+            float nub = random.nextFloat() / 3;
+            nerveMatrix.setNub(i, 0, nub);
+        }
+        nerveMatrixList.add(nerveMatrix);
+        dymStudyRateList.add(new Matrix(9, 1));
+        dymStudyRate2List.add(new Matrix(9, 1));
+    }
+
+
+    public void setSonBlock(FpnBlock sonBlock) {
+        this.sonBlock = sonBlock;
+    }
+
+    public void setFatherBlock(FpnBlock fatherBlock) {
+        this.fatherBlock = fatherBlock;
+    }
+}

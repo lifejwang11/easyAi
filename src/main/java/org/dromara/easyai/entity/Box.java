@@ -16,10 +16,28 @@ public class Box {
     private float confidence;
     private int typeID;//类别id
     private float softMax;//概率
+    private int deep;//所处深度
+    private float minLength;//当前最小等效边长差
     private Matrix featureMatrix;//特征矩阵
     //识别参数
     private int realX;//识别X
     private int realY;//识别Y
+
+    public int getDeep() {
+        return deep;
+    }
+
+    public void setDeep(int deep) {
+        this.deep = deep;
+    }
+
+    public float getMinLength() {
+        return minLength;
+    }
+
+    public void setMinLength(float minLength) {
+        this.minLength = minLength;
+    }
 
     public float getSoftMax() {
         return softMax;

@@ -57,7 +57,7 @@ public class BatchNerveManager {
         boolean softMax = batchNerveConfig.isSoftMax();
         boolean concatenate = batchNerveConfig.isConcatenate();
         boolean initParameter = batchNerveConfig.isInitParameter();
-        DymStudy dymStudy = new DymStudy(batchNerveConfig.getGMaxTh(), batchNerveConfig.isAuto(), 1f);
+        DymStudy dymStudy = new DymStudy(batchNerveConfig.getGMaxTh(), batchNerveConfig.isAuto(), batchNerveConfig.getLayGMaxTh());
         for (int i = 0; i < deep; i++) {
             QBlock qBlock;
             if (i == 0) {

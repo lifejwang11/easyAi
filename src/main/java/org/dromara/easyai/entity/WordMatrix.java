@@ -2,6 +2,7 @@ package org.dromara.easyai.entity;
 
 import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.i.OutBack;
+import org.dromara.easyai.yolo.OutBox;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,11 @@ public class WordMatrix implements OutBack {
 
     @Override
     public void getBack(float out, int id, long eventId) {
+
+    }
+
+    @Override
+    public void outBackBox(List<OutBox> myOutBox, long eventId, int deep) {
 
     }
 

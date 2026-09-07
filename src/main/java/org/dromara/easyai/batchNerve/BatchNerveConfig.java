@@ -20,6 +20,15 @@ public class BatchNerveConfig {
     private float regular = 0.001f;//正则系数
     private boolean concatenate = false;//是否为串联模式
     private boolean initParameter = true;//进行参数初始化
+    private float layGMaxTh = 10000;
+
+    public float getLayGMaxTh() {
+        return layGMaxTh;
+    }
+
+    public void setLayGMaxTh(float layGMaxTh) {
+        this.layGMaxTh = layGMaxTh;
+    }
 
     public boolean isInitParameter() {
         return initParameter;

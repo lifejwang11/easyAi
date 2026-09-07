@@ -30,8 +30,8 @@ public class SoftMaxByQBlock {
         float max = feature.getMaxValue();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
-                float value = feature.getNumber(i, j);
-                feature.setNub(i, j, value - max);
+                float value = feature.getValue(i, j);
+                feature.setValue(i, j, value - max);
             }
         }
     }
@@ -54,7 +54,7 @@ public class SoftMaxByQBlock {
                 }
                 boolean errorPD = false;//误差惩罚
                 float pdRate = 1;
-                if (pd != null && pd.containsKey(key) && key != mes.typeID) {
+                if (pd != null && pd.containsKey(key)) {
                     pdRate = pd.get(key);
                     errorPD = true;
                 }
@@ -125,7 +125,7 @@ public class SoftMaxByQBlock {
             } else {
                 myError = 1 - self;
             }
-            errorMatrix.setNub(0, i, myError);
+            errorMatrix.setValue(0, i, myError);
         }
         return errorMatrix;
     }

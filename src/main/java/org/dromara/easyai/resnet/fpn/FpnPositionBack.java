@@ -1,41 +1,42 @@
-package org.dromara.easyai.entity;
+package org.dromara.easyai.resnet.fpn;
 
-
-import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.i.OutBack;
+import org.dromara.easyai.matrixTools.Matrix;
 import org.dromara.easyai.yolo.OutBox;
 
 import java.util.List;
 
 /**
- * @param
- * @DATA
- * @Author LiDaPeng
- * @Description
+ * @author lidapeng
+ * @time 2026/9/5 14:52
  */
-public class WordBack implements OutBack {
-    private int id;
-    private float out = -2;
+public class FpnPositionBack implements OutBack {
+    private float distX;
+    private float distY;
+    private float width;
+    private float height;
 
-    public void clear() {
-        out = -2;
-        id = 0;
+    public float getDistX() {
+        return distX;
     }
 
-    public float getOut() {
-        return out;
+    public float getDistY() {
+        return distY;
     }
 
-    public int getId() {
-        return id;
+    public float getWidth() {
+        return width;
     }
+
+    public float getHeight() {
+        return height;
+    }
+
 
     @Override
     public void getBack(float out, int id, long eventId) {
-        if (out > this.out) {
-            this.out = out;
-            this.id = id;
-        }
+
     }
 
     @Override
@@ -53,15 +54,17 @@ public class WordBack implements OutBack {
 
     }
 
-
     @Override
     public void backWord(String word, long eventId) {
 
     }
 
-
     @Override
     public void getBackMatrix(Matrix matrix, int id, long eventId) {
+        distX = matrix.getValue(0, 0);
+        distY = matrix.getValue(0, 1);
+        width = matrix.getValue(0, 2);
+        height = matrix.getValue(0, 3);
     }
 
     @Override
@@ -71,6 +74,7 @@ public class WordBack implements OutBack {
 
     @Override
     public void getWordVector(int id, float w) {
+
     }
 
     @Override

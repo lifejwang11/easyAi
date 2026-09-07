@@ -2,6 +2,7 @@ package org.dromara.easyai.resnet.entity;
 
 import org.dromara.easyai.batchNerve.BatchNerveModel;
 import org.dromara.easyai.nerveCenter.ModelParameter;
+import org.dromara.easyai.resnet.fpn.FpnBlockModel;
 
 import java.util.List;
 
@@ -12,6 +13,15 @@ import java.util.List;
 public class ResnetModel {
     private List<ResBlockModel> resBlockModelList;
     private BatchNerveModel parameter;
+    private List<FpnBlockModel> fpnBlockModels;
+
+    public List<FpnBlockModel> getFpnBlockModels() {
+        return fpnBlockModels;
+    }
+
+    public void setFpnBlockModels(List<FpnBlockModel> fpnBlockModels) {
+        this.fpnBlockModels = fpnBlockModels;
+    }
 
     public List<ResBlockModel> getResBlockModelList() {
         return resBlockModelList;

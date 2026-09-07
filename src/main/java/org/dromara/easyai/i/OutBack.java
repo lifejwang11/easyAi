@@ -3,6 +3,7 @@ package org.dromara.easyai.i;
 
 import org.dromara.easyai.entity.ThreeChannelMatrix;
 import org.dromara.easyai.matrixTools.Matrix;
+import org.dromara.easyai.yolo.OutBox;
 
 import java.util.List;
 
@@ -21,6 +22,15 @@ public interface OutBack {
      * @param eventId 事件ID
      */
     void getBack(float out, int id, long eventId);
+
+    /**
+     * 回调
+     *
+     * @param myOutBox 输出检测框
+     * @param deep     输出深度
+     * @param eventId  事件ID
+     */
+    void outBackBox(List<OutBox> myOutBox, long eventId, int deep);
 
     /**
      * 训练日志
