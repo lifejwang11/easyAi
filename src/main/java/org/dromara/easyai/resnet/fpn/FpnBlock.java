@@ -18,7 +18,6 @@ import org.dromara.easyai.resnet.entity.BatchBody;
 import org.dromara.easyai.tools.NMS;
 import org.dromara.easyai.yolo.OutBox;
 import org.dromara.easyai.yolo.YoloTypeBack;
-import org.omg.Messaging.SYNC_WITH_TRANSPORT;
 
 import java.util.*;
 
