@@ -35,13 +35,15 @@ public class MyYolo {
     private final Map<Integer, Integer> mappingID = new HashMap<>();
 
     public MyYolo(YoloFpnConfig yoloFpnConfig, ResnetConfig resnetConfig) throws Exception {
+        if (yoloFpnConfig.getStartDeep() < 1) {
+            throw new IllegalAccessException("fpn层深不可小于1");
+        }
         FpnConfig fpnConfig = new FpnConfig();
         fpnConfig.setPth(yoloFpnConfig.getPth());
         fpnConfig.setIouTh(yoloFpnConfig.getIouTh());
         fpnConfig.setBatchSize(yoloFpnConfig.getFpnBatchSize());
         fpnConfig.setStartDeep(yoloFpnConfig.getStartDeep());
         resnetConfig.setSize(yoloFpnConfig.getSize());
-        resnetConfig.setFpn(true);
         resnetConfig.setTypeNumber(yoloFpnConfig.getTypeNumber());
         resnetConfig.setStudyRate(yoloFpnConfig.getStudyRate());
         resnetConfig.setShowLog(yoloFpnConfig.isShowLog());

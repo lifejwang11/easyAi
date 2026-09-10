@@ -22,15 +22,6 @@ public class ResnetConfig {
     private boolean auto = true;//是否使用自适应学习率
     private int batchSize = 32;//小批量训练数量
     private int dcnDeep = 0;//可变动卷积深度
-    private boolean fpn = false;//是否对接fpn
-
-    public boolean isFpn() {
-        return fpn;
-    }
-
-    public void setFpn(boolean fpn) {
-        this.fpn = fpn;
-    }
 
     public int getDcnDeep() {
         return dcnDeep;
