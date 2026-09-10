@@ -127,11 +127,11 @@ public class ResnetManager extends ResConvCount {
 
 
     public ResnetManager(ResnetConfig resNetConfig, ActiveFunction activeFunction) throws Exception {
-        init(resNetConfig, activeFunction);
+        init(resNetConfig, activeFunction, 0);
     }
 
     public ResnetManager(ResnetConfig resNetConfig, FpnConfig fpnConfig, ActiveFunction activeFunction) throws Exception {
-        init(resNetConfig, activeFunction);
+        init(resNetConfig, activeFunction, fpnConfig.getStartDeep());
         fpnConfig.setTypeNumber(resNetConfig.getTypeNumber());
         if (deep < fpnConfig.getStartDeep()) {
             throw new IllegalAccessException("fpn起始层不可以大于resnet总层数");
@@ -147,7 +147,7 @@ public class ResnetManager extends ResConvCount {
         fpnManager = new FpnManager(fpnConfig, resBlockList);
     }
 
-    private void init(ResnetConfig resNetConfig, ActiveFunction activeFunction) throws Exception {
+    private void init(ResnetConfig resNetConfig, ActiveFunction activeFunction, int fpnStartDeep) throws Exception {
         int deep = getConvDeep(resNetConfig.getSize(), resNetConfig.getMinFeatureSize());//获取深度
         int channelNo = resNetConfig.getChannelNo();//通道数
         int lastSize = getFeatureSize(deep, resNetConfig.getSize());//最后一层特征大小
@@ -170,10 +170,11 @@ public class ResnetManager extends ResConvCount {
             if (i == deep - 1) {
                 batchInputBlock = batchNerveManager.getInputBlock();
             }
+            boolean fpnStart = fpnStartDeep > 0 && (i + 1) >= fpnStartDeep;
             boolean dConv = isDCN(i, dcnDeep);
             ResBlock resBlock = new ResBlock(channelNo, i + 1, studyRate, resNetConfig.getSize(), batchInputBlock
                     , resNetConfig.getGMaxTh(), resNetConfig.isAuto(), resNetConfig.getBatchSize(),
-                    rz, resNetConfig.getRegular(), resNetConfig.getLayGMaxTh(), dConv, resNetConfig.isFpn());
+                    rz, resNetConfig.getRegular(), resNetConfig.getLayGMaxTh(), dConv, fpnStart);
             resBlockList.add(resBlock);
         }
         restNetInput = new ResnetInput(resBlockList.get(0), resNetConfig.getSize(), resNetConfig.getBatchSize());
