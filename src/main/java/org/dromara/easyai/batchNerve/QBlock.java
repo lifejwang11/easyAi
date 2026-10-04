@@ -128,7 +128,7 @@ public class QBlock {
                                 }
                             }
                         } else {
-                            throw new Exception("有输出神经元ID 没有分配期望值");
+                            throw new Exception("有输出神经元ID 没有分配期望值,id:" + (j + 1));
                         }
                     }
                     errorBodies.add(errors);
