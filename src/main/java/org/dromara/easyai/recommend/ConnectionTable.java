@@ -141,13 +141,13 @@ public class ConnectionTable {
 
     public void createGraph(GnnNode rootNode) {//构建图
         int rootID = rootNode.getId();
-        checkID(rootID, 0);
+        checkID(rootID, 0, true);
         insertType(rootID, rootNode.getTypeID());
         List<GnnNode> nodeLists = rootNode.getNodeList();
         if (nodeLists != null && !nodeLists.isEmpty()) {
             connectionMap(rootID, nodeLists);
         } else {
-            throw new IllegalArgumentException("不可以输入无子节点的根节点样本");
+            throw new IllegalArgumentException("构建图时不可以输入无子节点的根节点样本");
         }
     }
 
@@ -167,7 +167,7 @@ public class ConnectionTable {
     private void connectionMap(int fatherID, List<GnnNode> nodeLists) {
         for (GnnNode gnnNode : nodeLists) {
             int id = gnnNode.getId();
-            checkID(id, fatherID);
+            checkID(id, fatherID, false);
             writeNode(fatherID, id);
             writeNode(id, fatherID);
             insertType(id, gnnNode.getTypeID());
@@ -178,14 +178,14 @@ public class ConnectionTable {
         }
     }
 
-    private void checkID(int id, int fatherID) {
+    private void checkID(int id, int fatherID, boolean root) {
         if (id >= nodeSize) {
             throw new IllegalArgumentException("注入样本离散id与初始化离散id数量不匹配");
         } else if (id < 0) {
             throw new IllegalArgumentException("离散id值不可小于0");
         }
-        if (fatherID == id) {
-            throw new IllegalArgumentException("父级节点不可以与子节点使用同一个ID");
+        if (fatherID == id && !root) {
+            throw new IllegalArgumentException("父级节点不可以与子节点使用同一个ID:" + id);
         }
     }
 

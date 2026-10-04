@@ -4,6 +4,7 @@ import org.dromara.easyai.batchNerve.BatchNerveConfig;
 import org.dromara.easyai.batchNerve.BatchNerveManager;
 import org.dromara.easyai.config.GnnConfig;
 import org.dromara.easyai.function.ReLu;
+import org.dromara.easyai.function.Tanh;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.recommend.model.GnnLayerModel;
 import org.dromara.easyai.recommend.model.GnnModel;
@@ -21,15 +22,21 @@ public class GnnManager {
     private final BatchNerveManager batchNerveManager;
     private final List<GnnLayer> gnnLayerList = new ArrayList<>();
     private final GnnInput gnnInput;
+    private final GnnConfig gnnConfig;
+
+    public GnnConfig getGnnConfig() {
+        return gnnConfig;
+    }
 
     public GnnManager(GnnConfig gnnConfig, ActiveFunction activeFunction) throws Exception {
         int nodeSize = gnnConfig.getNodeSize();//节点数量
         int featureLength = gnnConfig.getFeatureLength();//特征维度
         int jumpTimes = gnnConfig.getJumpTimes();
+        this.gnnConfig = gnnConfig;
         GnnBack gnnBack = new GnnBack();
         connectionTable = new ConnectionTable(nodeSize, featureLength);
         batchNerveManager = new BatchNerveManager(getBathNerveConfig(gnnConfig), activeFunction, gnnBack);
-        initGnnLayer(gnnConfig);
+        initGnnLayer(gnnConfig, activeFunction);
         gnnBack.setGnnLayer(gnnLayerList.get(jumpTimes - 1));
         gnnInput = new GnnInput(connectionTable, gnnLayerList.get(0));
     }
@@ -66,14 +73,14 @@ public class GnnManager {
         return gnnInput;
     }
 
-    private void initGnnLayer(GnnConfig gnnConfig) {
+    private void initGnnLayer(GnnConfig gnnConfig, ActiveFunction activeFunction) {
         int jumpTimes = gnnConfig.getJumpTimes();
         for (int i = 0; i < jumpTimes; i++) {
             GnnLayer gnnLayer;
             if (i == jumpTimes - 1) {
-                gnnLayer = new GnnLayer(gnnConfig, new ReLu(), connectionTable, batchNerveManager, i);
+                gnnLayer = new GnnLayer(gnnConfig, activeFunction, connectionTable, batchNerveManager, i);
             } else {
-                gnnLayer = new GnnLayer(gnnConfig, new ReLu(), connectionTable, null, i);
+                gnnLayer = new GnnLayer(gnnConfig, activeFunction, connectionTable, null, i);
             }
             gnnLayerList.add(gnnLayer);
         }
