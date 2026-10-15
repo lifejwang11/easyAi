@@ -43,6 +43,8 @@ public class MyYolo {
         fpnConfig.setIouTh(yoloFpnConfig.getIouTh());
         fpnConfig.setBatchSize(yoloFpnConfig.getFpnBatchSize());
         fpnConfig.setStartDeep(yoloFpnConfig.getStartDeep());
+        fpnConfig.setSoftNMS(yoloFpnConfig.isSoftNMS());
+        fpnConfig.setSoftNMSTh(yoloFpnConfig.getSoftNMSTh());
         resnetConfig.setSize(yoloFpnConfig.getSize());
         resnetConfig.setTypeNumber(yoloFpnConfig.getTypeNumber());
         resnetConfig.setStudyRate(yoloFpnConfig.getStudyRate());

@@ -13,6 +13,7 @@ import org.dromara.easyai.resnet.ResnetManager;
 import org.dromara.easyai.resnet.entity.BatchBody;
 import org.dromara.easyai.tools.NMS;
 import org.dromara.easyai.tools.Picture;
+import org.dromara.easyai.tools.SoftNMS;
 
 import java.util.*;
 
@@ -36,6 +37,9 @@ public class FastYolo {//yolo
     private final float otherPTh;
     private final Map<Integer, Float> pd = new HashMap<>();
     private int ready = 0;
+    private final boolean powerTrust;
+    private final boolean softNMS;//是否使用软nms
+    private final float softNMSTh;//如果使用软nms则消除nms阈值
 
 
     public FastYolo(YoloConfig yoloConfig) throws Exception {
@@ -46,6 +50,9 @@ public class FastYolo {//yolo
         this.containIouTh = yoloConfig.getContainIouTh();
         this.pth = yoloConfig.getPth();
         this.otherPTh = yoloConfig.getOtherPth();
+        softNMS = yoloConfig.isSoftNMS();
+        softNMSTh = yoloConfig.getSoftNMSTh();
+        powerTrust = yoloConfig.isPowerTrust();
         resnet = false;
         this.stepReduce = yoloConfig.getStepReduce();
         winHeight = yoloConfig.getWindowHeight();
@@ -78,6 +85,9 @@ public class FastYolo {//yolo
         this.containIouTh = resYoloConfig.getContainIouTh();
         this.pth = resYoloConfig.getPth();
         this.otherPTh = resYoloConfig.getOtherPth();
+        softNMS = resYoloConfig.isSoftNMS();
+        softNMSTh = resYoloConfig.getSoftNMSTh();
+        powerTrust = resYoloConfig.isPowerTrust();
         winHeight = resYoloConfig.getWindowSize();
         winWidth = resYoloConfig.getWindowSize();
         trustTh = resYoloConfig.getTrustTh();
@@ -215,7 +225,7 @@ public class FastYolo {//yolo
     }
 
     private Box getBox(int i, int j, int maxX, int maxY, PositionBack positionBack, TypeBody typeBody,
-                       YoloTypeBack yoloTypeBack) {
+                       YoloTypeBack yoloTypeBack, float myTrust) {
         float zhou = winHeight + winWidth;
         Box box = null;
         float centerX, centerY, trust;
@@ -246,6 +256,9 @@ public class FastYolo {//yolo
         }
         if (realY + width > maxY) {
             realY = maxY - width;
+        }
+        if (powerTrust) {
+            trust = myTrust;
         }
         if (trust > trustTh) {
             box = new Box();
@@ -315,6 +328,7 @@ public class FastYolo {//yolo
         int y = th.getY();
         List<Box> boxes = new ArrayList<>();
         NMS nms = new NMS(iouTh);
+        SoftNMS softNMS = SoftNMS.linear(iouTh, softNMSTh);
         YoloTypeBack yoloTypeBack = new YoloTypeBack();
         PositionBack positionBack = new PositionBack();
         for (int i = 0; i <= x - winHeight; i += heightStep) {
@@ -327,7 +341,7 @@ public class FastYolo {//yolo
                     float out = yoloTypeBack.getOut();
                     if (mappingID != typeBodies.size() + 1 && out > pth) {
                         TypeBody typeBody = getTypeBodyByMappingID(mappingID);
-                        Box box = getBox(i, j, x, y, null, typeBody, yoloTypeBack);
+                        Box box = getBox(i, j, x, y, null, typeBody, yoloTypeBack, out);
                         if (box != null) {
                             box.setSoftMax(out);
                             boxes.add(box);
@@ -341,7 +355,7 @@ public class FastYolo {//yolo
                         TypeBody typeBody = getTypeBodyByMappingID(mappingID);
                         SensoryNerve convInput = typeBody.getPositionNerveManager().getConvInput();
                         study(eventID, convInput, myTh, false, null, positionBack, null);
-                        Box box = getBox(i, j, x, y, positionBack, typeBody, null);
+                        Box box = getBox(i, j, x, y, positionBack, typeBody, null, out);
                         if (box != null) {
                             box.setSoftMax(out);
                             boxes.add(box);
@@ -353,7 +367,11 @@ public class FastYolo {//yolo
         if (boxes.isEmpty()) {
             return null;
         }
-        return getOutBoxList(nms.start(boxes));
+        if (this.softNMS) {
+            return getOutBoxList(softNMS.start(boxes));
+        } else {
+            return getOutBoxList(nms.start(boxes));
+        }
     }
 
     public List<OutBox> testType(ThreeChannelMatrix th, long eventID, Map<Integer, Float> typePd) throws Exception {

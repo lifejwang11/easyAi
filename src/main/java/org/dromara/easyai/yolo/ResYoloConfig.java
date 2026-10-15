@@ -31,6 +31,33 @@ public class ResYoloConfig {
     private float otherPth = 0.1f;//负样本阈值
     private float backGroundPD = 0.1f;//背景误差惩罚，该数值大于0.9 则相当于不施加惩罚
     private int typeDcnDeep = 0;//分类网络 使用可变形卷积深度，0为不可用
+    private boolean powerTrust = false;//是否用概率值做可信度
+    private boolean softNMS = false;//是否使用软nms
+    private float softNMSTh = 0.5f;//如果使用软nms则消除nms阈值
+
+    public boolean isSoftNMS() {
+        return softNMS;
+    }
+
+    public void setSoftNMS(boolean softNMS) {
+        this.softNMS = softNMS;
+    }
+
+    public float getSoftNMSTh() {
+        return softNMSTh;
+    }
+
+    public void setSoftNMSTh(float softNMSTh) {
+        this.softNMSTh = softNMSTh;
+    }
+
+    public boolean isPowerTrust() {
+        return powerTrust;
+    }
+
+    public void setPowerTrust(boolean powerTrust) {
+        this.powerTrust = powerTrust;
+    }
 
     public int getTypeDcnDeep() {
         return typeDcnDeep;
