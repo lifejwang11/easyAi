@@ -22,6 +22,15 @@ public class ResnetConfig {
     private boolean auto = true;//是否使用自适应学习率
     private int batchSize = 32;//小批量训练数量
     private int dcnDeep = 0;//可变动卷积深度
+    private boolean positionModel = false;//是否同时拟合位置坐标
+
+    public boolean isPositionModel() {
+        return positionModel;
+    }
+
+    public void setPositionModel(boolean positionModel) {
+        this.positionModel = positionModel;
+    }
 
     public int getDcnDeep() {
         return dcnDeep;

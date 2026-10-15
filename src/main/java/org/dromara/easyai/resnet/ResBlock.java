@@ -36,6 +36,7 @@ public class ResBlock extends ResConvCount {
     private ResBlock fatherResBlock;
     private ResBlock sonResBlock;
     private final BatchInputBlock inputBlock;//输出神经元
+    private final BatchInputBlock positionInputBlock;
     private final int batchSize;
     private int times = 0;//迭代次数
     private final boolean rz;//是否正则
@@ -46,7 +47,8 @@ public class ResBlock extends ResConvCount {
     private FpnBlock firstFpn;//第一层fpn
     private List<Matrix> fpnErrorList;
     private final MatrixOperation matrixOperation = new MatrixOperation();
-
+    private final List<Integer> indexList2E = new ArrayList<>();//第二期望下标
+    private List<BatchBody> firstBatchBodies;
 
     public void setFirstFpn(FpnBlock firstFpn) {
         this.firstFpn = firstFpn;
@@ -72,12 +74,13 @@ public class ResBlock extends ResConvCount {
 
     public ResBlock(int channelNo, int deep, float studyRate, int imageSize, BatchInputBlock inputBlock, float gMaxTh
             , boolean auto, int batchSize, boolean rz, float rzRate, float layGMaxTh, boolean dcn
-            , boolean fpn) throws Exception {
+            , boolean fpn, BatchInputBlock positionInputBlock) throws Exception {
         this.rz = rz;
         this.rzRate = rzRate;
         this.imageSize = imageSize;
         this.batchSize = batchSize;
         this.inputBlock = inputBlock;
+        this.positionInputBlock = positionInputBlock;
         this.channelNo = channelNo;
         this.fpn = fpn;
         this.deep = deep;
@@ -118,7 +121,34 @@ public class ResBlock extends ResConvCount {
         }
     }
 
-    public void backError(List<BatchBody> batchBodies) throws Exception {//返回误差
+    public void backLineError(List<BatchBody> batchBodies, boolean first) throws Exception {
+        if (positionInputBlock == null) {//没有第二预测头
+            backError(batchBodies);
+        } else {//先接受的是第一预测头
+            if (first) {
+                firstBatchBodies = batchBodies;
+                if (indexList2E.isEmpty()) {
+                    backError(firstBatchBodies);
+                }
+            } else {//接收第二预测头的数据
+                if (indexList2E.size() == batchBodies.size()) {
+                    for (int i = 0; i < indexList2E.size(); i++) {
+                        int index = indexList2E.get(i);
+                        BatchBody batchBody = firstBatchBodies.get(index);
+                        List<Matrix> posErrorList = batchBodies.get(i).getFeatureList();//位置网络误差
+                        List<Matrix> errorList = batchBody.getFeatureList();//分类网络误差
+                        List<Matrix> allErrorList = matrixOperation.addMatrixList(posErrorList, errorList);
+                        batchBody.setFeatureList(allErrorList);
+                    }
+                    backError(firstBatchBodies);
+                } else {
+                    throw new IllegalAccessException("第二预测头返回误差数量不一致");
+                }
+            }
+        }
+    }
+
+    private void backError(List<BatchBody> batchBodies) throws Exception {//返回误差
         if (fpn && fpnErrorList != null) {
             addFpnFeature(batchBodies);
         }
@@ -226,9 +256,27 @@ public class ResBlock extends ResConvCount {
             firstFpn.sendMatrixList(batchBodies, study, eventID, outBack, false, dymStudy);
         } else {//最后卷积层了，求平均值
             List<FeatureBody> featureBodies = new ArrayList<>();
-            for (BatchBody batchBody : batchBodies) {
+            List<FeatureBody> positionFeatureBodies = new ArrayList<>();
+            if (study) {
+                indexList2E.clear();
+            }
+            for (int i = 0; i < batchBodies.size(); i++) {
+                BatchBody batchBody = batchBodies.get(i);
                 FeatureBody featureBody = getFeatureBody(batchBody);
                 featureBodies.add(featureBody);
+                if (study) {
+                    if (batchBody.getE2() != null) {//拥有第二期望
+                        indexList2E.add(i);
+                        FeatureBody featureBody2 = new FeatureBody();
+                        featureBody2.setFeature(featureBody.getFeature());
+                        featureBody2.setE(batchBody.getE2());
+                        positionFeatureBodies.add(featureBody2);
+                    }
+                } else if (positionInputBlock != null) {
+                    FeatureBody featureBody2 = new FeatureBody();
+                    featureBody2.setFeature(featureBody.getFeature());
+                    positionFeatureBodies.add(featureBody2);
+                }
             }
             if (!study && outFeature) {
                 if (outBack != null) {
@@ -237,7 +285,18 @@ public class ResBlock extends ResConvCount {
                     throw new Exception("没有传入OutBack输出回调类");
                 }
             } else {
+                //首要预测头发送特征
                 inputBlock.postMessage(featureBodies, study, outBack, eventID, pd);
+                if (study) {
+                    if (!positionFeatureBodies.isEmpty()) {
+                        if (positionInputBlock == null) {
+                            throw new IllegalAccessException("没有配置第二预测头");
+                        }
+                        positionInputBlock.postMessage(positionFeatureBodies, true, outBack, eventID, null);
+                    }
+                } else if (positionInputBlock != null) {
+                    positionInputBlock.postMessage(positionFeatureBodies, false, outBack, eventID, null);
+                }
             }
         }
     }

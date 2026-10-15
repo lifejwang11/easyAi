@@ -13,6 +13,7 @@ import java.util.List;
 public class ResnetModel {
     private List<ResBlockModel> resBlockModelList;
     private BatchNerveModel parameter;
+    private BatchNerveModel positionParameter;
     private List<FpnBlockModel> fpnBlockModels;
 
     public List<FpnBlockModel> getFpnBlockModels() {
@@ -29,6 +30,14 @@ public class ResnetModel {
 
     public void setResBlockModelList(List<ResBlockModel> resBlockModelList) {
         this.resBlockModelList = resBlockModelList;
+    }
+
+    public BatchNerveModel getPositionParameter() {
+        return positionParameter;
+    }
+
+    public void setPositionParameter(BatchNerveModel positionParameter) {
+        this.positionParameter = positionParameter;
     }
 
     public BatchNerveModel getParameter() {

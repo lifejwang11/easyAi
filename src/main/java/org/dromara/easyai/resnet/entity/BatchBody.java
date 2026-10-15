@@ -18,6 +18,15 @@ public class BatchBody {
     private Map<Integer, Float> E;
     private ResnetError resnetError;//残差
     private Map<Integer, FpnTag> fpnTagMap;//fpn标注
+    private Map<Integer, Float> E2;//第二期望
+
+    public Map<Integer, Float> getE2() {
+        return E2;
+    }
+
+    public void setE2(Map<Integer, Float> e2) {
+        E2 = e2;
+    }
 
     public Map<Integer, FpnTag> getFpnTagMap() {
         return fpnTagMap;
