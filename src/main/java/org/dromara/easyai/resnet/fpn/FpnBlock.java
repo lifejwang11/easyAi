@@ -16,6 +16,7 @@ import org.dromara.easyai.nerveEntity.ConvSize;
 import org.dromara.easyai.resnet.ResBlock;
 import org.dromara.easyai.resnet.entity.BatchBody;
 import org.dromara.easyai.tools.NMS;
+import org.dromara.easyai.tools.SoftNMS;
 import org.dromara.easyai.yolo.OutBox;
 import org.dromara.easyai.yolo.YoloTypeBack;
 
@@ -60,10 +61,14 @@ public class FpnBlock extends ConvCount {
     private int typeIndex = 0;
     private final List<int[]> postionList = new ArrayList<>();
     private final List<int[]> typeList = new ArrayList<>();
+    private final boolean softNMS;//是否使用软nms
+    private final float softNMSTh;//如果使用软nms则消除nms阈值
 
     public FpnBlock(int channelNo, ResBlock resBlock, int deep, BatchNerveManager typeManager
             , BatchNerveManager positionManager, FpnConfig fpnConfig, boolean first) throws Exception {
         super(null);
+        softNMS = fpnConfig.isSoftNMS();
+        softNMSTh = fpnConfig.getSoftNMSTh();
         this.first = first;
         showLog = fpnConfig.isShowLog();
         iouTh = fpnConfig.getIouTh();
@@ -176,6 +181,7 @@ public class FpnBlock extends ConvCount {
         FpnPositionBack positionBack = new FpnPositionBack();
         int step = imageSize / x;
         NMS nms = new NMS(iouTh);
+        SoftNMS sNms = SoftNMS.linear(iouTh, softNMSTh);
         List<Box> boxes = new ArrayList<>();
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
@@ -194,7 +200,12 @@ public class FpnBlock extends ConvCount {
             }
         }
         if (!boxes.isEmpty()) {
-            List<Box> outBoxList = nms.start(boxes);
+            List<Box> outBoxList;
+            if (!softNMS) {
+                outBoxList = nms.start(boxes);
+            } else {
+                outBoxList = sNms.start(boxes);
+            }
             List<OutBox> myOutBox = getOutBoxList(outBoxList);
             outBack.outBackBox(myOutBox, eventID, deep);
         }

@@ -18,6 +18,24 @@ public class FpnConfig {
     private int deep;//线性层深度
     private boolean showLog;//是否打印日志
     private int channelNo;//输入通道数
+    private boolean softNMS = false;//是否使用软nms
+    private float softNMSTh = 0.5f;//如果使用软nms则消除nms阈值
+
+    public boolean isSoftNMS() {
+        return softNMS;
+    }
+
+    public void setSoftNMS(boolean softNMS) {
+        this.softNMS = softNMS;
+    }
+
+    public float getSoftNMSTh() {
+        return softNMSTh;
+    }
+
+    public void setSoftNMSTh(float softNMSTh) {
+        this.softNMSTh = softNMSTh;
+    }
 
     public float getIouTh() {
         return iouTh;

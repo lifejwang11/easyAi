@@ -18,6 +18,24 @@ public class YoloFpnConfig {
     private int channelNo = 4;//通道数
     private int pictureSize = 20;//小批量训练数量
     private float otherIouTh = 0.1f;//小于该阈值则被认为是噪声
+    private boolean softNMS = false;//是否使用软nms
+    private float softNMSTh = 0.5f;//如果使用软nms则消除nms阈值
+
+    public boolean isSoftNMS() {
+        return softNMS;
+    }
+
+    public void setSoftNMS(boolean softNMS) {
+        this.softNMS = softNMS;
+    }
+
+    public float getSoftNMSTh() {
+        return softNMSTh;
+    }
+
+    public void setSoftNMSTh(float softNMSTh) {
+        this.softNMSTh = softNMSTh;
+    }
 
     public float getOtherIouTh() {
         return otherIouTh;
