@@ -76,7 +76,7 @@ public class Picture {
      * @return threeChannelMatrix
      * @throws Exception
      */
-    public static ThreeChannelMatrix getThreeMatrix(File file, boolean vertical) throws Exception {
+    public static ThreeChannelMatrix getThreeMatrix(File file, boolean vertical) {
         BufferedImage bi = null;
         try {
             bi = ImageIO.read(file);
@@ -86,7 +86,7 @@ public class Picture {
         return getThreeChannel(bi, vertical);
     }
 
-    public static ThreeChannelMatrix getThreeMatrix(InputStream file, boolean vertical) throws Exception {
+    public static ThreeChannelMatrix getThreeMatrix(InputStream file, boolean vertical) {
         BufferedImage bi = null;
         try {
             bi = ImageIO.read(file);
@@ -96,7 +96,7 @@ public class Picture {
         return getThreeChannel(bi, vertical);
     }
 
-    public static ThreeChannelMatrix getThreeMatrix(String fileURL, boolean vertical) throws Exception {
+    public static ThreeChannelMatrix getThreeMatrix(String fileURL, boolean vertical) {
         File file = new File(fileURL);
         BufferedImage bi = null;
         try {
@@ -132,7 +132,7 @@ public class Picture {
         return matrix;
     }
 
-    public static ThreeChannelMatrix getThreeChannel(BufferedImage bi, boolean vertical) throws Exception {
+    public static ThreeChannelMatrix getThreeChannel(BufferedImage bi, boolean vertical) {
         //最大宽度
         int width = bi.getWidth();
         //最大高度

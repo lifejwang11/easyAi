@@ -128,6 +128,7 @@ public class FastYolo {//yolo
         resnetConfig.setBatchSize(resYoloConfig.getBatchSize());
         resnetConfig.setLayGMaxTh(resYoloConfig.getLayGMaxTh());
         resnetConfig.setDcnDeep(resYoloConfig.getTypeDcnDeep());
+        resnetConfig.setPositionModel(true);
         return resnetConfig;
     }
 
@@ -143,7 +144,7 @@ public class FastYolo {//yolo
         if (!here) {//不存在
             TypeBody typeBody;
             if (resnet) {
-                typeBody = new TypeBody(resYoloConfig, winWidth);
+                typeBody = new TypeBody(winWidth);
             } else {
                 typeBody = new TypeBody(yoloConfig, winWidth, winHeight);
             }
@@ -164,7 +165,9 @@ public class FastYolo {//yolo
         List<TypeModel> typeModels = yoloModel.getTypeModels();
         for (TypeModel typeModel : typeModels) {
             TypeBody typeBody = getTypeBody(typeModel);
-            typeBody.getPositionNerveManager().insertConvModel(typeModel.getPositionModel());
+            if (!resnet) {
+                typeBody.getPositionNerveManager().insertConvModel(typeModel.getPositionModel());
+            }
             typeBodies.add(typeBody);
         }
     }
@@ -172,7 +175,7 @@ public class FastYolo {//yolo
     private TypeBody getTypeBody(TypeModel typeModel) throws Exception {
         TypeBody typeBody;
         if (resnet) {
-            typeBody = new TypeBody(resYoloConfig, winWidth);
+            typeBody = new TypeBody(winWidth);
         } else {
             typeBody = new TypeBody(yoloConfig, winWidth, winHeight);
         }
@@ -202,20 +205,34 @@ public class FastYolo {//yolo
             typeModel.setMinWidth(typeBody.getMinWidth());
             typeModel.setMaxWidth(typeBody.getMaxWidth());
             typeModel.setMaxHeight(typeBody.getMaxHeight());
-            typeModel.setPositionModel(typeBody.getPositionNerveManager().getConvModel());
+            if (!resnet) {
+                typeModel.setPositionModel(typeBody.getPositionNerveManager().getConvModel());
+            }
             typeModels.add(typeModel);
         }
         yoloModel.setTypeModels(typeModels);
         return yoloModel;
     }
 
-    private Box getBox(int i, int j, int maxX, int maxY, PositionBack positionBack, TypeBody typeBody) throws Exception {
+    private Box getBox(int i, int j, int maxX, int maxY, PositionBack positionBack, TypeBody typeBody,
+                       YoloTypeBack yoloTypeBack) {
         float zhou = winHeight + winWidth;
         Box box = null;
-        float centerX = i - positionBack.getDistX() * zhou;
-        float centerY = j - positionBack.getDistY() * zhou;
-        int width = (int) typeBody.getRealWidth(positionBack.getWidth());
-        int height = (int) typeBody.getRealHeight(positionBack.getHeight());
+        float centerX, centerY, trust;
+        int width, height;
+        if (positionBack != null) {
+            centerX = i - positionBack.getDistX() * zhou;
+            centerY = j - positionBack.getDistY() * zhou;
+            width = (int) typeBody.getRealWidth(positionBack.getWidth());
+            height = (int) typeBody.getRealHeight(positionBack.getHeight());
+            trust = positionBack.getTrust();
+        } else {
+            centerX = i - yoloTypeBack.getDistX() * zhou;
+            centerY = j - yoloTypeBack.getDistY() * zhou;
+            width = (int) typeBody.getRealWidth(yoloTypeBack.getWidth());
+            height = (int) typeBody.getRealHeight(yoloTypeBack.getHeight());
+            trust = yoloTypeBack.getTrust();
+        }
         int realX = (int) (centerX - height / 2f);
         int realY = (int) (centerY - width / 2f);
         if (realX < 0) {
@@ -230,7 +247,6 @@ public class FastYolo {//yolo
         if (realY + width > maxY) {
             realY = maxY - width;
         }
-        float trust = positionBack.getTrust();
         if (trust > trustTh) {
             box = new Box();
             box.setX(realX);
@@ -307,19 +323,29 @@ public class FastYolo {//yolo
                 ThreeChannelMatrix myTh = th.cutChannel(i, j, winHeight, winWidth);
                 if (resnet) {
                     resnetManager.getRestNetInput().postFeature(myTh, yoloTypeBack, eventID, false, myPd);
+                    int mappingID = yoloTypeBack.getId();//映射id
+                    float out = yoloTypeBack.getOut();
+                    if (mappingID != typeBodies.size() + 1 && out > pth) {
+                        TypeBody typeBody = getTypeBodyByMappingID(mappingID);
+                        Box box = getBox(i, j, x, y, null, typeBody, yoloTypeBack);
+                        if (box != null) {
+                            box.setSoftMax(out);
+                            boxes.add(box);
+                        }
+                    }
                 } else {
                     study(eventID, typeNerveManager.getConvInput(), myTh, false, null, yoloTypeBack, myPd);
-                }
-                int mappingID = yoloTypeBack.getId();//映射id
-                float out = yoloTypeBack.getOut();
-                if (mappingID != typeBodies.size() + 1 && out > pth) {
-                    TypeBody typeBody = getTypeBodyByMappingID(mappingID);
-                    SensoryNerve convInput = typeBody.getPositionNerveManager().getConvInput();
-                    study(eventID, convInput, myTh, false, null, positionBack, null);
-                    Box box = getBox(i, j, x, y, positionBack, typeBody);
-                    if (box != null) {
-                        box.setSoftMax(out);
-                        boxes.add(box);
+                    int mappingID = yoloTypeBack.getId();//映射id
+                    float out = yoloTypeBack.getOut();
+                    if (mappingID != typeBodies.size() + 1 && out > pth) {
+                        TypeBody typeBody = getTypeBodyByMappingID(mappingID);
+                        SensoryNerve convInput = typeBody.getPositionNerveManager().getConvInput();
+                        study(eventID, convInput, myTh, false, null, positionBack, null);
+                        Box box = getBox(i, j, x, y, positionBack, typeBody, null);
+                        if (box != null) {
+                            box.setSoftMax(out);
+                            boxes.add(box);
+                        }
                     }
                 }
             }
@@ -331,6 +357,9 @@ public class FastYolo {//yolo
     }
 
     public List<OutBox> testType(ThreeChannelMatrix th, long eventID, Map<Integer, Float> typePd) throws Exception {
+        if (resnet) {
+            throw new IllegalAccessException("大型网络不可以使用该测试方法");
+        }
         int x = th.getX();
         int y = th.getY();
         Map<Integer, Float> myPd = null;
@@ -342,11 +371,7 @@ public class FastYolo {//yolo
             for (int j = 0; j <= y - winWidth; j += widthStep) {
                 YoloTypeBack yoloTypeBack = new YoloTypeBack();
                 ThreeChannelMatrix myTh = th.cutChannel(i, j, winHeight, winWidth);
-                if (resnet) {
-                    resnetManager.getRestNetInput().postFeature(myTh, yoloTypeBack, eventID, false, myPd);
-                } else {
-                    study(eventID, typeNerveManager.getConvInput(), myTh, false, null, yoloTypeBack, myPd);
-                }
+                study(eventID, typeNerveManager.getConvInput(), myTh, false, null, yoloTypeBack, myPd);
                 int mappingID = yoloTypeBack.getId();//映射id
                 float out = yoloTypeBack.getOut();
                 if (mappingID != typeBodies.size() + 1 && out > pth) {
@@ -368,6 +393,9 @@ public class FastYolo {//yolo
     }
 
     public void toStudy(List<YoloSample> yoloSamples, OutBack logOutBack, boolean studyType) throws Exception {
+        if (resnet) {
+            throw new IllegalAccessException("大型网络使用toStudyByResNet()方法调用训练");
+        }
         for (YoloSample yoloSample : yoloSamples) {
             List<YoloBody> yoloBodies = yoloSample.getYoloBodies();
             for (YoloBody yoloBody : yoloBodies) {
@@ -388,6 +416,28 @@ public class FastYolo {//yolo
         } else {
             ready = ready | 2;
         }
+    }
+
+    public void toStudyByResNet(List<YoloSample> yoloSamples, OutBack logOutBack) throws Exception {
+        if (!resnet) {
+            throw new IllegalAccessException("小型网络使用toStudy()方法进行训练");
+        }
+        for (YoloSample yoloSample : yoloSamples) {
+            List<YoloBody> yoloBodies = yoloSample.getYoloBodies();
+            for (YoloBody yoloBody : yoloBodies) {
+                insertYoloBody(yoloBody);
+            }
+        }
+        for (int i = 0; i < enh; i++) {
+            System.out.println("第===========================" + i + "次" + "共" + enh + "次");
+            int index = 0;
+            for (YoloSample yoloSample : yoloSamples) {
+                index++;
+                System.out.println("index:" + index + ",size:" + yoloSamples.size());
+                studyResNet(yoloSample, logOutBack);
+            }
+        }
+        ready = 3;
     }
 
     private Box changeBox(YoloBody yoloBody) {
@@ -488,11 +538,19 @@ public class FastYolo {//yolo
                 Map<Integer, Float> EMap = new HashMap<>();
                 if (size > index) {
                     YoloMessage yoloMessage = yoloMessages.get(index);
+                    if (!yoloMessage.isBackGround()) {
+                        Map<Integer, Float> E2 = getPositonE(yoloMessage);
+                        batchBody.setE2(E2);
+                    }
                     EMap.put(yoloMessage.getMappingID(), 1f);
                     batchBody.insertPicture(yoloMessage.getPic());
                 } else {
                     int myIndex = index % size;
                     YoloMessage yoloMessage = yoloMessages.get(myIndex);
+                    if (!yoloMessage.isBackGround()) {
+                        Map<Integer, Float> E2 = getPositonE(yoloMessage);
+                        batchBody.setE2(E2);
+                    }
                     EMap.put(yoloMessage.getMappingID(), 1f);
                     batchBody.insertPicture(yoloMessage.getPic().copy());
                 }
@@ -507,7 +565,7 @@ public class FastYolo {//yolo
         return batchBodies;
     }
 
-    private void study(YoloSample yoloSample, OutBack logOutBack, boolean studyType) throws Exception {//
+    private List<YoloMessage> getMessage(YoloSample yoloSample) throws IllegalAccessException {
         List<YoloBody> yoloBodies = yoloSample.getYoloBodies();//集合
         List<YoloMessage> yoloMessageList = new ArrayList<>();
         List<Box> boxes = getBoxes(yoloBodies);
@@ -517,7 +575,7 @@ public class FastYolo {//yolo
         int stepX = (int) (winHeight * stepReduce);
         int stepY = (int) (winWidth * stepReduce);
         if (stepX < 1 || stepY < 1) {
-            throw new Exception("训练步长收缩后步长必须大于0");
+            throw new IllegalAccessException("训练步长收缩后步长必须大于0");
         }
         for (int i = 0; i <= pic.getX() - winHeight; i += stepX) {
             for (int j = 0; j <= pic.getY() - winWidth; j += stepY) {
@@ -533,17 +591,22 @@ public class FastYolo {//yolo
                 }
             }
         }
+        return yoloMessageList;
+    }
+
+    private void studyResNet(YoloSample yoloSample, OutBack logOutBack) throws Exception {
+        List<YoloMessage> yoloMessageList = getMessage(yoloSample);
         if (!yoloMessageList.isEmpty()) {
-            if (resnet) {
-                List<YoloMessage> myYoloMessageList = anySort(yoloMessageList);
-                List<BatchBody> batchBodies = null;
-                if (studyType) {
-                    batchBodies = balance(myYoloMessageList);
-                }
-                studyImageByResnet(myYoloMessageList, logOutBack, batchBodies, studyType);
-            } else {
-                studyImage(anySort(yoloMessageList), logOutBack, studyType);
-            }
+            List<YoloMessage> myYoloMessageList = anySort(yoloMessageList);
+            List<BatchBody> batchBodies = balance(myYoloMessageList);
+            studyImageByResnet(logOutBack, batchBodies);
+        }
+    }
+
+    private void study(YoloSample yoloSample, OutBack logOutBack, boolean studyType) throws Exception {//
+        List<YoloMessage> yoloMessageList = getMessage(yoloSample);
+        if (!yoloMessageList.isEmpty()) {
+            studyImage(anySort(yoloMessageList), logOutBack, studyType);
         }
     }
 
@@ -569,18 +632,9 @@ public class FastYolo {//yolo
         return ty;
     }
 
-    private void studyImageByResnet(List<YoloMessage> yoloMessageList, OutBack logOutBack,
-                                    List<BatchBody> batchBodies, boolean studyType) throws Exception {
+    private void studyImageByResnet(OutBack logOutBack, List<BatchBody> batchBodies) throws Exception {
         ResnetInput resnetInput = resnetManager.getRestNetInput();
-        if (studyType) {
-            resnetInput.studyFeature(batchBodies, logOutBack, 1, pd);
-        } else {
-            for (YoloMessage yoloMessage : yoloMessageList) {//位置训练
-                if (!yoloMessage.isBackGround()) {
-                    studyPosition(yoloMessage, yoloMessage.getPic(), logOutBack);
-                }
-            }
-        }
+        resnetInput.studyFeature(batchBodies, logOutBack, 1, pd);
     }
 
     private void studyImage(List<YoloMessage> yoloMessageList, OutBack logOutBack, boolean studyType) throws Exception {
@@ -600,13 +654,18 @@ public class FastYolo {//yolo
 
     }
 
-    private void studyPosition(YoloMessage yoloMessage, ThreeChannelMatrix small, OutBack logOutBack) throws Exception {
+    private Map<Integer, Float> getPositonE(YoloMessage yoloMessage) {
         Map<Integer, Float> positionE = new HashMap<>();
         positionE.put(1, yoloMessage.getDistX());
         positionE.put(2, yoloMessage.getDistY());
         positionE.put(3, yoloMessage.getWidth());
         positionE.put(4, yoloMessage.getHeight());
         positionE.put(5, yoloMessage.getTrust());
+        return positionE;
+    }
+
+    private void studyPosition(YoloMessage yoloMessage, ThreeChannelMatrix small, OutBack logOutBack) throws Exception {
+        Map<Integer, Float> positionE = getPositonE(yoloMessage);
         NerveManager position = yoloMessage.getTypeBody().getPositionNerveManager();
         study(2, position.getConvInput(), small, true, positionE, logOutBack, null);
     }

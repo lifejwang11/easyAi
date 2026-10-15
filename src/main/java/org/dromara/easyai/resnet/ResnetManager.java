@@ -8,6 +8,7 @@ import org.dromara.easyai.config.RZ;
 import org.dromara.easyai.config.ResnetConfig;
 import org.dromara.easyai.conv.ResConvCount;
 import org.dromara.easyai.conv.dcn.DConv;
+import org.dromara.easyai.function.NoActivation;
 import org.dromara.easyai.i.ActiveFunction;
 import org.dromara.easyai.nerveCenter.NerveManager;
 import org.dromara.easyai.nerveEntity.SensoryNerve;
@@ -25,6 +26,7 @@ import java.util.List;
  */
 public class ResnetManager extends ResConvCount {
     private BatchNerveManager batchNerveManager;
+    private BatchNerveManager positionNerveManager;
     private final List<ResBlock> resBlockList = new ArrayList<>();//残差集合
     private ResnetInput restNetInput;
     private int deep;//深度
@@ -59,6 +61,9 @@ public class ResnetManager extends ResConvCount {
             resBlockModelList.add(resBlock.getModel());
         }
         resnetModel.setParameter(batchNerveManager.getModel());
+        if (positionNerveManager != null) {
+            resnetModel.setPositionParameter(positionNerveManager.getModel());
+        }
         return resnetModel;
     }
 
@@ -72,6 +77,9 @@ public class ResnetManager extends ResConvCount {
             resBlockList.get(i).insertModel(resBlockModelList.get(i));
         }
         batchNerveManager.insertModel(resnetModel.getParameter());
+        if (positionNerveManager != null) {
+            positionNerveManager.insertModel(resnetModel.getPositionParameter());
+        }
     }
 
     private int getFeatureSize(int deep, int size) {
@@ -131,6 +139,7 @@ public class ResnetManager extends ResConvCount {
     }
 
     public ResnetManager(ResnetConfig resNetConfig, FpnConfig fpnConfig, ActiveFunction activeFunction) throws Exception {
+        resNetConfig.setPositionModel(false);
         init(resNetConfig, activeFunction, fpnConfig.getStartDeep());
         fpnConfig.setTypeNumber(resNetConfig.getTypeNumber());
         if (deep < fpnConfig.getStartDeep()) {
@@ -162,24 +171,37 @@ public class ResnetManager extends ResConvCount {
         this.deep = deep;
         this.featureLength = featureLength;
         BatchNerveConfig batchNerveConfig = getBatchNerveConfig(resNetConfig, featureLength, studyRate);
-        ResNetConnectionLine resNetConnectionLine = new ResNetConnectionLine();
+        ResNetConnectionLine positionConnectionLine = null;
+        if (resNetConfig.isPositionModel()) {
+            positionConnectionLine = new ResNetConnectionLine(false);
+            BatchNerveConfig positionNerveConfig = getPositionBatchNerveConfig(resNetConfig, featureLength, studyRate);
+            positionNerveManager = new BatchNerveManager(positionNerveConfig, new NoActivation(), positionConnectionLine);
+        }
+        ResNetConnectionLine resNetConnectionLine = new ResNetConnectionLine(true);
         batchNerveManager = new BatchNerveManager(batchNerveConfig, activeFunction, resNetConnectionLine);
         boolean rz = resNetConfig.getRegularModel() != RZ.NOT_RZ;
         for (int i = 0; i < deep; i++) {
             BatchInputBlock batchInputBlock = null;
+            BatchInputBlock positionBatchInputBlock = null;
             if (i == deep - 1) {
                 batchInputBlock = batchNerveManager.getInputBlock();
+                if (positionNerveManager != null) {
+                    positionBatchInputBlock = positionNerveManager.getInputBlock();
+                }
             }
             boolean fpnStart = fpnStartDeep > 0 && (i + 1) >= fpnStartDeep;
             boolean dConv = isDCN(i, dcnDeep);
             ResBlock resBlock = new ResBlock(channelNo, i + 1, studyRate, resNetConfig.getSize(), batchInputBlock
                     , resNetConfig.getGMaxTh(), resNetConfig.isAuto(), resNetConfig.getBatchSize(),
-                    rz, resNetConfig.getRegular(), resNetConfig.getLayGMaxTh(), dConv, fpnStart);
+                    rz, resNetConfig.getRegular(), resNetConfig.getLayGMaxTh(), dConv, fpnStart, positionBatchInputBlock);
             resBlockList.add(resBlock);
         }
         restNetInput = new ResnetInput(resBlockList.get(0), resNetConfig.getSize(), resNetConfig.getBatchSize());
         connection();//残差块进行互相连接
         resNetConnectionLine.setLastBlock(resBlockList.get(deep - 1), lastSize);
+        if (positionConnectionLine != null) {
+            positionConnectionLine.setLastBlock(resBlockList.get(deep - 1), lastSize);
+        }
     }
 
     private boolean isDCN(int i, int dcnDeep) {
@@ -192,6 +214,22 @@ public class ResnetManager extends ResConvCount {
         batchNerveConfig.setHiddenSize(resNetConfig.getHiddenNerveNumber());
         batchNerveConfig.setOutSize(resNetConfig.getTypeNumber());
         batchNerveConfig.setSoftMax(resNetConfig.isSoftMax());
+        batchNerveConfig.setStudyRate(studyRate);
+        batchNerveConfig.setAuto(resNetConfig.isAuto());
+        batchNerveConfig.setGMaxTh(resNetConfig.getGMaxTh());
+        batchNerveConfig.setDeep(resNetConfig.getHiddenDeep());
+        batchNerveConfig.setShowLog(resNetConfig.isShowLog());
+        batchNerveConfig.setRegularModel(resNetConfig.getRegularModel());
+        batchNerveConfig.setRegular(resNetConfig.getRegular());
+        return batchNerveConfig;
+    }
+
+    private BatchNerveConfig getPositionBatchNerveConfig(ResnetConfig resNetConfig, int featureLength, float studyRate) {
+        BatchNerveConfig batchNerveConfig = new BatchNerveConfig();
+        batchNerveConfig.setInputSize(featureLength);
+        batchNerveConfig.setHiddenSize(resNetConfig.getHiddenNerveNumber());
+        batchNerveConfig.setOutSize(5);
+        batchNerveConfig.setSoftMax(false);
         batchNerveConfig.setStudyRate(studyRate);
         batchNerveConfig.setAuto(resNetConfig.isAuto());
         batchNerveConfig.setGMaxTh(resNetConfig.getGMaxTh());

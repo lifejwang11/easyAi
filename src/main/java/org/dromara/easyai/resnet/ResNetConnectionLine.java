@@ -15,6 +15,11 @@ import java.util.Map;
 public class ResNetConnectionLine implements CustomEncoding {
     private ResBlock lastBlock;//最后一层残差块
     private int lastSize;//最后一层的特征大小
+    private final boolean first;//是否为首要分类器
+
+    public ResNetConnectionLine(boolean first) {
+        this.first = first;
+    }
 
     public void setLastBlock(ResBlock lastBlock, int lastSize) {
         this.lastBlock = lastBlock;
@@ -53,6 +58,6 @@ public class ResNetConnectionLine implements CustomEncoding {
                 errorMatrixList.add(feature);
             }
         }
-        lastBlock.backError(batchBodies);
+        lastBlock.backLineError(batchBodies, first);
     }
 }

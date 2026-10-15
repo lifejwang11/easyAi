@@ -11,9 +11,7 @@ public class ResYoloConfig {
     private int windowSize = 100;//检测窗口宽
     private int typeNub = 10;//类别数量
     private int hiddenNerveNub = 16;//线性层隐层神经元数量
-    private int positionHiddenNerveNub = 16;//位置网络线性层隐层神经元数量
-    private float studyRate = 0.0001f;//学习率
-    private float positionStudyRate = 0.0025f;
+    private float studyRate = 0.0005f;//学习率
     private boolean showLog = false;//是否打印学习过程中的log
     private int enhance = 1;//数据增强
     private float iouTh = 0.05f;//合并框交并比阈值
@@ -24,20 +22,14 @@ public class ResYoloConfig {
     private float regular = 0;//正则系数
     private int regularModel = RZ.NOT_RZ;//正则模式
     private int channelNo = 1;//通道数
-    private int positionChannelNo = 1;//位置网络通道数
     private int minFeatureValue = 5;//输出特征维度大小
-    private int positionMinFeatureValue = 3;//位置网络输出特征纬度大小
     private float GMaxTh = 1f;//梯度裁剪阈值
     private float layGMaxTh = 10000f;//层梯度裁剪阈值
-    private float positionGMaxTh = 100;//位置梯度裁剪阈值
     private float trustTh = 0.1f;//可信度阈值
     private int hiddenDeep = 1;//分类网络线性层隐层神经元深度
-    private int positionHiddenDeep = 1;//位置网络的线性层神经元深度
     private int batchSize = 32;//批量训练数量
     private float otherPth = 0.1f;//负样本阈值
     private float backGroundPD = 0.1f;//背景误差惩罚，该数值大于0.9 则相当于不施加惩罚
-    private boolean cutLayG = false;//位置网络是否进行层梯度裁切
-    private int positionDcnDeep = 0;//位置网络 使用可变形卷积深度，0为不使用
     private int typeDcnDeep = 0;//分类网络 使用可变形卷积深度，0为不可用
 
     public int getTypeDcnDeep() {
@@ -46,22 +38,6 @@ public class ResYoloConfig {
 
     public void setTypeDcnDeep(int typeDcnDeep) {
         this.typeDcnDeep = typeDcnDeep;
-    }
-
-    public int getPositionDcnDeep() {
-        return positionDcnDeep;
-    }
-
-    public void setPositionDcnDeep(int positionDcnDeep) {
-        this.positionDcnDeep = positionDcnDeep;
-    }
-
-    public boolean isCutLayG() {
-        return cutLayG;
-    }
-
-    public void setCutLayG(boolean cutLayG) {
-        this.cutLayG = cutLayG;
     }
 
     public float getLayGMaxTh() {
@@ -86,22 +62,6 @@ public class ResYoloConfig {
 
     public void setOtherPth(float otherPth) {
         this.otherPth = otherPth;
-    }
-
-    public float getPositionGMaxTh() {
-        return positionGMaxTh;
-    }
-
-    public void setPositionGMaxTh(float positionGMaxTh) {
-        this.positionGMaxTh = positionGMaxTh;
-    }
-
-    public float getPositionStudyRate() {
-        return positionStudyRate;
-    }
-
-    public void setPositionStudyRate(float positionStudyRate) {
-        this.positionStudyRate = positionStudyRate;
     }
 
     public int getBatchSize() {
@@ -134,14 +94,6 @@ public class ResYoloConfig {
 
     public void setHiddenNerveNub(int hiddenNerveNub) {
         this.hiddenNerveNub = hiddenNerveNub;
-    }
-
-    public int getPositionHiddenNerveNub() {
-        return positionHiddenNerveNub;
-    }
-
-    public void setPositionHiddenNerveNub(int positionHiddenNerveNub) {
-        this.positionHiddenNerveNub = positionHiddenNerveNub;
     }
 
     public float getStudyRate() {
@@ -232,28 +184,12 @@ public class ResYoloConfig {
         this.channelNo = channelNo;
     }
 
-    public int getPositionChannelNo() {
-        return positionChannelNo;
-    }
-
-    public void setPositionChannelNo(int positionChannelNo) {
-        this.positionChannelNo = positionChannelNo;
-    }
-
     public int getMinFeatureValue() {
         return minFeatureValue;
     }
 
     public void setMinFeatureValue(int minFeatureValue) {
         this.minFeatureValue = minFeatureValue;
-    }
-
-    public int getPositionMinFeatureValue() {
-        return positionMinFeatureValue;
-    }
-
-    public void setPositionMinFeatureValue(int positionMinFeatureValue) {
-        this.positionMinFeatureValue = positionMinFeatureValue;
     }
 
     public float getGMaxTh() {
@@ -281,11 +217,4 @@ public class ResYoloConfig {
         this.hiddenDeep = hiddenDeep;
     }
 
-    public int getPositionHiddenDeep() {
-        return positionHiddenDeep;
-    }
-
-    public void setPositionHiddenDeep(int positionHiddenDeep) {
-        this.positionHiddenDeep = positionHiddenDeep;
-    }
 }
