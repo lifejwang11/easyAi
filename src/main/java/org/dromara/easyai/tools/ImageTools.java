@@ -9,6 +9,8 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -41,6 +43,28 @@ public class ImageTools {
         }
     }
 
+    public static void drawBox(String fileURL, List<OutBox> borderFoods, String outFileName, int fontSize, int LineSize
+            , Color FontColor) throws Exception {
+        File file = new File(fileURL);
+        BufferedImage image2 = ImageIO.read(file);
+        int width = image2.getWidth();
+        int height = image2.getHeight();
+        BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        BasicStroke stroke = new BasicStroke(LineSize); // 3 就是线宽，你改成2、4、5都可以
+        Graphics2D g2 = (Graphics2D) bi.getGraphics();
+        g2.setStroke(stroke);
+        g2.drawImage(image2, 0, 0, width, height, null);
+        g2.setFont(new Font(null, Font.BOLD, fontSize));
+        for (OutBox borderFood : borderFoods) {//输出
+            Rectangle2D rect = new Rectangle2D.Float(borderFood.getX(), borderFood.getY(), borderFood.getWidth(), borderFood.getHeight());//声明并创建矩形对象，矩形的左上角是(20，30)，宽是300，高是40
+            g2.setColor(Color.RED);
+            g2.draw(rect);
+            g2.setColor(FontColor);
+            g2.drawString(borderFood.getTypeID(), borderFood.getX() + 10, borderFood.getY() + 10);
+        }
+        ImageIO.write(bi, "jpg", Files.newOutputStream(Paths.get(outFileName)));
+    }
+
     public static void drawBox(String fileURL, List<OutBox> borderFoods, String outFileName, int fontSize) throws Exception {
         File file = new File(fileURL);
         BufferedImage image2 = ImageIO.read(file);
@@ -57,7 +81,7 @@ public class ImageTools {
             g2.setColor(Color.BLUE);
             g2.drawString(borderFood.getTypeID(), borderFood.getX() + 10, borderFood.getY() + 10);
         }
-        ImageIO.write(bi, "jpg", new FileOutputStream(outFileName));
+        ImageIO.write(bi, "jpg", Files.newOutputStream(Paths.get(outFileName)));
     }
 
     public static ByteArrayOutputStream drawImage(ThreeChannelMatrix img) throws Exception {
