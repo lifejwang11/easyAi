@@ -104,7 +104,7 @@ EasyAi入门与实战教程将于2027年春由清华大学出版社出版，敬�
     <dependency>
       <groupId>org.dromara.easyai</groupId>
       <artifactId>easyAi</artifactId>
-      <version>1.7.3</version>
+      <version>1.7.4</version>
     </dependency>
 ```
 
